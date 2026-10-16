@@ -452,6 +452,101 @@
     \end{enumerate}
 \end{problem}
 
+\section{Eigenvalues and Eigenvectors}
+
+\begin{problem}\label{pr:eig2}
+    Let $A = \begin{pmatrix} 1 & 2 \\ 3 & 2 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the characteristic polynomial of $A$, its eigenvalues, and its eigenspaces.
+        \item Check that the eigenvalues add up to $\tr(A)$ and multiply to $\det(A)$.
+        \item Diagonalize $A$, i.e., find $P$ and $D$ with $A = PDP^{-1}$.
+        \item Find a formula for $A^k$, and check it for $k = 1$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:eig-triangular}
+    Find the eigenvalues and eigenspaces of $L = \begin{pmatrix} 2 & 0 & 0 \\ 1 & 3 & 0 \\ 4 & -1 & 1 \end{pmatrix}$. Is $L$ diagonalizable?
+\end{problem}
+
+\begin{problem}\label{pr:eig-defective}
+    Let $N = \begin{pmatrix} 2 & 1 & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 3 \end{pmatrix}$. Find the algebraic and geometric multiplicity of each eigenvalue of $N$, and decide whether $N$ is diagonalizable.
+\end{problem}
+
+\begin{problem}\label{pr:eig-geometric}
+    Without computing any characteristic polynomial, use geometric intuition to find the eigenvalues and eigenspaces of the following linear transformations of the plane. Then check your answers with a computation.
+    \begin{enumerate}[label=(\alph*)]
+        \item the reflection in the $x$-axis;
+        \item the orthogonal projection onto the line $y = x$, with matrix $\frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & 1 \end{pmatrix}$;
+        \item the shear $T(x, y) = (x + 2y, y)$;
+        \item the rotation by $90^\circ$;
+        \item $T(x, y) = (2x, 3y)$;
+        \item $T(x, y) = (-x, -y)$.
+    \end{enumerate}
+    Which of these transformations are diagonalizable?
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:eig-gre}
+    A real $3 \times 3$ matrix $A$ has the eigenvalues $-1$, $2$ and $4$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Is $A$ diagonalizable? Is $A$ invertible?
+        \item Compute $\tr(A)$, $\det(A)$, $\tr(A^2)$ and $\det(A^3)$.
+        \item Find the eigenvalues of $A^{-1}$, $A^2$ and $A + 2I_3$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:eig-idempotent}
+    Let $P$ be an $n \times n$ matrix with $P^2 = P$ (compare Problem~\ref{pr:idempotent}).
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that every eigenvalue of $P$ is $0$ or $1$.
+        \item Show that every nonzero vector of $\im(T_P)$ is an eigenvector for the eigenvalue $1$, and that every nonzero vector of $\ker(T_P)$ is an eigenvector for the eigenvalue $0$. Use Problem~\ref{pr:idempotent}(d) to conclude that $P$ is diagonalizable.
+        \item Which of the following statements must be true: $P$ is invertible; $P$ is the identity or the zero matrix; $P$ is diagonalizable?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:eig-props}
+    Let $A$ and $B$ be $n \times n$ matrices.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $A$ and $A^\top$ have the same eigenvalues, and give an example where they have different eigenvectors.
+        \item Show that if $A$ is invertible, then $AB$ and $BA$ are similar, and hence have the same eigenvalues. (Hint: $BA = A^{-1}(AB)A$.)
+        \item Show that every real eigenvalue of an orthogonal matrix $Q$ is $1$ or $-1$. Hint: if $Qv = \lambda v$, compute $(Qv)^\top (Qv)$ in two ways.
+        \item Show that if $A^k = 0$ for some $k \geq 1$, then $0$ is the only eigenvalue of $A$.
+        \item Show that $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ and $I_2$ have the same characteristic polynomial, but are not similar.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:eig-recurrence}
+    The sequence $a_0 = 0$, $a_1 = 1$, $a_{n+1} = a_n + 2a_{n-1}$ starts with $0, 1, 1, 3, 5, 11, \ldots$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find a $2 \times 2$ matrix $M$ with $(a_{n+1}, a_n)^\top = M (a_n, a_{n-1})^\top$.
+        \item Find the eigenvalues and eigenvectors of $M$, and derive a formula for $a_n$, as for Binet's formula in the lecture.
+        \item Compute $a_{10}$ with your formula.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:eig-markov}
+    Every day, a visitor of a website either only browses or makes a purchase. A browsing visitor browses again the next day with probability $0.7$, and a buying visitor buys again with probability $0.6$. With $x_k = (b_k, p_k)^\top$ the probabilities of browsing and buying on day $k$, we have $x_{k+1} = Ax_k$ with
+    \[A = \begin{pmatrix} 0.7 & 0.4 \\ 0.3 & 0.6 \end{pmatrix}.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the eigenvalues and eigenvectors of $A$, and the stationary distribution.
+        \item For $x_0 = (1, 0)^\top$, find a formula for $x_k$, and check it for $k = 2$. What happens as $k \to \infty$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:eig-power}
+    Let $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$ and $x_0 = (1, 0)^\top$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $Ax_0$, $A^2x_0$, $A^3x_0$ and $A^4x_0$. What happens to the ratio of the two entries?
+        \item Explain your observation by writing $x_0$ as a linear combination of eigenvectors of $A$, and find a formula for $A^k x_0$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:eig-complex}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the matrix $M(a + bi) = \begin{pmatrix} a & -b \\ b & a \end{pmatrix}$ of Problem~\ref{pr:complex-matrix} has the complex eigenvalues $a \pm bi$.
+        \item Find the complex eigenvalues of $\begin{pmatrix} 3 & -4 \\ 4 & 3 \end{pmatrix}$, and write this matrix as $r R_\theta$ with $r > 0$ and a rotation $R_\theta$. How are $r$ and $\theta$ related to the eigenvalues?
+    \end{enumerate}
+\end{problem}
+
 \section*{Answers and Hints}
 \addcontentsline{toc}{section}{Answers and Hints}
 
@@ -511,6 +606,17 @@
     \item[\ref{pr:intersect}.] (a) The $7 \times 8$ matrix has a nonzero null vector $(a_1, \ldots, a_4, b_1, \ldots, b_4)$; then $\sum a_i v_i = -\sum b_j w_j$ is a nonzero vector in $V \cap W$. (c) $\Span\{e_1, e_2, e_3\}$ and $\Span\{e_4, e_5, e_6\}$.
     \item[\ref{pr:rankAB}.] (b) $\rank(AB) \leq \rank(A) \leq 2 < 3$.
     \item[\ref{pr:ATA}.] (a) $x^\top A^\top A x = \sum_i (Ax)_i^2$. (b) Use the rank--nullity theorem. (c) $\Null(A^\top A) = \Null(A) = \{0\}$.
+    \item[\ref{pr:eig2}.] (a) $p_A(\lambda) = \lambda^2 - 3\lambda - 4 = (\lambda - 4)(\lambda + 1)$; $E_4 = \Span\{(2, 3)^\top\}$ and $E_{-1} = \Span\{(1, -1)^\top\}$. (b) $4 + (-1) = 3$ and $4 \cdot (-1) = -4$. (c) $P = \begin{pmatrix} 2 & 1 \\ 3 & -1 \end{pmatrix}$, $D = \diag(4, -1)$, $P^{-1} = \frac{1}{5}\begin{pmatrix} 1 & 1 \\ 3 & -2 \end{pmatrix}$. (d) $A^k = \frac{1}{5}\begin{pmatrix} 2 \cdot 4^k + 3(-1)^k & 2 \cdot 4^k - 2(-1)^k \\ 3 \cdot 4^k - 3(-1)^k & 3 \cdot 4^k + 2(-1)^k \end{pmatrix}$.
+    \item[\ref{pr:eig-triangular}.] The eigenvalues are the diagonal entries $2$, $3$ and $1$. The eigenspaces are spanned by $(1, -1, 5)^\top$ (for $2$), $(0, -2, 1)^\top$ (for $3$) and $(0, 0, 1)^\top$ (for $1$). Diagonalizable, since the three eigenvalues are distinct.
+    \item[\ref{pr:eig-defective}.] The eigenvalue $2$ has algebraic multiplicity $2$, but geometric multiplicity $3 - \rank(N - 2I_3) = 1$; the eigenvalue $3$ has both multiplicities equal to $1$. Not diagonalizable.
+    \item[\ref{pr:eig-geometric}.] (a) $1$ on the $x$-axis, $-1$ on the $y$-axis. (b) $1$ on $\Span\{(1, 1)\}$, $0$ on $\Span\{(1, -1)\}$. (c) Only $1$, with eigenspace the $x$-axis. (d) No real eigenvalues; the complex eigenvalues are $\pm i$. (e) $2$ on the $x$-axis, $3$ on the $y$-axis. (f) Only $-1$, with eigenspace $\mathbb{R}^2$. All are diagonalizable except (c) and (d) (over $\mathbb{R}$).
+    \item[\ref{pr:eig-gre}.] (a) Yes (three distinct eigenvalues); yes ($0$ is not an eigenvalue). (b) $5$, $-8$, $1 + 4 + 16 = 21$, $(-8)^3 = -512$. (c) $A^{-1}$: $-1, \frac{1}{2}, \frac{1}{4}$; $A^2$: $1, 4, 16$; $A + 2I_3$: $1, 4, 6$.
+    \item[\ref{pr:eig-idempotent}.] (a) If $Pv = \lambda v$, then $\lambda v = P^2 v = \lambda^2 v$, so $\lambda^2 = \lambda$. (b) If $v = Pw$, then $Pv = P^2w = Pw = v$. Bases of $\im(T_P)$ and $\ker(T_P)$ together span $\mathbb{R}^n$ and are linearly independent, so they form a basis of eigenvectors. (c) Only ``$P$ is diagonalizable''; $P = \begin{pmatrix} 1 & 1 \\ 0 & 0 \end{pmatrix}$ is a counterexample to the other two.
+    \item[\ref{pr:eig-props}.] (a) For the shear, $E_1 = \Span\{e_1\}$, but for its transpose, $E_1 = \Span\{e_2\}$. (c) $v^\top v = (Qv)^\top(Qv) = \lambda^2 v^\top v$. (d) $A^k v = \lambda^k v = 0$. (e) $P^{-1} I_2 P = I_2$ for every $P$.
+    \item[\ref{pr:eig-recurrence}.] (a) $M = \begin{pmatrix} 1 & 2 \\ 1 & 0 \end{pmatrix}$. (b) Eigenvalues $2$ and $-1$, with eigenvectors $(2, 1)^\top$ and $(-1, 1)^\top$; $a_n = \frac{2^n - (-1)^n}{3}$. (c) $a_{10} = \frac{1024 - 1}{3} = 341$.
+    \item[\ref{pr:eig-markov}.] (a) $\lambda = 1$ with eigenvector $(4, 3)^\top$, and $\lambda = 0.3$ with eigenvector $(1, -1)^\top$; the stationary distribution is $\big(\frac{4}{7}, \frac{3}{7}\big)^\top$. (b) $x_k = \big(\frac{4}{7}, \frac{3}{7}\big)^\top + \frac{3}{7}(0.3)^k (1, -1)^\top$; $x_2 = (0.61, 0.39)^\top$; $x_k \to \big(\frac{4}{7}, \frac{3}{7}\big)^\top$.
+    \item[\ref{pr:eig-power}.] (a) $(2, 1)$, $(5, 4)$, $(14, 13)$, $(41, 40)$; the ratio tends to $1$, i.e., to the direction of the eigenvector $(1, 1)$. (b) $x_0 = \frac{1}{2}(1, 1)^\top + \frac{1}{2}(1, -1)^\top$, so $A^k x_0 = \frac{1}{2}(3^k + 1, \ 3^k - 1)^\top$.
+    \item[\ref{pr:eig-complex}.] (a) $p(\lambda) = (a - \lambda)^2 + b^2$. (b) $3 \pm 4i$; the matrix is $5 R_\theta$ with $\cos\theta = \frac{3}{5}$ and $\sin\theta = \frac{4}{5}$: $r = |3 \pm 4i| = 5$, and $\theta$ is the angle of $3 + 4i$.
 \end{description}
 
 \end{document}

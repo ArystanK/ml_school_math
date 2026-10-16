@@ -1,0 +1,410 @@
+\documentclass[11pt]{article}
+
+% Practice problems for Lecture 2
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{Lecture 2: Practice Problems}
+\author{Linear Algebra}
+\date{\today}
+
+\theoremstyle{definition}
+\newtheorem{problem}{Problem}[section]
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Null}{null}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\row}{row}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+
+\begin{document}
+
+\maketitle
+
+\section{Norms}
+
+\begin{problem}\label{pr:norms-compute}
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\norm{x}_1$, $\norm{x}_2$ and $\norm{x}_\infty$ for $x = (2, -1, 2, -4)^\top$.
+        \item Compute $\norm{y}_p$ for $y = (3, 4)^\top$ and $p = 1, 2, 4, \infty$. What do you observe as $p$ grows?
+        \item Show that $\norm{x}_\infty \leq \norm{x}_p \leq n^{1/p} \norm{x}_\infty$ for every $x \in \mathbb{R}^n$ and $p \geq 1$, and conclude that $\norm{x}_p \to \norm{x}_\infty$ as $p \to \infty$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:which-norms}
+    Which of the following functions are norms on $\mathbb{R}^2$? For each norm, sketch its unit ball $\{x : \norm{x} \leq 1\}$; for each function that is not a norm, find an axiom that fails.
+    \begin{enumerate}[label=(\alph*)]
+        \item $f(x) = |x_1| + 2|x_2|$;
+        \item $f(x) = |x_1| + x_2^2$;
+        \item $f(x) = |x_1 - x_2|$;
+        \item $f(x) = \max\{|x_1|, |x_2|\} + |x_1 + x_2|$;
+        \item $f(x) = \big(\sqrt{|x_1|} + \sqrt{|x_2|}\big)^2$.
+    \end{enumerate}
+\end{problem}
+
+\section{Inner Products}
+
+\begin{problem}\label{pr:which-ip}
+    Which of the following functions are inner products on $\mathbb{R}^2$? For each inner product, find the symmetric positive definite matrix $A$ with $\ip{x}{y} = x^\top A y$.
+    \begin{enumerate}[label=(\alph*)]
+        \item $x_1 y_1 + 2 x_2 y_2$;
+        \item $x_1 y_1 - x_2 y_2$;
+        \item $2x_1 y_1 + x_1 y_2 + x_2 y_1 + x_2 y_2$;
+        \item $x_1 y_2 + x_2 y_1$;
+        \item $x_1 y_1 + x_1 y_2 + 2x_2 y_2$;
+        \item $4x_1 y_1 + 2x_1 y_2 + 2x_2 y_1 + x_2 y_2$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:ip-gram}
+    Consider the inner product $\ip{x}{y} = x^\top A y$ on $\mathbb{R}^2$ with $A = \begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\ip{e_1}{e_2}$, $\norm{e_1}$, $\norm{e_2}$ and the angle between $e_1$ and $e_2$ with respect to this inner product.
+        \item Find a nonzero vector that is orthogonal to $e_1$ with respect to this inner product.
+        \item Apply the Gram--Schmidt process to $e_1, e_2$ with respect to this inner product to find an orthonormal basis.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:spd-param}
+    \begin{enumerate}[label=(\alph*)]
+        \item For which $t \in \mathbb{R}$ is $\begin{pmatrix} 1 & t \\ t & 4 \end{pmatrix}$ positive definite? And $\begin{pmatrix} t & 1 \\ 1 & t \end{pmatrix}$?
+        \item Use Sylvester's criterion to show that $\begin{pmatrix} 2 & 1 & 0 \\ 1 & 2 & 1 \\ 0 & 1 & 2 \end{pmatrix}$ is positive definite. (Compare with the tridiagonal determinants in the practice problems of Lecture~1.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:frobenius-ip}
+    Consider the Frobenius inner product $\ip{A}{B} = \tr(A^\top B)$ on $\mathbb{R}^{n \times n}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that every symmetric matrix is orthogonal to every skew-symmetric matrix.
+        \item Recall from Lecture~1 that every square matrix can be written as $A = S + K$ with $S$ symmetric and $K$ skew-symmetric. Show that $\norm{A}_F^2 = \norm{S}_F^2 + \norm{K}_F^2$.
+    \end{enumerate}
+\end{problem}
+
+\section{Lengths and Distances}
+
+\begin{problem}[$\star$]\label{pr:cs-apps}
+    Use the Cauchy--Schwarz inequality to solve the following problems.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the largest value of $2x + 3y + 6z$ subject to $x^2 + y^2 + z^2 = 1$, and the point where it is attained.
+        \item Show that $(a + b + c)\big(\frac{1}{a} + \frac{1}{b} + \frac{1}{c}\big) \geq 9$ for all $a, b, c > 0$. When does equality hold?
+        \item Show that $(x_1 + 2x_2 + 2x_3)^2 \leq 9(x_1^2 + x_2^2 + x_3^2)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:polarization}
+    Let $x$ and $y$ be vectors in an inner product space with $\norm{x + y} = 7$ and $\norm{x - y} = 5$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\ip{x}{y}$.
+        \item If also $\norm{x} = 5$, compute $\norm{y}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:dist}
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the distance between $(1, 2, 3)^\top$ and $(4, 0, -3)^\top$ with respect to the $\ell_1$, $\ell_2$ and $\ell_\infty$ norms, and with respect to the norm induced by the inner product $x^\top \diag(1, 4, 1)\, y$.
+        \item Prove the reverse triangle inequality $\big|\norm{x} - \norm{y}\big| \leq \norm{x - y}$ for every norm.
+    \end{enumerate}
+\end{problem}
+
+\section{Angles and Orthogonality}
+
+\begin{problem}[$\star$]\label{pr:angles}
+    Find the angle between:
+    \begin{enumerate}[label=(\alph*)]
+        \item $(2, 1, -1)^\top$ and $(1, -1, 1)^\top$;
+        \item $(1, 2, 2)^\top$ and $(2, -1, 2)^\top$;
+        \item a diagonal of a cube and one of its edges (Hint: $(1, 1, 1)$ and $(1, 0, 0)$);
+        \item two diagonals of faces of a cube that start at the same vertex.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:orth-to-two}
+    Find all vectors in $\mathbb{R}^3$ that are orthogonal to both $(1, 2, -1)^\top$ and $(2, -1, 3)^\top$.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:householder-q}
+    Let $Q = \frac{1}{3}\begin{pmatrix} 1 & 2 & 2 \\ 2 & 1 & -2 \\ 2 & -2 & 1 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $Q$ is orthogonal and symmetric, and conclude that $Q^2 = I_3$.
+        \item Compute $Qx$ for $x = (1, 1, 1)^\top$, and check that $\norm{Qx} = \norm{x}$.
+        \item Show that $Q = I_3 - 2uu^\top$ for the unit vector $u = \frac{1}{\sqrt{3}}(1, -1, -1)^\top$. Describe $Q$ geometrically, and find $\det(Q)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:cosine-docs}
+    Three documents are represented by the counts of four words: $d_1 = (2, 0, 1, 1)^\top$, $d_2 = (6, 0, 3, 3)^\top$ and $d_3 = (0, 3, 0, 1)^\top$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the cosine similarities of $d_1$ with $d_2$ and with $d_3$.
+        \item Compute the Euclidean distances of $d_1$ to $d_2$ and to $d_3$.
+        \item Which document is ``most similar'' to $d_1$ according to each measure? Which answer makes more sense, and why?
+    \end{enumerate}
+\end{problem}
+
+\section{Orthonormal Bases}
+
+\begin{problem}[$\star$]\label{pr:gs-haar}
+    \begin{enumerate}[label=(\alph*)]
+        \item Apply the Gram--Schmidt process to $v_1 = (1, 1, 1, 1)^\top$, $v_2 = (1, 1, 0, 0)^\top$ and $v_3 = (1, 0, 0, 0)^\top$.
+        \item Find a fourth vector that extends the result to an orthonormal basis of $\mathbb{R}^4$. (The resulting basis is the Haar basis, which is the starting point of wavelet methods in signal and image processing.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:onb-coords}
+    Let $b_1 = \frac{1}{3}(1, 2, 2)^\top$, $b_2 = \frac{1}{3}(2, 1, -2)^\top$ and $b_3 = \frac{1}{3}(2, -2, 1)^\top$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $b_1, b_2, b_3$ is an orthonormal basis of $\mathbb{R}^3$.
+        \item Write $v = (3, 0, 3)^\top$ in this basis, without solving a system of equations, and check Parseval's identity.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:qr}
+    Find the QR decomposition of $A = \begin{pmatrix} 1 & 1 \\ 1 & 0 \\ 0 & 1 \end{pmatrix}$ with the Gram--Schmidt process.
+\end{problem}
+
+\section{Orthogonal Complements}
+
+\begin{problem}\label{pr:complement}
+    Let $U = \Span\{(1, 2, 0, 1)^\top, (0, 1, 1, 0)^\top\}$. Find a basis of $U^\perp$, and check that $\dim U + \dim U^\perp = 4$.
+\end{problem}
+
+\begin{problem}\label{pr:four-subspaces}
+    Let $A = \begin{pmatrix} 1 & 2 \\ 2 & 4 \\ 3 & 6 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find bases of the four subspaces $\col(A)$, $\Null(A^\top)$, $\row(A)$ and $\Null(A)$, and check that $\Null(A) = \row(A)^\perp$ and $\Null(A^\top) = \col(A)^\perp$.
+        \item For which $b \in \mathbb{R}^3$ does the system $Ax = b$ have a solution? Express your answer as an orthogonality condition.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:classifier}
+    A linear classifier on $\mathbb{R}^2$ has the weight vector $w = (2, -1)^\top$ and the bias $b = 1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Sketch the decision boundary and the normal vector $w$.
+        \item Classify the points $(1, 1)$, $(-1, 0)$ and $(0, 2)$, and compute their distances to the decision boundary. Which point is classified with the largest margin?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:hyperplane-form}
+    Find an equation $w^\top x = c$ of the plane through the points $(1, 0, 0)$, $(0, 2, 0)$ and $(0, 0, 3)$, a normal vector of this plane, and the distance from the origin to the plane.
+\end{problem}
+
+\section{Inner Products of Functions}
+
+\begin{problem}[$\star$]\label{pr:func-ip}
+    Consider $C[0, 1]$ with the inner product $\ip{f}{g} = \int_0^1 f(x) g(x) \, dx$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\ip{1}{x}$, $\norm{1}$ and $\norm{x}$, and the angle between the functions $1$ and $x$.
+        \item Apply the Gram--Schmidt process (without normalizing) to $1, x$.
+        \item Find the polynomial $p$ of degree at most $1$ that minimizes $\int_0^1 (x^2 - p(x))^2 \, dx$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:fourier}
+    Show that, on $C[-\pi, \pi]$, the functions $\sin(mx)$ and $\sin(nx)$ are orthogonal for positive integers $m \neq n$, that $\sin(mx)$ and $\cos(nx)$ are orthogonal for all $m, n$, and that $\norm{\sin(nx)}^2 = \pi$. (Hint: $\sin a \sin b = \frac{1}{2}(\cos(a - b) - \cos(a + b))$.)
+\end{problem}
+
+\section{Orthogonal Projections}
+
+\begin{problem}\label{pr:proj-line}
+    Project $x = (2, 1, 3)^\top$ onto the line spanned by $b = (1, 1, 1)^\top$. Write down the projection matrix, and check that $x - \pi(x)$ is orthogonal to $b$.
+\end{problem}
+
+\begin{problem}\label{pr:proj-plane}
+    Let $U = \Span\{(1, 0, 1)^\top, (1, 1, 0)^\top\}$ and $x = (1, 2, 3)^\top$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\pi_U(x)$ with the normal equations, and the distance from $x$ to $U$.
+        \item Find a vector $n$ with $U^\perp = \Span\{n\}$, and compute $\pi_U(x)$ a second way, as $x - \pi_{\Span\{n\}}(x)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:centering}
+    Let $\mathbf{1} = (1, \ldots, 1)^\top \in \mathbb{R}^n$, and let $C = I_n - \frac{1}{n}\mathbf{1}\mathbf{1}^\top$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $C$ is symmetric and that $C^2 = C$, and that $C$ is the matrix of the orthogonal projection onto $\Span\{\mathbf{1}\}^\perp$.
+        \item Show that $Cx$ is obtained from $x$ by subtracting the mean of its entries from every entry, and compute $Cx$ for $x = (1, 2, 3, 6)^\top$. (This is the ``centering'' of data used before PCA.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:distances}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the distance from the point $(2, -1, 1)$ to the plane $x - 2y + 2z = 3$, and the closest point of the plane.
+        \item Find the distance between the parallel planes $x + 2y + 2z = 1$ and $x + 2y + 2z = 10$.
+        \item Find the distance from the point $(1, 2, 3)$ to the line through the origin with direction $(1, 1, 1)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:least-squares}
+    Find the least squares line $y = w_0 + w_1 x$ for the data points $(1, 1)$, $(2, 2)$, $(3, 2)$ and $(4, 3)$. Compute the residuals and the sum of squared errors, and check that the residual vector is orthogonal to the columns of the design matrix.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:ls-special}
+    Let $(x_1, y_1), \ldots, (x_N, y_N)$ be data points.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the constant $c$ that minimizes $\sum_i (y_i - c)^2$ is the mean $\bar{y} = \frac{1}{N}\sum_i y_i$. Interpret this as a projection onto $\Span\{\mathbf{1}\}$.
+        \item Show that the line $y = wx$ through the origin that fits the data best (in the least squares sense) has the slope $w = \frac{\sum_i x_i y_i}{\sum_i x_i^2}$.
+    \end{enumerate}
+\end{problem}
+
+\section{Rotations}
+
+\begin{problem}\label{pr:rot-noncomm}
+    With the rotations $R_1$ and $R_3$ of the lecture, compute
+    \[R_3\big(\tfrac{\pi}{2}\big) R_1\big(\tfrac{\pi}{2}\big) e_2 \qquad \text{and} \qquad R_1\big(\tfrac{\pi}{2}\big) R_3\big(\tfrac{\pi}{2}\big) e_2,\]
+    and explain the result geometrically.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:rot-axis}
+    Let $C = \begin{pmatrix} 0 & 0 & 1 \\ 1 & 0 & 0 \\ 0 & 1 & 0 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $C$ is a rotation, and that $C^3 = I_3$.
+        \item Find the axis of $C$, i.e., a nonzero vector $v$ with $Cv = v$.
+        \item A rotation of $\mathbb{R}^3$ by the angle $\theta$ about some axis has trace $1 + 2\cos\theta$. Use this to find the angle of $C$, and compare with part (a).
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:givens}
+    Find $\cos\theta$ and $\sin\theta$ such that the Givens rotation $\begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}$ maps $(3, 4)^\top$ to a vector of the form $(r, 0)^\top$ with $r > 0$. What is $r$?
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:reflections}
+    The reflection of $\mathbb{R}^2$ in the line through the origin that makes the angle $\alpha$ with the $x$-axis is $F_\alpha = \begin{pmatrix} \cos 2\alpha & \sin 2\alpha \\ \sin 2\alpha & -\cos 2\alpha \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Check that $F_\alpha$ is orthogonal with determinant $-1$, and that it fixes the vector $(\cos\alpha, \sin\alpha)^\top$.
+        \item Show that $F_\alpha F_\beta = R_{2(\alpha - \beta)}$: the composition of two reflections is a rotation by twice the angle between the lines.
+    \end{enumerate}
+\end{problem}
+
+\section{The Spectral Theorem}
+
+\begin{problem}\label{pr:spectral-2}
+    Find the spectral decompositions $A = Q\Lambda Q^\top = \sum_i \lambda_i q_i q_i^\top$ of
+    \[A_1 = \begin{pmatrix} 3 & 1 \\ 1 & 3 \end{pmatrix} \qquad \text{and} \qquad A_2 = \begin{pmatrix} 1 & 2 \\ 2 & -2 \end{pmatrix}.\]
+    Which of them is positive definite?
+\end{problem}
+
+\begin{problem}\label{pr:spectral-3}
+    Find an orthonormal basis of eigenvectors of $A = \begin{pmatrix} 3 & 1 & 1 \\ 1 & 3 & 1 \\ 1 & 1 & 3 \end{pmatrix}$. (Hint: compare with the example in the lecture.)
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:rayleigh}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the largest and the smallest value of $xy$ on the circle $x^2 + y^2 = 8$. (Hint: $xy = v^\top A v$ for $v = (x, y)^\top$ and a symmetric matrix $A$.)
+        \item Find the largest and the smallest value of $x^2 + 4xy + y^2$ on the unit circle, and the points where they are attained.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:quadric}
+    Describe the curves
+    \[5x^2 + 4xy + 2y^2 = 1 \qquad \text{and} \qquad x^2 + 4xy + y^2 = 1\]
+    in the plane. Find the directions of their axes, and, for the ellipse, the lengths of its semi-axes. (Hint: write the left-hand side as $v^\top A v$ and diagonalize $A$.)
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:sym-idempotent}
+    Let $P$ be a symmetric $n \times n$ matrix with $P^2 = P$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the eigenvalues of $P$ are $0$ and $1$, and that $P = Q \Lambda Q^\top$ where $\Lambda$ is a diagonal matrix of $0$s and $1$s.
+        \item Show that $P$ is the orthogonal projection onto the eigenspace $E_1$, and that $\tr(P) = \rank(P)$.
+        \item Check part (b) for $P = \frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & 1 \end{pmatrix}$.
+    \end{enumerate}
+\end{problem}
+
+\section{The Singular Value Decomposition}
+
+\begin{problem}\label{pr:svd-diag}
+    Find an SVD of $A = \begin{pmatrix} 2 & 0 \\ 0 & -3 \end{pmatrix}$. (Careful: singular values are nonnegative, and they are ordered by size.)
+\end{problem}
+
+\begin{problem}\label{pr:svd-rank1}
+    Let $A = \begin{pmatrix} 1 & 1 \\ 1 & 1 \\ 0 & 0 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the singular values of $A$, and write $A = \sigma_1 u_1 v_1^\top$.
+        \item Use the SVD to find bases of the four fundamental subspaces of $A$.
+        \item Compute the pseudo-inverse $A^+$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:svd-2x3}
+    Let $A = \begin{pmatrix} 3 & 2 & 2 \\ 2 & 3 & -2 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $AA^\top$ and its eigenvalues and eigenvectors, and use them to find the singular values and the left singular vectors of $A$. (This is easier than starting from the $3 \times 3$ matrix $A^\top A$.)
+        \item Find the right singular vectors $v_i = \frac{1}{\sigma_i} A^\top u_i$, and complete them to an orthonormal basis of $\mathbb{R}^3$.
+        \item Find the best rank-$1$ approximation $A_1$ of $A$, and compute $\norm{A - A_1}_F$, $\norm{A}_2$ and $\norm{A}_F$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:svd-props}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $A$ and $A^\top$ have the same singular values.
+        \item Show that if $A$ is invertible, then the singular values of $A^{-1}$ are $\frac{1}{\sigma_i}$, and $\norm{A^{-1}}_2 = \frac{1}{\sigma_n}$.
+        \item Show that $|\det(A)| = \sigma_1 \sigma_2 \cdots \sigma_n$ for every $n \times n$ matrix $A$.
+        \item Show that for a matrix of rank $1$, $\norm{A}_2 = \norm{A}_F$, and check this for $A = \begin{pmatrix} 1 & 2 \\ 0 & 0 \end{pmatrix}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:pca}
+    \begin{enumerate}[label=(\alph*)]
+        \item Carry out PCA for the four data points $(2, 0)$, $(-2, 0)$, $(0, 1)$, $(0, -1)$: find the covariance matrix, the principal components, the proportion of the variance explained by the first principal component, and the average reconstruction error when the data is projected onto the first principal component.
+        \item Carry out PCA for the three data points $(1, 2)$, $(3, 4)$, $(5, 6)$ (center them first!). What is special about this data?
+        \item What would go wrong in part (b) if you forgot to center the data? (Hint: in which direction does the first right singular vector of the uncentered data matrix point?)
+    \end{enumerate}
+\end{problem}
+
+\section*{Answers and Hints}
+\addcontentsline{toc}{section}{Answers and Hints}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:norms-compute}.] (a) $9$, $5$, $4$. (b) $7$, $5$, $337^{1/4} \approx 4.28$, $4$: the $p$-norms decrease towards the $\ell_\infty$ norm. (c) $\max_i |x_i|^p \leq \sum_i |x_i|^p \leq n \max_i |x_i|^p$; take $p$-th roots, and use $n^{1/p} \to 1$.
+    \item[\ref{pr:which-norms}.] (a) A norm; its unit ball is the diamond with vertices $(\pm 1, 0)$ and $(0, \pm\frac{1}{2})$. (b) Not absolutely homogeneous: $f(2e_2) = 4 \neq 2f(e_2)$. (c) Not positive definite: $f(1, 1) = 0$. (d) A norm (a sum of two functions that satisfy the triangle inequality, and which is $0$ only for $x = 0$). (e) The triangle inequality fails: $f(e_1 + e_2) = 4 > 2 = f(e_1) + f(e_2)$.
+    \item[\ref{pr:which-ip}.] (a) Yes, $A = \diag(1, 2)$. (b) No: $\ip{e_2}{e_2} = -1$. (c) Yes, $A = \begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix}$ ($2 > 0$, $\det = 1 > 0$). (d) No: $\ip{e_1}{e_1} = 0$. (e) No: not symmetric. (f) No: $\ip{x}{x} = 0$ for $x = (1, -2)^\top$, since $\det = 0$.
+    \item[\ref{pr:ip-gram}.] (a) $\ip{e_1}{e_2} = 1$, $\norm{e_1} = \sqrt{2}$, $\norm{e_2} = 1$, angle $45^\circ$. (b) $(1, -2)^\top$. (c) $\frac{1}{\sqrt{2}}(1, 0)^\top$ and $\big(-\frac{1}{\sqrt{2}}, \sqrt{2}\big)^\top$.
+    \item[\ref{pr:spd-param}.] (a) $|t| < 2$; $t > 1$. (b) The upper left determinants are $2$, $3$, $4$.
+    \item[\ref{pr:frobenius-ip}.] (a) $\tr(SK) = \tr\big((SK)^\top\big) = \tr(K^\top S^\top) = -\tr(KS) = -\tr(SK)$, so $\tr(S^\top K) = \tr(SK) = 0$. (b) Pythagoras for the Frobenius inner product.
+    \item[\ref{pr:cs-apps}.] (a) $2x + 3y + 6z \leq \norm{(2, 3, 6)} \cdot 1 = 7$, attained at $\frac{1}{7}(2, 3, 6)$. (b) Apply Cauchy--Schwarz to $(\sqrt{a}, \sqrt{b}, \sqrt{c})$ and $(\frac{1}{\sqrt{a}}, \frac{1}{\sqrt{b}}, \frac{1}{\sqrt{c}})$; equality for $a = b = c$. (c) $\norm{(1, 2, 2)}^2 = 9$.
+    \item[\ref{pr:polarization}.] (a) $\frac{1}{4}(49 - 25) = 6$. (b) By the parallelogram law, $49 + 25 = 2 \cdot 25 + 2\norm{y}^2$, so $\norm{y} = 2\sqrt{3}$.
+    \item[\ref{pr:dist}.] (a) The difference is $(-3, 2, 6)$: $11$, $7$, $6$, and $\sqrt{9 + 16 + 36} = \sqrt{61}$. (b) Apply the triangle inequality to $x = (x - y) + y$ and to $y = (y - x) + x$.
+    \item[\ref{pr:angles}.] (a) $90^\circ$. (b) $\cos\omega = \frac{4}{9}$, $\omega \approx 63.6^\circ$. (c) $\cos\omega = \frac{1}{\sqrt{3}}$, $\omega \approx 54.7^\circ$. (d) $(1, 1, 0)$ and $(1, 0, 1)$: $60^\circ$.
+    \item[\ref{pr:orth-to-two}.] $\Span\{(-1, 1, 1)^\top\}$.
+    \item[\ref{pr:householder-q}.] (a) The columns are orthonormal, and $Q^2 = Q^\top Q = I_3$. (b) $Qx = \frac{1}{3}(5, 1, 1)^\top$, with length $\sqrt{3} = \norm{x}$. (c) $Q$ is the reflection in the plane orthogonal to $u$, i.e., the plane $x - y - z = 0$; $\det(Q) = -1$.
+    \item[\ref{pr:cosine-docs}.] (a) $1$ and $\frac{1}{\sqrt{60}} \approx 0.13$. (b) $\sqrt{24} \approx 4.90$ and $\sqrt{14} \approx 3.74$. (c) Cosine similarity says $d_2$, the Euclidean distance says $d_3$. Since $d_2 = 3d_1$ is the same document repeated three times, the cosine similarity gives the more sensible answer.
+    \item[\ref{pr:gs-haar}.] (a) $\frac{1}{2}(1, 1, 1, 1)$, $\frac{1}{2}(1, 1, -1, -1)$, $\frac{1}{\sqrt{2}}(1, -1, 0, 0)$. (b) $\frac{1}{\sqrt{2}}(0, 0, 1, -1)$.
+    \item[\ref{pr:onb-coords}.] (b) $\ip{v}{b_1} = 3$, $\ip{v}{b_2} = 0$, $\ip{v}{b_3} = 3$, so $v = 3b_1 + 3b_3$; and $3^2 + 0^2 + 3^2 = 18 = \norm{v}^2$.
+    \item[\ref{pr:qr}.] $Q$ has the columns $\frac{1}{\sqrt{2}}(1, 1, 0)^\top$ and $\frac{1}{\sqrt{6}}(1, -1, 2)^\top$, and $R = \begin{pmatrix} \sqrt{2} & \frac{1}{\sqrt{2}} \\ 0 & \frac{\sqrt{6}}{2} \end{pmatrix}$.
+    \item[\ref{pr:complement}.] $U^\perp$ is the null space of the matrix with rows $(1, 2, 0, 1)$ and $(0, 1, 1, 0)$; a basis is $(2, -1, 1, 0)^\top$, $(-1, 0, 0, 1)^\top$.
+    \item[\ref{pr:four-subspaces}.] (a) $\col(A)$ is spanned by $(1, 2, 3)^\top$; $\Null(A^\top)$ by $(-2, 1, 0)^\top$ and $(-3, 0, 1)^\top$; $\row(A)$ by $(1, 2)^\top$; and $\Null(A)$ by $(-2, 1)^\top$. (b) Exactly when $b$ is orthogonal to $\Null(A^\top)$, i.e., when $b$ is a multiple of $(1, 2, 3)^\top$.
+    \item[\ref{pr:classifier}.] (b) $w^\top x + b$ is $2$, $-1$, $-1$, so the classes are $+1$, $-1$, $-1$, and the distances are $\frac{2}{\sqrt{5}}$, $\frac{1}{\sqrt{5}}$, $\frac{1}{\sqrt{5}}$. The point $(1, 1)$ has the largest margin.
+    \item[\ref{pr:hyperplane-form}.] $\frac{x}{1} + \frac{y}{2} + \frac{z}{3} = 1$, i.e., $6x + 3y + 2z = 6$, with normal vector $(6, 3, 2)$ of length $7$; the distance is $\frac{6}{7}$.
+    \item[\ref{pr:func-ip}.] (a) $\ip{1}{x} = \frac{1}{2}$, $\norm{1} = 1$, $\norm{x} = \frac{1}{\sqrt{3}}$, so $\cos\omega = \frac{\sqrt{3}}{2}$ and $\omega = 30^\circ$. (b) $1$ and $x - \frac{1}{2}$. (c) $p(x) = x - \frac{1}{6}$.
+    \item[\ref{pr:fourier}.] The integrals of $\cos(kx)$ over $[-\pi, \pi]$ vanish for $k \neq 0$; $\sin(mx)\cos(nx)$ is an odd function.
+    \item[\ref{pr:proj-line}.] $\pi(x) = (2, 2, 2)^\top$, $P = \frac{1}{3}\mathbf{1}\mathbf{1}^\top$ (all entries $\frac{1}{3}$), and $x - \pi(x) = (0, -1, 1)^\top$.
+    \item[\ref{pr:proj-plane}.] (a) $\lambda = \big(\frac{5}{3}, \frac{2}{3}\big)$, $\pi_U(x) = \frac{1}{3}(7, 2, 5)^\top$, and the distance is $\frac{4}{\sqrt{3}}$. (b) $n = (-1, 1, 1)^\top$, and $x - \frac{4}{3} n = \frac{1}{3}(7, 2, 5)^\top$.
+    \item[\ref{pr:centering}.] (a) $C = I_n - P$, where $P = \frac{1}{n}\mathbf{1}\mathbf{1}^\top$ is the projection onto $\Span\{\mathbf{1}\}$. (b) $\frac{1}{n}\mathbf{1}\mathbf{1}^\top x = \bar{x}\mathbf{1}$; $Cx = (-2, -1, 0, 3)^\top$.
+    \item[\ref{pr:distances}.] (a) $1$, closest point $\frac{1}{3}(5, -1, 1)$. (b) $\frac{|10 - 1|}{3} = 3$. (c) The projection is $(2, 2, 2)$, so the distance is $\norm{(-1, 0, 1)} = \sqrt{2}$.
+    \item[\ref{pr:least-squares}.] $y = 0.5 + 0.6x$; residuals $(-0.1, 0.3, -0.3, 0.1)$; sum of squared errors $0.2$.
+    \item[\ref{pr:ls-special}.] (a) The normal equation is $N c = \sum_i y_i$; the fitted vector $\bar{y}\mathbf{1}$ is the projection of $y$ onto $\Span\{\mathbf{1}\}$. (b) The normal equation is $(\sum_i x_i^2) w = \sum_i x_i y_i$.
+    \item[\ref{pr:rot-noncomm}.] $R_3(\frac{\pi}{2})R_1(\frac{\pi}{2}) e_2 = e_3$ and $R_1(\frac{\pi}{2})R_3(\frac{\pi}{2}) e_2 = -e_1$.
+    \item[\ref{pr:rot-axis}.] (a) The columns are orthonormal and $\det(C) = 1$. (b) $v = (1, 1, 1)^\top$. (c) $\tr(C) = 0 = 1 + 2\cos\theta$, so $\theta = 120^\circ$, and three rotations by $120^\circ$ give the identity.
+    \item[\ref{pr:givens}.] $\cos\theta = \frac{3}{5}$, $\sin\theta = -\frac{4}{5}$, and $r = 5$.
+    \item[\ref{pr:reflections}.] (b) Multiply out and use the addition formulas for $\cos$ and $\sin$.
+    \item[\ref{pr:spectral-2}.] $A_1$: $\lambda = 4, 2$ with $q = \frac{1}{\sqrt{2}}(1, 1)$, $\frac{1}{\sqrt{2}}(1, -1)$; positive definite. $A_2$: $\lambda = 2, -3$ with $q = \frac{1}{\sqrt{5}}(2, 1)$, $\frac{1}{\sqrt{5}}(1, -2)$; not positive definite.
+    \item[\ref{pr:spectral-3}.] $A = J + 3I_3$ has the eigenvalues $5$, with $q_1 = \frac{1}{\sqrt{3}}(1, 1, 1)$, and $2$ (twice), with $q_2 = \frac{1}{\sqrt{2}}(1, -1, 0)$ and $q_3 = \frac{1}{\sqrt{6}}(1, 1, -2)$.
+    \item[\ref{pr:rayleigh}.] (a) $A = \begin{pmatrix} 0 & \frac{1}{2} \\ \frac{1}{2} & 0 \end{pmatrix}$ has eigenvalues $\pm\frac{1}{2}$, so the maximum is $8 \cdot \frac{1}{2} = 4$ (at $\pm(2, 2)$) and the minimum is $-4$ (at $\pm(2, -2)$). (b) Maximum $3$ at $\pm\frac{1}{\sqrt{2}}(1, 1)$, minimum $-1$ at $\pm\frac{1}{\sqrt{2}}(1, -1)$.
+    \item[\ref{pr:quadric}.] The first matrix $\begin{pmatrix} 5 & 2 \\ 2 & 2 \end{pmatrix}$ has eigenvalues $6$ and $1$, with eigenvectors $(2, 1)$ and $(1, -2)$: an ellipse with semi-axes $\frac{1}{\sqrt{6}}$ along $(2, 1)$ and $1$ along $(1, -2)$. The second matrix has eigenvalues $3$ and $-1$: in the rotated coordinates, the curve is $3y_1^2 - y_2^2 = 1$, a hyperbola with axes along $(1, 1)$ and $(1, -1)$.
+    \item[\ref{pr:sym-idempotent}.] (b) $P = \sum_{\lambda_i = 1} q_i q_i^\top$, and both $\tr(P)$ and $\rank(P)$ equal the number of eigenvalues $1$. (c) $\tr(P) = 1 = \rank(P)$; $P$ projects onto the line $y = x$.
+    \item[\ref{pr:svd-diag}.] $\sigma_1 = 3$, $\sigma_2 = 2$; for example, $U = \begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix}$, $\Sigma = \diag(3, 2)$, $V = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$.
+    \item[\ref{pr:svd-rank1}.] (a) $\sigma_1 = 2$ (and no other nonzero singular value), $u_1 = \frac{1}{\sqrt{2}}(1, 1, 0)^\top$, $v_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$. (b) $\col(A)$ is spanned by $u_1$; $\Null(A^\top)$ by $(1, -1, 0)^\top$ and $e_3$; $\row(A)$ by $v_1$; and $\Null(A)$ by $(1, -1)^\top$. (c) $A^+ = \frac{1}{2} v_1 u_1^\top = \frac{1}{4}\begin{pmatrix} 1 & 1 & 0 \\ 1 & 1 & 0 \end{pmatrix}$.
+    \item[\ref{pr:svd-2x3}.] (a) $AA^\top = \begin{pmatrix} 17 & 8 \\ 8 & 17 \end{pmatrix}$ has eigenvalues $25$ and $9$, so $\sigma_1 = 5$, $\sigma_2 = 3$, $u_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$, $u_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. (b) $v_1 = \frac{1}{\sqrt{2}}(1, 1, 0)^\top$, $v_2 = \frac{1}{3\sqrt{2}}(1, -1, 4)^\top$, $v_3 = \frac{1}{3}(2, -2, -1)^\top$. (c) $A_1 = \begin{pmatrix} 2.5 & 2.5 & 0 \\ 2.5 & 2.5 & 0 \end{pmatrix}$, $\norm{A - A_1}_F = 3$, $\norm{A}_2 = 5$, $\norm{A}_F = \sqrt{34}$.
+    \item[\ref{pr:svd-props}.] (a) $A^\top = V\Sigma^\top U^\top$. (b) $A^{-1} = V \Sigma^{-1} U^\top$. (c) $|\det(U)| = |\det(V)| = 1$. (d) $A = \sigma_1 u_1 v_1^\top$ has only one singular value; for the example, both norms are $\sqrt{5}$.
+    \item[\ref{pr:pca}.] (a) $S = \diag(2, 0.5)$; the principal components are $e_1$ and $e_2$; $\frac{2}{2.5} = 80\%$; the average reconstruction error is $0.5 = \lambda_2$. (b) The centered points are $(-2, -2)$, $(0, 0)$, $(2, 2)$, with eigenvalues $\frac{16}{3}$ and $0$: the data lies exactly on a line, and the first principal component explains $100\%$ of the variance. (c) The first right singular vector of the uncentered data points roughly towards the mean $(3, 4)$, not in the direction in which the data varies.
+\end{description}
+
+\end{document}

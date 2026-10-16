@@ -2523,6 +2523,264 @@ Combining the rank--nullity theorem with Theorem~\ref{thm:invertible}, we obtain
     Let $T: \mathbb{R}^2 \to \mathbb{R}^2$ be defined by $T(x, y) = (x - y, 2x + 3y)$. Find the kernel and image of $T$, and check that your answer agrees with the rank--nullity theorem.
 \end{exercise}
 
+\section{Eigenvalues and Eigenvectors}\label{sec:eigen}
+
+A linear transformation usually changes the direction of a vector. The vectors whose direction does not change, and which are only stretched or flipped, are called eigenvectors. They reveal the structure of a linear transformation: in a basis of eigenvectors, the transformation simply scales each coordinate. Eigenvalues and eigenvectors appear throughout machine learning, for example in principal component analysis (Lecture~2), in the PageRank algorithm, in the analysis of Markov chains, and in spectral clustering.
+
+Throughout this section, $A$ is a real $n \times n$ matrix.
+
+\subsection{Eigenvalues, eigenvectors and eigenspaces}
+
+\begin{definition}[Eigenvalue and eigenvector]
+    A number $\lambda \in \mathbb{R}$ is an eigenvalue of $A$ if there is a nonzero vector $v \in \mathbb{R}^n$ with
+    \[Av = \lambda v.\]
+    Such a vector $v$ is called an eigenvector of $A$ for the eigenvalue $\lambda$. Eigenvalues and eigenvectors of a linear transformation $T: V \to V$ are defined in the same way, by $T(v) = \lambda v$ with $v \neq 0$.
+\end{definition}
+
+The condition $v \neq 0$ is essential, since $A0 = \lambda 0$ for every $\lambda$. On the other hand, $\lambda = 0$ is allowed: the eigenvectors for the eigenvalue $0$ are the nonzero vectors of $\Null(A)$.
+
+\begin{example}\label{ex:eigen-first}
+    Let $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$. Then
+    \[A \begin{pmatrix} 1 \\ 1 \end{pmatrix} = \begin{pmatrix} 3 \\ 3 \end{pmatrix} = 3 \begin{pmatrix} 1 \\ 1 \end{pmatrix} \qquad \text{and} \qquad A \begin{pmatrix} 1 \\ -1 \end{pmatrix} = \begin{pmatrix} 1 \\ -1 \end{pmatrix} = 1 \cdot \begin{pmatrix} 1 \\ -1 \end{pmatrix},\]
+    so $(1, 1)^\top$ is an eigenvector for the eigenvalue $3$, and $(1, -1)^\top$ is an eigenvector for the eigenvalue $1$. On the other hand, $A e_1 = (2, 1)^\top$ is not a multiple of $e_1$, so $e_1$ is not an eigenvector. Figure~\ref{fig:eigen} shows what $T_A$ does to the unit circle: it stretches the direction of $(1, 1)^\top$ by the factor $3$, and leaves the direction of $(1, -1)^\top$ unchanged.
+\end{example}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[x=1cm, y=1cm, >=Stealth]
+        \draw[->, gray] (-2.6,0) -- (2.8,0) node[right] {$x$};
+        \draw[->, gray] (0,-2.6) -- (0,2.8) node[above] {$y$};
+        \draw[gray!60, thin] (-2.4,-2.4) -- (2.5,2.5);
+        \draw[gray!60, thin] (-1.5,1.5) -- (1.5,-1.5);
+        \fill[blue!8, rotate=45] (0,0) ellipse [x radius=3, y radius=1];
+        \draw[blue!70!black, thick, rotate=45] (0,0) ellipse [x radius=3, y radius=1];
+        \draw[gray!70!black, dashed] (0,0) circle (1);
+        \draw[->, very thick, red!40] (0,0) -- (2.121,2.121) node[above left, red!70!black] {$Av_1 = 3v_1$};
+        \draw[->, very thick, red!80!black] (0,0) -- (0.707,0.707) node[left] {$v_1$};
+        \draw[->, very thick, green!50!black] (0,0) -- (0.707,-0.707) node[below right] {$v_2 = Av_2$};
+        \draw[->, thick, gray!40!black] (0,0) -- (1,0);
+        \node[gray!40!black, below] at (1.1,0) {$e_1$};
+        \draw[->, thick, gray!40!black, dashed] (0,0) -- (2,1) node[right] {$Ae_1$};
+    \end{tikzpicture}
+    \caption[Eigenvectors]{The matrix $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$ maps the unit circle (dashed) to an ellipse (blue). The eigenvector $v_1 = \frac{1}{\sqrt{2}}(1, 1)$ is stretched by its eigenvalue $3$, and the eigenvector $v_2 = \frac{1}{\sqrt{2}}(1, -1)$ is left unchanged, since its eigenvalue is $1$. The vector $e_1$ is not an eigenvector: its image $Ae_1 = (2, 1)$ points in a different direction.}
+    \label{fig:eigen}
+\end{figure}
+
+\begin{definition}[Eigenspace]
+    For $\lambda \in \mathbb{R}$, the set
+    \[E_\lambda = \{v \in \mathbb{R}^n : Av = \lambda v\} = \Null(A - \lambda I_n)\]
+    is called the eigenspace of $A$ for $\lambda$. It is a subspace of $\mathbb{R}^n$ (Theorem~\ref{thm:kerim}), and $\lambda$ is an eigenvalue if and only if $E_\lambda \neq \{0\}$; in that case, $E_\lambda$ consists of the eigenvectors for $\lambda$ together with $0$.
+\end{definition}
+
+\begin{proposition}\label{prop:eigen-det}
+    A number $\lambda$ is an eigenvalue of $A$ if and only if $A - \lambda I_n$ is not invertible, if and only if $\det(A - \lambda I_n) = 0$. In particular, $0$ is an eigenvalue of $A$ if and only if $A$ is not invertible.
+\end{proposition}
+
+\begin{proof}
+    $Av = \lambda v$ means $(A - \lambda I_n)v = 0$. So $\lambda$ is an eigenvalue if and only if $\Null(A - \lambda I_n) \neq \{0\}$, which by Corollary~\ref{cor:invertible-rank} means that $A - \lambda I_n$ is not invertible, or equivalently, that $\det(A - \lambda I_n) = 0$.
+\end{proof}
+
+\subsection{The characteristic polynomial}
+
+\begin{definition}[Characteristic polynomial]
+    The characteristic polynomial of $A$ is
+    \[p_A(\lambda) = \det(A - \lambda I_n).\]
+\end{definition}
+
+Expanding the determinant shows that $p_A(\lambda)$ is a polynomial of degree $n$ in $\lambda$, with leading term $(-\lambda)^n$, which comes from the product $(A_{11} - \lambda) \cdots (A_{nn} - \lambda)$ of the diagonal entries. By Proposition~\ref{prop:eigen-det}, the eigenvalues of $A$ are exactly the real roots of $p_A$. So, to find the eigenvalues and eigenvectors of $A$:
+\begin{enumerate}
+    \item compute $p_A(\lambda)$ and find its real roots $\lambda$;
+    \item for each root $\lambda$, find the eigenspace $E_\lambda = \Null(A - \lambda I_n)$ by row reduction.
+\end{enumerate}
+
+\begin{proposition}\label{prop:char-poly-2x2}
+    For a $2 \times 2$ matrix $A$, $p_A(\lambda) = \lambda^2 - \tr(A)\, \lambda + \det(A)$.
+\end{proposition}
+
+\begin{proof}
+    For $A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$, we get $p_A(\lambda) = (a - \lambda)(d - \lambda) - bc = \lambda^2 - (a + d)\lambda + (ad - bc)$.
+\end{proof}
+
+\begin{example}\label{ex:eigen-2x2}
+    For $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, we get $p_A(\lambda) = \lambda^2 - 4\lambda + 3 = (\lambda - 1)(\lambda - 3)$, so the eigenvalues are $1$ and $3$. The eigenspaces are
+    \[E_3 = \Null \begin{pmatrix} -1 & 1 \\ 1 & -1 \end{pmatrix} = \Span\{(1, 1)^\top\}, \qquad E_1 = \Null \begin{pmatrix} 1 & 1 \\ 1 & 1 \end{pmatrix} = \Span\{(1, -1)^\top\},\]
+    in agreement with Example~\ref{ex:eigen-first}.
+\end{example}
+
+\begin{example}\label{ex:eigen-3x3}
+    Let $J = \begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix}$. Expanding along the first row,
+    \[p_J(\lambda) = \det \begin{pmatrix} -\lambda & 1 & 1 \\ 1 & -\lambda & 1 \\ 1 & 1 & -\lambda \end{pmatrix} = -\lambda(\lambda^2 - 1) - (-\lambda - 1) + (1 + \lambda) = -\lambda^3 + 3\lambda + 2 = -(\lambda - 2)(\lambda + 1)^2.\]
+    So the eigenvalues are $2$ and $-1$. Row reduction gives
+    \[E_2 = \Null(J - 2I_3) = \Span\{(1, 1, 1)^\top\}, \qquad E_{-1} = \Null(J + I_3) = \Null \begin{pmatrix} 1 & 1 & 1 \\ 1 & 1 & 1 \\ 1 & 1 & 1 \end{pmatrix}.\]
+    The eigenspace $E_{-1}$ is the plane $x + y + z = 0$, with basis $(1, -1, 0)^\top$, $(1, 0, -1)^\top$.
+\end{example}
+
+\begin{proposition}\label{prop:eigen-triangular}
+    The eigenvalues of a triangular matrix are its diagonal entries.
+\end{proposition}
+
+\begin{proof}
+    If $A$ is triangular, so is $A - \lambda I_n$, and by Corollary~\ref{cor:det-easy}, $p_A(\lambda) = (A_{11} - \lambda) \cdots (A_{nn} - \lambda)$.
+\end{proof}
+
+\begin{example}[Eigenvectors of the transformations in Figure~\ref{fig:gallery}]\label{ex:eigen-geometric}
+    Geometric intuition often tells us the eigenvectors without any computation.
+    \begin{itemize}
+        \item The projection onto the $x$-axis, $\begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix}$, has the eigenvalue $1$ with eigenspace the $x$-axis, and the eigenvalue $0$ with eigenspace the $y$-axis.
+        \item The reflection in the line $y = x$, $\begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$, fixes this line (eigenvalue $1$) and flips the line $y = -x$ (eigenvalue $-1$).
+        \item The shear $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ has $p(\lambda) = (1 - \lambda)^2$, so its only eigenvalue is $1$, and $E_1 = \Null \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix} = \Span\{e_1\}$: only the horizontal direction is preserved.
+        \item The rotation $R_\theta$ has $p(\lambda) = \lambda^2 - 2\cos\theta\, \lambda + 1$, with discriminant $4\cos^2\theta - 4 < 0$ unless $\theta$ is a multiple of $\pi$. So a rotation by an angle other than $0$ or $\pi$ has no real eigenvalues: it does not preserve any direction.
+    \end{itemize}
+\end{example}
+
+\begin{remark}[Complex eigenvalues]
+    By the fundamental theorem of algebra (which we state without proof), every polynomial of degree $n$ factors into $n$ linear factors over $\mathbb{C}$. Hence
+    \[p_A(\lambda) = (\lambda_1 - \lambda)(\lambda_2 - \lambda) \cdots (\lambda_n - \lambda)\]
+    for some $\lambda_1, \ldots, \lambda_n \in \mathbb{C}$, which are called the complex eigenvalues of $A$, counted with multiplicity. For example, the rotation $R_\theta$ has the complex eigenvalues $\cos\theta \pm i\sin\theta$, with complex eigenvectors $(1, \mp i)^\top$. In these notes, ``eigenvalue'' means a real eigenvalue unless we say otherwise.
+\end{remark}
+
+\begin{theorem}\label{thm:trace-det-eigen}
+    Let $\lambda_1, \ldots, \lambda_n \in \mathbb{C}$ be the complex eigenvalues of $A$, counted with multiplicity. Then
+    \[\det(A) = \lambda_1 \lambda_2 \cdots \lambda_n \qquad \text{and} \qquad \tr(A) = \lambda_1 + \lambda_2 + \cdots + \lambda_n.\]
+\end{theorem}
+
+\begin{proof}
+    Setting $\lambda = 0$ in the factorization of $p_A$ gives $\det(A) = p_A(0) = \lambda_1 \cdots \lambda_n$. For the trace, we compare the coefficients of $\lambda^{n-1}$. In $(\lambda_1 - \lambda) \cdots (\lambda_n - \lambda)$, this coefficient is $(-1)^{n-1}(\lambda_1 + \cdots + \lambda_n)$. In $\det(A - \lambda I_n)$, one can check by induction on $n$, using the cofactor expansion, that only the product $(A_{11} - \lambda) \cdots (A_{nn} - \lambda)$ of the diagonal entries contributes to $\lambda^{n-1}$, since every other term contains at most $n - 2$ diagonal entries. So the coefficient is $(-1)^{n-1}(A_{11} + \cdots + A_{nn}) = (-1)^{n-1}\tr(A)$.
+\end{proof}
+
+\begin{example}
+    For the matrix of Example~\ref{ex:eigen-2x2}, $1 + 3 = 4 = \tr(A)$ and $1 \cdot 3 = 3 = \det(A)$. For the matrix $J$ of Example~\ref{ex:eigen-3x3}, $2 + (-1) + (-1) = 0 = \tr(J)$ and $2 \cdot (-1) \cdot (-1) = 2 = \det(J)$. For the rotation $R_\theta$, $(\cos\theta + i\sin\theta)(\cos\theta - i\sin\theta) = 1 = \det(R_\theta)$ and the sum is $2\cos\theta = \tr(R_\theta)$.
+\end{example}
+
+\begin{proposition}\label{prop:eigen-related}
+    Let $Av = \lambda v$ with $v \neq 0$. Then:
+    \begin{enumerate}
+        \item $A^k v = \lambda^k v$ for every $k \geq 1$;
+        \item if $A$ is invertible, then $\lambda \neq 0$ and $A^{-1} v = \frac{1}{\lambda} v$;
+        \item $(A + cI_n)v = (\lambda + c)v$ for every $c \in \mathbb{R}$.
+    \end{enumerate}
+    Moreover, $A$ and $A^\top$ have the same characteristic polynomial, and hence the same eigenvalues.
+\end{proposition}
+
+\begin{proof}
+    (1) By induction, $A^k v = A(A^{k-1} v) = A(\lambda^{k-1} v) = \lambda^{k-1} Av = \lambda^k v$. (2) $\lambda \neq 0$ by Proposition~\ref{prop:eigen-det}, and applying $A^{-1}$ to $Av = \lambda v$ gives $v = \lambda A^{-1}v$. (3) $(A + cI_n)v = Av + cv = (\lambda + c)v$. Finally, $\det(A^\top - \lambda I_n) = \det\big((A - \lambda I_n)^\top\big) = \det(A - \lambda I_n)$.
+\end{proof}
+
+Note that $A$ and $A^\top$ usually have different eigenvectors; for the shear, $E_1 = \Span\{e_1\}$ for $A$, but $E_1 = \Span\{e_2\}$ for $A^\top$.
+
+\subsection{Diagonalization}
+
+\begin{theorem}\label{thm:eigen-independent}
+    Eigenvectors $v_1, \ldots, v_k$ of $A$ for distinct eigenvalues $\lambda_1, \ldots, \lambda_k$ are linearly independent.
+\end{theorem}
+
+\begin{proof}
+    Suppose not, and let $m$ be the smallest index such that $v_1, \ldots, v_m$ are linearly dependent. Then $m \geq 2$ (since $v_1 \neq 0$), $v_1, \ldots, v_{m-1}$ are linearly independent, and $v_m = c_1 v_1 + \cdots + c_{m-1} v_{m-1}$ for some scalars $c_i$. Applying $A - \lambda_m I_n$ to both sides gives
+    \[0 = c_1 (\lambda_1 - \lambda_m) v_1 + \cdots + c_{m-1} (\lambda_{m-1} - \lambda_m) v_{m-1}.\]
+    By independence, $c_i (\lambda_i - \lambda_m) = 0$, and since the eigenvalues are distinct, $c_i = 0$ for all $i$. But then $v_m = 0$, a contradiction.
+\end{proof}
+
+\begin{definition}[Diagonalizable matrix]
+    A matrix $A$ is called diagonalizable if there are an invertible matrix $P$ and a diagonal matrix $D$ with
+    \[A = PDP^{-1}, \qquad \text{or equivalently} \qquad P^{-1}AP = D.\]
+    More generally, two matrices $A$ and $B$ are called similar if $B = P^{-1}AP$ for some invertible matrix $P$.
+\end{definition}
+
+Similar matrices have the same characteristic polynomial, since by the product rule for determinants,
+\[\det(P^{-1}AP - \lambda I_n) = \det\big(P^{-1}(A - \lambda I_n)P\big) = \det(P^{-1})\det(A - \lambda I_n)\det(P) = \det(A - \lambda I_n).\]
+Hence they also have the same eigenvalues, trace and determinant (compare Subsection~\ref{subsec:trace-det}).
+
+\begin{theorem}[Diagonalization]\label{thm:diagonalization}
+    An $n \times n$ matrix $A$ is diagonalizable if and only if it has $n$ linearly independent eigenvectors $p_1, \ldots, p_n$. In this case, $A = PDP^{-1}$, where $P$ is the matrix with columns $p_1, \ldots, p_n$, and $D = \diag(\lambda_1, \ldots, \lambda_n)$ contains the corresponding eigenvalues, in the same order.
+\end{theorem}
+
+\begin{proof}
+    Let $P$ have columns $p_1, \ldots, p_n$, and let $D = \diag(\lambda_1, \ldots, \lambda_n)$. By the column-by-column description of matrix multiplication, the $i$-th column of $AP$ is $Ap_i$, and the $i$-th column of $PD$ is $\lambda_i p_i$. So $AP = PD$ if and only if $Ap_i = \lambda_i p_i$ for all $i$. Moreover, $P$ is invertible if and only if $\Null(P) = \{0\}$ (Corollary~\ref{cor:invertible-rank}), i.e., if and only if its columns are linearly independent. Hence: if $p_1, \ldots, p_n$ are linearly independent eigenvectors, then $AP = PD$ with $P$ invertible, so $A = PDP^{-1}$. Conversely, if $A = PDP^{-1}$, then $AP = PD$, so the columns of $P$ are eigenvectors (they are nonzero, since $P$ is invertible), and they are linearly independent.
+\end{proof}
+
+\begin{corollary}\label{cor:distinct-eigenvalues}
+    If an $n \times n$ matrix has $n$ distinct real eigenvalues, then it is diagonalizable.
+\end{corollary}
+
+\begin{proof}
+    Choose an eigenvector for each eigenvalue. By Theorem~\ref{thm:eigen-independent}, these $n$ eigenvectors are linearly independent.
+\end{proof}
+
+\begin{remark}
+    If $A = PDP^{-1}$, then the columns $p_1, \ldots, p_n$ of $P$ form a basis $\mathcal{B}$ of $\mathbb{R}^n$, and $P^{-1}v = [v]_{\mathcal{B}}$ is the coordinate vector of $v$ with respect to this basis. So $P^{-1}AP = D$ says that the matrix of $T_A$ with respect to the basis of eigenvectors is diagonal (Subsection~\ref{subsec:inverse}): in these coordinates, $T_A$ simply multiplies the $i$-th coordinate by $\lambda_i$.
+\end{remark}
+
+\begin{example}
+    For the matrix $A$ of Example~\ref{ex:eigen-2x2},
+    \[A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix} = \underbrace{\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}}_{P} \underbrace{\begin{pmatrix} 3 & 0 \\ 0 & 1 \end{pmatrix}}_{D} \underbrace{\frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}}_{P^{-1}}.\]
+\end{example}
+
+Not every matrix is diagonalizable. To see what can go wrong, we count eigenvectors.
+
+\begin{definition}[Multiplicities]
+    Let $\lambda$ be an eigenvalue of $A$. Its algebraic multiplicity is its multiplicity as a root of $p_A$, i.e., the number of times the factor $(\lambda - \cdot)$ appears in $p_A$. Its geometric multiplicity is $\dim E_\lambda = n - \rank(A - \lambda I_n)$ (by the rank--nullity theorem).
+\end{definition}
+
+\begin{theorem}\label{thm:multiplicities}
+    For every eigenvalue, $1 \leq \text{geometric multiplicity} \leq \text{algebraic multiplicity}$. Moreover, $A$ is diagonalizable if and only if $p_A$ has $n$ real roots (counted with multiplicity), and the geometric multiplicity of every eigenvalue equals its algebraic multiplicity.
+\end{theorem}
+
+We state this theorem without proof. The second part says that we need ``enough'' eigenvectors: by Theorem~\ref{thm:eigen-independent}, bases of the different eigenspaces together form a linearly independent set, and $A$ is diagonalizable exactly when this set has $n$ elements.
+
+\begin{example}
+    \begin{itemize}
+        \item The matrix $J$ of Example~\ref{ex:eigen-3x3} has the eigenvalue $-1$ with algebraic multiplicity $2$, and geometric multiplicity $3 - \rank(J + I_3) = 3 - 1 = 2$. So $J$ is diagonalizable:
+        \[J = PDP^{-1} \qquad \text{with} \qquad P = \begin{pmatrix} 1 & 1 & 1 \\ 1 & -1 & 0 \\ 1 & 0 & -1 \end{pmatrix}, \quad D = \diag(2, -1, -1).\]
+        \item The shear $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ has the eigenvalue $1$ with algebraic multiplicity $2$, but geometric multiplicity $1$. So it is not diagonalizable.
+        \item A rotation $R_\theta$ with $\theta$ not a multiple of $\pi$ has no real eigenvalues, so it is not diagonalizable with real matrices $P$ and $D$. (It is diagonalizable with complex matrices.)
+    \end{itemize}
+\end{example}
+
+\begin{remark}
+    Symmetric matrices are always diagonalizable, and their eigenvectors can even be chosen to be orthonormal. This is the spectral theorem, which we prove in Lecture~2 once we have inner products.
+\end{remark}
+
+\subsection{Powers of matrices and applications}
+
+\begin{proposition}\label{prop:powers}
+    If $A = PDP^{-1}$ with $D = \diag(\lambda_1, \ldots, \lambda_n)$, then for every $k \geq 1$,
+    \[A^k = P D^k P^{-1}, \qquad \text{where} \quad D^k = \diag(\lambda_1^k, \ldots, \lambda_n^k).\]
+\end{proposition}
+
+\begin{proof}
+    $A^k = (PDP^{-1})(PDP^{-1}) \cdots (PDP^{-1}) = PD(P^{-1}P)D(P^{-1}P) \cdots DP^{-1} = PD^kP^{-1}$, and $D^k$ is computed entry by entry, since products of diagonal matrices are computed on the diagonal (Subsection~\ref{subsec:special}).
+\end{proof}
+
+\begin{example}
+    For $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$,
+    \[A^k = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix} \begin{pmatrix} 3^k & 0 \\ 0 & 1 \end{pmatrix} \frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix} = \frac{1}{2} \begin{pmatrix} 3^k + 1 & 3^k - 1 \\ 3^k - 1 & 3^k + 1 \end{pmatrix}.\]
+    Computing $A^{100}$ by multiplying $A$ with itself $99$ times would be much more work.
+\end{example}
+
+\begin{example}[Fibonacci numbers]\label{ex:binet}
+    The Fibonacci numbers $F_0 = 0$, $F_1 = 1$, $F_{n+1} = F_n + F_{n-1}$ satisfy
+    \[\begin{pmatrix} F_{n+1} \\ F_n \end{pmatrix} = M \begin{pmatrix} F_n \\ F_{n-1} \end{pmatrix} = \cdots = M^n \begin{pmatrix} 1 \\ 0 \end{pmatrix}, \qquad \text{where} \quad M = \begin{pmatrix} 1 & 1 \\ 1 & 0 \end{pmatrix}.\]
+    The characteristic polynomial of $M$ is $\lambda^2 - \lambda - 1$, with the roots
+    \[\varphi = \frac{1 + \sqrt{5}}{2} \approx 1.618 \quad \text{(the golden ratio)} \qquad \text{and} \qquad \psi = \frac{1 - \sqrt{5}}{2} \approx -0.618.\]
+    One checks that $(\varphi, 1)^\top$ and $(\psi, 1)^\top$ are eigenvectors, and that $(1, 0)^\top = \frac{1}{\sqrt{5}}\big((\varphi, 1)^\top - (\psi, 1)^\top\big)$, since $\varphi - \psi = \sqrt{5}$. By Proposition~\ref{prop:eigen-related},
+    \[\begin{pmatrix} F_{n+1} \\ F_n \end{pmatrix} = \frac{1}{\sqrt{5}}\left(\varphi^n \begin{pmatrix} \varphi \\ 1 \end{pmatrix} - \psi^n \begin{pmatrix} \psi \\ 1 \end{pmatrix}\right), \qquad \text{so} \qquad F_n = \frac{\varphi^n - \psi^n}{\sqrt{5}}.\]
+    This is Binet's formula. Since $|\psi| < 1$, the term $\psi^n$ quickly becomes tiny, and $F_n$ is the integer closest to $\varphi^n / \sqrt{5}$. In particular, $F_{n+1}/F_n \to \varphi$.
+\end{example}
+
+\begin{example}[Markov chains]\label{ex:markov}
+    Suppose that the weather is either sunny or rainy, and that a sunny day is followed by a sunny day with probability $0.9$, while a rainy day is followed by a sunny day with probability $0.5$. If $x_k = (s_k, r_k)^\top$ contains the probabilities that day $k$ is sunny or rainy, then
+    \[x_{k+1} = A x_k, \qquad \text{where} \quad A = \begin{pmatrix} 0.9 & 0.5 \\ 0.1 & 0.5 \end{pmatrix}.\]
+    The columns of $A$ are probability vectors (nonnegative entries summing to $1$). By Proposition~\ref{prop:char-poly-2x2}, $p_A(\lambda) = \lambda^2 - 1.4\lambda + 0.4 = (\lambda - 1)(\lambda - 0.4)$, with eigenvectors $(5, 1)^\top$ for $\lambda = 1$ and $(1, -1)^\top$ for $\lambda = 0.4$. If today is rainy, then $x_0 = (0, 1)^\top = \big(\frac{5}{6}, \frac{1}{6}\big)^\top - \frac{5}{6}(1, -1)^\top$, so
+    \[x_k = A^k x_0 = \begin{pmatrix} 5/6 \\ 1/6 \end{pmatrix} - \frac{5}{6}\, (0.4)^k \begin{pmatrix} 1 \\ -1 \end{pmatrix} \longrightarrow \begin{pmatrix} 5/6 \\ 1/6 \end{pmatrix} \qquad (k \to \infty).\]
+    In the long run, $\frac{5}{6}$ of the days are sunny, whatever the weather today. The limit $\big(\frac{5}{6}, \frac{1}{6}\big)^\top$ is the eigenvector for the eigenvalue $1$, scaled to be a probability vector; it is called the stationary distribution of the Markov chain.
+\end{example}
+
+\begin{remark}[PageRank and power iteration]
+    The PageRank algorithm, originally used by Google to rank web pages, models a random surfer who follows a random link on each page. The importance of a page is its probability in the stationary distribution of this Markov chain, i.e., an entry of the eigenvector for the eigenvalue $1$ of a huge matrix. Such eigenvectors are computed by power iteration: if $A$ has an eigenvalue $\lambda_1$ with $|\lambda_1| > |\lambda_i|$ for all other eigenvalues, and $A$ is diagonalizable with eigenvectors $v_1, \ldots, v_n$, then writing $x = c_1 v_1 + \cdots + c_n v_n$ gives
+    \[A^k x = \lambda_1^k \Big(c_1 v_1 + \sum_{i \geq 2} c_i \Big(\frac{\lambda_i}{\lambda_1}\Big)^k v_i\Big),\]
+    so after rescaling, $A^k x$ points more and more in the direction of $v_1$ (if $c_1 \neq 0$). You will implement this in Programming Exercise~P10.
+\end{remark}
+
 \section{Key Takeaways}
 \begin{itemize}[leftmargin=*]
 	\item A field is a set of ``numbers'' in which we can add, subtract, multiply, and divide by nonzero elements. $\mathbb{Q}$, $\mathbb{R}$ and $\mathbb{C}$ are fields; $\mathbb{Z}$ is not.
@@ -2538,6 +2796,8 @@ Combining the rank--nullity theorem with Theorem~\ref{thm:invertible}, we obtain
 	\item Elementary row operations bring a matrix into (reduced) row echelon form. They do not change the null space or the row space, but they can change the column space; the pivot columns of the original matrix form a basis of its column space.
 	\item $\rank(A) = \dim \col(A) = \dim \row(A)$ is the number of pivots, and $\rank(A) + \dim \Null(A) = n$ for every $m \times n$ matrix $A$.
 	\item For an $n \times n$ matrix $A$: $A$ is invertible $\iff$ $\Null(A) = \{0\}$ $\iff$ $\rank(A) = n$ $\iff$ $\RREF(A) = I_n$ $\iff$ $\det(A) \neq 0$.
+	\item An eigenvector $v \neq 0$ of $A$ satisfies $Av = \lambda v$; the eigenvalues are the roots of the characteristic polynomial $\det(A - \lambda I_n)$, and the eigenspace $E_\lambda = \Null(A - \lambda I_n)$ is found by row reduction. The (complex) eigenvalues add up to $\tr(A)$ and multiply to $\det(A)$.
+	\item $A$ is diagonalizable, $A = PDP^{-1}$, exactly when it has $n$ linearly independent eigenvectors (the columns of $P$); this holds, for example, when $A$ has $n$ distinct eigenvalues. Then $A^k = PD^kP^{-1}$, which explains Fibonacci numbers, the long-run behavior of Markov chains, and power iteration (PageRank).
 \end{itemize}
 
 \section{Exercises}\label{sec:exercises}
@@ -2577,6 +2837,17 @@ Combining the rank--nullity theorem with Theorem~\ref{thm:invertible}, we obtain
 	in two ways: by cofactor expansion, and by row reduction. Is $A$ invertible?
 	\item Let $A$ be a skew-symmetric $n \times n$ matrix, where $n$ is odd. Show that $\det(A) = 0$. (Hint: compute $\det(A^\top)$ in two ways.)
 	\item Show that $\tr(ABC) = \tr(CAB)$ for all $n \times n$ matrices $A$, $B$, $C$, but find $2 \times 2$ matrices with $\tr(ABC) \neq \tr(ACB)$.
+	\item Find the eigenvalues and eigenspaces of $A = \begin{pmatrix} 4 & 1 \\ 2 & 3 \end{pmatrix}$. Diagonalize $A$, and use the diagonalization to find a formula for $A^k$.
+	\item Show that $A = \begin{pmatrix} 3 & 1 \\ 0 & 3 \end{pmatrix}$ is not diagonalizable. Find all of its eigenvectors.
+	\item Find the complex eigenvalues of the rotation by $90^\circ$, $\begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$, and check Theorem~\ref{thm:trace-det-eigen} for this matrix.
+	\item Let $A$ be a $3 \times 3$ matrix with eigenvalues $1$, $2$ and $3$. Compute $\tr(A^2)$, $\det(A)$ and $\det(A^{-1})$. (Hint: $A$ is diagonalizable.)
+	\item Let $A$ be an $n \times n$ matrix and $\lambda$ an eigenvalue of $A$.
+	\begin{enumerate}
+		\item Show that if $A^2 = A$, then $\lambda = 0$ or $\lambda = 1$.
+		\item Show that if $A^k = 0$ for some $k \geq 1$, then $\lambda = 0$.
+		\item Show that if $A$ is orthogonal, then $\lambda = 1$ or $\lambda = -1$.
+	\end{enumerate}
+	\item A Markov chain has the transition matrix $A = \begin{pmatrix} 0.8 & 0.3 \\ 0.2 & 0.7 \end{pmatrix}$. Find its eigenvalues and its stationary distribution, and describe what happens to $A^k x_0$ as $k \to \infty$ for a probability vector $x_0$.
 \end{enumerate}
 
 \section{Programming Exercises}\label{sec:programming}
@@ -2689,6 +2960,30 @@ X = np.column_stack([np.ones_like(x), x])
         \item Compute $w$ using your own functions from P2 and P4, and check that $w$ is close to $(2, 3)$. Compare with \py{np.linalg.lstsq(X, y, rcond=None)[0]}.
         \item Explain why $X^\top X$ is symmetric. Show that if the columns of $X$ are linearly independent, then $X^\top X$ is invertible. (Hint: if $X^\top X w = 0$, compute $w^\top X^\top X w$ and use Corollary~\ref{cor:invertible-rank}.)
         \item Fit a parabola $y = w_0 + w_1 x + w_2 x^2$ to the data $y = 1 - 2x + 4x^2 + \text{noise}$, using the columns $1, x, x^2$. How is this related to the vector space $\mathbb{R}[x]_{\leq 2}$?
+    \end{itemize}
+
+    \item \textbf{Power iteration and PageRank.} Implement power iteration:
+\begin{lstlisting}
+def power_iteration(A, num_iter=100):
+    """Approximate an eigenvector for the eigenvalue of largest absolute value."""
+    x = rng.normal(size=A.shape[0])
+    for _ in range(num_iter):
+        x = A @ x
+        x = x / np.abs(x).max()  # rescale to avoid overflow
+    ...
+\end{lstlisting}
+    and estimate the eigenvalue from the final vector $x$, for instance as $(Ax)_i / x_i$ for an index $i$ with $x_i \neq 0$.
+    \begin{itemize}
+        \item Test it on the matrices of Examples~\ref{ex:eigen-2x2} and~\ref{ex:eigen-3x3}, and compare with \py{np.linalg.eig}. How does the speed of convergence depend on the ratio $|\lambda_2 / \lambda_1|$ of the two largest eigenvalues (in absolute value)?
+        \item What happens for the rotation by $90^\circ$, and for $\diag(1, -1)$? Explain.
+        \item A tiny web has $4$ pages, with links $1 \to 2$, $1 \to 3$, $2 \to 3$, $3 \to 1$, $4 \to 3$. Let $L$ be the $4 \times 4$ matrix with $L_{ij} = \frac{1}{\text{number of links on page } j}$ if page $j$ links to page $i$, and $0$ otherwise. The PageRank vector is the stationary distribution of $G = 0.85\,L + \frac{0.15}{4}\,\mathbf{1}\mathbf{1}^\top$, where $\mathbf{1}\mathbf{1}^\top$ is the matrix of all ones. Compute it with power iteration, check that it is an eigenvector of $G$ for the eigenvalue $1$, and rank the pages.
+    \end{itemize}
+
+    \item \textbf{Diagonalization in floating-point arithmetic.} The function \py{np.linalg.eig(A)} returns the eigenvalues and a matrix \py{P} whose columns are eigenvectors.
+    \begin{itemize}
+        \item For a random $5 \times 5$ matrix $A$, check that $A$ is close to $PDP^{-1}$. (The eigenvalues may be complex.) Compare $PD^{20}P^{-1}$ with \py{np.linalg.matrix_power(A, 20)}.
+        \item Compute the Fibonacci numbers $F_n$ in two ways: exactly, with Python integers and the recursion, and with Binet's formula (Example~\ref{ex:binet}) in floating-point arithmetic, rounding to the nearest integer. For which $n$ does Binet's formula give a wrong answer for the first time, and why?
+        \item Apply \py{np.linalg.eig} to the shear $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$. What do you notice about the two eigenvectors it returns?
     \end{itemize}
 \end{enumerate}
 

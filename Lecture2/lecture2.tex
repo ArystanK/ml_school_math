@@ -259,7 +259,7 @@ The matrix $A$ in part 2 is called the Gram matrix of the basis $\mathcal{B}$. S
     If $ac - b^2 > 0$, both terms are nonnegative, and they are both zero only if $x_2 = 0$ and $x_1 = 0$; so $A$ is positive definite. If $ac - b^2 \leq 0$, then $x = (-b, a)^\top \neq 0$ gives $x^\top A x = (ac - b^2) a \leq 0$, so $A$ is not positive definite.
 \end{proof}
 
-For larger matrices, there is a similar test, Sylvester's criterion: a symmetric matrix is positive definite if and only if the determinants of all its upper left $k \times k$ submatrices, for $k = 1, \ldots, n$, are positive. We state it without proof. We will see another test, using eigenvalues, in a later lecture.
+For larger matrices, there is a similar test, Sylvester's criterion: a symmetric matrix is positive definite if and only if the determinants of all its upper left $k \times k$ submatrices, for $k = 1, \ldots, n$, are positive. We state it without proof. In Section~\ref{sec:spectral}, we will see another test, using eigenvalues (Corollary~\ref{cor:spd-eigenvalues}).
 
 \begin{example}
     The matrix $A_1 = \begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$ is positive definite, since $9 > 0$ and $\det(A_1) = 45 - 36 = 9 > 0$. Indeed, $x^\top A_1 x = (3x_1 + 2x_2)^2 + x_2^2$. The matrix $A_2 = \begin{pmatrix} 9 & 6 \\ 6 & 3 \end{pmatrix}$ is not, since $\det(A_2) = 27 - 36 = -9 < 0$: for $x = (2, -3)^\top$, we get $x^\top A_2 x = -9$.
@@ -785,7 +785,7 @@ The continuity assumption matters: a function that is $1$ at a single point and 
 
 \section{Orthogonal Projections}\label{sec:projections}
 
-Data in machine learning is often high-dimensional, and it is useful to replace each data point by a point of a lower-dimensional subspace while losing as little information as possible. The best way to do this, in a precise sense, is the orthogonal projection. Orthogonal projections are behind linear regression (Section~\ref{sec:least-squares}), principal component analysis (in a later lecture) and the Gram--Schmidt process.
+Data in machine learning is often high-dimensional, and it is useful to replace each data point by a point of a lower-dimensional subspace while losing as little information as possible. The best way to do this, in a precise sense, is the orthogonal projection. Orthogonal projections are behind linear regression (Section~\ref{sec:least-squares}), principal component analysis (Section~\ref{sec:pca}) and the Gram--Schmidt process.
 
 \begin{definition}[Orthogonal projection]
     Let $U$ be a subspace of a finite-dimensional inner product space $V$. By Theorem~\ref{thm:orth-decomposition}, every $v \in V$ can be written uniquely as $v = u + w$ with $u \in U$ and $w \in U^\perp$. The vector $\pi_U(v) = u$ is called the orthogonal projection of $v$ onto $U$. In other words, $\pi_U(v)$ is the unique vector with
@@ -1020,6 +1020,275 @@ The Givens rotation $G_{ij}(\theta)$ rotates the plane spanned by $e_i$ and $e_j
     Since rotations preserve dot products and distances, any method that only depends on distances or dot products between data points, such as $k$-nearest neighbors with the Euclidean distance, gives the same results after the data is rotated. In contrast, methods such as decision trees, which look at individual coordinates, may change. Rotated copies of images are also used for data augmentation, to make image classifiers robust to rotations.
 \end{remark}
 
+\section{The Spectral Theorem}\label{sec:spectral}
+
+In Lecture~1, we saw that a matrix is diagonalizable if it has a basis of eigenvectors, and that some matrices, such as the shear or a rotation, are not diagonalizable. Symmetric matrices are much better behaved: they always have an orthonormal basis of eigenvectors. Symmetric matrices are everywhere in machine learning: covariance matrices, Gram and kernel matrices, and the matrices $A^\top A$ of least squares problems are all symmetric.
+
+To state the theorem, we use complex eigenvalues (Lecture~1). For a vector $v \in \mathbb{C}^n$, we write $\bar{v}$ for the vector of complex conjugates of its entries. Then $\bar{v}^\top v = \sum_i \bar{v}_i v_i = \sum_i |v_i|^2 > 0$ for $v \neq 0$. A complex number $\lambda$ is a root of $p_A$ if and only if $Av = \lambda v$ for some nonzero $v \in \mathbb{C}^n$, by the same argument as for real eigenvalues.
+
+\begin{theorem}[Spectral theorem]\label{thm:spectral}
+    Let $A$ be a symmetric real $n \times n$ matrix. Then:
+    \begin{enumerate}
+        \item all complex eigenvalues of $A$ are real;
+        \item eigenvectors of $A$ for distinct eigenvalues are orthogonal;
+        \item there is an orthonormal basis $q_1, \ldots, q_n$ of $\mathbb{R}^n$ consisting of eigenvectors of $A$. Equivalently,
+        \[A = Q \Lambda Q^\top,\]
+        where $Q$ is the orthogonal matrix with columns $q_1, \ldots, q_n$, and $\Lambda = \diag(\lambda_1, \ldots, \lambda_n)$ contains the corresponding eigenvalues.
+    \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+    (1) Let $Av = \lambda v$ with $\lambda \in \mathbb{C}$ and $v \in \mathbb{C}^n$, $v \neq 0$. The number $z = \bar{v}^\top A v$ is real: since $A$ is real and symmetric, its complex conjugate is $\bar{z} = v^\top A \bar{v} = (v^\top A \bar{v})^\top = \bar{v}^\top A^\top v = z$. Since $z = \bar{v}^\top (\lambda v) = \lambda\, \bar{v}^\top v$, we get $\lambda = z / (\bar{v}^\top v) \in \mathbb{R}$.
+
+    (2) Let $Av = \lambda v$ and $Aw = \mu w$ with $\lambda \neq \mu$. Then
+    \[\lambda\, v^\top w = (Av)^\top w = v^\top A^\top w = v^\top A w = \mu\, v^\top w,\]
+    so $(\lambda - \mu) v^\top w = 0$, and hence $v^\top w = 0$.
+
+    (3) We use induction on $n$; the case $n = 1$ is clear. By part 1 and the fundamental theorem of algebra, $p_A$ has a real root $\lambda_1$. Let $q_1$ be a unit eigenvector for $\lambda_1$ (it can be chosen real, since $A - \lambda_1 I_n$ is a real matrix with a nonzero null space). Let $W = \Span\{q_1\}^\perp$, and let $w_2, \ldots, w_n$ be an orthonormal basis of $W$ (Theorem~\ref{thm:orth-decomposition} and Corollary~\ref{cor:onb-exists}). The subspace $W$ is mapped into itself by $A$: if $x \in W$, then $q_1^\top (Ax) = (Aq_1)^\top x = \lambda_1 q_1^\top x = 0$.
+
+    Let $M$ be the $n \times (n-1)$ matrix with columns $w_2, \ldots, w_n$, so that $M^\top M = I_{n-1}$, and let $B = M^\top A M$, which is a symmetric $(n-1) \times (n-1)$ matrix. Since $Aw_i \in W$, Proposition~\ref{prop:onb-coordinates} gives $Aw_i = \sum_k (w_k^\top A w_i) w_k$, i.e., $AM = MB$. By induction, $B$ has an orthonormal basis of eigenvectors $y_2, \ldots, y_n \in \mathbb{R}^{n-1}$, with $By_j = \lambda_j y_j$. Then the vectors $q_j = M y_j$ ($j = 2, \ldots, n$) are orthonormal, since $q_i^\top q_j = y_i^\top M^\top M y_j = y_i^\top y_j$; they lie in $W$, so they are orthogonal to $q_1$; and they are eigenvectors, since $Aq_j = AMy_j = MBy_j = \lambda_j q_j$. So $q_1, \ldots, q_n$ is an orthonormal basis of eigenvectors.
+
+    Finally, by Theorem~\ref{thm:orthogonal}, $Q$ is orthogonal, so $Q^{-1} = Q^\top$, and by the diagonalization theorem of Lecture~1, $A = Q\Lambda Q^{-1} = Q\Lambda Q^\top$.
+\end{proof}
+
+The factorization $A = Q\Lambda Q^\top$ is called the eigendecomposition, or spectral decomposition, of $A$. Multiplying out, it says that
+\[A = \lambda_1 q_1 q_1^\top + \lambda_2 q_2 q_2^\top + \cdots + \lambda_n q_n q_n^\top,\]
+where each $q_i q_i^\top$ is the matrix of the orthogonal projection onto the line $\Span\{q_i\}$ (Proposition~\ref{prop:projection-line}). So a symmetric matrix projects a vector onto $n$ orthogonal directions, scales the projections by the eigenvalues, and adds them up.
+
+\begin{example}\label{ex:spectral}
+    Let $A = \begin{pmatrix} 2 & 1 & 1 \\ 1 & 2 & 1 \\ 1 & 1 & 2 \end{pmatrix} = J + 2I_3$, where $J = \begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix}$ is the matrix from the section on eigenvalues in Lecture~1. By the computations there, the eigenvalues of $A$ are $2 + 2 = 4$, with eigenspace $\Span\{(1, 1, 1)^\top\}$, and $-1 + 2 = 1$, with eigenspace the plane $x + y + z = 0$. As predicted by the spectral theorem, the two eigenspaces are orthogonal. To get an orthonormal basis of the plane, we apply the Gram--Schmidt process to its basis $(1, -1, 0)^\top$, $(1, 0, -1)^\top$, which gives $\frac{1}{\sqrt{2}}(1, -1, 0)^\top$ and $\frac{1}{\sqrt{6}}(1, 1, -2)^\top$. Hence $A = Q\Lambda Q^\top$ with
+    \[Q = \begin{pmatrix} \frac{1}{\sqrt{3}} & \frac{1}{\sqrt{2}} & \frac{1}{\sqrt{6}} \\ \frac{1}{\sqrt{3}} & -\frac{1}{\sqrt{2}} & \frac{1}{\sqrt{6}} \\ \frac{1}{\sqrt{3}} & 0 & -\frac{2}{\sqrt{6}} \end{pmatrix}, \qquad \Lambda = \diag(4, 1, 1).\]
+\end{example}
+
+\begin{corollary}\label{cor:spd-eigenvalues}
+    A symmetric matrix is positive definite if and only if all its eigenvalues are positive, and positive semidefinite if and only if all its eigenvalues are nonnegative.
+\end{corollary}
+
+\begin{proof}
+    Write $A = Q\Lambda Q^\top$ and $y = Q^\top x$. Then
+    \[x^\top A x = y^\top \Lambda y = \lambda_1 y_1^2 + \cdots + \lambda_n y_n^2.\]
+    If all $\lambda_i > 0$, this is positive for $x \neq 0$ (then $y \neq 0$, since $Q^\top$ is invertible). Conversely, $q_i^\top A q_i = \lambda_i$, so if $A$ is positive definite, all $\lambda_i > 0$. The semidefinite case is the same, with $\geq$ instead of $>$.
+\end{proof}
+
+\begin{example}
+    The matrix $\begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$ from the subsection on symmetric positive definite matrices has trace $14$ and determinant $9$, so its eigenvalues $7 \pm 2\sqrt{10}$ are both positive, and it is positive definite. The matrix $\begin{pmatrix} 9 & 6 \\ 6 & 3 \end{pmatrix}$ has determinant $-9 < 0$, so its eigenvalues have opposite signs (their product is negative), and it is not positive definite.
+\end{example}
+
+\begin{proposition}[Rayleigh quotient]\label{prop:rayleigh}
+    Let $A$ be symmetric with eigenvalues $\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $q_1, \ldots, q_n$. Then for every $x \neq 0$,
+    \[\lambda_n \leq \frac{x^\top A x}{x^\top x} \leq \lambda_1,\]
+    with equality on the right for $x = q_1$, and on the left for $x = q_n$.
+\end{proposition}
+
+\begin{proof}
+    With $y = Q^\top x$, we have $x^\top x = y^\top y$ (Theorem~\ref{thm:orthogonal}) and $x^\top A x = \sum_i \lambda_i y_i^2$, which lies between $\lambda_n \sum_i y_i^2$ and $\lambda_1 \sum_i y_i^2$. For $x = q_i$, the quotient is $q_i^\top A q_i = \lambda_i$.
+\end{proof}
+
+So the largest eigenvalue of a symmetric matrix is the maximum of $x^\top A x$ over all unit vectors $x$, and it is attained at an eigenvector. This is the key to principal component analysis.
+
+\begin{remark}[Geometry of symmetric positive definite matrices]
+    If $A$ is symmetric positive definite, the set $\{x : x^\top A x = 1\}$ is an ellipse (in $\mathbb{R}^2$) or an ellipsoid (in higher dimensions), whose axes point in the directions of the eigenvectors $q_i$ and have lengths $\frac{1}{\sqrt{\lambda_i}}$, since in the coordinates $y = Q^\top x$ the equation becomes $\lambda_1 y_1^2 + \cdots + \lambda_n y_n^2 = 1$. In machine learning, such ellipsoids describe the shape of Gaussian distributions (with $A$ the inverse covariance matrix) and the shape of the loss surface of least squares problems near a minimum; when the eigenvalues have very different sizes, gradient descent zig-zags and converges slowly.
+\end{remark}
+
+\section{The Singular Value Decomposition}\label{sec:svd}
+
+The eigendecomposition only exists for square matrices, and in general only for diagonalizable ones. The singular value decomposition (SVD) exists for every matrix, square or not. It is one of the most useful factorizations in applied mathematics and machine learning: it describes the geometry of every linear transformation, gives the best low-rank approximations of a matrix, and is the basis of principal component analysis.
+
+\subsection{Existence of the SVD}
+
+\begin{theorem}[Singular value decomposition]\label{thm:svd}
+    Let $A$ be a real $m \times n$ matrix. Then there are an orthogonal $m \times m$ matrix $U$, an orthogonal $n \times n$ matrix $V$, and an $m \times n$ matrix $\Sigma$ with
+    \[\Sigma_{11} = \sigma_1 \geq \Sigma_{22} = \sigma_2 \geq \cdots \geq \Sigma_{rr} = \sigma_r > 0\]
+    and all other entries $0$, such that
+    \[A = U \Sigma V^\top.\]
+    The number $r$ of nonzero diagonal entries is the rank of $A$. The numbers $\sigma_1, \ldots, \sigma_r$ are called the singular values of $A$; the columns $u_1, \ldots, u_m$ of $U$ and $v_1, \ldots, v_n$ of $V$ are called the left and right singular vectors of $A$.
+\end{theorem}
+
+\begin{proof}
+    The $n \times n$ matrix $A^\top A$ is symmetric, and positive semidefinite, since $x^\top A^\top A x = \norm{Ax}^2 \geq 0$. By the spectral theorem and Corollary~\ref{cor:spd-eigenvalues}, there is an orthonormal basis $v_1, \ldots, v_n$ of $\mathbb{R}^n$ of eigenvectors of $A^\top A$, with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n \geq 0$ (we order them by size). Note that
+    \[\norm{Av_i}^2 = v_i^\top A^\top A v_i = \lambda_i \, v_i^\top v_i = \lambda_i.\]
+    Let $r$ be the number of positive eigenvalues, and let $\sigma_i = \sqrt{\lambda_i}$ and $u_i = \frac{1}{\sigma_i} A v_i$ for $i = 1, \ldots, r$. These vectors are orthonormal:
+    \[u_i^\top u_j = \frac{v_i^\top A^\top A v_j}{\sigma_i \sigma_j} = \frac{\lambda_j\, v_i^\top v_j}{\sigma_i \sigma_j} = \begin{cases} 1 & \text{if } i = j, \\ 0 & \text{if } i \neq j. \end{cases}\]
+    Let $u_{r+1}, \ldots, u_m$ be an orthonormal basis of $\Span\{u_1, \ldots, u_r\}^\perp$ (Theorem~\ref{thm:orth-decomposition} and Corollary~\ref{cor:onb-exists}), so that $u_1, \ldots, u_m$ is an orthonormal basis of $\mathbb{R}^m$, and let $U$ and $V$ be the orthogonal matrices with these columns. For $i \leq r$, we have $Av_i = \sigma_i u_i$ by definition, and for $i > r$, we have $\norm{Av_i}^2 = \lambda_i = 0$, so $Av_i = 0$. Column by column, this says that $AV = U\Sigma$, and hence $A = U\Sigma V^{-1} = U\Sigma V^\top$.
+
+    Finally, every vector $Ax = \sum_i (v_i^\top x) Av_i = \sum_{i \leq r} \sigma_i (v_i^\top x) u_i$ lies in $\Span\{u_1, \ldots, u_r\}$, and conversely $u_i = A\big(\frac{1}{\sigma_i} v_i\big) \in \col(A)$. So $\col(A) = \Span\{u_1, \ldots, u_r\}$, and since $u_1, \ldots, u_r$ are linearly independent (Lemma~\ref{lem:orth-indep}), $\rank(A) = r$.
+\end{proof}
+
+The proof shows how to compute the SVD by hand:
+\begin{enumerate}
+    \item compute the eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $v_1, \ldots, v_n$ of $A^\top A$;
+    \item set $\sigma_i = \sqrt{\lambda_i}$ and $u_i = \frac{1}{\sigma_i} A v_i$ for the positive eigenvalues;
+    \item complete $u_1, \ldots, u_r$ to an orthonormal basis of $\mathbb{R}^m$.
+\end{enumerate}
+Similarly, $AA^\top = U \Sigma\Sigma^\top U^\top$, so the left singular vectors are eigenvectors of $AA^\top$, with the same nonzero eigenvalues $\sigma_i^2$.
+
+\begin{example}\label{ex:svd-3x2}
+    Let $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 0 \end{pmatrix}$. Then $A^\top A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, which we diagonalized in Lecture~1: its eigenvalues are $3$ and $1$, with orthonormal eigenvectors $v_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $v_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. So $\sigma_1 = \sqrt{3}$ and $\sigma_2 = 1$, and
+    \[u_1 = \frac{1}{\sqrt{3}} A v_1 = \frac{1}{\sqrt{6}} \begin{pmatrix} 2 \\ 1 \\ 1 \end{pmatrix}, \qquad u_2 = \frac{1}{1} A v_2 = \frac{1}{\sqrt{2}} \begin{pmatrix} 0 \\ -1 \\ 1 \end{pmatrix}.\]
+    A unit vector orthogonal to both is $u_3 = \frac{1}{\sqrt{3}}(1, -1, -1)^\top$. Hence
+    \[\begin{pmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 0 \end{pmatrix} = \underbrace{\begin{pmatrix} \frac{2}{\sqrt{6}} & 0 & \frac{1}{\sqrt{3}} \\ \frac{1}{\sqrt{6}} & -\frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{3}} \\ \frac{1}{\sqrt{6}} & \frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{3}} \end{pmatrix}}_{U} \underbrace{\begin{pmatrix} \sqrt{3} & 0 \\ 0 & 1 \\ 0 & 0 \end{pmatrix}}_{\Sigma} \underbrace{\frac{1}{\sqrt{2}}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}}_{V^\top}.\]
+\end{example}
+
+\subsection{The geometry of the SVD}
+
+Since $U$ and $V$ are orthogonal, the SVD says that every linear transformation $x \mapsto Ax$ is a composition of three simple steps: an orthogonal transformation $V^\top$ (a rotation, possibly combined with a reflection), a scaling $\Sigma$ of the coordinate axes by the singular values (which may also change the dimension), and another orthogonal transformation $U$. In particular, $A$ maps the unit sphere of $\mathbb{R}^n$ to an ellipsoid (possibly flattened) in $\mathbb{R}^m$, whose semi-axes are $\sigma_1 u_1, \ldots, \sigma_r u_r$: the right singular vector $v_i$ is mapped to $\sigma_i u_i$.
+
+\begin{example}[The SVD of a shear]\label{ex:svd-shear}
+    Let $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ be the shear from the gallery of linear transformations in Lecture~1. Then $A^\top A = \begin{pmatrix} 1 & 1 \\ 1 & 2 \end{pmatrix}$ has trace $3$ and determinant $1$, so its eigenvalues are $\frac{3 \pm \sqrt{5}}{2} = \varphi^2$ and $\varphi^{-2}$, where $\varphi = \frac{1 + \sqrt{5}}{2}$ is the golden ratio, which we met in Lecture~1 in Binet's formula for the Fibonacci numbers. So the singular values of the shear are
+    \[\sigma_1 = \varphi \approx 1.618 \qquad \text{and} \qquad \sigma_2 = \frac{1}{\varphi} \approx 0.618.\]
+    Using $\varphi^2 = \varphi + 1$, one checks that, with $c = \sqrt{1 + \varphi^2}$,
+    \[v_1 = \frac{1}{c}\begin{pmatrix} 1 \\ \varphi \end{pmatrix}, \quad v_2 = \frac{1}{c}\begin{pmatrix} -\varphi \\ 1 \end{pmatrix}, \quad u_1 = \frac{1}{c}\begin{pmatrix} \varphi \\ 1 \end{pmatrix}, \quad u_2 = \frac{1}{c}\begin{pmatrix} -1 \\ \varphi \end{pmatrix}.\]
+    Both $U$ and $V$ are rotations, by the angles $31.7^\circ$ and $58.3^\circ$. So the shear is the same as: rotate by $-58.3^\circ$, stretch the $x$-axis by $\varphi$ and shrink the $y$-axis by $\frac{1}{\varphi}$, and rotate by $31.7^\circ$ (Figure~\ref{fig:svd}).
+\end{example}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[x=0.75cm, y=0.75cm, >=Stealth, baseline=(current bounding box.center)]
+        \draw[->, gray] (-1.9,0) -- (1.9,0);
+        \draw[->, gray] (0,-1.9) -- (0,1.9);
+        \fill[blue!10] (0,0) circle (1);
+        \draw[blue!70!black, thick] (0,0) circle (1);
+        \draw[->, very thick, red!80!black] (0,0) -- (0.526,0.851) node[above right] {$v_1$};
+        \draw[->, very thick, green!50!black] (0,0) -- (-0.851,0.526) node[above left] {$v_2$};
+    \end{tikzpicture}
+    $\xrightarrow{\ V^\top\ }$
+    \begin{tikzpicture}[x=0.75cm, y=0.75cm, >=Stealth, baseline=(current bounding box.center)]
+        \draw[->, gray] (-1.9,0) -- (1.9,0);
+        \draw[->, gray] (0,-1.9) -- (0,1.9);
+        \fill[blue!10] (0,0) circle (1);
+        \draw[blue!70!black, thick] (0,0) circle (1);
+        \draw[->, very thick, red!80!black] (0,0) -- (1,0) node[below right] {$e_1$};
+        \draw[->, very thick, green!50!black] (0,0) -- (0,1) node[above left] {$e_2$};
+    \end{tikzpicture}
+    $\xrightarrow{\ \Sigma\ }$
+    \begin{tikzpicture}[x=0.75cm, y=0.75cm, >=Stealth, baseline=(current bounding box.center)]
+        \draw[->, gray] (-1.9,0) -- (1.9,0);
+        \draw[->, gray] (0,-1.9) -- (0,1.9);
+        \fill[blue!10] (0,0) ellipse [x radius=1.618, y radius=0.618];
+        \draw[blue!70!black, thick] (0,0) ellipse [x radius=1.618, y radius=0.618];
+        \draw[->, very thick, red!80!black] (0,0) -- (1.618,0) node[below] {$\sigma_1 e_1$};
+        \draw[->, very thick, green!50!black] (0,0) -- (0,0.618) node[above left] {$\sigma_2 e_2$};
+    \end{tikzpicture}
+    $\xrightarrow{\ U\ }$
+    \begin{tikzpicture}[x=0.75cm, y=0.75cm, >=Stealth, baseline=(current bounding box.center)]
+        \draw[->, gray] (-1.9,0) -- (1.9,0);
+        \draw[->, gray] (0,-1.9) -- (0,1.9);
+        \fill[blue!10, rotate=31.72] (0,0) ellipse [x radius=1.618, y radius=0.618];
+        \draw[blue!70!black, thick, rotate=31.72] (0,0) ellipse [x radius=1.618, y radius=0.618];
+        \draw[->, very thick, red!80!black] (0,0) -- (1.376,0.851) node[above] {$\sigma_1 u_1$};
+        \draw[->, very thick, green!50!black] (0,0) -- (-0.325,0.526) node[above left] {$\sigma_2 u_2$};
+    \end{tikzpicture}
+    \caption[The geometry of the SVD]{The SVD of the shear $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ (Example~\ref{ex:svd-shear}). The rotation $V^\top$ moves the right singular vectors $v_1, v_2$ to $e_1, e_2$; the scaling $\Sigma$ stretches the axes by $\sigma_1 = \varphi$ and $\sigma_2 = 1/\varphi$; and the rotation $U$ moves the axes to the left singular vectors. Altogether, the unit circle is mapped to an ellipse with semi-axes $\sigma_1 u_1 = Av_1$ and $\sigma_2 u_2 = Av_2$.}
+    \label{fig:svd}
+\end{figure}
+
+\begin{proposition}\label{prop:svd-subspaces}
+    Let $A = U\Sigma V^\top$ be an SVD of a matrix $A$ of rank $r$. Then
+    \[A = \sigma_1 u_1 v_1^\top + \sigma_2 u_2 v_2^\top + \cdots + \sigma_r u_r v_r^\top,\]
+    and the four fundamental subspaces of $A$ are
+    \begin{align*}
+        \col(A) &= \Span\{u_1, \ldots, u_r\}, & \Null(A^\top) &= \Span\{u_{r+1}, \ldots, u_m\}, \\
+        \row(A) &= \Span\{v_1, \ldots, v_r\}, & \Null(A) &= \Span\{v_{r+1}, \ldots, v_n\}.
+    \end{align*}
+\end{proposition}
+
+\begin{proof}
+    For every $x$, we saw in the proof of Theorem~\ref{thm:svd} that $Ax = \sum_{i \leq r} \sigma_i u_i (v_i^\top x)$, which is the first formula applied to $x$. The formula for $\col(A)$ was also shown there. If $x = \sum_i c_i v_i$, then $Ax = \sum_{i \leq r} \sigma_i c_i u_i$, which is $0$ if and only if $c_1 = \cdots = c_r = 0$; this gives $\Null(A)$. In an orthonormal basis, the orthogonal complement of the span of some basis vectors is the span of the other ones, so the remaining two formulas follow from Theorem~\ref{thm:fundamental-subspaces} and Theorem~\ref{thm:orth-decomposition}(3).
+\end{proof}
+
+The first formula writes $A$ as a sum of $r$ matrices of rank $1$. It also gives the reduced SVD $A = U_r \Sigma_r V_r^\top$, where $U_r$ and $V_r$ consist of the first $r$ columns of $U$ and $V$, and $\Sigma_r = \diag(\sigma_1, \ldots, \sigma_r)$; NumPy computes it with \py{np.linalg.svd(A, full_matrices=False)}.
+
+\subsection{Matrix norms and low-rank approximation}
+
+\begin{definition}[Spectral norm]
+    The spectral norm (or operator norm) of an $m \times n$ matrix $A$ is
+    \[\norm{A}_2 = \max_{x \neq 0} \frac{\norm{Ax}}{\norm{x}},\]
+    the largest factor by which $A$ stretches a vector.
+\end{definition}
+
+\begin{proposition}\label{prop:matrix-norms}
+    Let $A$ have singular values $\sigma_1 \geq \cdots \geq \sigma_r > 0$. Then
+    \[\norm{A}_2 = \sigma_1 \qquad \text{and} \qquad \norm{A}_F = \sqrt{\sigma_1^2 + \cdots + \sigma_r^2}.\]
+\end{proposition}
+
+\begin{proof}
+    $\frac{\norm{Ax}^2}{\norm{x}^2} = \frac{x^\top A^\top A x}{x^\top x}$ is the Rayleigh quotient of $A^\top A$, whose largest eigenvalue is $\sigma_1^2$; so the maximum is $\sigma_1$ by Proposition~\ref{prop:rayleigh}. For the Frobenius norm, $\norm{A}_F^2 = \tr(A^\top A)$ is the sum of the eigenvalues of $A^\top A$ (by Lecture~1, the trace is the sum of the eigenvalues), which is $\sigma_1^2 + \cdots + \sigma_r^2$.
+\end{proof}
+
+The rank-$1$ expansion suggests approximating $A$ by keeping only the terms with the largest singular values. This is the best possible approximation of a given rank.
+
+\begin{theorem}[Eckart--Young]\label{thm:eckart-young}
+    Let $A$ have the SVD $A = \sum_{i=1}^r \sigma_i u_i v_i^\top$, and for $k < r$ let
+    \[A_k = \sigma_1 u_1 v_1^\top + \cdots + \sigma_k u_k v_k^\top.\]
+    Then $\rank(A_k) = k$, and for every matrix $B$ of rank at most $k$,
+    \[\norm{A - A_k}_2 = \sigma_{k+1} \leq \norm{A - B}_2 \qquad \text{and} \qquad \norm{A - A_k}_F = \sqrt{\sigma_{k+1}^2 + \cdots + \sigma_r^2} \leq \norm{A - B}_F.\]
+\end{theorem}
+
+The formulas for $\norm{A - A_k}_2$ and $\norm{A - A_k}_F$ follow from Proposition~\ref{prop:matrix-norms}, since $A - A_k = \sum_{i > k} \sigma_i u_i v_i^\top$ is an SVD of $A - A_k$. We do not prove the optimality.
+
+\begin{example}\label{ex:low-rank}
+    Let $A = \begin{pmatrix} 3 & 0 \\ 4 & 5 \end{pmatrix}$. Then $A^\top A = \begin{pmatrix} 25 & 20 \\ 20 & 25 \end{pmatrix}$ has the eigenvalues $45$ and $5$, with eigenvectors $v_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $v_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. So $\sigma_1 = 3\sqrt{5}$, $\sigma_2 = \sqrt{5}$, and
+    \[u_1 = \frac{1}{3\sqrt{5}} A v_1 = \frac{1}{\sqrt{10}} \begin{pmatrix} 1 \\ 3 \end{pmatrix}, \qquad u_2 = \frac{1}{\sqrt{5}} A v_2 = \frac{1}{\sqrt{10}} \begin{pmatrix} 3 \\ -1 \end{pmatrix}.\]
+    The best rank-$1$ approximation of $A$ is
+    \[A_1 = \sigma_1 u_1 v_1^\top = 3\sqrt{5} \cdot \frac{1}{\sqrt{20}} \begin{pmatrix} 1 \\ 3 \end{pmatrix} \begin{pmatrix} 1 & 1 \end{pmatrix} = \begin{pmatrix} 1.5 & 1.5 \\ 4.5 & 4.5 \end{pmatrix},\]
+    with error $\norm{A - A_1}_F = \norm{A - A_1}_2 = \sigma_2 = \sqrt{5}$. Also, $\norm{A}_2 = 3\sqrt{5} \approx 6.71$.
+\end{example}
+
+\begin{remark}[Low-rank approximation in machine learning]
+    A grayscale image with $m \times n$ pixels is an $m \times n$ matrix. Storing its rank-$k$ approximation $A_k$ requires only the $k(m + n + 1)$ numbers $\sigma_i$, $u_i$, $v_i$, instead of $mn$; for natural images, the singular values decay quickly, and a small $k$ already gives a good approximation (Programming Exercise~P10). The same idea is behind recommender systems, which approximate the matrix of user ratings by a low-rank matrix, latent semantic analysis of text, and the compression of large neural networks.
+\end{remark}
+
+\subsection{The pseudo-inverse}
+
+\begin{definition}[Pseudo-inverse]
+    Let $A = U\Sigma V^\top$ be an SVD of an $m \times n$ matrix $A$. The pseudo-inverse of $A$ is the $n \times m$ matrix
+    \[A^+ = V \Sigma^+ U^\top,\]
+    where $\Sigma^+$ is the $n \times m$ matrix with $(\Sigma^+)_{ii} = \frac{1}{\sigma_i}$ for $i \leq r$ and all other entries $0$.
+\end{definition}
+
+If $A$ is invertible, then $A^+ = A^{-1}$, since $A^{-1} = (U\Sigma V^\top)^{-1} = V\Sigma^{-1}U^\top$.
+
+\begin{proposition}\label{prop:pinv}
+    If $A$ has linearly independent columns, then $A^+ = (A^\top A)^{-1} A^\top$, and $A^+ y$ is the least squares solution of $Aw \approx y$ (Theorem~\ref{thm:least-squares}).
+\end{proposition}
+
+\begin{proof}
+    In this case, $r = n$, and $A^\top A = V\Sigma^\top U^\top U \Sigma V^\top = V \diag(\sigma_1^2, \ldots, \sigma_n^2) V^\top$. Hence
+    \[(A^\top A)^{-1} A^\top = V \diag(\sigma_1^{-2}, \ldots, \sigma_n^{-2}) V^\top V \Sigma^\top U^\top = V \diag(\sigma_1^{-2}, \ldots, \sigma_n^{-2}) \Sigma^\top U^\top = V \Sigma^+ U^\top.\]
+    The second statement is Theorem~\ref{thm:least-squares}.
+\end{proof}
+
+In general, when the columns of $A$ are dependent, the least squares problem has infinitely many solutions, and $A^+y$ is the one with the smallest norm (we state this without proof). NumPy's \py{np.linalg.pinv} and \py{np.linalg.lstsq} use the SVD in this way.
+
+\subsection{Principal component analysis}\label{sec:pca}
+
+Principal component analysis (PCA) is the most widely used method to reduce the dimension of data. Let $x_1, \ldots, x_N \in \mathbb{R}^d$ be data points, which we assume to be centered, i.e., $\sum_i x_i = 0$ (otherwise, subtract the mean from every data point first). Let $X$ be the $N \times d$ data matrix whose rows are $x_1^\top, \ldots, x_N^\top$, and let
+\[S = \frac{1}{N} X^\top X = \frac{1}{N} \sum_{i=1}^N x_i x_i^\top\]
+be the (sample) covariance matrix, which is symmetric positive semidefinite.
+
+We look for a $k$-dimensional subspace $U$ such that the projected data points $\pi_U(x_i)$ are as close as possible to the original ones, i.e., such that the reconstruction error $\sum_i \norm{x_i - \pi_U(x_i)}^2$ is as small as possible. By Pythagoras, $\norm{x_i}^2 = \norm{\pi_U(x_i)}^2 + \norm{x_i - \pi_U(x_i)}^2$, so equivalently, we look for the subspace for which the projected data has the largest spread $\sum_i \norm{\pi_U(x_i)}^2$.
+
+\begin{theorem}[PCA]\label{thm:pca}
+    Let $q_1, \ldots, q_d$ be orthonormal eigenvectors of $S$ with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_d \geq 0$. Among all $k$-dimensional subspaces $U$ of $\mathbb{R}^d$, the reconstruction error is smallest for $U = \Span\{q_1, \ldots, q_k\}$, and then
+    \[\frac{1}{N}\sum_{i=1}^N \norm{x_i - \pi_U(x_i)}^2 = \lambda_{k+1} + \cdots + \lambda_d.\]
+\end{theorem}
+
+\begin{proof}[Proof for $k = 1$]
+    Let $U = \Span\{b\}$ with $\norm{b} = 1$. Then $\pi_U(x_i) = (b^\top x_i) b$, and
+    \[\frac{1}{N}\sum_{i=1}^N \norm{\pi_U(x_i)}^2 = \frac{1}{N}\sum_{i=1}^N (b^\top x_i)^2 = \frac{1}{N}\norm{Xb}^2 = b^\top S b,\]
+    which by Proposition~\ref{prop:rayleigh} is at most $\lambda_1$, with equality for $b = q_1$. The error formula follows from Pythagoras, since $\frac{1}{N}\sum_i \norm{x_i}^2 = \frac{1}{N}\tr(X^\top X) = \tr(S) = \lambda_1 + \cdots + \lambda_d$. The general case can be proved similarly; we omit it.
+\end{proof}
+
+The vectors $q_1, q_2, \ldots$ are called the principal components, or principal directions, of the data, and $\lambda_i = q_i^\top S q_i$ is the variance of the data in the direction $q_i$. The fraction $\frac{\lambda_1 + \cdots + \lambda_k}{\lambda_1 + \cdots + \lambda_d}$ is the proportion of the variance explained by the first $k$ principal components. In practice, PCA is computed with the SVD of the data matrix: if $X = \tilde{U} \tilde{\Sigma} \tilde{V}^\top$, then
+\[S = \frac{1}{N} X^\top X = \tilde{V}\, \frac{\tilde{\Sigma}^\top \tilde{\Sigma}}{N}\, \tilde{V}^\top,\]
+so the principal components are the right singular vectors of $X$, and $\lambda_i = \sigma_i^2 / N$. The coordinates of the data in the principal directions are the entries of $X\tilde{V}$.
+
+\begin{example}\label{ex:pca}
+    Consider the four centered data points $(2, 2)$, $(-2, -2)$, $(1, -1)$ and $(-1, 1)$ in $\mathbb{R}^2$. Then
+    \[X^\top X = \begin{pmatrix} 10 & 6 \\ 6 & 10 \end{pmatrix}, \qquad S = \frac{1}{4} X^\top X = \begin{pmatrix} 2.5 & 1.5 \\ 1.5 & 2.5 \end{pmatrix},\]
+    with eigenvalues $4$ and $1$ and eigenvectors $q_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $q_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. The first principal component explains $\frac{4}{4 + 1} = 80\%$ of the variance. Projecting onto $\Span\{q_1\}$ keeps the first two points, and maps the last two to $0$; the average reconstruction error is $\frac{1}{4}(0 + 0 + 2 + 2) = 1 = \lambda_2$, as predicted by Theorem~\ref{thm:pca}.
+\end{example}
+
 \section{Key Takeaways}
 \begin{itemize}[leftmargin=*]
     \item A norm measures length: it is positive definite, absolutely homogeneous, and satisfies the triangle inequality. Important examples on $\mathbb{R}^n$ are the $\ell_1$, $\ell_2$ and $\ell_\infty$ norms, whose unit balls are a diamond, a ball and a cube.
@@ -1031,6 +1300,9 @@ The Givens rotation $G_{ij}(\theta)$ rotates the plane spanned by $e_i$ and $e_j
     \item A hyperplane $\{x : w^\top x = c\}$ has normal vector $w$; linear classifiers use hyperplanes as decision boundaries, and the distance of $x$ to the hyperplane is $\frac{|w^\top x - c|}{\norm{w}}$.
     \item The orthogonal projection onto $U = \col(B)$ is $\pi_U(x) = B(B^\top B)^{-1}B^\top x$; it is the point of $U$ closest to $x$. Least squares regression projects the target vector onto the column space of the design matrix, which leads to the normal equations $A^\top A w = A^\top y$.
     \item Rotations are orthogonal matrices with determinant $1$. They preserve lengths, angles and orientation; rotations of the plane commute, but rotations of $\mathbb{R}^3$ do not.
+    \item Spectral theorem: a symmetric matrix has real eigenvalues and an orthonormal basis of eigenvectors, $A = Q\Lambda Q^\top = \sum_i \lambda_i q_i q_i^\top$. It is positive definite if and only if all eigenvalues are positive, and $\max_{\norm{x} = 1} x^\top A x = \lambda_{\max}$.
+    \item Every matrix has a singular value decomposition $A = U\Sigma V^\top = \sum_{i=1}^r \sigma_i u_i v_i^\top$: rotate, scale the axes by the singular values, rotate. The $\sigma_i^2$ are the eigenvalues of $A^\top A$, $r = \rank(A)$, $\norm{A}_2 = \sigma_1$ and $\norm{A}_F^2 = \sum_i \sigma_i^2$.
+    \item Keeping the $k$ largest singular values gives the best rank-$k$ approximation (Eckart--Young), with applications to compression and recommender systems. PCA projects centered data onto the eigenvectors of the covariance matrix with the largest eigenvalues, i.e., onto the top right singular vectors of the data matrix.
 \end{itemize}
 
 \section{Exercises}\label{sec:exercises}
@@ -1059,6 +1331,17 @@ The Givens rotation $G_{ij}(\theta)$ rotates the plane spanned by $e_i$ and $e_j
     \item Find the least squares line for the data points $(0, 1)$, $(1, 1)$ and $(2, 3)$, and check that the residual vector is orthogonal to the columns of the design matrix.
     \item Show that the product of two orthogonal $2 \times 2$ matrices with determinant $-1$ (for example, two reflections) is a rotation. Compute $R_1(\theta)^\top R_1(\theta)$ and $\det R_1(\theta)$.
     \item Use the Cauchy--Schwarz inequality to show that $(x_1 + \cdots + x_n)^2 \leq n(x_1^2 + \cdots + x_n^2)$. Conclude that if $a, b, c \geq 0$ and $a + b + c = 1$, then $a^2 + b^2 + c^2 \geq \frac{1}{3}$. When does equality hold?
+    \item Find the spectral decomposition $A = Q\Lambda Q^\top$ of $A = \begin{pmatrix} 5 & 2 \\ 2 & 2 \end{pmatrix}$, and write $A$ as $\lambda_1 q_1 q_1^\top + \lambda_2 q_2 q_2^\top$. Is $A$ positive definite? Conversely, show that every matrix of the form $Q\Lambda Q^\top$, with $Q$ orthogonal and $\Lambda$ diagonal, is symmetric.
+    \item Find the largest and the smallest value of $x^\top A x$ over all unit vectors $x \in \mathbb{R}^2$, for $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, and the unit vectors where they are attained.
+    \item Compute an SVD of (a) $\begin{pmatrix} 0 & 2 \\ 1 & 0 \end{pmatrix}$ and (b) $\begin{pmatrix} 2 & 2 \\ 1 & 1 \end{pmatrix}$. For (b), write $A$ as $\sigma_1 u_1 v_1^\top$, and compute the pseudo-inverse $A^+$.
+    \item Show that:
+    \begin{enumerate}[label=(\alph*)]
+        \item all singular values of an orthogonal matrix are equal to $1$;
+        \item the singular values of a symmetric matrix are the absolute values of its nonzero eigenvalues;
+        \item $A^\top A$ and $AA^\top$ have the same nonzero eigenvalues;
+        \item $\norm{A}_2 = \norm{A^\top}_2$.
+    \end{enumerate}
+    \item Carry out PCA by hand for the four data points $(3, 3)$, $(-3, -3)$, $(1, -1)$, $(-1, 1)$: compute the covariance matrix, the principal components, and the proportion of the variance explained by the first principal component. Project the data onto the first principal component, and compute the average reconstruction error.
 \end{enumerate}
 
 \section{Programming Exercises}\label{sec:programming}
@@ -1136,6 +1419,37 @@ X1 = rng.normal([1.5, 1.0], [1.0, 0.3], size=(100, 2))  # class 1
         \item Generate linearly separable data, e.g., $50$ points on each side of the line $x_1 + x_2 = 2$ (discard points that are closer than $0.2$ to the line), and run the perceptron.
         \item Using Theorem~\ref{thm:distance-hyperplane}, compute the margin of the learned classifier, i.e., the smallest distance of a training point to the decision boundary. Compare it with the margin of the classifier $w = (1, 1)$, $b = -2$.
         \item Count the number of updates the perceptron needs. How does it change when you discard points closer than $0.5$ (instead of $0.2$) to the line?
+    \end{itemize}
+
+    \item \textbf{The spectral theorem in practice.} For symmetric matrices, use \py{np.linalg.eigh}, which returns real eigenvalues in increasing order and orthonormal eigenvectors.
+    \begin{itemize}
+        \item For a random symmetric matrix \py{A = B + B.T} (with \py{B = rng.normal(size=(5, 5))}), check that \py{Q.T @ Q} is close to $I_5$ and that \py{Q @ np.diag(lam) @ Q.T} is close to $A$. Check the spectral decomposition $A = \sum_i \lambda_i q_i q_i^\top$ as well.
+        \item Write a function \py{is_spd(A)} based on Corollary~\ref{cor:spd-eigenvalues}, and compare it with your test from P2.
+        \item Check Proposition~\ref{prop:rayleigh} numerically: evaluate the Rayleigh quotient $\frac{x^\top A x}{x^\top x}$ at $10\,000$ random vectors, and compare the largest and smallest values you find with the largest and smallest eigenvalues.
+    \end{itemize}
+
+    \item \textbf{Image compression with the SVD.} Load a grayscale image as a 2D array \py{A}, for example with \py{A = plt.imread("photo.png").mean(axis=2)} for a color image (with \py{import matplotlib.pyplot as plt}), or create one, e.g., from the function $\sin(x)\cos(y) + \frac{x}{10}$ on a $200 \times 300$ grid plus some noise.
+    \begin{itemize}
+        \item Compute \py{U, s, Vt = np.linalg.svd(A, full_matrices=False)} and plot the singular values on a logarithmic scale. How fast do they decay?
+        \item For $k = 1, 5, 20, 50$, compute the rank-$k$ approximation $A_k$ (Theorem~\ref{thm:eckart-young}) and display it as an image. Compare \py{np.linalg.norm(A - A_k)} with $\sqrt{\sigma_{k+1}^2 + \cdots + \sigma_r^2}$, and compute the storage ratio $\frac{k(m + n + 1)}{mn}$.
+        \item Check numerically that $\norm{A}_2 = \sigma_1$ (\py{np.linalg.norm(A, 2)}) and $\norm{A}_F^2 = \sum_i \sigma_i^2$.
+    \end{itemize}
+
+    \item \textbf{Principal component analysis.} Generate $500$ data points from a correlated Gaussian distribution:
+\begin{lstlisting}
+C = np.array([[3.0, 1.5], [1.5, 1.0]])  # covariance matrix
+X = rng.multivariate_normal([2, -1], C, size=500)
+\end{lstlisting}
+    \begin{itemize}
+        \item Center the data, and compute the principal components in two ways: as eigenvectors of the covariance matrix $S = \frac{1}{N}X^\top X$ (with \py{np.linalg.eigh}), and as right singular vectors of $X$ (with \py{np.linalg.svd}). Check that they agree (up to sign), and that $\lambda_i = \sigma_i^2 / N$. How do they compare with the eigenvectors of $C$?
+        \item Plot the data together with the two principal directions, scaled by $\sqrt{\lambda_i}$. What proportion of the variance does the first principal component explain?
+        \item Project the data onto the first principal component, plot the projected points, and check that the average reconstruction error is $\lambda_2$ (Theorem~\ref{thm:pca}).
+        \item Generate $500$ points in $\mathbb{R}^{10}$ that lie close to a $2$-dimensional subspace, for example
+\begin{lstlisting}
+X = rng.normal(size=(500, 2)) @ rng.normal(size=(2, 10))
+X = X + 0.05 * rng.normal(size=(500, 10))  # small noise
+\end{lstlisting}
+        Plot the $10$ eigenvalues of the covariance matrix. How can you see from this plot that the data is essentially $2$-dimensional?
     \end{itemize}
 \end{enumerate}
 
