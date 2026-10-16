@@ -1,0 +1,516 @@
+\documentclass[11pt]{article}
+
+% Practice problems for Lecture 1
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{Lecture 1: Practice Problems}
+\author{Linear Algebra}
+\date{\today}
+
+\theoremstyle{definition}
+\newtheorem{problem}{Problem}[section]
+
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Null}{null}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\row}{row}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\RREF}{RREF}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+
+\begin{document}
+
+\maketitle
+
+\section{Number Sets and Fields}
+
+\begin{problem}\label{pr:numbers}
+    For each of the numbers
+    \[\frac{7}{3}, \qquad \sqrt{49}, \qquad \sqrt{12}, \qquad 0.25, \qquad \pi - \pi, \qquad (1 + i)(1 - i), \qquad 2 + 3i,\]
+    decide which of the sets $\mathbb{Z}$, $\mathbb{Q}$, $\mathbb{R}$ and $\mathbb{C}$ it belongs to.
+\end{problem}
+
+\begin{problem}\label{pr:field-fail}
+    Each of the following sets, with the usual addition and multiplication, is not a field. For each set, find a field axiom that fails.
+    \begin{enumerate}[label=(\alph*)]
+        \item $\mathbb{N} = \{0, 1, 2, \ldots\}$;
+        \item the set $\mathbb{R}_{>0}$ of positive real numbers;
+        \item the set $\{0, 1\}$;
+        \item the set $2\mathbb{Z} = \{\ldots, -4, -2, 0, 2, 4, \ldots\}$ of even integers.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:Qsqrt2}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\mathbb{Q}(\sqrt{2}) = \{a + b\sqrt{2} : a, b \in \mathbb{Q}\}$, with the usual addition and multiplication, is a field. (Hint: to find the inverse of $a + b\sqrt{2} \neq 0$, multiply by $\frac{a - b\sqrt{2}}{a - b\sqrt{2}}$. Why is $a^2 - 2b^2 \neq 0$?)
+        \item Is $\{a + b\sqrt{2} : a, b \in \mathbb{Z}\}$ a field?
+    \end{enumerate}
+\end{problem}
+
+\section{Vector Spaces}
+
+\begin{problem}\label{pr:weird-ops}
+    On $\mathbb{R}^2$, keep the usual vector addition, but define a new scalar multiplication. In each case, decide which vector space axioms hold and which fail.
+    \begin{enumerate}[label=(\alph*)]
+        \item $c \odot (x, y) = (cx, 0)$;
+        \item $c \odot (x, y) = (cx, y)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:positive-reals}
+    On the set $V = \mathbb{R}_{>0}$ of positive real numbers, define ``addition'' and ``scalar multiplication'' by
+    \[u \oplus v = uv \qquad \text{and} \qquad c \odot u = u^c \qquad (u, v \in V, \ c \in \mathbb{R}).\]
+    Show that $V$ is a vector space over $\mathbb{R}$. What is its zero vector, and what is the additive inverse of $u$?
+\end{problem}
+
+\begin{problem}\label{pr:functions}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the set of all functions $f: \mathbb{R} \to \mathbb{R}$, with $(f + g)(x) = f(x) + g(x)$ and $(cf)(x) = c f(x)$, is a vector space over $\mathbb{R}$. What is its zero vector?
+        \item Is the set of all functions $f: \mathbb{R} \to \mathbb{R}$ with $f(0) = 1$, with the same operations, a vector space?
+    \end{enumerate}
+\end{problem}
+
+\section{Bases and Dimension}
+
+\begin{problem}\label{pr:indep}
+    Decide whether the vectors $(1, 2, 1)$, $(2, 1, 0)$ and $(1, -1, -1)$ in $\mathbb{R}^3$ are linearly independent. If they are not, find a nontrivial linear combination that equals $0$, and find a basis and the dimension of their span.
+\end{problem}
+
+\begin{problem}\label{pr:basisU}
+    One can check that $U = \{(x, y, z, w) \in \mathbb{R}^4 : x + y + z + w = 0 \text{ and } x = w\}$ is a vector space. Find a basis of $U$ and its dimension.
+\end{problem}
+
+\begin{problem}\label{pr:taylor-basis}
+    Show that $\mathcal{B} = (1, \ x - 1, \ (x - 1)^2)$ is an ordered basis of the vector space $\mathbb{R}[x]_{\leq 2}$ of polynomials of degree at most $2$. Find the coordinate vectors $[x^2]_{\mathcal{B}}$ and $[3 + 2x + x^2]_{\mathcal{B}}$.
+\end{problem}
+
+\section{Linear Transformations}
+
+\begin{problem}\label{pr:linear}
+    Which of the following maps are linear transformations? Justify your answers.
+    \begin{enumerate}[label=(\alph*)]
+        \item $T: \mathbb{R}^2 \to \mathbb{R}^2$, $T(x, y) = (x - y, 3x)$;
+        \item $T: \mathbb{R}^2 \to \mathbb{R}^2$, $T(x, y) = (x + y, 1)$;
+        \item $T: \mathbb{R}^3 \to \mathbb{R}^2$, $T(x, y, z) = (xy, z)$;
+        \item $D: \mathbb{R}[x]_{\leq 3} \to \mathbb{R}[x]_{\leq 3}$, $D(p) = p'$ (the derivative);
+        \item $T: \mathbb{R} \to \mathbb{R}$, $T(x) = |x|$;
+        \item $T: \mathbb{R}^2 \to \mathbb{R}^2$, $T(x, y) = (y, x)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:kerim}
+    Let $T: \mathbb{R}^3 \to \mathbb{R}^3$ be defined by $T(x, y, z) = (x + y, \ y + z, \ x - z)$. Find the kernel and the image of $T$. Is $T$ injective? Is it surjective?
+\end{problem}
+
+\begin{problem}\label{pr:gallery}
+    For each of the following linear transformations of the plane, compute $T(e_1)$ and $T(e_2)$, sketch the image of the unit square and of the letter F from the gallery figure in the lecture, and find the kernel and the image of $T$.
+    \begin{enumerate}[label=(\alph*)]
+        \item the reflection in the line $y = x$, $T(x, y) = (y, x)$;
+        \item the projection onto the $x$-axis, $T(x, y) = (x, 0)$;
+        \item the shear $T(x, y) = (x + 2y, y)$;
+        \item $T(x, y) = (-x, -y)$.
+    \end{enumerate}
+    In which cases is the image of the letter F mirrored?
+\end{problem}
+
+\begin{problem}\label{pr:derivative}
+    Let $D: \mathbb{R}[x]_{\leq 3} \to \mathbb{R}[x]_{\leq 3}$, $D(p) = p'$. Find the kernel and the image of $D$, and decide whether $D$ is injective or surjective. What is $D \circ D \circ D \circ D$?
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:composition}
+    Let $S$, $T$, $U$ be nonempty sets, and let $f: S \to T$ and $g: T \to U$ be functions.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that if $g \circ f$ is injective, then $f$ is injective.
+        \item Give an example in which $g \circ f$ is injective, but $g$ is not.
+        \item Show that if $g \circ f$ is surjective, then $g$ is surjective.
+        \item Let $A: \mathbb{R}^m \to \mathbb{R}^n$ and $B: \mathbb{R}^n \to \mathbb{R}^m$ be linear transformations with $B \circ A = \mathrm{id}_{\mathbb{R}^m}$. Which of $A$ and $B$ must be injective, and which must be surjective?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:distributive}
+    Let $\mathcal{F}$ be the set of all functions $\mathbb{R} \to \mathbb{R}$, with pointwise addition $(f + g)(x) = f(x) + g(x)$ and composition $(f \circ g)(x) = f(g(x))$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\circ$ is not commutative.
+        \item Show that the right distributive law $(g + h) \circ f = (g \circ f) + (h \circ f)$ always holds.
+        \item Show that the left distributive law $f \circ (g + h) = (f \circ g) + (f \circ h)$ can fail. (Try $f(x) = x^2$.)
+        \item Show that the left distributive law holds whenever $f$ is linear, i.e., $f(x) = cx$ for some $c \in \mathbb{R}$. Compare with the distributive laws for matrix multiplication.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:iso}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $T: \mathbb{R}[x]_{\leq 3} \to \mathbb{R}^4$, $T(p) = \big(p(0), p'(0), \frac{1}{2}p''(0), \frac{1}{6}p'''(0)\big)$, is an isomorphism. (Hint: compute $T(a_0 + a_1 x + a_2 x^2 + a_3 x^3)$.)
+        \item Show that the vector space $V$ of Problem~\ref{pr:positive-reals} is isomorphic to $\mathbb{R}$. (Hint: logarithm.)
+        \item Which of the following pairs of real vector spaces are isomorphic: $\mathbb{R}[x]_{\leq 5}$ and $\mathbb{R}^6$; $\mathbb{C}$ (over $\mathbb{R}$) and $\mathbb{R}^3$; $\mathbb{R}^2 \times \mathbb{R}^3$ and $\mathbb{R}^5$?
+    \end{enumerate}
+\end{problem}
+
+\section{Subspaces}
+
+\begin{problem}\label{pr:subspaces}
+    Which of the following subsets of $\mathbb{R}^3$ are subspaces?
+    \begin{enumerate}[label=(\alph*)]
+        \item $\{(x, y, z) : x = 2y\}$;
+        \item $\{(x, y, z) : z = x^2\}$;
+        \item $\{(x, y, z) : x + y = z + 1\}$;
+        \item $\{(x, y, z) : x = 0 \text{ or } y = 0\}$;
+        \item $\{(t, 2t, 3t) : t \in \mathbb{R}\}$;
+        \item $\{(x, y, z) : x + y + z = 0 \text{ and } x = y\}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:intersection}
+    Let $U$ and $W$ be subspaces of a vector space $V$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $U \cap W$ is a subspace of $V$.
+        \item Show that $U \cup W$ need not be a subspace.
+        \item Show that $U \cup W$ is a subspace if and only if $U \subseteq W$ or $W \subseteq U$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:poly-subspace}
+    Show that $\{p \in \mathbb{R}[x]_{\leq 3} : p(1) = 0\}$ is a subspace of $\mathbb{R}[x]_{\leq 3}$ by writing it as the kernel of a linear transformation. Find a basis of this subspace and its dimension.
+\end{problem}
+
+\section{Matrices}
+
+\subsection{Matrix Operations}
+
+\begin{problem}\label{pr:matvec}
+    Let $A = \begin{pmatrix} 1 & 0 & 2 \\ -1 & 3 & 1 \end{pmatrix}$ and $x = (2, 1, -1)^\top$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $Ax$ in two ways: entry by entry, and as a linear combination of the columns of $A$.
+        \item Compute $A^\top$, $AA^\top$ and $A^\top A$. Which of these matrices are symmetric?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:sizes}
+    Let $A$ be a $2 \times 3$ matrix, $B$ a $3 \times 3$ matrix and $C$ a $3 \times 2$ matrix. Which of the following expressions are defined, and what are their sizes?
+    \[AB, \qquad BA, \qquad AC, \qquad CA, \qquad A + C^\top, \qquad A^\top + C, \qquad ABC.\]
+\end{problem}
+
+\begin{problem}\label{pr:reflect-rotate}
+    Let $R = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$ be the rotation by $90^\circ$, and $F = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}$ the reflection in the $x$-axis. Compute $FR$ and $RF$, and describe both as geometric transformations. What does this tell you about the order in which linear transformations are composed?
+\end{problem}
+
+\begin{problem}\label{pr:rotation-addition}
+    Let $R_\theta = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}$ be the rotation by the angle $\theta$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Explain geometrically why $R_\alpha R_\beta = R_{\alpha + \beta}$.
+        \item Multiply out $R_\alpha R_\beta$, and deduce the addition formulas for $\cos(\alpha + \beta)$ and $\sin(\alpha + \beta)$.
+        \item Show that $(R_\theta)^n = R_{n\theta}$, and conclude that $(R_{2\pi/n})^n = I_2$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:complex-matrix}
+    For a complex number $z = a + bi$, let $M(z) = \begin{pmatrix} a & -b \\ b & a \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $M(z + w) = M(z) + M(w)$ and $M(zw) = M(z) M(w)$ for all $z, w \in \mathbb{C}$.
+        \item Show that $M(1 + i) = \sqrt{2}\, R_{\pi/4}$, with $R_\theta$ as in Problem~\ref{pr:rotation-addition}.
+        \item Use parts (a) and (b) to compute $(1 + i)^{10}$.
+    \end{enumerate}
+\end{problem}
+
+\subsection{Row Reduction}
+
+\begin{problem}\label{pr:ref}
+    Which of the following matrices are in row echelon form? Which are in reduced row echelon form?
+    \[\begin{pmatrix} 1 & 3 & 0 & 2 \\ 0 & 0 & 1 & 4 \\ 0 & 0 & 0 & 0 \end{pmatrix}, \quad \begin{pmatrix} 1 & 3 & 1 \\ 0 & 1 & 2 \\ 0 & 0 & 0 \end{pmatrix}, \quad \begin{pmatrix} 0 & 0 & 1 \\ 0 & 1 & 0 \\ 1 & 0 & 0 \end{pmatrix}, \quad \begin{pmatrix} 1 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 1 \end{pmatrix}, \quad \begin{pmatrix} 2 & 1 \\ 0 & 1 \end{pmatrix}.\]
+\end{problem}
+
+\begin{problem}\label{pr:rref-compute}
+    Find the reduced row echelon form and the rank of
+    \[P = \begin{pmatrix} 1 & 2 & 1 & 0 \\ 2 & 4 & 0 & 2 \\ 1 & 2 & 3 & -2 \end{pmatrix}.\]
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:system}
+    Consider the system of linear equations
+    \begin{align*}
+        w + 3x + 2y + 2z &= 0, \\
+        w + 4x + y &= 0, \\
+        3w + 5x + 10y + 14z &= 0, \\
+        2w + 5x + 5y + 6z &= 0.
+    \end{align*}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find all solutions $(w, x, y, z) \in \mathbb{R}^4$ by bringing the coefficient matrix into reduced row echelon form.
+        \item Check that $(-5, 1, 1, 0)$ and $(0, 2, -8, 5)$ are solutions. Is every solution a scalar multiple of $(-5, 1, 1, 0)$?
+        \item What is the dimension of the space of solutions?
+    \end{enumerate}
+\end{problem}
+
+\subsection{The Inverse of a Matrix}
+
+\begin{problem}\label{pr:inverse2}
+    Find the inverse of $A = \begin{pmatrix} 3 & 1 \\ 5 & 2 \end{pmatrix}$ by solving the equation $Ax = y$ for $x$, as in the lecture. Check your answer by computing $AA^{-1}$.
+\end{problem}
+
+\begin{problem}\label{pr:inverse3}
+    Use the Gauss--Jordan method to find the inverse of
+    \[A = \begin{pmatrix} 1 & 2 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 1 \end{pmatrix},\]
+    and use it to solve the system $Ax = (1, 2, 3)^\top$.
+\end{problem}
+
+\begin{problem}\label{pr:arithmetic}
+    \begin{enumerate}[label=(\alph*)]
+        \item Apply the Gauss--Jordan method to $A = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 3 & 4 \\ 3 & 4 & 5 \end{pmatrix}$ to show that $A$ is singular, and find a nonzero vector $x$ with $Ax = 0$.
+        \item Show more generally that every $3 \times 3$ matrix whose rows form an arithmetic progression (i.e., row $2$ $-$ row $1$ $=$ row $3$ $-$ row $2$) is singular.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:elementary}
+    Let $A = \begin{pmatrix} 0 & 2 \\ 1 & 3 \end{pmatrix}$. Find elementary matrices $E_1$, $E_2$, $E_3$ such that $E_3 E_2 E_1 A = I_2$. Use them to write $A^{-1}$, and also $A$ itself, as a product of elementary matrices.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:idempotent}
+    A square matrix $A$ with $A^2 = A$ is called idempotent.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the only invertible idempotent matrix is the identity.
+        \item Show that $P = \begin{pmatrix} 1 & 1 \\ 0 & 0 \end{pmatrix}$ is idempotent, and find the kernel and the image of $T_P$. Describe $T_P$ geometrically.
+        \item Show that if $A$ is idempotent, then so is $I - A$, and that $A(I - A) = 0$.
+        \item Let $A$ be an idempotent $n \times n$ matrix. Show that $\im(T_A) \cap \ker(T_A) = \{0\}$, and that every $v \in \mathbb{R}^n$ can be written as $v = Av + (v - Av)$, where $Av \in \im(T_A)$ and $v - Av \in \ker(T_A)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:nilpotent}
+    Let $N = \begin{pmatrix} 0 & 1 & 2 \\ 0 & 0 & 3 \\ 0 & 0 & 0 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $N^2$ and $N^3$.
+        \item Show that $(I - N)(I + N + N^2) = I$, and compute $(I - N)^{-1}$.
+        \item More generally, show that if $N^k = 0$ for some $k \geq 1$, then $I - N$ is invertible, with $(I - N)^{-1} = I + N + N^2 + \cdots + N^{k-1}$. (Compare with the geometric series $\frac{1}{1 - x} = 1 + x + x^2 + \cdots$.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:interpolation}
+    Let $T: \mathbb{R}[x]_{\leq 2} \to \mathbb{R}^3$, $T(p) = \big(p(-1), p(0), p(1)\big)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the matrix of $T$ with respect to the ordered basis $(1, x, x^2)$ of $\mathbb{R}[x]_{\leq 2}$ and the standard basis of $\mathbb{R}^3$.
+        \item Show that this matrix is invertible, and conclude that $T$ is an isomorphism.
+        \item Find the polynomial $p \in \mathbb{R}[x]_{\leq 2}$ with $p(-1) = 0$, $p(0) = 1$, $p(1) = 0$, and the polynomial $q$ with $q(-1) = 1$, $q(0) = 2$, $q(1) = 5$.
+    \end{enumerate}
+\end{problem}
+
+\subsection{Special Types of Matrices}
+
+\begin{problem}\label{pr:dims-special}
+    Find the dimensions of the following vector spaces, and a basis of each of the first two:
+    \begin{enumerate}[label=(\alph*)]
+        \item $\mathrm{Sym}_2$;
+        \item $\mathrm{Skew}_2$;
+        \item $\mathbb{R}^{2 \times 3}$;
+        \item $\mathrm{Sym}_4$;
+        \item $\mathrm{Skew}_4$;
+        \item the space of upper triangular $3 \times 3$ matrices with trace $0$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:groups}
+    Which of the following sets of matrices are matrix groups, i.e., contain the identity and are closed under multiplication and under taking inverses?
+    \begin{enumerate}[label=(\alph*)]
+        \item the invertible diagonal $n \times n$ matrices;
+        \item the invertible symmetric $2 \times 2$ matrices;
+        \item the $2 \times 2$ matrices $A$ with $A^2 = I_2$;
+        \item the upper triangular $n \times n$ matrices whose diagonal entries are all equal to $1$;
+        \item the $n \times n$ permutation matrices. How many of them are there?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:inverse-triangular}
+    Use the Gauss--Jordan method to find the inverse of $\begin{pmatrix} 1 & 2 & 3 \\ 0 & 1 & 4 \\ 0 & 0 & 1 \end{pmatrix}$. Then explain why the inverse of every invertible upper triangular matrix is again upper triangular.
+\end{problem}
+
+\begin{problem}\label{pr:orthogonal2}
+    Find all orthogonal $2 \times 2$ matrices. (Hint: for $Q = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$, the condition $Q^\top Q = I_2$ means $a^2 + c^2 = 1$, $b^2 + d^2 = 1$ and $ab + cd = 0$. Write $(a, c) = (\cos\theta, \sin\theta)$.) Which of them are rotations, and which are reflections?
+\end{problem}
+
+\subsection{Trace and Determinant}
+
+\begin{problem}[$\star$]\label{pr:tridiagonal}
+    Let $D_n$ be the determinant of the $n \times n$ matrix with $2$s on the diagonal, $1$s directly above and below the diagonal, and $0$s everywhere else; for example,
+    \[D_3 = \det \begin{pmatrix} 2 & 1 & 0 \\ 1 & 2 & 1 \\ 0 & 1 & 2 \end{pmatrix}.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $D_1$, $D_2$ and $D_3$.
+        \item Expand along the first row to show that $D_n = 2D_{n-1} - D_{n-2}$ for $n \geq 3$.
+        \item Find a formula for $D_n$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:det4}
+    Compute the determinant of
+    \[A = \begin{pmatrix} 2 & 0 & 1 & 3 \\ 1 & 1 & 0 & 2 \\ 0 & 3 & 1 & 1 \\ 1 & 0 & 2 & 1 \end{pmatrix}\]
+    in two ways: by cofactor expansion along a well-chosen row or column, and by row reduction. Is $A$ invertible?
+\end{problem}
+
+\begin{problem}\label{pr:det-rules}
+    Let $A$ and $B$ be $3 \times 3$ matrices with $\det(A) = 2$ and $\det(B) = -3$. Compute
+    \[\det(AB), \qquad \det(A^\top B^2), \qquad \det(3A), \qquad \det(A^{-1}B), \qquad \det(BAB^{-1}).\]
+    Let $C$ be obtained from $A$ by swapping rows $1$ and $3$ and then adding $5$ times row $1$ to row $2$. What is $\det(C)$?
+\end{problem}
+
+\begin{problem}\label{pr:vandermonde}
+    \begin{enumerate}[label=(\alph*)]
+        \item Use row operations to show that
+        \[\det \begin{pmatrix} 1 & a & a^2 \\ 1 & b & b^2 \\ 1 & c & c^2 \end{pmatrix} = (b - a)(c - a)(c - b).\]
+        \item Conclude that for distinct numbers $a$, $b$, $c$ and arbitrary values $y_1$, $y_2$, $y_3$, there is exactly one polynomial $p \in \mathbb{R}[x]_{\leq 2}$ with $p(a) = y_1$, $p(b) = y_2$ and $p(c) = y_3$. Compare with Problem~\ref{pr:interpolation}.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:lambda}
+    Let $A = \begin{pmatrix} 3 & 5 & 3 \\ 1 & 7 & 3 \\ 1 & 2 & 8 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item For which of the numbers $\lambda = 2, 3, 5$ is the matrix $A - \lambda I_3$ singular?
+        \item For each such $\lambda$, find a nonzero vector $x$ with $Ax = \lambda x$.
+        \item Without computing any determinant, find another number $\lambda$ and a nonzero vector $x$ with $Ax = \lambda x$. (Hint: add up the entries in each row of $A$.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:upper5}
+    Let
+    \[A = \begin{pmatrix} 1 & 2 & 3 & 4 & 5 \\ 0 & 2 & 3 & 4 & 5 \\ 0 & 0 & 3 & 4 & 5 \\ 0 & 0 & 0 & 4 & 5 \\ 0 & 0 & 0 & 0 & 5 \end{pmatrix}.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\det(A)$. Is $A$ invertible? Can $A$ be transformed into $I_5$ by elementary row operations?
+        \item Find the last row of $A^2$ without computing all of $A^2$.
+        \item Explain why $A - I_5$ and $A - 2I_5$ are singular. Find nonzero vectors $x$ and $y$ with $Ax = x$ and $Ay = 2y$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:area}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the area of the triangle with vertices $(1, 1)$, $(4, 2)$ and $(2, 5)$. (Hint: move one vertex to the origin.)
+        \item Let $T(x, y) = (2x - y, x + 3y)$. Find the area of the image under $T$ of the unit square and of the unit disk.
+        \item Show that the image of the unit disk under $T(x, y) = (ax, by)$, with $a, b > 0$, is the ellipse $\frac{x^2}{a^2} + \frac{y^2}{b^2} \leq 1$, and conclude that its area is $\pi ab$.
+        \item Which of the transformations of Problem~\ref{pr:gallery} reverse the orientation? Compare with your sketches of the letter F.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:fibonacci}
+    The Fibonacci numbers are defined by $F_0 = 0$, $F_1 = 1$ and $F_{n+1} = F_n + F_{n-1}$. Let $M = \begin{pmatrix} 1 & 1 \\ 1 & 0 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show by induction that $M^n = \begin{pmatrix} F_{n+1} & F_n \\ F_n & F_{n-1} \end{pmatrix}$ for $n \geq 1$, and compute $M^{10}$.
+        \item Use the product rule for determinants to prove Cassini's identity $F_{n+1}F_{n-1} - F_n^2 = (-1)^n$. Check it for $n = 10$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:trace}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find $2 \times 2$ matrices $A$ and $B$ with $AB - BA = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}$. Why is there no such pair with $AB - BA = I_2$?
+        \item Show that if $\tr(A^\top A) = 0$, then $A = 0$.
+        \item Let $A$ be an $n \times n$ matrix with $\tr(AX) = 0$ for every $n \times n$ matrix $X$. Show that $A = 0$. (Hint: try $X = e_{ji}$, the matrix with a single $1$ in position $(j, i)$.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:01-matrices}
+    \begin{enumerate}[label=(\alph*)]
+        \item How many of the $16$ matrices $\begin{pmatrix} a & b \\ c & d \end{pmatrix}$ with all entries in $\{0, 1\}$ are invertible?
+        \item Show that a square matrix $A$ with integer entries has an inverse with integer entries if and only if $\det(A) = \pm 1$.
+    \end{enumerate}
+\end{problem}
+
+\section{Null Space, Column Space and Rank}
+
+\begin{problem}\label{pr:bases-B}
+    Let $B = \begin{pmatrix} 1 & 2 & 0 & 3 \\ 2 & 4 & 1 & 8 \\ 1 & 2 & 1 & 5 \end{pmatrix}$. Find $\RREF(B)$, the rank of $B$, and bases of $\Null(B)$, $\col(B)$ and $\row(B)$. Check that your answer agrees with the rank--nullity theorem.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:onto}
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $T: \mathbb{R}^5 \to \mathbb{R}^3$ be a surjective linear transformation. What is the dimension of $\ker(T)$?
+        \item Can a linear transformation $\mathbb{R}^3 \to \mathbb{R}^5$ be surjective? Can it be injective?
+        \item Can a $4 \times 6$ matrix $A$ have $\Null(A) = \{0\}$?
+        \item Let $A$ be a $5 \times 3$ matrix such that $Ax = 0$ only for $x = 0$. What is the rank of $A$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:intersect}
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $V$ and $W$ be $4$-dimensional subspaces of $\mathbb{R}^7$. Show that $V \cap W \neq \{0\}$. (Hint: put a basis of $V$ and a basis of $W$ as the columns of a $7 \times 8$ matrix, and apply the rank--nullity theorem.)
+        \item More generally, show that if $V$ and $W$ are subspaces of $\mathbb{R}^n$ with $\dim V + \dim W > n$, then $V \cap W \neq \{0\}$.
+        \item Find two $3$-dimensional subspaces of $\mathbb{R}^6$ whose intersection is $\{0\}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:rankAB}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\rank(AB) \leq \rank(A)$ and $\rank(AB) \leq \rank(B)$ whenever $AB$ is defined. (Hint: $\col(AB) \subseteq \col(A)$ and $\Null(B) \subseteq \Null(AB)$.)
+        \item Conclude that if $A$ is $3 \times 2$ and $B$ is $2 \times 3$, then the $3 \times 3$ matrix $AB$ is never invertible.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:ATA}
+    Let $A$ be an $m \times n$ matrix.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\Null(A^\top A) = \Null(A)$. (Hint: if $A^\top A x = 0$, then $x^\top A^\top A x = 0$; what is $x^\top A^\top A x$ in terms of the entries of $Ax$?)
+        \item Conclude that $\rank(A^\top A) = \rank(A)$.
+        \item Show that if the columns of $A$ are linearly independent, then $A^\top A$ is invertible. (This is why the normal equations $(A^\top A)w = A^\top y$ of linear regression have a unique solution.)
+    \end{enumerate}
+\end{problem}
+
+\section*{Answers and Hints}
+\addcontentsline{toc}{section}{Answers and Hints}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:numbers}.] $\frac{7}{3}, 0.25 \in \mathbb{Q}, \mathbb{R}, \mathbb{C}$; $\sqrt{49} = 7$, $\pi - \pi = 0$ and $(1 + i)(1 - i) = 2$ lie in all four sets; $\sqrt{12} = 2\sqrt{3} \in \mathbb{R}, \mathbb{C}$; $2 + 3i \in \mathbb{C}$ only.
+    \item[\ref{pr:field-fail}.] (a) Additive inverses: $-1 \notin \mathbb{N}$. (b) There is no additive identity, since $0 \notin \mathbb{R}_{>0}$. (c) Not closed under addition: $1 + 1 = 2$. (d) There is no multiplicative identity, since $1 \notin 2\mathbb{Z}$.
+    \item[\ref{pr:Qsqrt2}.] (a) $(a + b\sqrt{2})^{-1} = \frac{a}{a^2 - 2b^2} - \frac{b}{a^2 - 2b^2}\sqrt{2}$; if $a^2 = 2b^2$ with $(a, b) \neq (0, 0)$, then $\sqrt{2} = |a/b|$ would be rational. (b) No: $2$ has no inverse, since $\frac{1}{2} = a + b\sqrt{2}$ forces $b = 0$ and $a = \frac{1}{2} \notin \mathbb{Z}$.
+    \item[\ref{pr:weird-ops}.] (a) Only $1 \odot v = v$ fails. (b) Only $(a + b) \odot v = a \odot v + b \odot v$ fails: the second coordinates are $y$ and $2y$.
+    \item[\ref{pr:positive-reals}.] The zero vector is $1$, and the additive inverse of $u$ is $\frac{1}{u}$. For example, $(a + b) \odot u = u^{a + b} = u^a u^b = (a \odot u) \oplus (b \odot u)$.
+    \item[\ref{pr:functions}.] (a) The zero vector is the zero function $x \mapsto 0$. (b) No: the zero function is not in the set (and the set is not closed under addition).
+    \item[\ref{pr:indep}.] Dependent: $(1, 2, 1) - (2, 1, 0) + (1, -1, -1) = 0$. The span has basis $\{(1, 2, 1), (2, 1, 0)\}$ and dimension $2$.
+    \item[\ref{pr:basisU}.] $\dim U = 2$, with basis $(1, 0, -2, 1)$, $(0, 1, -1, 0)$.
+    \item[\ref{pr:taylor-basis}.] Substitute $x = t + 1$: $[x^2]_{\mathcal{B}} = (1, 2, 1)$ and $[3 + 2x + x^2]_{\mathcal{B}} = (6, 4, 1)$.
+    \item[\ref{pr:linear}.] (a) Linear. (b) Not linear: $T(0, 0) \neq (0, 0)$. (c) Not linear: $T(2v) = 4T(v)$ in the first coordinate. (d) Linear. (e) Not linear: $T(-1) = 1 \neq -T(1)$. (f) Linear.
+    \item[\ref{pr:kerim}.] $\ker(T) = \Span\{(1, -1, 1)\}$ and $\im(T) = \{(a, b, c) : c = a - b\} = \Span\{(1, 0, 1), (1, 1, 0)\}$. $T$ is neither injective nor surjective.
+    \item[\ref{pr:gallery}.] (a) $T(e_1) = e_2$, $T(e_2) = e_1$; bijective; the F is mirrored. (b) $\ker(T)$ is the $y$-axis and $\im(T)$ is the $x$-axis; the square collapses onto the segment from $(0, 0)$ to $(1, 0)$. (c) Bijective; the square becomes the parallelogram with vertices $(0, 0), (1, 0), (3, 1), (2, 1)$. (d) Rotation by $180^\circ$; bijective; the F is not mirrored. Only (a) mirrors the F.
+    \item[\ref{pr:derivative}.] $\ker(D)$ is the set of constant polynomials, and $\im(D) = \mathbb{R}[x]_{\leq 2}$. $D$ is neither injective nor surjective. $D \circ D \circ D \circ D = 0$.
+    \item[\ref{pr:composition}.] (a) If $f(a) = f(b)$, then $g(f(a)) = g(f(b))$, so $a = b$. (b) $f: \{1\} \to \{1, 2\}$, $f(1) = 1$, and $g: \{1, 2\} \to \{1\}$. (d) $A$ is injective and $B$ is surjective.
+    \item[\ref{pr:distributive}.] (a) For example, $f(x) = x + 1$ and $g(x) = 2x$. (c) With $f(x) = x^2$ and $g = h = \mathrm{id}$: $f(2x) = 4x^2 \neq 2x^2$. (d) $c(g(x) + h(x)) = cg(x) + ch(x)$.
+    \item[\ref{pr:iso}.] (a) $T(a_0 + a_1 x + a_2 x^2 + a_3 x^3) = (a_0, a_1, a_2, a_3)$. (b) $\log: V \to \mathbb{R}$, since $\log(uv) = \log u + \log v$ and $\log(u^c) = c\log u$. (c) Yes; no (dimensions $2$ and $3$); yes.
+    \item[\ref{pr:subspaces}.] (a) yes; (b) no; (c) no; (d) no; (e) yes; (f) yes.
+    \item[\ref{pr:intersection}.] (b) The $x$-axis and the $y$-axis in $\mathbb{R}^2$: $(1, 0) + (0, 1) = (1, 1)$ lies in neither. (c) If $u \in U \setminus W$ and $w \in W \setminus U$, then $u + w$ lies in neither $U$ nor $W$.
+    \item[\ref{pr:poly-subspace}.] It is the kernel of $p \mapsto p(1)$. A basis is $x - 1, \ x^2 - 1, \ x^3 - 1$, so the dimension is $3$.
+    \item[\ref{pr:matvec}.] (a) $Ax = 0$. (b) $AA^\top = \begin{pmatrix} 5 & 1 \\ 1 & 11 \end{pmatrix}$ and $A^\top A = \begin{pmatrix} 2 & -3 & 1 \\ -3 & 9 & 3 \\ 1 & 3 & 5 \end{pmatrix}$, both symmetric.
+    \item[\ref{pr:sizes}.] $AB$: $2 \times 3$; $BA$: undefined; $AC$: $2 \times 2$; $CA$: $3 \times 3$; $A + C^\top$: $2 \times 3$; $A^\top + C$: $3 \times 2$; $ABC$: $2 \times 2$.
+    \item[\ref{pr:reflect-rotate}.] $FR = \begin{pmatrix} 0 & -1 \\ -1 & 0 \end{pmatrix}$ is the reflection in the line $y = -x$, and $RF = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$ is the reflection in the line $y = x$. So $FR \neq RF$.
+    \item[\ref{pr:rotation-addition}.] (b) $\cos(\alpha + \beta) = \cos\alpha\cos\beta - \sin\alpha\sin\beta$ and $\sin(\alpha + \beta) = \sin\alpha\cos\beta + \cos\alpha\sin\beta$.
+    \item[\ref{pr:complex-matrix}.] (c) $M(1 + i)^{10} = 2^5 R_{10\pi/4} = 32 R_{\pi/2} = \begin{pmatrix} 0 & -32 \\ 32 & 0 \end{pmatrix} = M(32i)$, so $(1 + i)^{10} = 32i$.
+    \item[\ref{pr:ref}.] The first is in RREF. The second is in REF, but not RREF. The third and fourth are not in REF (the pivots move left; a zero row lies above a nonzero row). The fifth is not in REF with our convention, since its first pivot is $2$.
+    \item[\ref{pr:rref-compute}.] $\RREF(P) = \begin{pmatrix} 1 & 2 & 0 & 1 \\ 0 & 0 & 1 & -1 \\ 0 & 0 & 0 & 0 \end{pmatrix}$, and $\rank(P) = 2$.
+    \item[\ref{pr:system}.] The RREF has rows $(1, 0, 5, 8)$ and $(0, 1, -1, -2)$, so the solutions are
+    \[(w, x, y, z) = y\,(-5, 1, 1, 0) + z\,(-8, 2, 0, 1), \qquad y, z \in \mathbb{R}.\]
+    The solution $(0, 2, -8, 5)$ is the case $y = -8$, $z = 5$; it is not a multiple of $(-5, 1, 1, 0)$. The dimension is $2$.
+    \item[\ref{pr:inverse2}.] $A^{-1} = \begin{pmatrix} 2 & -1 \\ -5 & 3 \end{pmatrix}$.
+    \item[\ref{pr:inverse3}.] $A^{-1} = \begin{pmatrix} 0 & -1 & 1 \\ 1 & 0 & -1 \\ -1 & 1 & 1 \end{pmatrix}$ and $x = (1, -2, 4)^\top$.
+    \item[\ref{pr:arithmetic}.] (a) $x = (1, -2, 1)^\top$. (b) row $1$ $-$ $2\cdot$row $2$ $+$ row $3$ $= 0$, so row operations produce a zero row.
+    \item[\ref{pr:elementary}.] Swap the rows, multiply row $2$ by $\frac{1}{2}$, subtract $3$ times row $2$ from row $1$: $E_1 = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$, $E_2 = \begin{pmatrix} 1 & 0 \\ 0 & \frac{1}{2} \end{pmatrix}$, $E_3 = \begin{pmatrix} 1 & -3 \\ 0 & 1 \end{pmatrix}$. Then $A^{-1} = E_3 E_2 E_1 = \begin{pmatrix} -\frac{3}{2} & 1 \\ \frac{1}{2} & 0 \end{pmatrix}$ and $A = E_1^{-1} E_2^{-1} E_3^{-1}$.
+    \item[\ref{pr:idempotent}.] (a) $A = A^{-1}A^2 = A^{-1}A = I$. (b) $\ker(T_P) = \Span\{(1, -1)\}$ and $\im(T_P)$ is the $x$-axis: $T_P$ projects onto the $x$-axis along lines parallel to $(1, -1)$. (d) If $v = Aw$ and $Av = 0$, then $v = Aw = A^2 w = Av = 0$.
+    \item[\ref{pr:nilpotent}.] $N^2 = \begin{pmatrix} 0 & 0 & 3 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{pmatrix}$, $N^3 = 0$, and $(I - N)^{-1} = I + N + N^2 = \begin{pmatrix} 1 & 1 & 5 \\ 0 & 1 & 3 \\ 0 & 0 & 1 \end{pmatrix}$.
+    \item[\ref{pr:interpolation}.] (a) $\begin{pmatrix} 1 & -1 & 1 \\ 1 & 0 & 0 \\ 1 & 1 & 1 \end{pmatrix}$, with determinant $2$. (c) $p = 1 - x^2$ and $q = 2 + 2x + x^2$.
+    \item[\ref{pr:dims-special}.] (a) $3$, basis $e_{11}, e_{22}, e_{12} + e_{21}$; (b) $1$, basis $e_{12} - e_{21}$; (c) $6$; (d) $10$; (e) $6$; (f) $5$.
+    \item[\ref{pr:groups}.] (a) Yes. (b) No: $\begin{pmatrix} 1 & 0 \\ 0 & 2 \end{pmatrix}\begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ 2 & 0 \end{pmatrix}$ is not symmetric. (c) No: $\begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}$ and $\begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$ square to $I_2$, but their product squares to $-I_2$. (d) Yes. (e) Yes; there are $n!$ of them, and each one is orthogonal.
+    \item[\ref{pr:inverse-triangular}.] $\begin{pmatrix} 1 & -2 & 5 \\ 0 & 1 & -4 \\ 0 & 0 & 1 \end{pmatrix}$. For an upper triangular $A$ with nonzero diagonal entries, the Gauss--Jordan method only needs to scale rows and to subtract multiples of lower rows from higher rows, and these operations keep the right block upper triangular.
+    \item[\ref{pr:orthogonal2}.] $Q = R_\theta$ (rotations, determinant $1$) or $Q = R_\theta \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix} = \begin{pmatrix} \cos\theta & \sin\theta \\ \sin\theta & -\cos\theta \end{pmatrix}$ (reflections, determinant $-1$).
+    \item[\ref{pr:tridiagonal}.] (a) $D_1 = 2$, $D_2 = 3$, $D_3 = 4$. (c) $D_n = n + 1$.
+    \item[\ref{pr:det4}.] $\det(A) = -1$, so $A$ is invertible.
+    \item[\ref{pr:det-rules}.] $-6$, $18$, $54$, $-\frac{3}{2}$, $2$; and $\det(C) = -2$.
+    \item[\ref{pr:vandermonde}.] (a) Subtract row $1$ from rows $2$ and $3$, and take out the factors $b - a$ and $c - a$. (b) The determinant is nonzero, so the map $p \mapsto (p(a), p(b), p(c))$ is an isomorphism.
+    \item[\ref{pr:lambda}.] (a) $\lambda = 2$ and $\lambda = 5$; $\det(A - 3I_3) = -16 \neq 0$. (b) $x = (-8, 1, 1)$ for $\lambda = 2$, and $x = (-1, -1, 1)$ for $\lambda = 5$. (c) Every row sums to $11$, so $A(1, 1, 1)^\top = 11 (1, 1, 1)^\top$.
+    \item[\ref{pr:upper5}.] (a) $\det(A) = 1 \cdot 2 \cdot 3 \cdot 4 \cdot 5 = 120$; yes; yes. (b) $(0, 0, 0, 0, 25)$. (c) $A - I_5$ and $A - 2I_5$ are triangular with a $0$ on the diagonal, so their determinants are $0$. Take $x = e_1$ and $y = (2, 1, 0, 0, 0)^\top$.
+    \item[\ref{pr:area}.] (a) $\frac{1}{2}\left|\det \begin{pmatrix} 3 & 1 \\ 1 & 4 \end{pmatrix}\right| = \frac{11}{2}$. (b) $\det = 7$: the areas are $7$ and $7\pi$. (d) Only the reflection, with determinant $-1$. The rotation by $180^\circ$ has determinant $+1$.
+    \item[\ref{pr:fibonacci}.] $M^{10} = \begin{pmatrix} 89 & 55 \\ 55 & 34 \end{pmatrix}$, and $89 \cdot 34 - 55^2 = 1$. Cassini follows from $\det(M^n) = \det(M)^n = (-1)^n$.
+    \item[\ref{pr:trace}.] (a) For example, $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ and $B = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$. $\tr(AB - BA) = 0 \neq 2 = \tr(I_2)$. (b) $\tr(A^\top A)$ is the sum of the squares of all entries. (c) $\tr(Ae_{ji}) = A_{ij}$.
+    \item[\ref{pr:01-matrices}.] (a) $6$. (For $3 \times 3$ matrices with entries in $\{0, 1\}$, a computer finds that $174$ of the $512$ are invertible.) (b) If $A$ and $A^{-1}$ have integer entries, then $\det(A)\det(A^{-1}) = 1$ is a product of two integers. Conversely, use the cofactor formula $A^{-1} = \frac{1}{\det(A)} C^\top$.
+    \item[\ref{pr:bases-B}.] $\RREF(B)$ has rows $(1, 2, 0, 3)$, $(0, 0, 1, 2)$, $(0, 0, 0, 0)$, and $\rank(B) = 2$. Bases: $\Null(B)$: $(-2, 1, 0, 0)$, $(-3, 0, -2, 1)$; $\col(B)$: $(1, 2, 1)$, $(0, 1, 1)$; $\row(B)$: $(1, 2, 0, 3)$, $(0, 0, 1, 2)$. Indeed, $2 + 2 = 4$.
+    \item[\ref{pr:onto}.] (a) $5 - 3 = 2$. (b) Not surjective, since the rank is at most $3$; it can be injective. (c) No: $\dim \Null(A) \geq 6 - 4 = 2$. (d) $3$.
+    \item[\ref{pr:intersect}.] (a) The $7 \times 8$ matrix has a nonzero null vector $(a_1, \ldots, a_4, b_1, \ldots, b_4)$; then $\sum a_i v_i = -\sum b_j w_j$ is a nonzero vector in $V \cap W$. (c) $\Span\{e_1, e_2, e_3\}$ and $\Span\{e_4, e_5, e_6\}$.
+    \item[\ref{pr:rankAB}.] (b) $\rank(AB) \leq \rank(A) \leq 2 < 3$.
+    \item[\ref{pr:ATA}.] (a) $x^\top A^\top A x = \sum_i (Ax)_i^2$. (b) Use the rank--nullity theorem. (c) $\Null(A^\top A) = \Null(A) = \{0\}$.
+\end{description}
+
+\end{document}
