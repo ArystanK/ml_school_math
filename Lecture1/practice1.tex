@@ -16,6 +16,9 @@
 \theoremstyle{definition}
 \newtheorem{problem}{Problem}[section]
 
+% Mandatory problems are marked in their title; change this macro to restyle all of them.
+\newcommand{\mandatory}{\textcolor{red!70!black}{\textbf{Mandatory}}}
+
 \DeclareMathOperator{\im}{im}
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator{\Null}{null}
@@ -38,7 +41,7 @@
     decide which of the sets $\mathbb{Z}$, $\mathbb{Q}$, $\mathbb{R}$ and $\mathbb{C}$ it belongs to.
 \end{problem}
 
-\begin{problem}\label{pr:field-fail}
+\begin{problem}[\mandatory]\label{pr:field-fail}
     Each of the following sets, with the usual addition and multiplication, is not a field. For each set, find a field axiom that fails.
     \begin{enumerate}[label=(\alph*)]
         \item $\mathbb{N} = \{0, 1, 2, \ldots\}$;
@@ -57,7 +60,7 @@
 
 \section{Vector Spaces}
 
-\begin{problem}\label{pr:weird-ops}
+\begin{problem}[\mandatory]\label{pr:weird-ops}
     On $\mathbb{R}^2$, keep the usual vector addition, but define a new scalar multiplication. In each case, decide which vector space axioms hold and which fail.
     \begin{enumerate}[label=(\alph*)]
         \item $c \odot (x, y) = (cx, 0)$;
@@ -80,11 +83,11 @@
 
 \section{Bases and Dimension}
 
-\begin{problem}\label{pr:indep}
+\begin{problem}[\mandatory]\label{pr:indep}
     Decide whether the vectors $(1, 2, 1)$, $(2, 1, 0)$ and $(1, -1, -1)$ in $\mathbb{R}^3$ are linearly independent. If they are not, find a nontrivial linear combination that equals $0$, and find a basis and the dimension of their span.
 \end{problem}
 
-\begin{problem}\label{pr:basisU}
+\begin{problem}[\mandatory]\label{pr:basisU}
     One can check that $U = \{(x, y, z, w) \in \mathbb{R}^4 : x + y + z + w = 0 \text{ and } x = w\}$ is a vector space. Find a basis of $U$ and its dimension.
 \end{problem}
 
@@ -94,7 +97,7 @@
 
 \section{Linear Transformations}
 
-\begin{problem}\label{pr:linear}
+\begin{problem}[\mandatory]\label{pr:linear}
     Which of the following maps are linear transformations? Justify your answers.
     \begin{enumerate}[label=(\alph*)]
         \item $T: \mathbb{R}^2 \to \mathbb{R}^2$, $T(x, y) = (x - y, 3x)$;
@@ -106,7 +109,7 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}\label{pr:kerim}
+\begin{problem}[\mandatory]\label{pr:kerim}
     Let $T: \mathbb{R}^3 \to \mathbb{R}^3$ be defined by $T(x, y, z) = (x + y, \ y + z, \ x - z)$. Find the kernel and the image of $T$. Is $T$ injective? Is it surjective?
 \end{problem}
 
@@ -145,9 +148,10 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}\label{pr:iso}
+\begin{problem}[\mandatory]\label{pr:iso}
     \begin{enumerate}[label=(\alph*)]
-        \item Show that $T: \mathbb{R}[x]_{\leq 3} \to \mathbb{R}^4$, $T(p) = \big(p(0), p'(0), \frac{1}{2}p''(0), \frac{1}{6}p'''(0)\big)$, is an isomorphism. (Hint: compute $T(a_0 + a_1 x + a_2 x^2 + a_3 x^3)$.)
+        \item Show that the following map is an isomorphism:
+        \[T: \mathbb{R}[x]_{\leq 3} \to \mathbb{R}^4, \qquad T(p) = \big(p(0), p'(0), \tfrac{1}{2}p''(0), \tfrac{1}{6}p'''(0)\big).\] (Hint: compute $T(a_0 + a_1 x + a_2 x^2 + a_3 x^3)$.)
         \item Show that the vector space $V$ of Problem~\ref{pr:positive-reals} is isomorphic to $\mathbb{R}$. (Hint: logarithm.)
         \item Which of the following pairs of real vector spaces are isomorphic: $\mathbb{R}[x]_{\leq 5}$ and $\mathbb{R}^6$; $\mathbb{C}$ (over $\mathbb{R}$) and $\mathbb{R}^3$; $\mathbb{R}^2 \times \mathbb{R}^3$ and $\mathbb{R}^5$?
     \end{enumerate}
@@ -155,7 +159,7 @@
 
 \section{Subspaces}
 
-\begin{problem}\label{pr:subspaces}
+\begin{problem}[\mandatory]\label{pr:subspaces}
     Which of the following subsets of $\mathbb{R}^3$ are subspaces?
     \begin{enumerate}[label=(\alph*)]
         \item $\{(x, y, z) : x = 2y\}$;
@@ -184,7 +188,7 @@
 
 \subsection{Matrix Operations}
 
-\begin{problem}\label{pr:matvec}
+\begin{problem}[\mandatory]\label{pr:matvec}
     Let $A = \begin{pmatrix} 1 & 0 & 2 \\ -1 & 3 & 1 \end{pmatrix}$ and $x = (2, 1, -1)^\top$.
     \begin{enumerate}[label=(\alph*)]
         \item Compute $Ax$ in two ways: entry by entry, and as a linear combination of the columns of $A$.
@@ -226,12 +230,12 @@
     \[\begin{pmatrix} 1 & 3 & 0 & 2 \\ 0 & 0 & 1 & 4 \\ 0 & 0 & 0 & 0 \end{pmatrix}, \quad \begin{pmatrix} 1 & 3 & 1 \\ 0 & 1 & 2 \\ 0 & 0 & 0 \end{pmatrix}, \quad \begin{pmatrix} 0 & 0 & 1 \\ 0 & 1 & 0 \\ 1 & 0 & 0 \end{pmatrix}, \quad \begin{pmatrix} 1 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 1 \end{pmatrix}, \quad \begin{pmatrix} 2 & 1 \\ 0 & 1 \end{pmatrix}.\]
 \end{problem}
 
-\begin{problem}\label{pr:rref-compute}
+\begin{problem}[\mandatory]\label{pr:rref-compute}
     Find the reduced row echelon form and the rank of
     \[P = \begin{pmatrix} 1 & 2 & 1 & 0 \\ 2 & 4 & 0 & 2 \\ 1 & 2 & 3 & -2 \end{pmatrix}.\]
 \end{problem}
 
-\begin{problem}[$\star$]\label{pr:system}
+\begin{problem}[\mandatory, $\star$]\label{pr:system}
     Consider the system of linear equations
     \begin{align*}
         w + 3x + 2y + 2z &= 0, \\
@@ -252,7 +256,7 @@
     Find the inverse of $A = \begin{pmatrix} 3 & 1 \\ 5 & 2 \end{pmatrix}$ by solving the equation $Ax = y$ for $x$, as in the lecture. Check your answer by computing $AA^{-1}$.
 \end{problem}
 
-\begin{problem}\label{pr:inverse3}
+\begin{problem}[\mandatory]\label{pr:inverse3}
     Use the Gauss--Jordan method to find the inverse of
     \[A = \begin{pmatrix} 1 & 2 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 1 \end{pmatrix},\]
     and use it to solve the system $Ax = (1, 2, 3)^\top$.
@@ -288,7 +292,7 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}\label{pr:interpolation}
+\begin{problem}[\mandatory]\label{pr:interpolation}
     Let $T: \mathbb{R}[x]_{\leq 2} \to \mathbb{R}^3$, $T(p) = \big(p(-1), p(0), p(1)\big)$.
     \begin{enumerate}[label=(\alph*)]
         \item Find the matrix of $T$ with respect to the ordered basis $(1, x, x^2)$ of $\mathbb{R}[x]_{\leq 2}$ and the standard basis of $\mathbb{R}^3$.
@@ -342,13 +346,13 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}\label{pr:det4}
+\begin{problem}[\mandatory]\label{pr:det4}
     Compute the determinant of
     \[A = \begin{pmatrix} 2 & 0 & 1 & 3 \\ 1 & 1 & 0 & 2 \\ 0 & 3 & 1 & 1 \\ 1 & 0 & 2 & 1 \end{pmatrix}\]
     in two ways: by cofactor expansion along a well-chosen row or column, and by row reduction. Is $A$ invertible?
 \end{problem}
 
-\begin{problem}\label{pr:det-rules}
+\begin{problem}[\mandatory]\label{pr:det-rules}
     Let $A$ and $B$ be $3 \times 3$ matrices with $\det(A) = 2$ and $\det(B) = -3$. Compute
     \[\det(AB), \qquad \det(A^\top B^2), \qquad \det(3A), \qquad \det(A^{-1}B), \qquad \det(BAB^{-1}).\]
     Let $C$ be obtained from $A$ by swapping rows $1$ and $3$ and then adding $5$ times row $1$ to row $2$. What is $\det(C)$?
@@ -415,11 +419,11 @@
 
 \section{Null Space, Column Space and Rank}
 
-\begin{problem}\label{pr:bases-B}
+\begin{problem}[\mandatory]\label{pr:bases-B}
     Let $B = \begin{pmatrix} 1 & 2 & 0 & 3 \\ 2 & 4 & 1 & 8 \\ 1 & 2 & 1 & 5 \end{pmatrix}$. Find $\RREF(B)$, the rank of $B$, and bases of $\Null(B)$, $\col(B)$ and $\row(B)$. Check that your answer agrees with the rank--nullity theorem.
 \end{problem}
 
-\begin{problem}[$\star$]\label{pr:onto}
+\begin{problem}[\mandatory, $\star$]\label{pr:onto}
     \begin{enumerate}[label=(\alph*)]
         \item Let $T: \mathbb{R}^5 \to \mathbb{R}^3$ be a surjective linear transformation. What is the dimension of $\ker(T)$?
         \item Can a linear transformation $\mathbb{R}^3 \to \mathbb{R}^5$ be surjective? Can it be injective?
@@ -454,7 +458,7 @@
 
 \section{Dual Vector Spaces}
 
-\begin{problem}\label{pr:functionals}
+\begin{problem}[\mandatory]\label{pr:functionals}
     Which of the following maps are linear functionals? For those on $\mathbb{R}^n$, write them as $x \mapsto ax$ with a row vector $a$.
     \begin{enumerate}[label=(\alph*)]
         \item $\mathbb{R}^3 \to \mathbb{R}$, $x \mapsto 2x_1 - x_3$;
@@ -466,7 +470,7 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}\label{pr:dual-basis-r2}
+\begin{problem}[\mandatory]\label{pr:dual-basis-r2}
     \begin{enumerate}[label=(\alph*)]
         \item Find the dual basis $b^1, b^2$ of the basis $b_1 = (2, 1)^\top$, $b_2 = (1, 1)^\top$ of $\mathbb{R}^2$, and check that $b^i(b_j) = \delta_{ij}$.
         \item Write the functional $\varphi(x) = 3x_1 + x_2$ as a linear combination of $b^1$ and $b^2$, without solving a system of equations.
@@ -482,7 +486,7 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}\label{pr:dual-map}
+\begin{problem}[\mandatory]\label{pr:dual-map}
     Let $T: \mathbb{R}^3 \to \mathbb{R}^2$, $T(x, y, z) = (x + y, \ y - z)$, with matrix $A$.
     \begin{enumerate}[label=(\alph*)]
         \item For the functional $\psi$ on $\mathbb{R}^2$ given by the row $(2, -1)$, compute $T^*(\psi)$ as a row vector.
@@ -511,7 +515,7 @@
 
 \section{Quotient Spaces and the Isomorphism Theorems}
 
-\begin{problem}\label{pr:cosets}
+\begin{problem}[\mandatory]\label{pr:cosets}
     Let $U = \Span\{(2, 1)^\top\} \subseteq \mathbb{R}^2$.
     \begin{enumerate}[label=(\alph*)]
         \item Decide whether $(3, 1)^\top + U = (1, 0)^\top + U$, whether $(5, 3)^\top + U = (1, 1)^\top + U$, and whether $(1, 2)^\top + U = U$.
@@ -529,7 +533,7 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}\label{pr:first-iso}
+\begin{problem}[\mandatory]\label{pr:first-iso}
     Use the first isomorphism theorem to identify the following quotient spaces.
     \begin{enumerate}[label=(\alph*)]
         \item $\mathbb{R}^3/P$, where $P$ is the plane $x + y + z = 0$. (Use $T(x, y, z) = x + y + z$.)
@@ -538,7 +542,7 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}[$\star$]\label{pr:grassmann}
+\begin{problem}[\mandatory, $\star$]\label{pr:grassmann}
     \begin{enumerate}[label=(\alph*)]
         \item Let $V$ and $W$ be $4$-dimensional subspaces of a $7$-dimensional vector space. Which values can $\dim(V \cap W)$ take? Give an example for the smallest possible value.
         \item Let $U = \{x \in \mathbb{R}^4 : x_1 + x_2 + x_3 + x_4 = 0\}$ and $W = \{x \in \mathbb{R}^4 : x_1 - x_2 + x_3 - x_4 = 0\}$. Use the dimension formula to find $\dim(U \cap W)$, and then find a basis of $U \cap W$.
@@ -549,7 +553,7 @@
     Let $V = \mathbb{R}^4$, $U = \Span\{e_4\}$ and $W = \Span\{e_3, e_4\}$. Describe $V/U$, $W/U$ and $V/W$, and check the third isomorphism theorem by comparing dimensions.
 \end{problem}
 
-\begin{problem}[$\star$]\label{pr:softmax}
+\begin{problem}[\mandatory, $\star$]\label{pr:softmax}
     The softmax function is $\operatorname{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$ for $z \in \mathbb{R}^n$.
     \begin{enumerate}[label=(\alph*)]
         \item Show that $\operatorname{softmax}(z + c\mathbf{1}) = \operatorname{softmax}(z)$ for every $c \in \mathbb{R}$, so that softmax is a function on $\mathbb{R}^n/\Span\{\mathbf{1}\}$.
@@ -564,7 +568,7 @@
 
 \section{Eigenvalues and Eigenvectors}
 
-\begin{problem}\label{pr:eig2}
+\begin{problem}[\mandatory]\label{pr:eig2}
     Let $A = \begin{pmatrix} 1 & 2 \\ 3 & 2 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
         \item Compute the characteristic polynomial of $A$, its eigenvalues, and its eigenspaces.
@@ -578,7 +582,7 @@
     Find the eigenvalues and eigenspaces of $L = \begin{pmatrix} 2 & 0 & 0 \\ 1 & 3 & 0 \\ 4 & -1 & 1 \end{pmatrix}$. Is $L$ diagonalizable?
 \end{problem}
 
-\begin{problem}\label{pr:eig-defective}
+\begin{problem}[\mandatory]\label{pr:eig-defective}
     Let $N = \begin{pmatrix} 2 & 1 & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 3 \end{pmatrix}$. Find the algebraic and geometric multiplicity of each eigenvalue of $N$, and decide whether $N$ is diagonalizable.
 \end{problem}
 
@@ -633,7 +637,7 @@
     \end{enumerate}
 \end{problem}
 
-\begin{problem}\label{pr:eig-markov}
+\begin{problem}[\mandatory]\label{pr:eig-markov}
     Every day, a visitor of a website either only browses or makes a purchase. A browsing visitor browses again the next day with probability $0.7$, and a buying visitor buys again with probability $0.6$. With $x_k = (b_k, p_k)^\top$ the probabilities of browsing and buying on day $k$, we have $x_{k+1} = Ax_k$ with
     \[A = \begin{pmatrix} 0.7 & 0.4 \\ 0.3 & 0.6 \end{pmatrix}.\]
     \begin{enumerate}[label=(\alph*)]
@@ -656,91 +660,5 @@
         \item Find the complex eigenvalues of $\begin{pmatrix} 3 & -4 \\ 4 & 3 \end{pmatrix}$, and write this matrix as $r R_\theta$ with $r > 0$ and a rotation $R_\theta$. How are $r$ and $\theta$ related to the eigenvalues?
     \end{enumerate}
 \end{problem}
-
-\section*{Answers and Hints}
-\addcontentsline{toc}{section}{Answers and Hints}
-
-\begin{description}[leftmargin=0pt, itemsep=0.3em]
-    \item[\ref{pr:numbers}.] $\frac{7}{3}, 0.25 \in \mathbb{Q}, \mathbb{R}, \mathbb{C}$; $\sqrt{49} = 7$, $\pi - \pi = 0$ and $(1 + i)(1 - i) = 2$ lie in all four sets; $\sqrt{12} = 2\sqrt{3} \in \mathbb{R}, \mathbb{C}$; $2 + 3i \in \mathbb{C}$ only.
-    \item[\ref{pr:field-fail}.] (a) Additive inverses: $-1 \notin \mathbb{N}$. (b) There is no additive identity, since $0 \notin \mathbb{R}_{>0}$. (c) Not closed under addition: $1 + 1 = 2$. (d) There is no multiplicative identity, since $1 \notin 2\mathbb{Z}$.
-    \item[\ref{pr:Qsqrt2}.] (a) $(a + b\sqrt{2})^{-1} = \frac{a}{a^2 - 2b^2} - \frac{b}{a^2 - 2b^2}\sqrt{2}$; if $a^2 = 2b^2$ with $(a, b) \neq (0, 0)$, then $\sqrt{2} = |a/b|$ would be rational. (b) No: $2$ has no inverse, since $\frac{1}{2} = a + b\sqrt{2}$ forces $b = 0$ and $a = \frac{1}{2} \notin \mathbb{Z}$.
-    \item[\ref{pr:weird-ops}.] (a) Only $1 \odot v = v$ fails. (b) Only $(a + b) \odot v = a \odot v + b \odot v$ fails: the second coordinates are $y$ and $2y$.
-    \item[\ref{pr:positive-reals}.] The zero vector is $1$, and the additive inverse of $u$ is $\frac{1}{u}$. For example, $(a + b) \odot u = u^{a + b} = u^a u^b = (a \odot u) \oplus (b \odot u)$.
-    \item[\ref{pr:functions}.] (a) The zero vector is the zero function $x \mapsto 0$. (b) No: the zero function is not in the set (and the set is not closed under addition).
-    \item[\ref{pr:indep}.] Dependent: $(1, 2, 1) - (2, 1, 0) + (1, -1, -1) = 0$. The span has basis $\{(1, 2, 1), (2, 1, 0)\}$ and dimension $2$.
-    \item[\ref{pr:basisU}.] $\dim U = 2$, with basis $(1, 0, -2, 1)$, $(0, 1, -1, 0)$.
-    \item[\ref{pr:taylor-basis}.] Substitute $x = t + 1$: $[x^2]_{\mathcal{B}} = (1, 2, 1)$ and $[3 + 2x + x^2]_{\mathcal{B}} = (6, 4, 1)$.
-    \item[\ref{pr:linear}.] (a) Linear. (b) Not linear: $T(0, 0) \neq (0, 0)$. (c) Not linear: $T(2v) = 4T(v)$ in the first coordinate. (d) Linear. (e) Not linear: $T(-1) = 1 \neq -T(1)$. (f) Linear.
-    \item[\ref{pr:kerim}.] $\ker(T) = \Span\{(1, -1, 1)\}$ and $\im(T) = \{(a, b, c) : c = a - b\} = \Span\{(1, 0, 1), (1, 1, 0)\}$. $T$ is neither injective nor surjective.
-    \item[\ref{pr:gallery}.] (a) $T(e_1) = e_2$, $T(e_2) = e_1$; bijective; the F is mirrored. (b) $\ker(T)$ is the $y$-axis and $\im(T)$ is the $x$-axis; the square collapses onto the segment from $(0, 0)$ to $(1, 0)$. (c) Bijective; the square becomes the parallelogram with vertices $(0, 0), (1, 0), (3, 1), (2, 1)$. (d) Rotation by $180^\circ$; bijective; the F is not mirrored. Only (a) mirrors the F.
-    \item[\ref{pr:derivative}.] $\ker(D)$ is the set of constant polynomials, and $\im(D) = \mathbb{R}[x]_{\leq 2}$. $D$ is neither injective nor surjective. $D \circ D \circ D \circ D = 0$.
-    \item[\ref{pr:composition}.] (a) If $f(a) = f(b)$, then $g(f(a)) = g(f(b))$, so $a = b$. (b) $f: \{1\} \to \{1, 2\}$, $f(1) = 1$, and $g: \{1, 2\} \to \{1\}$. (d) $A$ is injective and $B$ is surjective.
-    \item[\ref{pr:distributive}.] (a) For example, $f(x) = x + 1$ and $g(x) = 2x$. (c) With $f(x) = x^2$ and $g = h = \mathrm{id}$: $f(2x) = 4x^2 \neq 2x^2$. (d) $c(g(x) + h(x)) = cg(x) + ch(x)$.
-    \item[\ref{pr:iso}.] (a) $T(a_0 + a_1 x + a_2 x^2 + a_3 x^3) = (a_0, a_1, a_2, a_3)$. (b) $\log: V \to \mathbb{R}$, since $\log(uv) = \log u + \log v$ and $\log(u^c) = c\log u$. (c) Yes; no (dimensions $2$ and $3$); yes.
-    \item[\ref{pr:subspaces}.] (a) yes; (b) no; (c) no; (d) no; (e) yes; (f) yes.
-    \item[\ref{pr:intersection}.] (b) The $x$-axis and the $y$-axis in $\mathbb{R}^2$: $(1, 0) + (0, 1) = (1, 1)$ lies in neither. (c) If $u \in U \setminus W$ and $w \in W \setminus U$, then $u + w$ lies in neither $U$ nor $W$.
-    \item[\ref{pr:poly-subspace}.] It is the kernel of $p \mapsto p(1)$. A basis is $x - 1, \ x^2 - 1, \ x^3 - 1$, so the dimension is $3$.
-    \item[\ref{pr:matvec}.] (a) $Ax = 0$. (b) $AA^\top = \begin{pmatrix} 5 & 1 \\ 1 & 11 \end{pmatrix}$ and $A^\top A = \begin{pmatrix} 2 & -3 & 1 \\ -3 & 9 & 3 \\ 1 & 3 & 5 \end{pmatrix}$, both symmetric.
-    \item[\ref{pr:sizes}.] $AB$: $2 \times 3$; $BA$: undefined; $AC$: $2 \times 2$; $CA$: $3 \times 3$; $A + C^\top$: $2 \times 3$; $A^\top + C$: $3 \times 2$; $ABC$: $2 \times 2$.
-    \item[\ref{pr:reflect-rotate}.] $FR = \begin{pmatrix} 0 & -1 \\ -1 & 0 \end{pmatrix}$ is the reflection in the line $y = -x$, and $RF = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$ is the reflection in the line $y = x$. So $FR \neq RF$.
-    \item[\ref{pr:rotation-addition}.] (b) $\cos(\alpha + \beta) = \cos\alpha\cos\beta - \sin\alpha\sin\beta$ and $\sin(\alpha + \beta) = \sin\alpha\cos\beta + \cos\alpha\sin\beta$.
-    \item[\ref{pr:complex-matrix}.] (c) $M(1 + i)^{10} = 2^5 R_{10\pi/4} = 32 R_{\pi/2} = \begin{pmatrix} 0 & -32 \\ 32 & 0 \end{pmatrix} = M(32i)$, so $(1 + i)^{10} = 32i$.
-    \item[\ref{pr:ref}.] The first is in RREF. The second is in REF, but not RREF. The third and fourth are not in REF (the pivots move left; a zero row lies above a nonzero row). The fifth is not in REF with our convention, since its first pivot is $2$.
-    \item[\ref{pr:rref-compute}.] $\RREF(P) = \begin{pmatrix} 1 & 2 & 0 & 1 \\ 0 & 0 & 1 & -1 \\ 0 & 0 & 0 & 0 \end{pmatrix}$, and $\rank(P) = 2$.
-    \item[\ref{pr:system}.] The RREF has rows $(1, 0, 5, 8)$ and $(0, 1, -1, -2)$, so the solutions are
-    \[(w, x, y, z) = y\,(-5, 1, 1, 0) + z\,(-8, 2, 0, 1), \qquad y, z \in \mathbb{R}.\]
-    The solution $(0, 2, -8, 5)$ is the case $y = -8$, $z = 5$; it is not a multiple of $(-5, 1, 1, 0)$. The dimension is $2$.
-    \item[\ref{pr:inverse2}.] $A^{-1} = \begin{pmatrix} 2 & -1 \\ -5 & 3 \end{pmatrix}$.
-    \item[\ref{pr:inverse3}.] $A^{-1} = \begin{pmatrix} 0 & -1 & 1 \\ 1 & 0 & -1 \\ -1 & 1 & 1 \end{pmatrix}$ and $x = (1, -2, 4)^\top$.
-    \item[\ref{pr:arithmetic}.] (a) $x = (1, -2, 1)^\top$. (b) row $1$ $-$ $2\cdot$row $2$ $+$ row $3$ $= 0$, so row operations produce a zero row.
-    \item[\ref{pr:elementary}.] Swap the rows, multiply row $2$ by $\frac{1}{2}$, subtract $3$ times row $2$ from row $1$: $E_1 = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$, $E_2 = \begin{pmatrix} 1 & 0 \\ 0 & \frac{1}{2} \end{pmatrix}$, $E_3 = \begin{pmatrix} 1 & -3 \\ 0 & 1 \end{pmatrix}$. Then $A^{-1} = E_3 E_2 E_1 = \begin{pmatrix} -\frac{3}{2} & 1 \\ \frac{1}{2} & 0 \end{pmatrix}$ and $A = E_1^{-1} E_2^{-1} E_3^{-1}$.
-    \item[\ref{pr:idempotent}.] (a) $A = A^{-1}A^2 = A^{-1}A = I$. (b) $\ker(T_P) = \Span\{(1, -1)\}$ and $\im(T_P)$ is the $x$-axis: $T_P$ projects onto the $x$-axis along lines parallel to $(1, -1)$. (d) If $v = Aw$ and $Av = 0$, then $v = Aw = A^2 w = Av = 0$.
-    \item[\ref{pr:nilpotent}.] $N^2 = \begin{pmatrix} 0 & 0 & 3 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{pmatrix}$, $N^3 = 0$, and $(I - N)^{-1} = I + N + N^2 = \begin{pmatrix} 1 & 1 & 5 \\ 0 & 1 & 3 \\ 0 & 0 & 1 \end{pmatrix}$.
-    \item[\ref{pr:interpolation}.] (a) $\begin{pmatrix} 1 & -1 & 1 \\ 1 & 0 & 0 \\ 1 & 1 & 1 \end{pmatrix}$, with determinant $2$. (c) $p = 1 - x^2$ and $q = 2 + 2x + x^2$.
-    \item[\ref{pr:dims-special}.] (a) $3$, basis $e_{11}, e_{22}, e_{12} + e_{21}$; (b) $1$, basis $e_{12} - e_{21}$; (c) $6$; (d) $10$; (e) $6$; (f) $5$.
-    \item[\ref{pr:groups}.] (a) Yes. (b) No: $\begin{pmatrix} 1 & 0 \\ 0 & 2 \end{pmatrix}\begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} = \begin{pmatrix} 0 & 1 \\ 2 & 0 \end{pmatrix}$ is not symmetric. (c) No: $\begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}$ and $\begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$ square to $I_2$, but their product squares to $-I_2$. (d) Yes. (e) Yes; there are $n!$ of them, and each one is orthogonal.
-    \item[\ref{pr:inverse-triangular}.] $\begin{pmatrix} 1 & -2 & 5 \\ 0 & 1 & -4 \\ 0 & 0 & 1 \end{pmatrix}$. For an upper triangular $A$ with nonzero diagonal entries, the Gauss--Jordan method only needs to scale rows and to subtract multiples of lower rows from higher rows, and these operations keep the right block upper triangular.
-    \item[\ref{pr:orthogonal2}.] $Q = R_\theta$ (rotations, determinant $1$) or $Q = R_\theta \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix} = \begin{pmatrix} \cos\theta & \sin\theta \\ \sin\theta & -\cos\theta \end{pmatrix}$ (reflections, determinant $-1$).
-    \item[\ref{pr:tridiagonal}.] (a) $D_1 = 2$, $D_2 = 3$, $D_3 = 4$. (c) $D_n = n + 1$.
-    \item[\ref{pr:det4}.] $\det(A) = -1$, so $A$ is invertible.
-    \item[\ref{pr:det-rules}.] $-6$, $18$, $54$, $-\frac{3}{2}$, $2$; and $\det(C) = -2$.
-    \item[\ref{pr:vandermonde}.] (a) Subtract row $1$ from rows $2$ and $3$, and take out the factors $b - a$ and $c - a$. (b) The determinant is nonzero, so the map $p \mapsto (p(a), p(b), p(c))$ is an isomorphism.
-    \item[\ref{pr:lambda}.] (a) $\lambda = 2$ and $\lambda = 5$; $\det(A - 3I_3) = -16 \neq 0$. (b) $x = (-8, 1, 1)$ for $\lambda = 2$, and $x = (-1, -1, 1)$ for $\lambda = 5$. (c) Every row sums to $11$, so $A(1, 1, 1)^\top = 11 (1, 1, 1)^\top$.
-    \item[\ref{pr:upper5}.] (a) $\det(A) = 1 \cdot 2 \cdot 3 \cdot 4 \cdot 5 = 120$; yes; yes. (b) $(0, 0, 0, 0, 25)$. (c) $A - I_5$ and $A - 2I_5$ are triangular with a $0$ on the diagonal, so their determinants are $0$. Take $x = e_1$ and $y = (2, 1, 0, 0, 0)^\top$.
-    \item[\ref{pr:area}.] (a) $\frac{1}{2}\left|\det \begin{pmatrix} 3 & 1 \\ 1 & 4 \end{pmatrix}\right| = \frac{11}{2}$. (b) $\det = 7$: the areas are $7$ and $7\pi$. (d) Only the reflection, with determinant $-1$. The rotation by $180^\circ$ has determinant $+1$.
-    \item[\ref{pr:fibonacci}.] $M^{10} = \begin{pmatrix} 89 & 55 \\ 55 & 34 \end{pmatrix}$, and $89 \cdot 34 - 55^2 = 1$. Cassini follows from $\det(M^n) = \det(M)^n = (-1)^n$.
-    \item[\ref{pr:trace}.] (a) For example, $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ and $B = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$. $\tr(AB - BA) = 0 \neq 2 = \tr(I_2)$. (b) $\tr(A^\top A)$ is the sum of the squares of all entries. (c) $\tr(Ae_{ji}) = A_{ij}$.
-    \item[\ref{pr:01-matrices}.] (a) $6$. (For $3 \times 3$ matrices with entries in $\{0, 1\}$, a computer finds that $174$ of the $512$ are invertible.) (b) If $A$ and $A^{-1}$ have integer entries, then $\det(A)\det(A^{-1}) = 1$ is a product of two integers. Conversely, use the cofactor formula $A^{-1} = \frac{1}{\det(A)} C^\top$.
-    \item[\ref{pr:bases-B}.] $\RREF(B)$ has rows $(1, 2, 0, 3)$, $(0, 0, 1, 2)$, $(0, 0, 0, 0)$, and $\rank(B) = 2$. Bases: $\Null(B)$: $(-2, 1, 0, 0)$, $(-3, 0, -2, 1)$; $\col(B)$: $(1, 2, 1)$, $(0, 1, 1)$; $\row(B)$: $(1, 2, 0, 3)$, $(0, 0, 1, 2)$. Indeed, $2 + 2 = 4$.
-    \item[\ref{pr:onto}.] (a) $5 - 3 = 2$. (b) Not surjective, since the rank is at most $3$; it can be injective. (c) No: $\dim \Null(A) \geq 6 - 4 = 2$. (d) $3$.
-    \item[\ref{pr:intersect}.] (a) The $7 \times 8$ matrix has a nonzero null vector $(a_1, \ldots, a_4, b_1, \ldots, b_4)$; then $\sum a_i v_i = -\sum b_j w_j$ is a nonzero vector in $V \cap W$. (c) $\Span\{e_1, e_2, e_3\}$ and $\Span\{e_4, e_5, e_6\}$.
-    \item[\ref{pr:rankAB}.] (b) $\rank(AB) \leq \rank(A) \leq 2 < 3$.
-    \item[\ref{pr:ATA}.] (a) $x^\top A^\top A x = \sum_i (Ax)_i^2$. (b) Use the rank--nullity theorem. (c) $\Null(A^\top A) = \Null(A) = \{0\}$.
-    \item[\ref{pr:functionals}.] (a) Yes, $a = (2, 0, -1)$. (b) No. (c) Yes. (d) No: $\det(2A) = 4\det(A)$. (e) Yes. (f) No.
-    \item[\ref{pr:dual-basis-r2}.] (a) $P = \begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix}$ has the inverse $\begin{pmatrix} 1 & -1 \\ -1 & 2 \end{pmatrix}$, so $b^1(x) = x_1 - x_2$ and $b^2(x) = -x_1 + 2x_2$. (b) $\varphi = \varphi(b_1) b^1 + \varphi(b_2) b^2 = 7b^1 + 4b^2$.
-    \item[\ref{pr:lagrange-simpson}.] (a) $L_0 = \frac{(x - 1)(x - 2)}{2}$, $L_1 = -x(x - 2)$, $L_2 = \frac{x(x - 1)}{2}$. (b) $p = L_0 + 2L_1 + 5L_2$, since $p(0) = 1$, $p(1) = 2$, $p(2) = 5$. (c) $I(L_0) = \frac{1}{3}$, $I(L_1) = \frac{4}{3}$, $I(L_2) = \frac{1}{3}$, so $\int_0^2 p(x)\, dx = \frac{1}{3}\big(p(0) + 4p(1) + p(2)\big)$.
-    \item[\ref{pr:dual-map}.] (a) $(2, -1)A = (2, -1)\begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & -1 \end{pmatrix} = (2, 1, 1)$. (b) $\psi(T(v)) = \psi(3, -1) = 7$ and $(2, 1, 1)v = 7$. (c) $A^\top$.
-    \item[\ref{pr:annihilator}.] (a) The rows $a$ with $a_1 + 2a_2 = 0$ and $a_2 + a_3 = 0$, spanned by $(2, -1, 1)$; $2 + 1 = 3$. (b) $(1, 0, -1, 0)$ and $(0, 1, 0, -1)$.
-    \item[\ref{pr:certificate}.] (a) $y = (2, -1)$: $yA = 0$ and $yb = -1$. (b) The rows with $yA = 0$ are those with $y_1 + 2y_2 + 3y_3 = 0$, spanned by $(-2, 1, 0)$ and $(-3, 0, 1)$; so the system is solvable if and only if $b_2 = 2b_1$ and $b_3 = 3b_1$, i.e., $b$ is a multiple of $(1, 2, 3)^\top$.
-    \item[\ref{pr:double-dual}.] $\iota(e_1)(\varphi) = \varphi(e_1) = a_1$: the functional ``first entry of the row''. If $\iota(v) = 0$, then $\varphi(v) = 0$ for all rows, in particular for $e_1^\top$ and $e_2^\top$, so $v_1 = v_2 = 0$.
-    \item[\ref{pr:cosets}.] (a) Yes, since $(2, 1)^\top \in U$; yes, since $(4, 2)^\top \in U$; no, since $(1, 2)^\top \notin U$. (b) $v - w \in U$ if and only if $v_1 - 2v_2 = w_1 - 2w_2$; the representative on the $x_1$-axis is $(c, 0)^\top$. (c) $x + U \mapsto x_1 - 2x_2$.
-    \item[\ref{pr:quotient-dim}.] (a) $3$, so $\mathbb{R}^5/U \cong \mathbb{R}^3$. (b) $9 - 6 = 3$; it is isomorphic to $\mathrm{Skew}_3$ (Problem~\ref{pr:first-iso}). (c) The map $p \mapsto (p(1), p(2))$ is surjective with kernel $U$, so $\mathbb{R}[x]_{\leq 4}/U \cong \mathbb{R}^2$ and $\dim U = 3$.
-    \item[\ref{pr:first-iso}.] (a) $T$ is surjective with kernel $P$, so $\mathbb{R}^3/P \cong \mathbb{R}$. (b) $p \mapsto (p(0), p(1))$ is surjective onto $\mathbb{R}^2$ with kernel $U$, so the quotient is $\cong \mathbb{R}^2$ and $\dim U = 2$ (spanned by $x(x - 1)$ and $x^2(x - 1)$). (c) $\ker(T) = \mathrm{Sym}_n$ and $\im(T) = \mathrm{Skew}_n$ (every skew-symmetric $K$ equals $T(K/2)$), so $\mathbb{R}^{n \times n}/\mathrm{Sym}_n \cong \mathrm{Skew}_n$.
-    \item[\ref{pr:grassmann}.] (a) $\dim(V \cap W) = 8 - \dim(V + W) \geq 1$, so the possible values are $1, 2, 3, 4$; for example, $\Span\{e_1, \ldots, e_4\} \cap \Span\{e_4, \ldots, e_7\} = \Span\{e_4\}$. (b) $U \neq W$, so $U + W = \mathbb{R}^4$ and $\dim(U \cap W) = 3 + 3 - 4 = 2$. Adding and subtracting the two equations gives $x_1 + x_3 = 0$ and $x_2 + x_4 = 0$, so a basis is $(1, 0, -1, 0)^\top$, $(0, 1, 0, -1)^\top$.
-    \item[\ref{pr:third-iso}.] $V/U \cong \mathbb{R}^3$ (keep $x_1, x_2, x_3$), $W/U \cong \mathbb{R}$ (keep $x_3$), $V/W \cong \mathbb{R}^2$ (keep $x_1, x_2$); indeed $3 - 1 = 2$.
-    \item[\ref{pr:softmax}.] (a) The factor $e^c$ cancels. (b) Both are approximately $(0.090, 0.245, 0.665)$; $e^{1001}$ overflows in floating-point arithmetic, so we compute with the representative $(1001, 1002, 1003) - 1003\cdot\mathbf{1} = (-2, -1, 0)$ instead. (c) Yes: $\frac{\operatorname{softmax}(z)_i}{\operatorname{softmax}(z)_j} = e^{z_i - z_j}$, so equal outputs give $z_i - z_j = w_i - w_j$ for all $i, j$, i.e., $z - w \in \Span\{\mathbf{1}\}$.
-    \item[\ref{pr:quotient-dual}.] The rows with $a_1 + a_2 + a_3 = 0$, e.g., spanned by $(1, -1, 0)$ and $(1, 0, -1)$.
-    \item[\ref{pr:eig2}.] (a) $p_A(\lambda) = \lambda^2 - 3\lambda - 4 = (\lambda - 4)(\lambda + 1)$; $E_4 = \Span\{(2, 3)^\top\}$ and $E_{-1} = \Span\{(1, -1)^\top\}$. (b) $4 + (-1) = 3$ and $4 \cdot (-1) = -4$. (c) $P = \begin{pmatrix} 2 & 1 \\ 3 & -1 \end{pmatrix}$, $D = \diag(4, -1)$, $P^{-1} = \frac{1}{5}\begin{pmatrix} 1 & 1 \\ 3 & -2 \end{pmatrix}$. (d) $A^k = \frac{1}{5}\begin{pmatrix} 2 \cdot 4^k + 3(-1)^k & 2 \cdot 4^k - 2(-1)^k \\ 3 \cdot 4^k - 3(-1)^k & 3 \cdot 4^k + 2(-1)^k \end{pmatrix}$.
-    \item[\ref{pr:eig-triangular}.] The eigenvalues are the diagonal entries $2$, $3$ and $1$. The eigenspaces are spanned by $(1, -1, 5)^\top$ (for $2$), $(0, -2, 1)^\top$ (for $3$) and $(0, 0, 1)^\top$ (for $1$). Diagonalizable, since the three eigenvalues are distinct.
-    \item[\ref{pr:eig-defective}.] The eigenvalue $2$ has algebraic multiplicity $2$, but geometric multiplicity $3 - \rank(N - 2I_3) = 1$; the eigenvalue $3$ has both multiplicities equal to $1$. Not diagonalizable.
-    \item[\ref{pr:eig-geometric}.] (a) $1$ on the $x$-axis, $-1$ on the $y$-axis. (b) $1$ on $\Span\{(1, 1)\}$, $0$ on $\Span\{(1, -1)\}$. (c) Only $1$, with eigenspace the $x$-axis. (d) No real eigenvalues; the complex eigenvalues are $\pm i$. (e) $2$ on the $x$-axis, $3$ on the $y$-axis. (f) Only $-1$, with eigenspace $\mathbb{R}^2$. All are diagonalizable except (c) and (d) (over $\mathbb{R}$).
-    \item[\ref{pr:eig-gre}.] (a) Yes (three distinct eigenvalues); yes ($0$ is not an eigenvalue). (b) $5$, $-8$, $1 + 4 + 16 = 21$, $(-8)^3 = -512$. (c) $A^{-1}$: $-1, \frac{1}{2}, \frac{1}{4}$; $A^2$: $1, 4, 16$; $A + 2I_3$: $1, 4, 6$.
-    \item[\ref{pr:eig-idempotent}.] (a) If $Pv = \lambda v$, then $\lambda v = P^2 v = \lambda^2 v$, so $\lambda^2 = \lambda$. (b) If $v = Pw$, then $Pv = P^2w = Pw = v$. Bases of $\im(T_P)$ and $\ker(T_P)$ together span $\mathbb{R}^n$ and are linearly independent, so they form a basis of eigenvectors. (c) Only ``$P$ is diagonalizable''; $P = \begin{pmatrix} 1 & 1 \\ 0 & 0 \end{pmatrix}$ is a counterexample to the other two.
-    \item[\ref{pr:eig-props}.] (a) For the shear, $E_1 = \Span\{e_1\}$, but for its transpose, $E_1 = \Span\{e_2\}$. (c) $v^\top v = (Qv)^\top(Qv) = \lambda^2 v^\top v$. (d) $A^k v = \lambda^k v = 0$. (e) $P^{-1} I_2 P = I_2$ for every $P$.
-    \item[\ref{pr:eig-recurrence}.] (a) $M = \begin{pmatrix} 1 & 2 \\ 1 & 0 \end{pmatrix}$. (b) Eigenvalues $2$ and $-1$, with eigenvectors $(2, 1)^\top$ and $(-1, 1)^\top$; $a_n = \frac{2^n - (-1)^n}{3}$. (c) $a_{10} = \frac{1024 - 1}{3} = 341$.
-    \item[\ref{pr:eig-markov}.] (a) $\lambda = 1$ with eigenvector $(4, 3)^\top$, and $\lambda = 0.3$ with eigenvector $(1, -1)^\top$; the stationary distribution is $\big(\frac{4}{7}, \frac{3}{7}\big)^\top$. (b) $x_k = \big(\frac{4}{7}, \frac{3}{7}\big)^\top + \frac{3}{7}(0.3)^k (1, -1)^\top$; $x_2 = (0.61, 0.39)^\top$; $x_k \to \big(\frac{4}{7}, \frac{3}{7}\big)^\top$.
-    \item[\ref{pr:eig-power}.] (a) $(2, 1)$, $(5, 4)$, $(14, 13)$, $(41, 40)$; the ratio tends to $1$, i.e., to the direction of the eigenvector $(1, 1)$. (b) $x_0 = \frac{1}{2}(1, 1)^\top + \frac{1}{2}(1, -1)^\top$, so $A^k x_0 = \frac{1}{2}(3^k + 1, \ 3^k - 1)^\top$.
-    \item[\ref{pr:eig-complex}.] (a) $p(\lambda) = (a - \lambda)^2 + b^2$. (b) $3 \pm 4i$; the matrix is $5 R_\theta$ with $\cos\theta = \frac{3}{5}$ and $\sin\theta = \frac{4}{5}$: $r = |3 \pm 4i| = 5$, and $\theta$ is the angle of $3 + 4i$.
-\end{description}
 
 \end{document}
