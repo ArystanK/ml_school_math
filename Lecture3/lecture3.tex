@@ -1,0 +1,83 @@
+\documentclass[11pt]{article}
+
+% Lecture notes template
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{listings}
+
+% Python code in the programming exercises.
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue!70!black},
+    commentstyle=\color{gray!70!black}\itshape,
+    stringstyle=\color{orange!70!black},
+    showstringspaces=false,
+    upquote=true,
+    columns=fullflexible,
+    keepspaces=true,
+    frame=single,
+    rulecolor=\color{gray!40},
+    backgroundcolor=\color{gray!6},
+    xleftmargin=0.5em,
+    xrightmargin=0.5em,
+}
+% Inline Python code, e.g. \py{np.linalg.solve(A, b)}; unlike \lstinline, it can break at spaces.
+\newcommand{\py}[1]{\texttt{\detokenize{#1}}}
+
+% Norms and inner products.
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+
+\title{Lecture 3: Vector Calculus and Optimization}
+\author{Math for Machine Learning}
+\date{\today}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}[definition]{Example}
+\newtheorem{exercise}[definition]{Exercise}
+\theoremstyle{plain}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Null}{null}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\row}{row}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\sign}{sign}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Multivariable Functions}
+
+\begin{definition}
+    A function $f: \mathbb{R}^n \to \mathbb{R}^m$ is a mapping that takes an input vector $\mathbf{x} \in \mathbb{R}^n$ and produces an output vector $\mathbf{y} = f(\mathbf{x}) \in \mathbb{R}^m$.
+    The components of the output vector are given by $y_i = f_i(\mathbf{x})$ for $i = 1, 2, \ldots, m$, where each $f_i: \mathbb{R}^n \to \mathbb{R}$ is a scalar-valued function. 
+\end{definition}
+
+\begin{example}
+    $f(x, y) = x^2 + y^2$ is a function from $\mathbb{R}^2$ to $\mathbb{R}$, which takes a point $(x, y)$ in the plane and maps it to the sum of the squares of its coordinates.
+    
+\end{example}
+
+\end{document}

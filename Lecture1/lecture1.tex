@@ -54,8 +54,8 @@
     \end{tikzpicture}%
 }
 
-\title{Lecture 1: Vector Spaces and Linear Transformations}
-\author{Linear Algebra}
+\title{Lecture 1: Linear Algebra}
+\author{Math for Machine Learning}
 \date{\today}
 
 \theoremstyle{definition}
@@ -2523,6 +2523,362 @@ Combining the rank--nullity theorem with Theorem~\ref{thm:invertible}, we obtain
     Let $T: \mathbb{R}^2 \to \mathbb{R}^2$ be defined by $T(x, y) = (x - y, 2x + 3y)$. Find the kernel and image of $T$, and check that your answer agrees with the rank--nullity theorem.
 \end{exercise}
 
+\section{Dual Vector Spaces}\label{sec:dual}
+
+Many important quantities assign a single number to a vector: a coordinate, the average of the entries, the value of a polynomial at a point, the integral of a function, or the prediction $w^\top x$ of a linear model. When such an assignment is linear, it is called a linear functional. The linear functionals on a vector space $V$ form a new vector space, the dual space $V^*$. Duality explains what the transpose of a matrix really is, gives a convenient way to compute coordinates, and provides ``certificates'' showing that a system of linear equations has no solution. In machine learning, the weight vector of a linear model and the derivative of a loss function are naturally elements of a dual space.
+
+Throughout this section, $V$ and $W$ are vector spaces over a field $\mathbb{F}$.
+
+\subsection{Linear functionals and the dual space}
+
+\begin{definition}[Linear functional, dual space]\label{def:dual}
+    A linear functional (or linear form) on $V$ is a linear transformation $\varphi: V \to \mathbb{F}$. The set of all linear functionals on $V$ is called the dual space of $V$ and is denoted by $V^*$. For $\varphi, \psi \in V^*$ and $c \in \mathbb{F}$, we define $\varphi + \psi$ and $c\varphi$ pointwise:
+    \[(\varphi + \psi)(v) = \varphi(v) + \psi(v), \qquad (c\varphi)(v) = c\, \varphi(v) \qquad (v \in V).\]
+\end{definition}
+
+\begin{proposition}
+    With these operations, $V^*$ is a vector space over $\mathbb{F}$.
+\end{proposition}
+
+\begin{proof}
+    The functions $\varphi + \psi$ and $c\varphi$ are again linear; for example, $(\varphi + \psi)(u + v) = \varphi(u) + \varphi(v) + \psi(u) + \psi(v) = (\varphi + \psi)(u) + (\varphi + \psi)(v)$, and similarly for scalar multiples. The vector space axioms hold because they hold pointwise in $\mathbb{F}$, exactly as for the space of all functions $\mathbb{R} \to \mathbb{R}$. The zero vector of $V^*$ is the zero functional $v \mapsto 0$.
+\end{proof}
+
+On $\mathbb{R}^n$, the linear functionals are exactly the row vectors.
+
+\begin{proposition}\label{prop:functionals-rn}
+    For every row vector $a = (a_1, \ldots, a_n) \in \mathbb{R}^{1 \times n}$, the map $\varphi_a(x) = ax = a_1 x_1 + \cdots + a_n x_n$ is a linear functional on $\mathbb{R}^n$. Conversely, every linear functional $\varphi$ on $\mathbb{R}^n$ is of this form, with $a = \big(\varphi(e_1), \ldots, \varphi(e_n)\big)$. The map $a \mapsto \varphi_a$ is an isomorphism $\mathbb{R}^{1 \times n} \to (\mathbb{R}^n)^*$.
+\end{proposition}
+
+\begin{proof}
+    The first statement is the case $m = 1$ of matrix--vector multiplication, and the second is the case $m = 1$ of Theorem~\ref{thm:matrix}: the matrix of $\varphi: \mathbb{R}^n \to \mathbb{R}$ is the $1 \times n$ matrix with columns $\varphi(e_1), \ldots, \varphi(e_n)$. The map $a \mapsto \varphi_a$ is linear, since $\varphi_{a + b}(x) = (a + b)x = ax + bx$ and $\varphi_{ca}(x) = c\,ax$; it is surjective by the second statement, and injective since $\varphi_a = 0$ implies $a_i = \varphi_a(e_i) = 0$ for all $i$.
+\end{proof}
+
+So vectors of $\mathbb{R}^n$ are columns, and functionals on $\mathbb{R}^n$ are rows; applying a functional to a vector is the product ``row times column''.
+
+\begin{example}\label{ex:functionals}
+    The following maps are linear functionals.
+    \begin{itemize}
+        \item The coordinate functional $x \mapsto x_i$ on $\mathbb{R}^n$, given by the row $e_i^\top$.
+        \item The mean $x \mapsto \frac{1}{n}(x_1 + \cdots + x_n)$ on $\mathbb{R}^n$, given by the row $\frac{1}{n}(1, \ldots, 1)$.
+        \item The trace $\tr: \mathbb{R}^{n \times n} \to \mathbb{R}$ (Theorem~\ref{thm:trace}).
+        \item The evaluation at a point $a$, $\operatorname{ev}_a: \mathbb{R}[x] \to \mathbb{R}$, $p \mapsto p(a)$, and the maps $p \mapsto p'(0)$ and $p \mapsto \int_0^1 p(x)\, dx$.
+    \end{itemize}
+    On the other hand, $x \mapsto x_1 x_2$, $x \mapsto x_1 + 1$ and $A \mapsto \det(A)$ (for $n \geq 2$) are not linear, so they are not linear functionals.
+\end{example}
+
+\begin{remark}[Linear models]
+    A linear model in machine learning predicts a number from a feature vector $x \in \mathbb{R}^n$ by $f(x) = w_1 x_1 + \cdots + w_n x_n = w^\top x$. So the model is a linear functional, and learning a linear model means choosing an element of the dual space $(\mathbb{R}^n)^*$. This is one reason why it is natural to write the weights as a row $w^\top$, and the data as columns.
+\end{remark}
+
+The kernel of a nonzero linear functional on $\mathbb{R}^n$ is the null space of a nonzero $1 \times n$ matrix $a$, so by the rank--nullity theorem it is a subspace of dimension $n - 1$, called a hyperplane (through the origin). For example, the kernel of $x \mapsto x_1 + x_2 + x_3$ is the plane $x_1 + x_2 + x_3 = 0$ in $\mathbb{R}^3$. Using coordinates, the same holds for every $n$-dimensional vector space.
+
+\subsection{The dual basis}
+
+For indices $i$ and $j$, we use the Kronecker delta
+\[\delta_{ij} = \begin{cases} 1 & \text{if } i = j, \\ 0 & \text{if } i \neq j. \end{cases}\]
+
+\begin{theorem}[Dual basis]\label{thm:dual-basis}
+    Let $V$ be finite-dimensional with an ordered basis $\mathcal{B} = (b_1, \ldots, b_n)$. For $i = 1, \ldots, n$, let $b^i \in V^*$ be the linear functional that maps a vector to its $i$-th coordinate with respect to $\mathcal{B}$:
+    \[b^i(a_1 b_1 + \cdots + a_n b_n) = a_i, \qquad \text{so that} \qquad b^i(b_j) = \delta_{ij}.\]
+    Then $(b^1, \ldots, b^n)$ is an ordered basis of $V^*$, called the dual basis of $\mathcal{B}$. Moreover, every $\varphi \in V^*$ can be written as
+    \[\varphi = \varphi(b_1)\, b^1 + \varphi(b_2)\, b^2 + \cdots + \varphi(b_n)\, b^n.\]
+    In particular, $\dim V^* = \dim V$, so $V^* \cong V$.
+\end{theorem}
+
+Here the superscripts in $b^1, \ldots, b^n$ are indices, not powers.
+
+\begin{proof}
+    Each $b^i$ is linear, since the coordinate map $v \mapsto [v]_{\mathcal{B}}$ is linear (Theorem~\ref{thm:coordinates}). First, two linear functionals that agree on $b_1, \ldots, b_n$ are equal: if $v = \sum_j a_j b_j$, then $\varphi(v) = \sum_j a_j \varphi(b_j)$ is determined by the values $\varphi(b_j)$. Now the functionals $\varphi$ and $\sum_i \varphi(b_i) b^i$ agree on each $b_j$, since $\sum_i \varphi(b_i) b^i(b_j) = \sum_i \varphi(b_i)\delta_{ij} = \varphi(b_j)$; hence they are equal, and $b^1, \ldots, b^n$ span $V^*$. If $\sum_i c_i b^i = 0$, then applying both sides to $b_j$ gives $c_j = 0$, so $b^1, \ldots, b^n$ are linearly independent. The last statement follows from Corollary~\ref{cor:iso-dim}.
+\end{proof}
+
+So the coordinates of a functional in the dual basis are simply its values on the basis vectors. For the standard basis $e_1, \ldots, e_n$ of $\mathbb{R}^n$, the dual basis consists of the coordinate functionals $x \mapsto x_i$, i.e., of the rows $e_1^\top, \ldots, e_n^\top$. For other bases of $\mathbb{R}^n$, the dual basis can be computed with an inverse matrix.
+
+\begin{proposition}\label{prop:dual-basis-compute}
+    Let $b_1, \ldots, b_n$ be a basis of $\mathbb{R}^n$, and let $P$ be the (invertible) matrix with columns $b_1, \ldots, b_n$. Then the dual basis functionals are given by the rows of $P^{-1}$: if $r_i$ is the $i$-th row of $P^{-1}$, then $b^i(x) = r_i x$.
+\end{proposition}
+
+\begin{proof}
+    The $(i, j)$ entry of $P^{-1}P = I_n$ is $r_i b_j = \delta_{ij}$. So the functionals $x \mapsto r_i x$ satisfy the defining property of the dual basis. (Equivalently, $P^{-1}x = [x]_{\mathcal{B}}$ is the coordinate vector of $x$.)
+\end{proof}
+
+\begin{example}
+    For the basis $b_1 = (1, 1)^\top$, $b_2 = (1, -1)^\top$ of $\mathbb{R}^2$, we have $P^{-1} = \frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$, so
+    \[b^1(x) = \frac{x_1 + x_2}{2}, \qquad b^2(x) = \frac{x_1 - x_2}{2}.\]
+    Indeed, $b^1(b_1) = 1$, $b^1(b_2) = 0$, $b^2(b_1) = 0$ and $b^2(b_2) = 1$.
+\end{example}
+
+\begin{example}[Lagrange interpolation]\label{ex:lagrange}
+    Let $V = \mathbb{R}[x]_{\leq 2}$. The map $T(p) = \big(p(-1), p(0), p(1)\big)$ is an isomorphism $V \to \mathbb{R}^3$, since its matrix with respect to the basis $(1, x, x^2)$ is $\begin{pmatrix} 1 & -1 & 1 \\ 1 & 0 & 0 \\ 1 & 1 & 1 \end{pmatrix}$, which has determinant $2 \neq 0$ (Theorem~\ref{thm:iso-matrix}). Hence the polynomials $L_a = T^{-1}(e_a)$, i.e.,
+    \[L_{-1}(x) = \frac{x(x - 1)}{2}, \qquad L_0(x) = 1 - x^2, \qquad L_1(x) = \frac{x(x + 1)}{2},\]
+    form a basis of $V$ (Proposition~\ref{prop:iso-basis}); they satisfy $L_a(c) = \delta_{ac}$ for $a, c \in \{-1, 0, 1\}$. Its dual basis consists of the evaluation functionals $\operatorname{ev}_{-1}, \operatorname{ev}_0, \operatorname{ev}_1$, and Theorem~\ref{thm:dual-basis} gives the Lagrange interpolation formula
+    \[p = p(-1)\, L_{-1} + p(0)\, L_0 + p(1)\, L_1 \qquad \text{for every } p \in \mathbb{R}[x]_{\leq 2}.\]
+    (Apply $T$ to both sides: both have the values $p(-1)$, $p(0)$, $p(1)$.) For example, the polynomial of degree at most $2$ with values $1, 2, 5$ at $-1, 0, 1$ is $L_{-1} + 2L_0 + 5L_1 = 2 + 2x + x^2$.
+\end{example}
+
+\subsection{The dual map and the transpose}
+
+A linear transformation $T: V \to W$ turns functionals on $W$ into functionals on $V$: first apply $T$, then the functional.
+
+\begin{definition}[Dual map]
+    Let $T: V \to W$ be a linear transformation. The dual map (or transpose) of $T$ is
+    \[T^*: W^* \to V^*, \qquad T^*(\psi) = \psi \circ T.\]
+\end{definition}
+
+The map $T^*(\psi) = \psi \circ T$ is a linear functional on $V$ by Lemma~\ref{lem:composition}, and $T^*$ is linear, since $(\psi_1 + \psi_2) \circ T = \psi_1 \circ T + \psi_2 \circ T$ and $(c\psi) \circ T = c(\psi \circ T)$. Note that $T^*$ goes in the opposite direction: from $W^*$ to $V^*$. If $S: W \to U$ is another linear transformation, then $(S \circ T)^*(\psi) = \psi \circ S \circ T = T^*(S^*(\psi))$, so
+\[(S \circ T)^* = T^* \circ S^*.\]
+
+\begin{theorem}\label{thm:dual-map-matrix}
+    Let $V$ and $W$ be finite-dimensional vector spaces over $\mathbb{R}$, with ordered bases $\mathcal{B} = (b_1, \ldots, b_n)$ and $\mathcal{C} = (c_1, \ldots, c_m)$, and let $\mathcal{B}^* = (b^1, \ldots, b^n)$ and $\mathcal{C}^* = (c^1, \ldots, c^m)$ be the dual bases. If $T: V \to W$ has the matrix $A = [T]_{\mathcal{C}, \mathcal{B}}$, then the dual map has the matrix
+    \[[T^*]_{\mathcal{B}^*, \mathcal{C}^*} = A^\top.\]
+\end{theorem}
+
+\begin{proof}
+    By definition of $A$, the $i$-th column of $A$ is the coordinate vector of $T(b_i)$, so $c^j(T(b_i)) = A_{ji}$. By Theorem~\ref{thm:dual-basis}, the coordinates of the functional $T^*(c^j)$ in the dual basis $\mathcal{B}^*$ are its values on $b_1, \ldots, b_n$, which are
+    \[T^*(c^j)(b_i) = c^j\big(T(b_i)\big) = A_{ji} \qquad (i = 1, \ldots, n).\]
+    So the $j$-th column of $[T^*]_{\mathcal{B}^*, \mathcal{C}^*}$ is $(A_{j1}, \ldots, A_{jn})^\top$, which is the $j$-th column of $A^\top$.
+\end{proof}
+
+For $T = T_A: \mathbb{R}^n \to \mathbb{R}^m$ and functionals written as rows (Proposition~\ref{prop:functionals-rn}), this is very concrete: the functional $\psi(y) = cy$ on $\mathbb{R}^m$, given by a row $c$, is mapped to
+\[T_A^*(\psi)(x) = \psi(Ax) = c(Ax) = (cA)x,\]
+i.e., to the row $cA$. So the dual map multiplies rows from the right by $A$, while $T_A$ multiplies columns from the left; written as columns, $(cA)^\top = A^\top c^\top$. This explains the transpose conceptually, and the rule $(S \circ T)^* = T^* \circ S^*$ explains why $(AB)^\top = B^\top A^\top$ reverses the order.
+
+\subsection{Annihilators and solvability of linear systems}
+
+\begin{definition}[Annihilator]
+    Let $U$ be a subspace of $V$. The annihilator of $U$ is the set of all functionals that vanish on $U$:
+    \[U^\circ = \{\varphi \in V^* : \varphi(u) = 0 \text{ for all } u \in U\}.\]
+\end{definition}
+
+The annihilator is a subspace of $V^*$ (check this). In $\mathbb{R}^n$, it can be computed with a null space.
+
+\begin{theorem}\label{thm:annihilator}
+    Let $U = \col(B)$ be a $k$-dimensional subspace of $\mathbb{R}^n$, where $B$ is an $n \times k$ matrix with linearly independent columns. A row $a$ defines a functional in $U^\circ$ if and only if $aB = 0$, i.e., $a^\top \in \Null(B^\top)$. In particular,
+    \[\dim U + \dim U^\circ = n.\]
+\end{theorem}
+
+\begin{proof}
+    The functional $x \mapsto ax$ vanishes on $U$ if and only if it vanishes on the columns $b_1, \ldots, b_k$ of $B$ (by linearity), i.e., if and only if $ab_i = 0$ for all $i$, which means $aB = 0$, or equivalently $B^\top a^\top = 0$. By Proposition~\ref{prop:functionals-rn}, $U^\circ$ is therefore isomorphic to $\Null(B^\top)$. Since $\rank(B^\top) = \rank(B) = k$ (Theorem~\ref{thm:rank}), the rank--nullity theorem gives $\dim U^\circ = n - k$.
+\end{proof}
+
+\begin{example}
+    For $U = \Span\{(1, 1, 1)^\top\}$ in $\mathbb{R}^3$, the annihilator consists of the rows $a$ with $a_1 + a_2 + a_3 = 0$, a $2$-dimensional space, and indeed $1 + 2 = 3$.
+\end{example}
+
+Annihilators give a clean criterion for when a system of linear equations has a solution.
+
+\begin{theorem}[Fredholm alternative]\label{thm:fredholm}
+    Let $A$ be an $m \times n$ matrix and $b \in \mathbb{R}^m$. The system $Ax = b$ has a solution if and only if $yb = 0$ for every row $y \in \mathbb{R}^{1 \times m}$ with $yA = 0$.
+\end{theorem}
+
+\begin{proof}
+    If $Ax = b$ and $yA = 0$, then $yb = yAx = 0$. Conversely, suppose that $Ax = b$ has no solution, i.e., $b \notin U = \col(A)$. Let $r = \dim U$, choose a basis $u_1, \ldots, u_r$ of $U$, and let $U' = \Span\{u_1, \ldots, u_r, b\}$. The vectors $u_1, \ldots, u_r, b$ are linearly independent (a nontrivial relation would have to involve $b$, and would express $b$ as an element of $U$), so $\dim U' = r + 1$. By Theorem~\ref{thm:annihilator}, $\dim {U'}^\circ = m - r - 1 < m - r = \dim U^\circ$. Since $U \subseteq U'$, we have ${U'}^\circ \subseteq U^\circ$, and the dimensions show that there is a functional $y \in U^\circ$ with $y \notin {U'}^\circ$. Such a row $y$ vanishes on the columns of $A$, i.e., $yA = 0$, but it does not vanish on all of $U'$, so $yb \neq 0$.
+\end{proof}
+
+So if a system has no solution, there is always a simple certificate that proves it: a combination $y$ of the equations whose left-hand sides cancel ($yA = 0$), but whose right-hand sides do not ($yb \neq 0$).
+
+\begin{example}
+    The system $x_1 + 2x_2 = 1$, $2x_1 + 4x_2 = 3$ has no solution. A certificate is $y = (2, -1)$: we have $yA = (2, -1)\begin{pmatrix} 1 & 2 \\ 2 & 4 \end{pmatrix} = (0, 0)$, but $yb = 2 - 3 = -1 \neq 0$. In words: twice the first equation minus the second one gives $0 = -1$.
+\end{example}
+
+\begin{remark}
+    Certificates of this kind are the starting point of duality theory in optimization (Farkas' lemma, the duality theorem of linear programming, Lagrange multipliers), which is used throughout machine learning, for example to derive the dual problem of support vector machines.
+\end{remark}
+
+\subsection{The double dual}
+
+Applying the construction twice gives the double dual $V^{**} = (V^*)^*$. Every vector $v \in V$ gives an element of $V^{**}$: the functional ``evaluate at $v$''.
+
+\begin{theorem}\label{thm:double-dual}
+    For $v \in V$, let $\iota(v) \in V^{**}$ be defined by $\iota(v)(\varphi) = \varphi(v)$ for $\varphi \in V^*$. Then $\iota: V \to V^{**}$ is linear and injective, and if $V$ is finite-dimensional, it is an isomorphism.
+\end{theorem}
+
+\begin{proof}
+    Each $\iota(v)$ is linear in $\varphi$, by the definition of the operations in $V^*$, and $\iota$ is linear in $v$, since every $\varphi$ is linear. We only prove the finite-dimensional case. Let $b_1, \ldots, b_n$ be a basis of $V$, with dual basis $b^1, \ldots, b^n$. If $\iota(v) = 0$, then $b^i(v) = 0$ for all $i$, so all coordinates of $v$ are $0$, and $v = 0$; hence $\iota$ is injective. For surjectivity, let $\Lambda \in V^{**}$, and put $v = \sum_i \Lambda(b^i) b_i$. Then $\iota(v)(b^j) = b^j(v) = \Lambda(b^j)$ for all $j$, so the linear functionals $\iota(v)$ and $\Lambda$ on $V^*$ agree on a basis of $V^*$, and hence $\iota(v) = \Lambda$.
+\end{proof}
+
+\begin{remark}
+    For finite-dimensional $V$, both $V^*$ and $V^{**}$ are isomorphic to $V$, since they have the same dimension. But an isomorphism $V \to V^*$ (such as $b_i \mapsto b^i$) depends on the choice of a basis, while $\iota: V \to V^{**}$ is defined without any choices; it is called the natural isomorphism. In Lecture~2, we will see that an inner product also gives a natural way to identify $V$ with $V^*$: on $\mathbb{R}^n$ with the dot product, the vector $a^\top$ corresponds to the functional $x \mapsto ax$. (For infinite-dimensional spaces, such as $\mathbb{R}[x]$, the map $\iota$ is injective but not surjective; we do not prove this.)
+\end{remark}
+
+\begin{remark}[Gradients and backpropagation]
+    For a differentiable function $f: \mathbb{R}^n \to \mathbb{R}$, the derivative at a point $x$ is the linear functional
+    \[h \mapsto \frac{\partial f}{\partial x_1}(x)\, h_1 + \cdots + \frac{\partial f}{\partial x_n}(x)\, h_n,\]
+    which gives the first-order change of $f$ in the direction $h$. So the derivative is naturally a row vector; the gradient $\nabla f(x)$ is the corresponding column vector, obtained by transposing. Backpropagation, the algorithm behind the training of neural networks, computes the derivative of a loss function with respect to all parameters by passing such row vectors backwards through the layers of the network. Each layer applies the dual map (the transpose) of its own derivative, which is the rule $(S \circ T)^* = T^* \circ S^*$ at work.
+\end{remark}
+
+\section{Quotient Spaces and the Isomorphism Theorems}\label{sec:quotient}
+
+Sometimes the differences between vectors in certain directions do not matter. The antiderivative of a function is only determined up to an additive constant; the outputs of the softmax function in a neural network do not change if the same number is added to all of its inputs; and the information a linear transformation keeps about a vector does not change if we add an element of its kernel. The quotient space $V/U$ formalizes the idea of ``the vector space $V$, where we ignore the directions in a subspace $U$''. The isomorphism theorems then describe how quotients, kernels and images fit together, and they give the rank--nullity theorem for arbitrary linear transformations, as well as a formula for the dimension of the intersection of two subspaces.
+
+Throughout this section, $V$ is a vector space over a field $\mathbb{F}$, and $U$ is a subspace of $V$.
+
+\subsection{Cosets}
+
+\begin{definition}[Coset]
+    For $v \in V$, the coset of $U$ through $v$ is the set
+    \[v + U = \{v + u : u \in U\}.\]
+\end{definition}
+
+In $\mathbb{R}^n$, cosets are the shifted copies of the subspace $U$ (affine subspaces, see Lecture~2). For example, if $U$ is a line through the origin in $\mathbb{R}^2$, the cosets of $U$ are the lines parallel to $U$.
+
+\begin{lemma}\label{lem:cosets}
+    For all $v, w \in V$:
+    \begin{enumerate}
+        \item $v \in v + U$;
+        \item $v + U = w + U$ if and only if $v - w \in U$;
+        \item two cosets are either equal or disjoint.
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+    (1) $v = v + 0$ with $0 \in U$.
+
+    (2) If $v + U = w + U$, then $v \in w + U$ by part 1, so $v = w + u$ for some $u \in U$, and $v - w = u \in U$. Conversely, if $v - w = u_0 \in U$, then every element $v + u = w + (u_0 + u)$ of $v + U$ lies in $w + U$, and similarly $w + U \subseteq v + U$, since $w - v = -u_0 \in U$.
+
+    (3) If $x \in (v + U) \cap (w + U)$, then $x - v \in U$ and $x - w \in U$, so $v - w = (x - w) - (x - v) \in U$, and $v + U = w + U$ by part 2.
+\end{proof}
+
+So the cosets of $U$ cut $V$ into disjoint pieces, and every vector lies in exactly one of them. The vectors in the same coset are those that differ by an element of $U$; any of them is called a representative of the coset.
+
+\begin{example}\label{ex:cosets-line}
+    Let $U = \Span\{(1, 1)^\top\}$ in $\mathbb{R}^2$. Two vectors $v$ and $w$ lie in the same coset if and only if $v - w$ is a multiple of $(1, 1)^\top$, i.e., if and only if $v_1 - v_2 = w_1 - w_2$. So the cosets are the lines $\{x : x_1 - x_2 = c\}$, $c \in \mathbb{R}$, parallel to $U$. For instance, $(3, 1)^\top + U = (2, 0)^\top + U$, since $(3, 1)^\top - (2, 0)^\top = (1, 1)^\top \in U$.
+\end{example}
+
+\begin{example}
+    Let $U$ be the subspace of constant functions in the space of all functions $\mathbb{R} \to \mathbb{R}$. If $F$ is an antiderivative of $f$, then the set of all antiderivatives of $f$ is the coset $F + U = \{F + C : C \in \mathbb{R}\}$. The familiar notation $\int f(x)\, dx = F(x) + C$ describes exactly this coset.
+\end{example}
+
+\subsection{The quotient space}
+
+\begin{definition}[Quotient space]
+    The quotient space of $V$ by $U$ is the set of all cosets of $U$,
+    \[V/U = \{v + U : v \in V\},\]
+    with the operations
+    \[(v + U) + (w + U) = (v + w) + U, \qquad c\,(v + U) = cv + U \qquad (c \in \mathbb{F}).\]
+    The map $\pi: V \to V/U$, $\pi(v) = v + U$, is called the quotient map.
+\end{definition}
+
+\begin{proposition}\label{prop:quotient}
+    The operations on $V/U$ are well defined, and with them $V/U$ is a vector space over $\mathbb{F}$, whose zero vector is the coset $0 + U = U$. The quotient map $\pi$ is a surjective linear transformation with $\ker(\pi) = U$.
+\end{proposition}
+
+\begin{proof}
+    A coset has many representatives, so we must check that the results of the operations do not depend on the choice of representatives. Let $v + U = v' + U$ and $w + U = w' + U$, i.e., $v - v' \in U$ and $w - w' \in U$ (Lemma~\ref{lem:cosets}). Then $(v + w) - (v' + w') = (v - v') + (w - w') \in U$ and $cv - cv' = c(v - v') \in U$, so $(v + w) + U = (v' + w') + U$ and $cv + U = cv' + U$. The vector space axioms for $V/U$ follow from those for $V$; for example, $(v + U) + (0 + U) = v + U$, and the additive inverse of $v + U$ is $(-v) + U$. The quotient map is linear by the definition of the operations, and it is clearly surjective. Finally, $\pi(v) = 0 + U$ if and only if $v - 0 \in U$, by Lemma~\ref{lem:cosets}.
+\end{proof}
+
+So in $V/U$ we compute with vectors as usual, except that vectors which differ by an element of $U$ are considered equal; in particular, all vectors of $U$ become $0$.
+
+\begin{example}
+    For $U = \Span\{(1, 1)^\top\}$ as in Example~\ref{ex:cosets-line}, every coset is determined by the number $x_1 - x_2$, and the map $\mathbb{R}^2/U \to \mathbb{R}$, $x + U \mapsto x_1 - x_2$, is well defined (it does not depend on the representative $x$), linear and bijective. So $\mathbb{R}^2/U \cong \mathbb{R}$: collapsing a line in the plane to a point leaves a line.
+\end{example}
+
+To compute the dimension of a quotient space, we use the following fact, which we state without proof: in a finite-dimensional vector space, every linearly independent set of vectors can be extended to a basis.
+
+\begin{theorem}\label{thm:quotient-dim}
+    If $V$ is finite-dimensional, then $\dim(V/U) = \dim V - \dim U$. More precisely, if $u_1, \ldots, u_k, w_1, \ldots, w_m$ is a basis of $V$ such that $u_1, \ldots, u_k$ is a basis of $U$, then $w_1 + U, \ldots, w_m + U$ is a basis of $V/U$.
+\end{theorem}
+
+\begin{proof}
+    By the fact above, every basis of $U$ can be extended to such a basis of $V$. The cosets $w_j + U$ span $V/U$: if $v = \sum_i a_i u_i + \sum_j c_j w_j$, then $v + U = \sum_j c_j (w_j + U)$, since $\sum_i a_i u_i \in U$. They are linearly independent: if $\sum_j c_j (w_j + U) = 0 + U$, then $\sum_j c_j w_j \in U$, so $\sum_j c_j w_j = \sum_i a_i u_i$ for some scalars $a_i$. Since $u_1, \ldots, u_k, w_1, \ldots, w_m$ are linearly independent, all $c_j$ (and $a_i$) are $0$.
+\end{proof}
+
+\begin{remark}[Complements]
+    The proof shows that $W = \Span\{w_1, \ldots, w_m\}$ is a subspace such that every $v \in V$ can be written uniquely as $v = u + w$ with $u \in U$ and $w \in W$; such a $W$ is called a complement of $U$. Every coset $v + U$ then contains exactly one vector of $W$, and $w \mapsto w + U$ is an isomorphism $W \to V/U$. For example, the $x_1$-axis is a complement of $U = \Span\{(1, 1)^\top\}$ in $\mathbb{R}^2$: the coset $\{x_1 - x_2 = c\}$ meets the $x_1$-axis exactly in $(c, 0)$. Complements are not unique, so this description of $V/U$ depends on a choice. In Lecture~2, the orthogonal complement $U^\perp$ will be a canonical choice.
+\end{remark}
+
+\subsection{The isomorphism theorems}
+
+\begin{theorem}[First isomorphism theorem]\label{thm:first-iso}
+    Let $T: V \to W$ be a linear transformation, and let $K = \ker(T)$. Then
+    \[\bar{T}: V/K \to \im(T), \qquad \bar{T}(v + K) = T(v),\]
+    is a well-defined isomorphism. In particular, $V/\ker(T) \cong \im(T)$.
+\end{theorem}
+
+\begin{proof}
+    If $v + K = v' + K$, then $v - v' \in K$, so $T(v) - T(v') = T(v - v') = 0$; hence $\bar{T}$ is well defined. It is linear, since $T$ is: $\bar{T}((v + K) + (w + K)) = T(v + w) = T(v) + T(w)$, and similarly for scalar multiples. It is surjective by the definition of $\im(T)$. It is injective: if $\bar{T}(v + K) = T(v) = 0$, then $v \in K$, so $v + K = 0 + K$ is the zero vector of $V/K$ (Lemma~\ref{lem:injective}).
+\end{proof}
+
+In words: a linear transformation identifies exactly those vectors that differ by an element of its kernel, and after this identification, it becomes an isomorphism onto its image. Combined with Theorem~\ref{thm:quotient-dim}, the first isomorphism theorem gives the rank--nullity theorem for all linear transformations, not only for matrices.
+
+\begin{corollary}[Rank--nullity theorem]\label{cor:rank-nullity-general}
+    Let $T: V \to W$ be a linear transformation, where $V$ is finite-dimensional. Then
+    \[\dim \ker(T) + \dim \im(T) = \dim V.\]
+\end{corollary}
+
+\begin{proof}
+    By Theorem~\ref{thm:first-iso}, $\im(T) \cong V/\ker(T)$, which has dimension $\dim V - \dim \ker(T)$ by Theorem~\ref{thm:quotient-dim}; isomorphic spaces have the same dimension (Proposition~\ref{prop:iso-basis}).
+\end{proof}
+
+\begin{example}
+    For $T(x, y) = (x + 2y, 2x + 4y)$ (Example~\ref{ex:kerim-picture} and Figure~\ref{fig:kernel-image}), the cosets of $\ker(T) = \Span\{(-2, 1)^\top\}$ are the lines $x + 2y = c$, and $\bar{T}$ maps the coset $\{x + 2y = c\}$ to the point $c\,(1, 2)$ of $\im(T)$. Figure~\ref{fig:kernel-image} is therefore a picture of the isomorphism $\mathbb{R}^2/\ker(T) \cong \im(T)$: each colored line on the left is one element of the quotient space.
+\end{example}
+
+\begin{example}
+    The derivative $D: \mathbb{R}[x]_{\leq 3} \to \mathbb{R}[x]_{\leq 2}$, $p \mapsto p'$, is surjective, and its kernel is the space of constant polynomials. So $\mathbb{R}[x]_{\leq 3}/\{\text{constants}\} \cong \mathbb{R}[x]_{\leq 2}$: a polynomial ``up to an additive constant'' is the same thing as its derivative. Similarly, the trace $\tr: \mathbb{R}^{n \times n} \to \mathbb{R}$ is surjective, so $\mathbb{R}^{n \times n}$ modulo the matrices with trace zero is isomorphic to $\mathbb{R}$.
+\end{example}
+
+To compare two subspaces, we need their sum.
+
+\begin{definition}[Sum of subspaces]
+    For subspaces $U$ and $W$ of $V$, their sum is $U + W = \{u + w : u \in U, \ w \in W\}$.
+\end{definition}
+
+One checks that $U + W$ is a subspace of $V$; it is the smallest subspace that contains both $U$ and $W$. Also $U \cap W$ is a subspace (practice problems).
+
+\begin{theorem}[Second isomorphism theorem]\label{thm:second-iso}
+    Let $U$ and $W$ be subspaces of $V$. Then
+    \[(U + W)/W \cong U/(U \cap W).\]
+\end{theorem}
+
+\begin{proof}
+    Consider $T: U \to (U + W)/W$, $T(u) = u + W$, which is linear (it is the restriction of the quotient map). It is surjective: every element of $(U + W)/W$ has the form $(u + w) + W = u + W = T(u)$, since $w \in W$. Its kernel consists of the $u \in U$ with $u \in W$, i.e., $\ker(T) = U \cap W$. Now apply the first isomorphism theorem.
+\end{proof}
+
+\begin{corollary}[Dimension formula]\label{cor:grassmann}
+    If $U$ and $W$ are finite-dimensional subspaces of $V$, then
+    \[\dim(U + W) + \dim(U \cap W) = \dim U + \dim W.\]
+\end{corollary}
+
+\begin{proof}
+    By Theorems~\ref{thm:second-iso} and~\ref{thm:quotient-dim}, $\dim(U + W) - \dim W = \dim U - \dim(U \cap W)$.
+\end{proof}
+
+\begin{example}
+    Two different planes $U$ and $W$ through the origin in $\mathbb{R}^3$ always meet in a line: since $U + W$ is a subspace that is strictly larger than the $2$-dimensional plane $U$, it is all of $\mathbb{R}^3$, and hence $\dim(U \cap W) = 2 + 2 - 3 = 1$. Similarly, two $4$-dimensional subspaces of $\mathbb{R}^7$ always have a nonzero intersection, since $\dim(U \cap W) = 8 - \dim(U + W) \geq 8 - 7 = 1$.
+\end{example}
+
+\begin{theorem}[Third isomorphism theorem]\label{thm:third-iso}
+    Let $U \subseteq W \subseteq V$ be subspaces. Then $W/U = \{w + U : w \in W\}$ is a subspace of $V/U$, and
+    \[(V/U)/(W/U) \cong V/W.\]
+\end{theorem}
+
+\begin{proof}
+    $W/U$ is the image of $W$ under the quotient map $V \to V/U$, hence a subspace. Consider $T: V/U \to V/W$, $T(v + U) = v + W$. It is well defined: if $v + U = v' + U$, then $v - v' \in U \subseteq W$, so $v + W = v' + W$. It is linear and surjective, and $T(v + U) = 0 + W$ if and only if $v \in W$, so $\ker(T) = W/U$. Now apply the first isomorphism theorem.
+\end{proof}
+
+In words: ignoring first the directions in $U$, and then the remaining directions in $W$, is the same as ignoring all directions in $W$ at once. For example, for $U = \Span\{e_3\} \subseteq W = \Span\{e_2, e_3\} \subseteq V = \mathbb{R}^3$, we have $V/U \cong \mathbb{R}^2$ (keep $x_1, x_2$), $W/U \cong \mathbb{R}$ (keep $x_2$), and both sides of the theorem are isomorphic to $\mathbb{R}$ (keep only $x_1$).
+
+\subsection{Quotients and duality}
+
+Linear functionals on a quotient space are the same as functionals that vanish on the subspace.
+
+\begin{theorem}\label{thm:quotient-dual}
+    The map $(V/U)^* \to U^\circ$, $\varphi \mapsto \varphi \circ \pi$, is an isomorphism, where $\pi: V \to V/U$ is the quotient map and $U^\circ$ is the annihilator of $U$ (Section~\ref{sec:dual}).
+\end{theorem}
+
+\begin{proof}
+    For $\varphi \in (V/U)^*$, the functional $\varphi \circ \pi$ vanishes on $U$, since $\pi(u) = 0$ for $u \in U$; and $\varphi \mapsto \varphi \circ \pi$ is linear. It is injective: if $\varphi \circ \pi = 0$, then $\varphi = 0$, since $\pi$ is surjective. It is surjective: if $\psi \in U^\circ$, then $\varphi(v + U) = \psi(v)$ is well defined (if $v - v' \in U$, then $\psi(v) - \psi(v') = \psi(v - v') = 0$) and linear, and $\varphi \circ \pi = \psi$.
+\end{proof}
+
+For finite-dimensional $V$, this is consistent with the dimensions: $\dim (V/U)^* = \dim V - \dim U = \dim U^\circ$ (Theorems~\ref{thm:quotient-dim}, \ref{thm:dual-basis} and~\ref{thm:annihilator}).
+
+\begin{remark}[Quotients in machine learning]
+    The softmax function, which turns a vector $z \in \mathbb{R}^n$ of scores (``logits'') into probabilities,
+    \[\operatorname{softmax}(z)_i = \frac{e^{z_i}}{e^{z_1} + \cdots + e^{z_n}},\]
+    satisfies $\operatorname{softmax}(z + c\mathbf{1}) = \operatorname{softmax}(z)$ for every $c \in \mathbb{R}$, where $\mathbf{1} = (1, \ldots, 1)^\top$, since the factor $e^c$ cancels. So the softmax only depends on the coset $z + \Span\{\mathbf{1}\}$, i.e., it is really a function on the quotient space $\mathbb{R}^n/\Span\{\mathbf{1}\}$, and logits are only meaningful up to adding a constant. This has a practical consequence: computing $e^{z_i}$ overflows for large scores, so softmax is implemented by first subtracting $\max_i z_i$ from all entries, which picks a different representative of the same coset (Programming Exercise~P13). Choosing the representative whose entries sum to $0$ is the same as centering the vector; the centered vectors form a complement of $\Span\{\mathbf{1}\}$. Quotient spaces also appear in the construction of the function spaces $L^2$, where two functions are identified if their difference has integral of squares $0$.
+\end{remark}
+
 \section{Eigenvalues and Eigenvectors}\label{sec:eigen}
 
 A linear transformation usually changes the direction of a vector. The vectors whose direction does not change, and which are only stretched or flipped, are called eigenvectors. They reveal the structure of a linear transformation: in a basis of eigenvectors, the transformation simply scales each coordinate. Eigenvalues and eigenvectors appear throughout machine learning, for example in principal component analysis (Lecture~2), in the PageRank algorithm, in the analysis of Markov chains, and in spectral clustering.
@@ -2796,6 +3152,8 @@ We state this theorem without proof. The second part says that we need ``enough'
 	\item Elementary row operations bring a matrix into (reduced) row echelon form. They do not change the null space or the row space, but they can change the column space; the pivot columns of the original matrix form a basis of its column space.
 	\item $\rank(A) = \dim \col(A) = \dim \row(A)$ is the number of pivots, and $\rank(A) + \dim \Null(A) = n$ for every $m \times n$ matrix $A$.
 	\item For an $n \times n$ matrix $A$: $A$ is invertible $\iff$ $\Null(A) = \{0\}$ $\iff$ $\rank(A) = n$ $\iff$ $\RREF(A) = I_n$ $\iff$ $\det(A) \neq 0$.
+	\item The dual space $V^*$ consists of the linear functionals $V \to \mathbb{F}$; on $\mathbb{R}^n$, these are the row vectors. A basis $b_1, \ldots, b_n$ has a dual basis $b^1, \ldots, b^n$ with $b^i(b_j) = \delta_{ij}$ (in $\mathbb{R}^n$: the rows of $P^{-1}$), and $\dim V^* = \dim V$. The dual map $T^*(\psi) = \psi \circ T$ is represented by the transpose $A^\top$. A system $Ax = b$ is solvable if and only if $yb = 0$ for all rows $y$ with $yA = 0$.
+	\item The quotient space $V/U$ consists of the cosets $v + U$, where $v + U = w + U$ if and only if $v - w \in U$; it has dimension $\dim V - \dim U$. First isomorphism theorem: $V/\ker(T) \cong \im(T)$, which gives rank--nullity for every linear map. Second: $(U + W)/W \cong U/(U \cap W)$, so $\dim(U + W) + \dim(U \cap W) = \dim U + \dim W$. Third: $(V/U)/(W/U) \cong V/W$.
 	\item An eigenvector $v \neq 0$ of $A$ satisfies $Av = \lambda v$; the eigenvalues are the roots of the characteristic polynomial $\det(A - \lambda I_n)$, and the eigenspace $E_\lambda = \Null(A - \lambda I_n)$ is found by row reduction. The (complex) eigenvalues add up to $\tr(A)$ and multiply to $\det(A)$.
 	\item $A$ is diagonalizable, $A = PDP^{-1}$, exactly when it has $n$ linearly independent eigenvectors (the columns of $P$); this holds, for example, when $A$ has $n$ distinct eigenvalues. Then $A^k = PD^kP^{-1}$, which explains Fibonacci numbers, the long-run behavior of Markov chains, and power iteration (PageRank).
 \end{itemize}
@@ -2848,6 +3206,14 @@ We state this theorem without proof. The second part says that we need ``enough'
 		\item Show that if $A$ is orthogonal, then $\lambda = 1$ or $\lambda = -1$.
 	\end{enumerate}
 	\item A Markov chain has the transition matrix $A = \begin{pmatrix} 0.8 & 0.3 \\ 0.2 & 0.7 \end{pmatrix}$. Find its eigenvalues and its stationary distribution, and describe what happens to $A^k x_0$ as $k \to \infty$ for a probability vector $x_0$.
+	\item Find the dual basis of the basis $(1, 0, 0)^\top$, $(1, 1, 0)^\top$, $(1, 1, 1)^\top$ of $\mathbb{R}^3$, and check that $b^i(b_j) = \delta_{ij}$.
+	\item On $V = \mathbb{R}[x]_{\leq 2}$, consider the functionals $\varphi_1(p) = p(0)$, $\varphi_2(p) = p'(0)$ and $\varphi_3(p) = \int_{-1}^1 p(x)\, dx$. Show that $\varphi_1, \varphi_2, \varphi_3$ is a basis of $V^*$, and find the basis $q_1, q_2, q_3$ of $V$ whose dual basis it is, i.e., with $\varphi_i(q_j) = \delta_{ij}$.
+	\item Let $T: \mathbb{R}^2 \to \mathbb{R}^2$, $T(x, y) = (x + 2y, 3y)$. Compute $T^*(\psi)$ for the coordinate functionals $\psi(x, y) = x$ and $\psi(x, y) = y$, and check that the matrix of $T^*$ with respect to the dual of the standard basis is the transpose of the matrix of $T$.
+	\item Let $\varphi$ and $\psi$ be nonzero linear functionals on a finite-dimensional vector space with $\ker(\varphi) = \ker(\psi)$. Show that $\psi = c\varphi$ for some $c \neq 0$. (Hint: choose $v$ with $\varphi(v) = 1$, and show that every vector is of the form $w + tv$ with $w \in \ker(\varphi)$.)
+	\item Let $U = \Span\{(1, 0, 1)^\top, (0, 1, 1)^\top\} \subseteq \mathbb{R}^3$. Show that the cosets of $U$ are the planes $x_1 + x_2 - x_3 = c$, and that $x + U \mapsto x_1 + x_2 - x_3$ is an isomorphism $\mathbb{R}^3/U \to \mathbb{R}$. Check Theorem~\ref{thm:quotient-dim}.
+	\item Use the first isomorphism theorem and the map $A \mapsto \frac{1}{2}(A + A^\top)$ to show that $\mathbb{R}^{n \times n}/\mathrm{Skew}_n \cong \mathrm{Sym}_n$, and check that the dimensions agree.
+	\item Let $U$ and $W$ be $3$-dimensional subspaces of $\mathbb{R}^5$. Show that $U \cap W \neq \{0\}$. Which values can $\dim(U \cap W)$ take?
+	\item Show that $V/U = \{0\}$ if and only if $U = V$, and that $V/\{0\} \cong V$.
 \end{enumerate}
 
 \section{Programming Exercises}\label{sec:programming}
@@ -2984,6 +3350,28 @@ def power_iteration(A, num_iter=100):
         \item For a random $5 \times 5$ matrix $A$, check that $A$ is close to $PDP^{-1}$. (The eigenvalues may be complex.) Compare $PD^{20}P^{-1}$ with \py{np.linalg.matrix_power(A, 20)}.
         \item Compute the Fibonacci numbers $F_n$ in two ways: exactly, with Python integers and the recursion, and with Binet's formula (Example~\ref{ex:binet}) in floating-point arithmetic, rounding to the nearest integer. For which $n$ does Binet's formula give a wrong answer for the first time, and why?
         \item Apply \py{np.linalg.eig} to the shear $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$. What do you notice about the two eigenvectors it returns?
+    \end{itemize}
+
+    \item \textbf{Dual bases and interpolation.} Write a function \py{dual_basis(P)} that returns the rows $r_1, \ldots, r_n$ of the dual basis of the columns of an invertible matrix \py{P} (Proposition~\ref{prop:dual-basis-compute}).
+    \begin{itemize}
+        \item For a random invertible $5 \times 5$ matrix $P$, check that the matrix of all values $r_i b_j$ is the identity, and that applying the rows to a vector $x$ gives its coordinates, i.e., that $x = \sum_i (r_i x)\, b_i$.
+        \item Polynomials of degree at most $d$ are stored by their coefficient vectors in $\mathbb{R}^{d+1}$. For $d + 1$ distinct nodes $t_0, \ldots, t_d$, the evaluation functionals $p \mapsto p(t_k)$ are the rows of the Vandermonde matrix $V$ with entries $V_{kj} = t_k^j$. Explain why the coefficient vectors of the Lagrange polynomials $L_0, \ldots, L_d$ (with $L_j(t_k) = \delta_{jk}$) are the columns of $V^{-1}$, and compute them for the nodes $-1, 0, 1$; compare with Example~\ref{ex:lagrange}.
+        \item Interpolate $f(t) = \sin(3t)$ at $9$ equally spaced nodes in $[-1, 1]$ with the formula $p = \sum_k f(t_k)\, L_k$, and plot $f$ and $p$. Then repeat with $21$ equally spaced nodes on $[-5, 5]$ for $f(t) = \frac{1}{1 + t^2}$. What goes wrong near the ends of the interval? (This is Runge's phenomenon.)
+    \end{itemize}
+
+    \item \textbf{Softmax and cosets.} Implement the softmax function in two ways:
+\begin{lstlisting}
+def softmax_naive(z):
+    return np.exp(z) / np.exp(z).sum()
+
+def softmax_stable(z):
+    z = z - z.max()  # another representative of the same coset
+    return np.exp(z) / np.exp(z).sum()
+\end{lstlisting}
+    \begin{itemize}
+        \item For random vectors $z$ and constants $c$, check that \py{softmax_stable(z + c)} equals \py{softmax_stable(z)}, i.e., that softmax only depends on the coset $z + \Span\{\mathbf{1}\}$.
+        \item Compare both functions on $z = (1, 2, 3)$ and on $z = (1001, 1002, 1003)$. What happens with the naive version, and why does subtracting the maximum fix the problem without changing the result?
+        \item Another canonical representative of the coset is the centered vector $z - \bar{z}\mathbf{1}$, where $\bar{z}$ is the mean of the entries. Check that it gives the same softmax. Why is subtracting the maximum preferred in practice? (Hint: what is the largest entry after each shift?)
     \end{itemize}
 \end{enumerate}
 

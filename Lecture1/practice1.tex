@@ -452,6 +452,116 @@
     \end{enumerate}
 \end{problem}
 
+\section{Dual Vector Spaces}
+
+\begin{problem}\label{pr:functionals}
+    Which of the following maps are linear functionals? For those on $\mathbb{R}^n$, write them as $x \mapsto ax$ with a row vector $a$.
+    \begin{enumerate}[label=(\alph*)]
+        \item $\mathbb{R}^3 \to \mathbb{R}$, $x \mapsto 2x_1 - x_3$;
+        \item $\mathbb{R}^3 \to \mathbb{R}$, $x \mapsto x_1 x_2$;
+        \item $\mathbb{R}^{2 \times 2} \to \mathbb{R}$, $A \mapsto \tr(A)$;
+        \item $\mathbb{R}^{2 \times 2} \to \mathbb{R}$, $A \mapsto \det(A)$;
+        \item $\mathbb{R}[x]_{\leq 3} \to \mathbb{R}$, $p \mapsto p(2) - p'(0)$;
+        \item $\mathbb{R}[x]_{\leq 3} \to \mathbb{R}$, $p \mapsto p(0)^2$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:dual-basis-r2}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the dual basis $b^1, b^2$ of the basis $b_1 = (2, 1)^\top$, $b_2 = (1, 1)^\top$ of $\mathbb{R}^2$, and check that $b^i(b_j) = \delta_{ij}$.
+        \item Write the functional $\varphi(x) = 3x_1 + x_2$ as a linear combination of $b^1$ and $b^2$, without solving a system of equations.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:lagrange-simpson}
+    Let $V = \mathbb{R}[x]_{\leq 2}$ and consider the nodes $0$, $1$, $2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the Lagrange polynomials $L_0, L_1, L_2 \in V$ with $L_j(k) = \delta_{jk}$ for $j, k \in \{0, 1, 2\}$.
+        \item Write $p(x) = x^2 + 1$ as a linear combination of $L_0, L_1, L_2$.
+        \item The functional $I(p) = \int_0^2 p(x)\, dx$ on $V$ is a linear combination of the evaluation functionals $\operatorname{ev}_0$, $\operatorname{ev}_1$, $\operatorname{ev}_2$. Find the coefficients by computing $I(L_0)$, $I(L_1)$ and $I(L_2)$. (You have discovered Simpson's rule for numerical integration, which is exact for polynomials of degree at most $2$.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:dual-map}
+    Let $T: \mathbb{R}^3 \to \mathbb{R}^2$, $T(x, y, z) = (x + y, \ y - z)$, with matrix $A$.
+    \begin{enumerate}[label=(\alph*)]
+        \item For the functional $\psi$ on $\mathbb{R}^2$ given by the row $(2, -1)$, compute $T^*(\psi)$ as a row vector.
+        \item Check that $T^*(\psi)(v) = \psi(T(v))$ for $v = (1, 2, 3)^\top$.
+        \item Find the matrix of $T^*$ with respect to the duals of the standard bases, and compare it with $A$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:annihilator}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find a basis of the annihilator of $U = \Span\{(1, 2, 0)^\top, (0, 1, 1)^\top\}$ in $(\mathbb{R}^3)^*$, and check that $\dim U + \dim U^\circ = 3$.
+        \item Find a basis of the annihilator of $W = \Span\{(1, 0, 1, 0)^\top, (0, 1, 0, 1)^\top\}$ in $(\mathbb{R}^4)^*$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:certificate}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the system $x_1 + 2x_2 = 1$, $2x_1 + 4x_2 = 3$ has no solution by finding a row $y$ with $yA = 0$ and $yb \neq 0$.
+        \item For which $b = (b_1, b_2, b_3)^\top$ does the system with the matrix $A = \begin{pmatrix} 1 & 2 \\ 2 & 4 \\ 3 & 6 \end{pmatrix}$ have a solution? Answer by finding all rows $y$ with $yA = 0$ and using the Fredholm alternative.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:double-dual}
+    Let $V = \mathbb{R}^2$, and identify $V^*$ with row vectors. Describe the element $\iota(e_1) \in V^{**}$, i.e., compute $\iota(e_1)(\varphi)$ for the functional $\varphi$ given by a row $(a_1, a_2)$. Then show directly that $\iota(v) = 0$ implies $v = 0$.
+\end{problem}
+
+\section{Quotient Spaces and the Isomorphism Theorems}
+
+\begin{problem}\label{pr:cosets}
+    Let $U = \Span\{(2, 1)^\top\} \subseteq \mathbb{R}^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Decide whether $(3, 1)^\top + U = (1, 0)^\top + U$, whether $(5, 3)^\top + U = (1, 1)^\top + U$, and whether $(1, 2)^\top + U = U$.
+        \item Show that the cosets of $U$ are the lines $x_1 - 2x_2 = c$, and find the unique representative of each coset on the $x_1$-axis.
+        \item Find an explicit isomorphism $\mathbb{R}^2/U \to \mathbb{R}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:quotient-dim}
+    Find the dimensions of the following quotient spaces, and describe each of them as a familiar vector space:
+    \begin{enumerate}[label=(\alph*)]
+        \item $\mathbb{R}^5/U$, where $\dim U = 2$;
+        \item $\mathbb{R}^{3 \times 3}/\mathrm{Sym}_3$;
+        \item $\mathbb{R}[x]_{\leq 4}/U$, where $U = \{p : p(1) = p(2) = 0\}$. (Hint: consider $p \mapsto (p(1), p(2))$.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:first-iso}
+    Use the first isomorphism theorem to identify the following quotient spaces.
+    \begin{enumerate}[label=(\alph*)]
+        \item $\mathbb{R}^3/P$, where $P$ is the plane $x + y + z = 0$. (Use $T(x, y, z) = x + y + z$.)
+        \item $\mathbb{R}[x]_{\leq 3}/U$, where $U = \{p : p(0) = p(1) = 0\}$. What is $\dim U$?
+        \item $\mathbb{R}^{n \times n}/\mathrm{Sym}_n$. (Use $T(A) = A - A^\top$, and find its kernel and its image.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:grassmann}
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $V$ and $W$ be $4$-dimensional subspaces of a $7$-dimensional vector space. Which values can $\dim(V \cap W)$ take? Give an example for the smallest possible value.
+        \item Let $U = \{x \in \mathbb{R}^4 : x_1 + x_2 + x_3 + x_4 = 0\}$ and $W = \{x \in \mathbb{R}^4 : x_1 - x_2 + x_3 - x_4 = 0\}$. Use the dimension formula to find $\dim(U \cap W)$, and then find a basis of $U \cap W$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:third-iso}
+    Let $V = \mathbb{R}^4$, $U = \Span\{e_4\}$ and $W = \Span\{e_3, e_4\}$. Describe $V/U$, $W/U$ and $V/W$, and check the third isomorphism theorem by comparing dimensions.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:softmax}
+    The softmax function is $\operatorname{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$ for $z \in \mathbb{R}^n$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\operatorname{softmax}(z + c\mathbf{1}) = \operatorname{softmax}(z)$ for every $c \in \mathbb{R}$, so that softmax is a function on $\mathbb{R}^n/\Span\{\mathbf{1}\}$.
+        \item Compute $\operatorname{softmax}(1, 2, 3)$ and $\operatorname{softmax}(1001, 1002, 1003)$. Why can a computer evaluate the second one only after subtracting a constant from all entries?
+        \item Is softmax injective on $\mathbb{R}^n/\Span\{\mathbf{1}\}$? (Hint: if $\operatorname{softmax}(z) = \operatorname{softmax}(w)$, compare $z_i - z_j$ and $w_i - w_j$.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:quotient-dual}
+    Let $U = \Span\{(1, 1, 1)^\top\} \subseteq \mathbb{R}^3$. Describe all linear functionals on $\mathbb{R}^3/U$ as rows $a = (a_1, a_2, a_3)$, and check that they form a $2$-dimensional space, in agreement with $(V/U)^* \cong U^\circ$.
+\end{problem}
+
 \section{Eigenvalues and Eigenvectors}
 
 \begin{problem}\label{pr:eig2}
@@ -606,6 +716,20 @@
     \item[\ref{pr:intersect}.] (a) The $7 \times 8$ matrix has a nonzero null vector $(a_1, \ldots, a_4, b_1, \ldots, b_4)$; then $\sum a_i v_i = -\sum b_j w_j$ is a nonzero vector in $V \cap W$. (c) $\Span\{e_1, e_2, e_3\}$ and $\Span\{e_4, e_5, e_6\}$.
     \item[\ref{pr:rankAB}.] (b) $\rank(AB) \leq \rank(A) \leq 2 < 3$.
     \item[\ref{pr:ATA}.] (a) $x^\top A^\top A x = \sum_i (Ax)_i^2$. (b) Use the rank--nullity theorem. (c) $\Null(A^\top A) = \Null(A) = \{0\}$.
+    \item[\ref{pr:functionals}.] (a) Yes, $a = (2, 0, -1)$. (b) No. (c) Yes. (d) No: $\det(2A) = 4\det(A)$. (e) Yes. (f) No.
+    \item[\ref{pr:dual-basis-r2}.] (a) $P = \begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix}$ has the inverse $\begin{pmatrix} 1 & -1 \\ -1 & 2 \end{pmatrix}$, so $b^1(x) = x_1 - x_2$ and $b^2(x) = -x_1 + 2x_2$. (b) $\varphi = \varphi(b_1) b^1 + \varphi(b_2) b^2 = 7b^1 + 4b^2$.
+    \item[\ref{pr:lagrange-simpson}.] (a) $L_0 = \frac{(x - 1)(x - 2)}{2}$, $L_1 = -x(x - 2)$, $L_2 = \frac{x(x - 1)}{2}$. (b) $p = L_0 + 2L_1 + 5L_2$, since $p(0) = 1$, $p(1) = 2$, $p(2) = 5$. (c) $I(L_0) = \frac{1}{3}$, $I(L_1) = \frac{4}{3}$, $I(L_2) = \frac{1}{3}$, so $\int_0^2 p(x)\, dx = \frac{1}{3}\big(p(0) + 4p(1) + p(2)\big)$.
+    \item[\ref{pr:dual-map}.] (a) $(2, -1)A = (2, -1)\begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & -1 \end{pmatrix} = (2, 1, 1)$. (b) $\psi(T(v)) = \psi(3, -1) = 7$ and $(2, 1, 1)v = 7$. (c) $A^\top$.
+    \item[\ref{pr:annihilator}.] (a) The rows $a$ with $a_1 + 2a_2 = 0$ and $a_2 + a_3 = 0$, spanned by $(2, -1, 1)$; $2 + 1 = 3$. (b) $(1, 0, -1, 0)$ and $(0, 1, 0, -1)$.
+    \item[\ref{pr:certificate}.] (a) $y = (2, -1)$: $yA = 0$ and $yb = -1$. (b) The rows with $yA = 0$ are those with $y_1 + 2y_2 + 3y_3 = 0$, spanned by $(-2, 1, 0)$ and $(-3, 0, 1)$; so the system is solvable if and only if $b_2 = 2b_1$ and $b_3 = 3b_1$, i.e., $b$ is a multiple of $(1, 2, 3)^\top$.
+    \item[\ref{pr:double-dual}.] $\iota(e_1)(\varphi) = \varphi(e_1) = a_1$: the functional ``first entry of the row''. If $\iota(v) = 0$, then $\varphi(v) = 0$ for all rows, in particular for $e_1^\top$ and $e_2^\top$, so $v_1 = v_2 = 0$.
+    \item[\ref{pr:cosets}.] (a) Yes, since $(2, 1)^\top \in U$; yes, since $(4, 2)^\top \in U$; no, since $(1, 2)^\top \notin U$. (b) $v - w \in U$ if and only if $v_1 - 2v_2 = w_1 - 2w_2$; the representative on the $x_1$-axis is $(c, 0)^\top$. (c) $x + U \mapsto x_1 - 2x_2$.
+    \item[\ref{pr:quotient-dim}.] (a) $3$, so $\mathbb{R}^5/U \cong \mathbb{R}^3$. (b) $9 - 6 = 3$; it is isomorphic to $\mathrm{Skew}_3$ (Problem~\ref{pr:first-iso}). (c) The map $p \mapsto (p(1), p(2))$ is surjective with kernel $U$, so $\mathbb{R}[x]_{\leq 4}/U \cong \mathbb{R}^2$ and $\dim U = 3$.
+    \item[\ref{pr:first-iso}.] (a) $T$ is surjective with kernel $P$, so $\mathbb{R}^3/P \cong \mathbb{R}$. (b) $p \mapsto (p(0), p(1))$ is surjective onto $\mathbb{R}^2$ with kernel $U$, so the quotient is $\cong \mathbb{R}^2$ and $\dim U = 2$ (spanned by $x(x - 1)$ and $x^2(x - 1)$). (c) $\ker(T) = \mathrm{Sym}_n$ and $\im(T) = \mathrm{Skew}_n$ (every skew-symmetric $K$ equals $T(K/2)$), so $\mathbb{R}^{n \times n}/\mathrm{Sym}_n \cong \mathrm{Skew}_n$.
+    \item[\ref{pr:grassmann}.] (a) $\dim(V \cap W) = 8 - \dim(V + W) \geq 1$, so the possible values are $1, 2, 3, 4$; for example, $\Span\{e_1, \ldots, e_4\} \cap \Span\{e_4, \ldots, e_7\} = \Span\{e_4\}$. (b) $U \neq W$, so $U + W = \mathbb{R}^4$ and $\dim(U \cap W) = 3 + 3 - 4 = 2$. Adding and subtracting the two equations gives $x_1 + x_3 = 0$ and $x_2 + x_4 = 0$, so a basis is $(1, 0, -1, 0)^\top$, $(0, 1, 0, -1)^\top$.
+    \item[\ref{pr:third-iso}.] $V/U \cong \mathbb{R}^3$ (keep $x_1, x_2, x_3$), $W/U \cong \mathbb{R}$ (keep $x_3$), $V/W \cong \mathbb{R}^2$ (keep $x_1, x_2$); indeed $3 - 1 = 2$.
+    \item[\ref{pr:softmax}.] (a) The factor $e^c$ cancels. (b) Both are approximately $(0.090, 0.245, 0.665)$; $e^{1001}$ overflows in floating-point arithmetic, so we compute with the representative $(1001, 1002, 1003) - 1003\cdot\mathbf{1} = (-2, -1, 0)$ instead. (c) Yes: $\frac{\operatorname{softmax}(z)_i}{\operatorname{softmax}(z)_j} = e^{z_i - z_j}$, so equal outputs give $z_i - z_j = w_i - w_j$ for all $i, j$, i.e., $z - w \in \Span\{\mathbf{1}\}$.
+    \item[\ref{pr:quotient-dual}.] The rows with $a_1 + a_2 + a_3 = 0$, e.g., spanned by $(1, -1, 0)$ and $(1, 0, -1)$.
     \item[\ref{pr:eig2}.] (a) $p_A(\lambda) = \lambda^2 - 3\lambda - 4 = (\lambda - 4)(\lambda + 1)$; $E_4 = \Span\{(2, 3)^\top\}$ and $E_{-1} = \Span\{(1, -1)^\top\}$. (b) $4 + (-1) = 3$ and $4 \cdot (-1) = -4$. (c) $P = \begin{pmatrix} 2 & 1 \\ 3 & -1 \end{pmatrix}$, $D = \diag(4, -1)$, $P^{-1} = \frac{1}{5}\begin{pmatrix} 1 & 1 \\ 3 & -2 \end{pmatrix}$. (d) $A^k = \frac{1}{5}\begin{pmatrix} 2 \cdot 4^k + 3(-1)^k & 2 \cdot 4^k - 2(-1)^k \\ 3 \cdot 4^k - 3(-1)^k & 3 \cdot 4^k + 2(-1)^k \end{pmatrix}$.
     \item[\ref{pr:eig-triangular}.] The eigenvalues are the diagonal entries $2$, $3$ and $1$. The eigenspaces are spanned by $(1, -1, 5)^\top$ (for $2$), $(0, -2, 1)^\top$ (for $3$) and $(0, 0, 1)^\top$ (for $1$). Diagonalizable, since the three eigenvalues are distinct.
     \item[\ref{pr:eig-defective}.] The eigenvalue $2$ has algebraic multiplicity $2$, but geometric multiplicity $3 - \rank(N - 2I_3) = 1$; the eigenvalue $3$ has both multiplicities equal to $1$. Not diagonalizable.
