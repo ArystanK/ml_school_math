@@ -1,0 +1,492 @@
+\documentclass[11pt]{article}
+
+% Practice problems for Lecture 3
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{Lecture 3: Practice Problems}
+\author{Math for Machine Learning}
+\date{\today}
+
+\theoremstyle{definition}
+\newtheorem{problem}{Problem}[section]
+
+% Mandatory problems are marked in their title; change this macro to restyle all of them.
+\newcommand{\mandatory}{\textcolor{red!70!black}{\textbf{Mandatory}}}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\ReLU}{ReLU}
+
+\begin{document}
+
+\maketitle
+
+\section{Multivariable Functions}
+
+\begin{problem}[\mandatory]\label{pr:level-sets}
+    For each function, find the largest open set on which it is defined, describe its level sets, and sketch a contour plot.
+    \begin{enumerate}[label=(\alph*)]
+        \item $f(x, y) = 2x - y + 1$;
+        \item $f(x, y) = 4x^2 + y^2$;
+        \item $f(x, y) = y - x^2$;
+        \item $f(x, y) = \log(x^2 + y^2)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:limits}
+    Decide whether the limit as $(x, y) \to (0, 0)$ exists, and find it if it does.
+    \begin{enumerate}[label=(\alph*)]
+        \item $\dfrac{x^2 y^2}{x^2 + y^2}$;
+        \item $\dfrac{x^2 - y^2}{x^2 + y^2}$;
+        \item $\dfrac{x^3 + y^3}{x^2 + y^2}$;
+        \item $\dfrac{xy}{\sqrt{x^2 + y^2}}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:lines-not-enough}
+    Let $f(x, y) = \frac{xy^2}{x^2 + y^4}$ for $(x, y) \neq (0, 0)$, and $f(0, 0) = 0$. Show that $f(t\mathbf{v}) \to 0$ as $t \to 0$ for every vector $\mathbf{v} \in \mathbb{R}^2$, but that $f$ is not continuous at the origin.
+\end{problem}
+
+\begin{problem}\label{pr:mse-quadratic}
+    We fit a linear model $\hat y = wx + b$ to the three data points $(1, 2)$, $(2, 3)$ and $(3, 5)$, with the mean squared error
+    \[L(w, b) = \frac{1}{3}\sum_{i=1}^3 (wx_i + b - y_i)^2.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item Write $L$ as a polynomial of degree $2$ in $w$ and $b$.
+        \item Explain why the level sets $L(w, b) = c$ are ellipses (for $c$ larger than the minimum value). (Hint: the quadratic part is $\mathbf{p}^\top A\mathbf{p}$ with $\mathbf{p} = (w, b)^\top$; use the section on the spectral theorem in Lecture~2.) We will find the center of these ellipses in Problem~\ref{pr:ls-calculus}.
+    \end{enumerate}
+\end{problem}
+
+\section{Derivatives of Functions of One Variable}
+
+\begin{problem}[\mandatory]\label{pr:activation-derivs}
+    Let $\sigma(x) = \frac{1}{1 + e^{-x}}$ be the sigmoid function.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the SiLU (or swish) activation function $f(x) = x\sigma(x)$ has the derivative $f'(x) = \sigma(x)\big(1 + x(1 - \sigma(x))\big)$.
+        \item Show that $\frac{d}{dx}\log\sigma(x) = 1 - \sigma(x) = \sigma(-x)$.
+        \item The ELU activation function is $f(x) = x$ for $x \geq 0$ and $f(x) = e^x - 1$ for $x < 0$. Show that $f$ is differentiable at $0$, and find $f'$. Is $f'$ differentiable at $0$?
+        \item Compute the one-sided difference quotients of the leaky ReLU $f(x) = \max(0.1x, x)$ at $0$. Is it differentiable at $0$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:taylor-sqrt}
+    Let $f(x) = \sqrt{1 + x}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the Taylor polynomial $T_3$ of $f$ at $0$.
+        \item Use it to approximate $\sqrt{1.1}$.
+        \item Compute $f^{(4)}$, and use Taylor's theorem to show that the error of the approximation in (b) is less than $4 \cdot 10^{-6}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:taylor-limits}
+    Use Taylor polynomials at $0$ to compute the limits as $x \to 0$:
+    \begin{enumerate}[label=(\alph*)]
+        \item $\dfrac{\sin x - x}{x^3}$;
+        \item $\dfrac{e^x - 1 - x}{x^2}$;
+        \item $\dfrac{1 - \cos x}{x^2}$;
+        \item $\dfrac{\log(1 + x) - x}{x^2}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:mvt}
+    Let $f$ be differentiable on the interval $(-1, 4)$, with $f(3) = 5$ and $f'(x) \geq -1$ for all $x$. What is the largest possible value of $f(0)$? Find a function $f$ for which it is attained. (Hint: the mean value theorem, i.e., Taylor's theorem with $k = 0$.)
+\end{problem}
+
+\begin{problem}\label{pr:finite-diff}
+    Let $f(x) = e^x$ and $x = 0$, so that $f'(0) = 1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item For $h = 0.1$, compute the forward difference $\frac{f(h) - f(0)}{h}$ and the central difference $\frac{f(h) - f(-h)}{2h}$, and their errors. Compare the errors with the bounds of the proposition on finite differences in the lecture.
+        \item Repeat for $h = 0.05$. By which factors do the two errors shrink, and why?
+    \end{enumerate}
+\end{problem}
+
+\section{Partial Derivatives and Gradients}
+
+\begin{problem}[\mandatory]\label{pr:gradients-compute}
+    Compute the gradients of the following functions.
+    \begin{enumerate}[label=(\alph*)]
+        \item $f(x, y) = x^2 y^3 - 4xy$, at the point $(1, -1)$;
+        \item $f(\mathbf{x}) = \log(x_1^2 + x_2^2 + x_3^2)$, at the point $(1, 2, 2)$;
+        \item $f(\mathbf{x}) = (\mathbf{a}^\top\mathbf{x})^2$, for a fixed vector $\mathbf{a} \in \mathbb{R}^n$;
+        \item $f(\mathbf{x}) = e^{-\norm{\mathbf{x}}^2/2}$;
+        \item $f(\mathbf{x}) = \mathbf{x}^\top A\mathbf{x} + \mathbf{b}^\top\mathbf{x}$, for a symmetric matrix $A$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:directional}
+    Let $f(x, y) = 3x^2 y - y^3$ and $P = (1, 2)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\nabla f(P)$.
+        \item Compute the directional derivative of $f$ at $P$ in the direction towards the point $Q = (4, 6)$.
+        \item In which directions does $f$ increase and decrease fastest at $P$, and at which rates?
+        \item Find all unit vectors $\mathbf{v}$ with $D_{\mathbf{v}} f(P) = 0$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:temperature}
+    The temperature on a metal plate is $T(x, y) = 100 - x^2 - 2y^2$. A bug at the point $(2, 1)$ wants to get warm as quickly as possible.
+    \begin{enumerate}[label=(\alph*)]
+        \item In which direction should it start to move, and at which rate does the temperature increase initially?
+        \item Suppose the bug always moves in the direction of $\nabla T$. Show that it moves along the parabola $y = \frac{x^2}{4}$, by checking that the tangent vectors of this parabola are parallel to $\nabla T$. Where does the bug end up?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:directional-not-diff}
+    Let $f(x, y) = \frac{x^2 y}{x^2 + y^2}$ for $(x, y) \neq (0, 0)$, and $f(0, 0) = 0$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $f$ is continuous at the origin. (Hint: $|f(x, y)| \leq |y|$.)
+        \item Compute the directional derivative $D_{\mathbf{v}} f(0, 0)$ for every unit vector $\mathbf{v} = (a, b)^\top$.
+        \item Conclude that $f$ is not differentiable at the origin, although it is continuous and all its directional derivatives exist there.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:gradient-ip}
+    Let $A = \diag(1, 4)$, with the inner product $\ip{\mathbf{x}}{\mathbf{y}}_A = \mathbf{x}^\top A\mathbf{y}$ and the norm $\norm{\mathbf{x}}_A = \sqrt{\ip{\mathbf{x}}{\mathbf{x}}_A}$, and let $f(\mathbf{x}) = x_1^2 + x_2^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the vector $\mathbf{g}$ with $Df(1, 1)\mathbf{h} = \ip{\mathbf{g}}{\mathbf{h}}_A$ for all $\mathbf{h} \in \mathbb{R}^2$, i.e., the gradient of $f$ at $(1, 1)$ with respect to this inner product.
+        \item Show that among all $\mathbf{h}$ with $\norm{\mathbf{h}}_A = 1$, the rate of change $Df(1, 1)\mathbf{h}$ is largest for $\mathbf{h} = \mathbf{g}/\norm{\mathbf{g}}_A$.
+        \item Compare $\mathbf{g}$ with the usual gradient $\nabla f(1, 1)$. Why are they different?
+    \end{enumerate}
+\end{problem}
+
+\section{Jacobians: Derivatives of Vector-Valued Functions}
+
+\begin{problem}[\mandatory, $\star$]\label{pr:jacobian-squaring}
+    Let $F(x, y) = (x^2 - y^2, \, 2xy)^\top$. (If we identify $(x, y)$ with the complex number $z = x + iy$, then $F$ is the map $z \mapsto z^2$.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the Jacobian matrix and the Jacobian determinant of $F$.
+        \item Use the linear approximation at $(1, 2)$ to approximate $F(1.1, 1.9)$, and compare with the exact value.
+        \item By which factor does $F$ scale small areas near $(x, y)$? Where does $F$ preserve areas locally?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:jacobians-ml}
+    Compute the Jacobians of the following functions.
+    \begin{enumerate}[label=(\alph*)]
+        \item $\ReLU$ applied entrywise to $\mathbf{x} \in \mathbb{R}^n$, at a point $\mathbf{x}$ with no zero entries.
+        \item The normalization $f(\mathbf{x}) = \frac{\mathbf{x}}{\norm{\mathbf{x}}}$ for $\mathbf{x} \neq \mathbf{0}$. Show that $Df(\mathbf{x}) = \frac{1}{\norm{\mathbf{x}}}(I - \mathbf{u}\mathbf{u}^\top)$ with $\mathbf{u} = \frac{\mathbf{x}}{\norm{\mathbf{x}}}$, and that $Df(\mathbf{x})\mathbf{x} = \mathbf{0}$. Why should we expect the last equation?
+        \item The softmax function with temperature $T > 0$, $f(\mathbf{z}) = \softmax(\mathbf{z}/T)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:polar-integrals}
+    Use polar coordinates to compute:
+    \begin{enumerate}[label=(\alph*)]
+        \item $\iint_{x^2 + y^2 \leq 1} (x^2 + y^2) \, dx \, dy$;
+        \item $\iint_{\mathbb{R}^2} e^{-(x^2 + y^2)/2} \, dx \, dy$;
+        \item the probability that a standard normal random vector in $\mathbb{R}^2$, with the density $\frac{1}{2\pi}e^{-(x^2 + y^2)/2}$, lies in the disk of radius $r$ around the origin. For which $r$ is this probability $95\%$? (Compare with the number $1.96$ for one standard normal variable.)
+    \end{enumerate}
+\end{problem}
+
+\section{The Chain Rule}
+
+\begin{problem}[\mandatory]\label{pr:chain-compose}
+    Let $g(x, y) = (x + y, \, xy)^\top$ and $f(u, v) = u^2 - 2v$. Compute $D(f \circ g)(x, y)$ in two ways: as the product $Df(g(x, y))\,Dg(x, y)$ of the Jacobians, and by simplifying $f(g(x, y))$ first.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:loss-gradients}
+    Use the chain rule to compute the following gradients, and write down the sizes of all matrices in your computation.
+    \begin{enumerate}[label=(\alph*)]
+        \item The logistic loss with labels $y \in \{+1, -1\}$: $\ell(\mathbf{w}) = \log\big(1 + e^{-y\,\mathbf{w}^\top\mathbf{x}}\big)$.
+        \item Ridge regression: $f(\mathbf{w}) = \frac{1}{2}\norm{X\mathbf{w} - \mathbf{y}}^2 + \frac{\lambda}{2}\norm{\mathbf{w}}^2$, with $X \in \mathbb{R}^{N \times d}$.
+        \item The (unsquared) residual norm $f(\mathbf{x}) = \norm{A\mathbf{x} - \mathbf{b}}$, at points with $A\mathbf{x} \neq \mathbf{b}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:curve-temperature}
+    Let $T(x, y) = x^2 y$, and let $\mathbf{x}(t) = (\cos t, \sin t)^\top$ move on the unit circle.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\frac{d}{dt}T(\mathbf{x}(t))$ with the chain rule, and check your answer by differentiating $T(\mathbf{x}(t))$ directly. Evaluate it at $t = \frac{\pi}{4}$.
+        \item Find all $t$ with $\frac{d}{dt}T(\mathbf{x}(t)) = 0$, and the maximum of $T$ on the unit circle.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:tangent}
+    Use the fact that gradients are orthogonal to level sets to find:
+    \begin{enumerate}[label=(\alph*)]
+        \item the tangent line to the ellipse $x^2 + 4y^2 = 8$ at the point $(2, 1)$;
+        \item the tangent plane to the sphere $x^2 + y^2 + z^2 = 9$ at the point $(1, 2, 2)$;
+        \item the tangent plane to the graph of $z = x^2 + y^2$ at the point $(1, 2, 5)$. (Hint: the graph is a level set of $F(x, y, z) = x^2 + y^2 - z$.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:implicit}
+    The equation $x^2 + xy + y^3 = 3$ defines $y$ as a differentiable function $y(x)$ of $x$ near the point $(1, 1)$. Differentiate both sides of $x^2 + x\,y(x) + y(x)^3 = 3$ with the chain rule to find $y'(1)$. Show more generally that if $F(x, y(x)) = c$, then $y'(x) = -\frac{\partial F/\partial x}{\partial F/\partial y}$, wherever $\frac{\partial F}{\partial y} \neq 0$.
+\end{problem}
+
+\section{Gradients with Respect to Matrices}
+
+\begin{problem}[\mandatory]\label{pr:matrix-grads}
+    Use first-order expansions $f(X + H) = f(X) + \ip{G}{H} + o(\norm{H}_F)$ to show:
+    \begin{enumerate}[label=(\alph*)]
+        \item $\nabla_X \tr(AX^\top) = A$ for $A, X \in \mathbb{R}^{m \times n}$;
+        \item $\nabla_X \norm{X\mathbf{a}}^2 = 2X\mathbf{a}\mathbf{a}^\top$ for $\mathbf{a} \in \mathbb{R}^n$;
+        \item $\nabla_X \tr(X^2) = 2X^\top$ for $X \in \mathbb{R}^{n \times n}$;
+        \item $\nabla_X \norm{X}_F = \frac{X}{\norm{X}_F}$ for $X \neq 0$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:regularized-layer}
+    Let $\mathbf{x} \in \mathbb{R}^n$, $\mathbf{y} \in \mathbb{R}^m$ and $\lambda > 0$, and let $L(W) = \frac{1}{2}\norm{W\mathbf{x} - \mathbf{y}}^2 + \frac{\lambda}{2}\norm{W}_F^2$ for $W \in \mathbb{R}^{m \times n}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\nabla_W L = (W\mathbf{x} - \mathbf{y})\mathbf{x}^\top + \lambda W$.
+        \item Show that $W^* = \frac{\mathbf{y}\mathbf{x}^\top}{\norm{\mathbf{x}}^2 + \lambda}$ is a critical point. (It is the unique minimum, since $L$ is strictly convex; see the section on convexity in the lecture.)
+        \item Compute $W^*\mathbf{x}$. What happens as $\lambda \to 0$, and as $\lambda \to \infty$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:det-2x2}
+    \begin{enumerate}[label=(\alph*)]
+        \item For $X = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$, compute the four partial derivatives of $\det(X) = ad - bc$, and check that $\nabla\det(X) = \det(X)X^{-\top}$ if $X$ is invertible.
+        \item Let $X$ be symmetric positive definite. Show that $\nabla_X \log\det(X) = X^{-1}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:softmax-temperature}
+    A classifier with three classes computes the scores $\mathbf{z} = (1, 2, 3)^\top$, and the correct class is $c = 3$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the predicted probabilities $\mathbf{p} = \softmax(\mathbf{z})$, the cross-entropy loss $\ell = -\log p_3$, and $\nabla_{\mathbf{z}}\ell$.
+        \item With a temperature $T > 0$, the probabilities are $\mathbf{p} = \softmax(\mathbf{z}/T)$. Show that then $\nabla_{\mathbf{z}}\ell = \frac{1}{T}(\mathbf{p} - \mathbf{e}_3)$, and evaluate the loss and the gradient for $T = \frac{1}{2}$ and $T = 2$.
+    \end{enumerate}
+\end{problem}
+
+\section{Backpropagation and Automatic Differentiation}
+
+\begin{problem}\label{pr:autodiff-graph}
+    Let $f(x, y) = (x + y)\,e^{xy}$. Draw the computation graph of $f$ with the intermediate variables $v_1 = x + y$, $v_2 = xy$, $v_3 = e^{v_2}$ and $v_4 = v_1 v_3$. Compute $\nabla f(2, 0)$ in forward mode (two passes) and in reverse mode (one pass), and check the result by differentiating $f$ directly.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:backprop-numbers}
+    Consider the network $\mathbf{z} = W_1\mathbf{x} + \mathbf{b}_1$, $\mathbf{a} = \ReLU(\mathbf{z})$, $\hat y = \mathbf{w}_2^\top\mathbf{a} + b_2$ with the loss $L = \frac{1}{2}(\hat y - y)^2$, and the values
+    \[W_1 = \begin{pmatrix} 1 & 2 \\ -1 & 1 \end{pmatrix}, \quad \mathbf{b}_1 = \mathbf{0}, \quad \mathbf{w}_2 = \begin{pmatrix} 1 \\ -1 \end{pmatrix}, \quad b_2 = 0.5, \quad \mathbf{x} = \begin{pmatrix} 1 \\ 0.5 \end{pmatrix}, \quad y = 1.5.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item Carry out the forward pass, and compute $L$.
+        \item Carry out the backward pass: compute $\nabla_{\mathbf{w}_2} L$, $\frac{\partial L}{\partial b_2}$, $\nabla_{\mathbf{a}} L$, $\nabla_{\mathbf{z}} L$, $\nabla_{W_1} L$ and $\nabla_{\mathbf{b}_1} L$.
+        \item Which weights receive a zero gradient, and why? What would happen to them in gradient descent if this were the only training example?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:modes-cost}
+    \begin{enumerate}[label=(\alph*)]
+        \item How many passes of forward mode and how many passes of reverse mode are needed to compute the full Jacobian of a function $f: \mathbb{R}^{1000} \to \mathbb{R}$? Of a function $f: \mathbb{R} \to \mathbb{R}^{1000}$?
+        \item Let $f = f_3 \circ f_2 \circ f_1$ with Jacobians $J_1 \in \mathbb{R}^{100 \times 10^4}$, $J_2 \in \mathbb{R}^{100 \times 100}$ and $J_3 \in \mathbb{R}^{1 \times 100}$. Count the multiplications needed to compute $J_3 J_2 J_1$ as $J_3(J_2 J_1)$ and as $(J_3 J_2)J_1$. Which order corresponds to reverse mode?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:vanishing}
+    Let $f_L(x) = \sigma(\sigma(\cdots\sigma(x)\cdots))$ be the $L$-fold composition of the sigmoid function.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $|f_L'(x)| \leq 4^{-L}$ for all $x$. How small is this bound for $L = 10$?
+        \item Now let every layer have a weight $w$, i.e., $g_1(x) = \sigma(wx)$ and $g_{l+1}(x) = \sigma(w\,g_l(x))$. Show that $|g_L'(x)| \leq \big(\frac{|w|}{4}\big)^L$. What does this suggest about the size of the weights in deep sigmoid networks?
+    \end{enumerate}
+\end{problem}
+
+\section{Higher Derivatives and Taylor's Theorem}
+
+\begin{problem}[\mandatory]\label{pr:hessian-compute}
+    Let $f(x, y) = x^3 - 2xy^2 + y^4$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\nabla f$ and $\nabla^2 f$, and check that the mixed partial derivatives are equal.
+        \item Compute the second-order Taylor approximation of $f$ at the point $(1, 1)$. Use it to approximate $f(1.1, 0.9)$, and compare with the exact value.
+        \item Compute the curvature $\mathbf{v}^\top\nabla^2 f(1, 1)\mathbf{v}$ of $f$ at $(1, 1)$ in the direction $\mathbf{v} = \frac{1}{\sqrt{2}}(1, 1)^\top$. What are the largest and the smallest curvature at $(1, 1)$ over all unit directions?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:hessians-ml}
+    Compute the Hessians of the following functions.
+    \begin{enumerate}[label=(\alph*)]
+        \item Ridge regression: $f(\mathbf{w}) = \frac{1}{2}\norm{X\mathbf{w} - \mathbf{y}}^2 + \frac{\lambda}{2}\norm{\mathbf{w}}^2$.
+        \item $f(\mathbf{x}) = \norm{\mathbf{x}}$ for $\mathbf{x} \neq \mathbf{0}$. Find the eigenvalues and eigenvectors of the Hessian. Why is one eigenvalue $0$?
+        \item $f(\mathbf{w}) = \log(1 + e^{\mathbf{w}^\top\mathbf{x}})$. What is the rank of the Hessian?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:lse-taylor}
+    Let $f(x, y) = \log(e^x + e^y)$, the log-sum-exp function in two variables.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\nabla f(0, 0)$ and $\nabla^2 f(0, 0)$.
+        \item Use the second-order Taylor approximation at the origin to approximate $f(0.2, -0.1)$, and compare with the exact value.
+        \item Find the eigenvalues and eigenvectors of $\nabla^2 f(0, 0)$. Explain the eigenvalue $0$ using the identity $f(x + c, y + c) = f(x, y) + c$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:schwarz-counterexample}
+    Let $f(x, y) = \frac{xy(x^2 - y^2)}{x^2 + y^2}$ for $(x, y) \neq (0, 0)$, and $f(0, 0) = 0$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\frac{\partial f}{\partial x}(0, y) = -y$ and $\frac{\partial f}{\partial y}(x, 0) = x$ for all $x$ and $y$.
+        \item Conclude that $\frac{\partial^2 f}{\partial y \partial x}(0, 0) = -1$, but $\frac{\partial^2 f}{\partial x \partial y}(0, 0) = 1$. Why does this not contradict Schwarz's theorem?
+    \end{enumerate}
+\end{problem}
+
+\section{Unconstrained Optimization}
+
+\begin{problem}[\mandatory]\label{pr:classify}
+    Find all critical points of the following functions, and classify them with the eigenvalues of the Hessian. Which local minima are global minima?
+    \begin{enumerate}[label=(\alph*)]
+        \item $f(x, y) = x^2 + xy + y^2 - 3x$;
+        \item $f(x, y) = x^3 - 3x + y^2 - 2y$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:four-critical}
+    Let $f(x, y) = xy(x + y - 3)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find all four critical points of $f$, and classify them.
+        \item The level set $f = 0$ consists of three lines. Sketch them, and mark the regions where $f > 0$ and $f < 0$. Explain the types of the critical points from this picture.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:quadratic-geometry}
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $f(x, y) = 3x^2 + 2xy + 3y^2$. Find the eigenvalues and eigenvectors of the Hessian at the critical point $(0, 0)$. Describe and sketch the level curves of $f$: in which direction are they longest, and what is the ratio of their axes?
+        \item Let $g(x, y) = x^2 + 6xy + y^2$. Find the eigenvalues and eigenvectors of the Hessian at the origin, and classify the critical point. Along which lines through the origin does $g$ increase, and along which does it decrease? Find the level set $g = 0$, and sketch a contour plot of $g$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:ls-calculus}
+    Let $L(w, b)$ be the mean squared error of Problem~\ref{pr:mse-quadratic}.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\nabla L$, and solve $\nabla L = \mathbf{0}$.
+        \item Compute the Hessian of $L$ and its eigenvalues, and explain why the critical point is the global minimum.
+        \item Compute the minimum value of $L$, and check that the solution satisfies the normal equations of Lecture~2.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:peano}
+    Let $f(x, y) = (y - x^2)(y - 2x^2)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the origin is a critical point, and that the second-order test is inconclusive there.
+        \item Show that on every line through the origin, the restriction of $f$ has a strict local minimum at the origin.
+        \item Show that the origin is nevertheless not a local minimum of $f$. (Hint: look at the parabola $y = \frac{3}{2}x^2$.)
+    \end{enumerate}
+\end{problem}
+
+\section{Gradient Descent and Newton's Method}
+
+\begin{problem}[\mandatory]\label{pr:gd-quadratic}
+    Let $f(x, y) = 2x^2 + 8y^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Carry out two steps of gradient descent with step size $\eta = 0.1$, starting at $(1, 1)$.
+        \item For which step sizes does gradient descent converge for every starting point? Find the best step size and the corresponding rate $\rho$.
+        \item How many steps with the best step size are needed to reduce the error by a factor $10^{-6}$?
+        \item What happens for $\eta = 0.125$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:gd-least-squares}
+    Consider again the mean squared error $L(w, b)$ of Problems~\ref{pr:mse-quadratic} and~\ref{pr:ls-calculus}.
+    \begin{enumerate}[label=(\alph*)]
+        \item Which step sizes make gradient descent converge? Find the best step size, the rate $\rho$, and the number of steps needed to reduce the error by a factor $10^{-6}$.
+        \item Now center the feature: use the model $\hat y = w(x - 2) + c$, where $2$ is the mean of the $x_i$. Compute the new Hessian, its condition number, the best rate, and the number of steps. How do you get $b$ back from $c$?
+        \item Explain the improvement in terms of the columns of the design matrix.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory, $\star$]\label{pr:newton-log}
+    Let $f(x) = x - \log x$ for $x > 0$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $f$ has its global minimum at $x^* = 1$.
+        \item Show that Newton's method is $x_{k+1} = 2x_k - x_k^2$, and that $1 - x_{k+1} = (1 - x_k)^2$. Compute the iterates for $x_0 = 0.5$.
+        \item For which starting points $x_0 > 0$ does Newton's method converge? What happens for $x_0 = 3$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:babylonian}
+    Show that Newton's method for minimizing $f(x) = \frac{x^3}{3} - 2x$ on $(0, \infty)$ is $x_{k+1} = \frac{1}{2}\big(x_k + \frac{2}{x_k}\big)$, and compute three iterates starting at $x_0 = 1$. Which number does it compute? How would you compute $\sqrt{a}$ for $a > 0$ in the same way? (This method was already known in ancient Babylon.)
+\end{problem}
+
+\begin{problem}\label{pr:smooth-descent}
+    Let $s(x) = \log(1 + e^x)$ be the softplus function.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $0 < s''(x) \leq \frac{1}{4}$, so that $s$ is $\frac{1}{4}$-smooth.
+        \item What does the theorem on gradient descent for smooth functions guarantee for gradient descent on $s$ with $\eta = 4$? The function $s$ has no minimum. What do the iterates do, and why is this consistent with the theorem?
+    \end{enumerate}
+\end{problem}
+
+\section{Convexity}
+
+\begin{problem}[\mandatory]\label{pr:convex-which}
+    Which of the following functions are convex? Justify your answers.
+    \begin{enumerate}[label=(\alph*)]
+        \item $x^2 + xy + y^2$ on $\mathbb{R}^2$;
+        \item $x^2 + 4xy + y^2$ on $\mathbb{R}^2$;
+        \item $e^{\norm{\mathbf{x}}^2}$ on $\mathbb{R}^n$;
+        \item $\norm{\mathbf{x}}_\infty$ on $\mathbb{R}^n$;
+        \item $-\sqrt{x}$ on $(0, \infty)$;
+        \item $\frac{x^2}{y}$ on $\{(x, y) : y > 0\}$;
+        \item $\frac{x}{y}$ on $\{(x, y) : y > 0\}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:am-gm}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\log$ is concave on $(0, \infty)$.
+        \item Deduce that $a^\theta b^{1 - \theta} \leq \theta a + (1 - \theta)b$ for all $a, b > 0$ and $\theta \in [0, 1]$. In particular, $\sqrt{ab} \leq \frac{a + b}{2}$.
+        \item Find the minimum of $x + \frac{4}{x}$ on $(0, \infty)$ in two ways: with (b), and with derivatives and convexity.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:convex-losses}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the logistic loss $\ell(\mathbf{w}) = \log\big(1 + e^{-y\,\mathbf{w}^\top\mathbf{x}}\big)$ with $y \in \{\pm 1\}$ is convex, by computing its Hessian (use Problem~\ref{pr:loss-gradients}).
+        \item Show that the hinge loss $\max(0, 1 - y\,\mathbf{w}^\top\mathbf{x})$ is convex.
+        \item Show that the lasso objective $\norm{X\mathbf{w} - \mathbf{y}}^2 + \lambda\norm{\mathbf{w}}_1$ with $\lambda \geq 0$ is convex.
+        \item The ``$\ell_0$ norm'' $\norm{\mathbf{w}}_0$ is the number of nonzero entries of $\mathbf{w}$. Show that it is not convex, already for $n = 1$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:first-order-optimality}
+    Let $f: \mathbb{R}^n \to \mathbb{R}$ be convex and differentiable, and let $C \subseteq \mathbb{R}^n$ be convex. Show that if $\mathbf{x}^* \in C$ satisfies $\nabla f(\mathbf{x}^*)^\top(\mathbf{y} - \mathbf{x}^*) \geq 0$ for all $\mathbf{y} \in C$, then $\mathbf{x}^*$ is a minimum of $f$ on $C$. Draw a picture for a half-plane $C$ and a point $\mathbf{x}^*$ on its boundary.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:two-layer-scalar}
+    The simplest ``deep'' network has two scalar weights: $\hat y = w_2 w_1 x$. For the single training example $x = y = 1$, the squared loss is $f(w_1, w_2) = (w_1 w_2 - 1)^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find all global minima of $f$.
+        \item Show that $f$ is not convex.
+        \item Find all critical points, and classify the ones that are not global minima. What are the eigenvalues of the Hessian at the minimum $(1, 1)$, and why is one of them $0$?
+    \end{enumerate}
+\end{problem}
+
+\section{Constrained Optimization}
+
+\begin{problem}[\mandatory]\label{pr:lagrange-ellipse}
+    Find the maximum and the minimum of $f(x, y) = xy$ on the ellipse $x^2 + 4y^2 = 8$, using a Lagrange multiplier. Sketch the ellipse and some level curves of $f$. Check that at the maximum $(2, 1)$, the level curve $xy = 2$ and the ellipse have the same tangent line (compare with Problem~\ref{pr:tangent}).
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:max-xyz}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the maximum of $xyz$ subject to $x + y + z = 12$ and $x, y, z > 0$.
+        \item An open box (without a lid) with sides $x, y, z > 0$ (where $z$ is the height) has volume $32$. Find the dimensions that minimize its surface area $xy + 2xz + 2yz$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:distance-ellipse}
+    Find the points of the ellipse $x^2 + xy + y^2 = 3$ that are closest to and farthest from the origin. (Hint: the Lagrange condition says that $\mathbf{x}$ is an eigenvector of a symmetric matrix.)
+\end{problem}
+
+\begin{problem}\label{pr:min-norm-practice}
+    Find the solution of the system $x_1 + x_2 + x_3 = 3$, $x_1 - x_3 = 1$ with the smallest norm, using the formula $\mathbf{x}^* = A^\top(AA^\top)^{-1}\mathbf{b}$ from the lecture. Find a vector $\mathbf{v}$ that spans the null space of the coefficient matrix, check that $\mathbf{x}^* \perp \mathbf{v}$, and compute $\norm{\mathbf{x}^* + t\mathbf{v}}^2$ for all $t \in \mathbb{R}$.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:kkt-projection}
+    \begin{enumerate}[label=(\alph*)]
+        \item Minimize $(x - 3)^2 + (y - 2)^2$ subject to $x + y \leq 2$, using the KKT conditions. Interpret the result as a projection, and compare the minimal distance with the formula for the distance to a hyperplane in Lecture~2.
+        \item Minimize $x^2 + (y - 5)^2$ subject to $x + y \leq 2$, $x \geq 0$ and $y \geq 0$. Which constraints are active, and what are the multipliers?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:box-sphere}
+    Find the rectangular box with sides parallel to the coordinate axes and the largest volume that fits into the unit ball $x^2 + y^2 + z^2 \leq 1$. Which fraction of the volume of the ball does it fill?
+\end{problem}
+
+\end{document}
