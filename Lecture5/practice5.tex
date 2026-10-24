@@ -1,0 +1,158 @@
+\documentclass[11pt]{article}
+
+% Practice problems for Lecture 5
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{Lecture 5: Practice Problems}
+\author{Math for Machine Learning}
+\date{\today}
+
+\theoremstyle{definition}
+\newtheorem{problem}{Problem}[section]
+
+% Mandatory problems are marked in their title; change this macro to restyle all of them.
+\newcommand{\mandatory}{\textcolor{red!70!black}{\textbf{Mandatory}}}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\Div}{div}
+\DeclareMathOperator{\softmax}{softmax}
+
+\begin{document}
+
+\maketitle
+
+\section{Ordinary Differential Equations}
+
+\begin{problem}[\mandatory]\label{pr:scalar-ode}
+    \begin{enumerate}[label=(\alph*)]
+        \item Solve $x' = -2x$ with $x(0) = 3$. Compute $x(1)$ and the time after which $x$ has halved.
+        \item Show that $x(t) = \frac{1}{1 + 4e^{-t}}$ solves the logistic equation $x' = x(1 - x)$ with $x(0) = 0.2$, and write it with the sigmoid function. Compute $x(2)$ and $\lim_{t \to \infty} x(t)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:existence}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $x(t) = \frac{1}{1 - t}$ solves $x' = x^2$ with $x(0) = 1$. What happens as $t \to 1$? Why does this not contradict the existence and uniqueness theorem?
+        \item Show that $x(t) = 0$ and $x(t) = t^2$ both solve $x' = 2\sqrt{|x|}$ for $t \geq 0$, with $x(0) = 0$. Which assumption of the theorem fails?
+    \end{enumerate}
+\end{problem}
+
+\section{Linear Systems}
+
+\begin{problem}[\mandatory]\label{pr:linear-system}
+    Let $A = \begin{pmatrix} -1 & 2 \\ 2 & -1 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the eigenvalues and eigenvectors of $A$, and solve $\mathbf{x}' = A\mathbf{x}$ with $\mathbf{x}(0) = (1, 0)^\top$. Compute $\mathbf{x}(1)$.
+        \item For which initial values does the solution tend to $\mathbf{0}$? Sketch the solutions. (The origin is a saddle point of this ODE.)
+        \item Compute $e^{At}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:rotation-ode}
+    Let $A = \begin{pmatrix} 0 & -\omega \\ \omega & 0 \end{pmatrix}$ with $\omega > 0$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the solutions of $\mathbf{x}' = A\mathbf{x}$ move on circles with angular speed $\omega$. What is the period?
+        \item Show that Euler's method satisfies $\norm{\mathbf{x}_{k+1}}^2 = (1 + h^2\omega^2)\norm{\mathbf{x}_k}^2$, so the numerical solution spirals outwards. For $\omega = 1$ and $h = 0.1$, by which factor does $\norm{\mathbf{x}_k}$ grow during one period?
+    \end{enumerate}
+\end{problem}
+
+\section{Gradient Flow and Euler's Method}
+
+\begin{problem}[\mandatory]\label{pr:gradient-flow}
+    Let $f(x_1, x_2) = x_1^2 + 4x_2^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Solve the gradient flow $\mathbf{x}' = -\nabla f(\mathbf{x})$ with $\mathbf{x}(0) = (2, 1)^\top$, and check that $f(\mathbf{x}(t))$ decreases.
+        \item Write down Euler's method for this flow with step $h$, and compare it with gradient descent. For which $h$ do the iterates converge to $\mathbf{0}$? What happens for $h = 0.2$ and $h = 0.3$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:euler-error}
+    Apply Euler's method to $x' = -x$, $x(0) = 1$ on the interval $[0, 1]$, with $h = 0.25$ and $h = 0.125$. Compare with $x(1) = e^{-1}$. By which factor does the error shrink when $h$ is halved?
+\end{problem}
+
+\section{Flows, Volumes and Densities}
+
+\begin{problem}[\mandatory]\label{pr:volume-flow}
+    \begin{enumerate}[label=(\alph*)]
+        \item For the ODE $\mathbf{x}' = A\mathbf{x}$ with $A = \begin{pmatrix} 1 & 2 \\ 0 & -3 \end{pmatrix}$, compute the divergence of the vector field and the factor by which the flow changes areas in the time $t$. Check the result with the eigenvalues of $A$.
+        \item Let $F(x, y) = (x - x^3, \, -y)^\top$. Compute $\Div F$. Find the points where $F = \mathbf{0}$, and the divergence there. Where does the flow preserve areas to first order, and where does it compress them?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:continuity-1d}
+    Let $x' = -x$, and let $x(0)$ be random with the standard normal density $\varphi$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $x(t) = e^{-t}x(0)$ has the density $p_t(x) = e^t\varphi(e^tx)$.
+        \item Verify the continuity equation $\frac{\partial p_t}{\partial t} = -\frac{\partial}{\partial x}(p_tF)$ for $F(x) = -x$.
+        \item Show that $\log p_t(x(t))$ increases at the rate $1 = -\Div F$ along each solution, and explain this with the volume interpretation of the divergence.
+    \end{enumerate}
+\end{problem}
+
+\section{Stochastic Differential Equations}
+
+\begin{problem}[\mandatory]\label{pr:brownian}
+    Let $B(t)$ be a Brownian motion.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the distribution of $B(4) - B(1)$, and $P(B(4) > 2)$.
+        \item Compute $\Corr(B(1), B(2))$ and the distribution of $B(1) + B(2)$. (Hint: write $B(2) = B(1) + (B(2) - B(1))$.)
+        \item Given $B(1) = 1$, what is the distribution of $B(2)$? Given $B(2) = 2$, what is the distribution of $B(1)$? (Use the conditioning theorem for Gaussians.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:euler-maruyama}
+    Consider the SDE $dX = -2X\,dt + 0.5\,dB$ with $X(0) = 1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Perform two Euler--Maruyama steps with $h = 0.1$, using the standard normal samples $Z_0 = 0.5$ and $Z_1 = -1$.
+        \item Find $\E[X_k]$ for the Euler--Maruyama chain, and compare $\E[X_{10}]$ with the mean $e^{-2t}$ of the SDE at $t = 1$.
+        \item Find the stationary variance of the SDE, and of the chain with $h = 0.1$. For which step sizes does the chain have a stationary distribution?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:sqrt-h}
+    (Why $\sqrt{h}$?) Divide $[0, t]$ into $n = t/h$ steps, and consider a scheme that adds the noise $\sigma h^\gamma Z_k$ in step $k$, with i.i.d.\ $Z_k \sim \mathcal{N}(0, 1)$. Compute the variance of the total noise $\sigma h^\gamma(Z_0 + \cdots + Z_{n-1})$, and show that as $h \to 0$, it tends to $0$ for $\gamma > \frac{1}{2}$ and to $\infty$ for $\gamma < \frac{1}{2}$, while it equals $\sigma^2t$ for $\gamma = \frac{1}{2}$.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:quadratic-variation}
+    (Quadratic variation.) Divide $[0, T]$ into $n$ intervals of the length $h = T/n$, and let
+    \[Q_n = \sum_{k=0}^{n-1}\big(B((k + 1)h) - B(kh)\big)^2.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item Using $\E[Z^4] = 3$ for $Z \sim \mathcal{N}(0, 1)$, show that $\E[Q_n] = T$ and $\Var(Q_n) = 2Th$, so that $Q_n \to T$ as $n \to \infty$.
+        \item Show that for a continuously differentiable function $f$ on $[0, T]$, the sum $\sum_k \big(f((k + 1)h) - f(kh)\big)^2$ tends to $0$. (Hint: mean value theorem.) Conclude that Brownian paths are not continuously differentiable.
+    \end{enumerate}
+    (This is the rule ``$(dB)^2 = dt$'' of stochastic calculus.)
+\end{problem}
+
+\section{Langevin Dynamics and Diffusion Models}
+
+\begin{problem}[\mandatory]\label{pr:ula}
+    (Langevin sampling of a Gaussian.) Let $U(x) = \frac{(x - \mu)^2}{2s^2}$, so that $e^{-U}$ is proportional to the density of $\mathcal{N}(\mu, s^2)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write down the unadjusted Langevin algorithm for $U$ with the step $h$, and show that it has the form $x_{k+1} - \mu = a(x_k - \mu) + \sqrt{2h}\,z_k$.
+        \item Show that for $0 < h < 2s^2$, the chain has the stationary distribution $\mathcal{N}\big(\mu, \frac{2s^2}{2 - h/s^2}\big)$. Evaluate the variance for $\mu = 2$, $s^2 = 0.25$ and $h = 0.01$.
+        \item What does the algorithm do without the noise term? How is this related to MAP estimation?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:diffusion-forward}
+    (The forward process of a diffusion model.) A data point $x_0 = 3$ is gradually noised by $x_t = \sqrt{1 - \beta}\,x_{t-1} + \sqrt{\beta}\,z_t$ for $t = 1, 2, \ldots$, with i.i.d.\ $z_t \sim \mathcal{N}(0, 1)$ and $\beta = 0.02$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show by induction that $x_t \sim \mathcal{N}\big((1 - \beta)^{t/2}x_0, \, 1 - (1 - \beta)^t\big)$. Why is this useful for training, where $x_t$ is needed for random times $t$?
+        \item Compute the mean and the variance for $t = 10$, $100$ and $500$. What is the distribution of $x_t$ for large $t$, whatever the data point?
+        \item Show that the process is approximately the Euler--Maruyama scheme with $h = \beta$ for the Ornstein--Uhlenbeck SDE $dX = -\frac{1}{2}X\,dt + dB$. (Hint: $\sqrt{1 - \beta} \approx 1 - \frac{\beta}{2}$.)
+    \end{enumerate}
+\end{problem}
+
+\end{document}

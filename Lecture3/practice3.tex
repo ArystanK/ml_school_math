@@ -24,6 +24,8 @@
 
 \DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Div}{div}
+\DeclareMathOperator{\curl}{curl}
 \DeclareMathOperator{\softmax}{softmax}
 \DeclareMathOperator{\ReLU}{ReLU}
 
@@ -372,6 +374,16 @@
 
 \section{Gradient Descent and Newton's Method}
 
+\begin{problem}[\mandatory]\label{pr:gd-mse}
+    We fit the model $\hat y = wx$ to the data $(1, 1)$, $(2, 2)$, $(3, 2)$ by minimizing the mean squared error $L(w) = \frac{1}{3}\sum_{i=1}^3 (wx_i - y_i)^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Derive the gradient descent update $w_{k+1} = w_k - \eta L'(w_k)$ explicitly, and find the minimum $w^*$.
+        \item Carry out three steps with $\eta = 0.05$, starting at $w_0 = 0$. By which factor does the error $w_k - w^*$ shrink in every step?
+        \item For which $\eta$ does gradient descent converge? Which $\eta$ reaches $w^*$ in a single step?
+        \item Write down the update for general data $\mathbf{x}_i \in \mathbb{R}^d$ in vector form, and explain how each data point influences the step.
+    \end{enumerate}
+\end{problem}
+
 \begin{problem}[\mandatory]\label{pr:gd-quadratic}
     Let $f(x, y) = 2x^2 + 8y^2$.
     \begin{enumerate}[label=(\alph*)]
@@ -487,6 +499,102 @@
 
 \begin{problem}[$\star$]\label{pr:box-sphere}
     Find the rectangular box with sides parallel to the coordinate axes and the largest volume that fits into the unit ball $x^2 + y^2 + z^2 \leq 1$. Which fraction of the volume of the ball does it fill?
+\end{problem}
+
+\section{Vector Fields: Divergence and Curl}
+
+\begin{problem}[\mandatory]\label{pr:div-curl}
+    Compute the divergence and the curl of the following vector fields. Which of them are gradient fields? For those, find a function $f$ with $F = \nabla f$.
+    \begin{enumerate}[label=(\alph*)]
+        \item $F(x, y) = (x^2 - y^2, \, 2xy)^\top$;
+        \item $F(x, y) = (2x + y, \, x - 3y)^\top$;
+        \item $F(x, y) = (y\cos(xy), \, x\cos(xy))^\top$;
+        \item $F(x, y, z) = (y^2, \, 2xy + z, \, y)^\top$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:laplacian}
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the Laplacians of $x^2 + y^2 - 2z^2$, of $e^x\sin y$, and of $\norm{\mathbf{x}}^2$ on $\mathbb{R}^n$.
+        \item Show that at a critical point of a harmonic function on $\mathbb{R}^2$, the Hessian is never positive definite. (So a harmonic function has no strict local minimum of this kind.)
+        \item Let $p$ be the density of $\mathcal{N}(\boldsymbol{\mu}, \Sigma)$, i.e., $\log p(\mathbf{x}) = -\frac{1}{2}(\mathbf{x} - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{x} - \boldsymbol{\mu}) + c$. Compute the score $\mathbf{s} = \nabla\log p$ and its divergence $\Delta\log p$. Evaluate the divergence for $\Sigma = \diag(1, 4)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:stretch-rotate}
+    Split $A = \begin{pmatrix} 1 & 3 \\ -1 & 1 \end{pmatrix}$ into its symmetric part $S$ and its skew-symmetric part $W$. Describe how the vector field $F(\mathbf{x}) = A\mathbf{x}$ acts on a small neighborhood of the origin: along which directions does it stretch, in which direction does it rotate, and how fast? Compute $\Div F$ and $\curl F$.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:gda}
+    (Gradient descent--ascent.) Consider the game $\min_x\max_y xy$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that simultaneous gradient descent in $x$ and ascent in $y$ moves in the direction of the vector field $F(x, y) = (-y, x)^\top$. Compute its divergence and curl, and conclude that $F$ is not of the form $-\nabla g$ for any function $g$: there is no loss that gradient descent--ascent minimizes.
+        \item Show that the simultaneous update $(x, y) \leftarrow (x - \eta y, \, y + \eta x)$ multiplies $x^2 + y^2$ by $1 + \eta^2$.
+        \item For the alternating update $x \leftarrow x - \eta y$, then $y \leftarrow y + \eta x$ (with the new $x$), show that $Q(x, y) = x^2 - \eta xy + y^2$ does not change. Conclude that the iterates stay bounded for $0 < \eta < 2$.
+    \end{enumerate}
+\end{problem}
+
+\section{Multiple Integrals and the Divergence Theorem}
+
+\begin{problem}[\mandatory]\label{pr:fubini-practice}
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\int_0^1\int_y^1 e^{x^2}\, dx\, dy$. (Hint: $e^{x^2}$ has no elementary antiderivative. Sketch the region and change the order of integration.)
+        \item Compute $\iint_D xy\, dx\, dy$ for the quarter disk $D = \{(x, y) : x, y \geq 0, \ x^2 + y^2 \leq 1\}$ in polar coordinates.
+        \item Compute $\iint_{[0, 1]^2} (x + y)^2\, dx\, dy$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:prob-integrals}
+    Let $X$ and $Y$ be independent and uniform on $[0, 1]$, so that $(X, Y)$ has the density $1$ on the unit square. Compute as double integrals:
+    \begin{enumerate}[label=(\alph*)]
+        \item $P(X + Y \leq \frac{1}{2})$;
+        \item $P(XY \leq \frac{1}{2})$;
+        \item the expected value $\iint \max(x, y)\, dx\, dy$ of $\max(X, Y)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:gauss-ellipse}
+    Let $A$ be symmetric positive definite.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write $A = B^\top B$ with an invertible $B$, and substitute $\mathbf{u} = B\mathbf{x}$ to show that the ellipse $\{\mathbf{x} \in \mathbb{R}^2 : \mathbf{x}^\top A\mathbf{x} \leq 1\}$ has the area $\frac{\pi}{\sqrt{\det A}}$, and that $\int_{\mathbb{R}^2} e^{-\frac{1}{2}\mathbf{x}^\top A\mathbf{x}}\, d\mathbf{x} = \frac{2\pi}{\sqrt{\det A}}$.
+        \item Evaluate both for $\mathbf{x}^\top A\mathbf{x} = 2x^2 + 2xy + y^2$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:line-integrals}
+    Let $F(x, y) = (-y, x)^\top$ and $G(x, y) = (y, x)^\top$, and let $\gamma_1(t) = (t, t^2)$ and $\gamma_2(t) = (t, t)$ for $0 \leq t \leq 1$, two curves from $(0, 0)$ to $(1, 1)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the line integrals of $F$ and of $G$ along both curves. Explain the results with the curl.
+        \item Find $f$ with $G = \nabla f$, and check the fundamental theorem for line integrals.
+        \item Going along $\gamma_1$ and back along $\gamma_2$ is a closed curve. Check Green's theorem for $F$ on the region that it encloses.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:score-matching-1d}
+    (Score matching in one dimension.) Data $x_1, \ldots, x_N$ come from an unknown density $p$ on $\mathbb{R}$. We model the score by $s_\theta(x) = -\theta x$ with $\theta > 0$, which is the score of $\mathcal{N}(0, \frac{1}{\theta})$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the score matching loss of the lecture is $J(\theta) = \int p(x)\big(\frac{1}{2}\theta^2x^2 - \theta\big)\, dx + C$.
+        \item Replace the integral by the average over the data, and minimize over $\theta$. Compare the result with the maximum likelihood estimate of the precision $\frac{1}{\sigma^2}$ of $\mathcal{N}(0, \sigma^2)$, which is $\big(\frac{1}{N}\sum_i x_i^2\big)^{-1}$.
+        \item Evaluate the estimate for the data $1, -2, 3, 0, -2$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:score-function}
+    Let $X$ have the density $p_\theta$ of $\mathcal{N}(\theta, 1)$, so that $\frac{\partial}{\partial\theta}\log p_\theta(x) = x - \theta$, and let $g(\theta) = \int x^2p_\theta(x)\, dx = \theta^2 + 1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the score function formula of the lecture gives $g'(\theta) = \int x^2(x - \theta)\,p_\theta(x)\, dx$, and check that this equals $2\theta$. (Substitute $x = \theta + z$.)
+        \item The reparameterization $X = \theta + Z$ with $Z \sim \mathcal{N}(0, 1)$ gives $g(\theta) = \int (\theta + z)^2\varphi(z)\, dz$, with the standard normal density $\varphi$. Differentiate under the integral sign to get a second formula for $g'(\theta)$.
+        \item For $\theta = 0$, the two formulas average the single-sample estimates $X^3$ and $2X$. Compare their mean squares, using that $\int z^6\varphi(z)\, dz = 15$. Which estimator would you use?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:coulomb}
+    Let $F(\mathbf{x}) = \frac{\mathbf{x}}{\norm{\mathbf{x}}^3}$ on $\mathbb{R}^3 \setminus \{\mathbf{0}\}$ (the electric field of a point charge).
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\Div F = 0$.
+        \item Show that the flux of $F$ out of every sphere $\norm{\mathbf{x}} = R$ is $4\pi$. (The sphere has the area $4\pi R^2$.)
+        \item Why does this not contradict the divergence theorem? What is the flux out of the region between two spheres around the origin?
+    \end{enumerate}
 \end{problem}
 
 \end{document}

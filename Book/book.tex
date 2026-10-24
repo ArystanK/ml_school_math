@@ -1,0 +1,113 @@
+\documentclass[11pt, twoside, openright]{book}
+
+% The book of all lectures. The chapters are generated from the lecture sources:
+% run "python make_book.py" after editing a lecture, then compile this file three times.
+
+% A4 paper with the text width of the lecture notes (6.5in), so that lines break as in the lectures.
+% For US letter paper, replace a4paper by letterpaper.
+\usepackage[a4paper, textwidth=6.5in, inner=1in, top=1in, bottom=1.1in, headsep=0.3in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usepackage{listings}
+% For \py below. Load url before hyperref, which loads it without these options.
+\usepackage[obeyspaces, spaces]{url}
+% Links are kept for the PDF, but not marked, since the book is meant to be printed.
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Math for Machine Learning}}
+
+% Python code in the programming exercises.
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue!70!black},
+    commentstyle=\color{gray!70!black}\itshape,
+    stringstyle=\color{orange!70!black},
+    showstringspaces=false,
+    upquote=true,
+    columns=fullflexible,
+    keepspaces=true,
+    frame=single,
+    rulecolor=\color{gray!40},
+    backgroundcolor=\color{gray!6},
+    xleftmargin=0.5em,
+    xrightmargin=0.5em,
+}
+
+% The macros of all lectures (\py, \norm, \E, \Var, ...).
+\input{chapters/macros}
+% Inline code as in the lectures, but it may also break after dots and underscores:
+% long names such as np.linalg.LinAlgError do not always fit at the end of a line.
+\let\py\relax
+\DeclareUrlCommand\py{\urlstyle{tt}}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}[definition]{Example}
+\newtheorem{exercise}[definition]{Exercise}
+\theoremstyle{plain}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+% The text refers to the chapters as "Lecture 1", "Lecture 2", ...
+\renewcommand{\chaptername}{Lecture}
+\setcounter{tocdepth}{1}
+
+% References are wider than in the lectures (Theorem 3.10.6 instead of Theorem 10.6); allow a little
+% extra stretch in the few paragraphs that would otherwise run into the margin.
+\setlength{\emergencystretch}{1.5em}
+% As in the lecture notes, do not stretch pages to equal height.
+\raggedbottom
+
+\begin{document}
+
+\frontmatter
+
+\begin{titlepage}
+    \centering
+    \vspace*{0.28\textheight}
+    
+    {\Huge\bfseries Math for Machine Learning\par}
+    \vspace{0.8em}
+    
+    {\Large Lecture Notes\par}
+    \vspace{2em}
+    
+    % --- AUTHOR NAME PLACED HERE ---
+    {\large\bfseries Arystan Shokan\par} 
+    \vspace{2.5em}
+    
+    {\large Linear Algebra \,$\cdot$\, Analytic Geometry \,$\cdot$\, Vector Calculus and Optimization\\[0.4em]
+    Probability and Statistics \,$\cdot$\, Differential Equations\par}
+    
+    \vfill
+    {\large \today\par}
+\end{titlepage}
+
+
+\tableofcontents
+
+\mainmatter
+
+\include{chapters/lecture1}
+\include{chapters/lecture2}
+\include{chapters/lecture3}
+\include{chapters/lecture4}
+\include{chapters/lecture5}
+
+\appendix
+\include{chapters/appendix_topology}
+
+\end{document}

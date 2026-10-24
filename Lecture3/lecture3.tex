@@ -64,6 +64,10 @@
 \DeclareMathOperator{\Span}{span}
 \DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Div}{div}
+\DeclareMathOperator{\curl}{curl}
+\DeclareMathOperator{\vol}{vol}
+\DeclareMathOperator{\area}{area}
 \DeclareMathOperator{\sign}{sign}
 \DeclareMathOperator{\softmax}{softmax}
 \DeclareMathOperator{\ReLU}{ReLU}
@@ -78,13 +82,14 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-Almost every machine learning model is trained by solving an optimization problem. A model has parameters, such as the weights of a linear model or the millions of weights of a neural network, which we collect in a vector $\boldsymbol{\theta}$. A loss function $L(\boldsymbol{\theta})$ measures how badly the model with these parameters fits the training data, and training means finding parameters with a small loss. There are far too many parameters to try out all possible values. Instead, we start with some parameters and improve them step by step, and for this we need to know how the loss changes when we change the parameters slightly. This information is contained in the derivative of $L$. Vector calculus is the study of derivatives of functions of several variables. In this lecture:
+Almost every machine learning model is trained by solving an optimization problem. A model has parameters, such as the weights of a linear model or the millions of weights of a neural network, which we collect in a vector $\boldsymbol{\theta}$. A loss function $L(\boldsymbol{\theta})$ measures how badly the model with these parameters fits the training data, and training means finding parameters with a small loss. There are far too many parameters to try out all possible values. Instead, we start with some parameters and improve them step by step, and for this we need to know how the loss changes when we change the parameters slightly. This information is contained in the derivative of $L$. Vector calculus is the study of derivatives and integrals of functions of several variables. In this lecture:
 \begin{itemize}
     \item we extend the derivative to functions $f: \mathbb{R}^n \to \mathbb{R}^m$: partial derivatives, gradients and Jacobian matrices;
     \item we prove the chain rule, which says that the derivative of a composition of functions is the product of their Jacobian matrices; it is the basis of backpropagation, the algorithm that computes the gradients of neural networks;
     \item we compute gradients with respect to vectors and matrices, such as the weight matrices of a neural network;
     \item we use second derivatives (the Hessian matrix) and Taylor's theorem to describe the shape of a function near a point;
-    \item we apply all of this to optimization: critical points, gradient descent, Newton's method, convexity, and optimization with constraints (Lagrange multipliers).
+    \item we apply all of this to optimization: critical points, gradient descent, Newton's method, convexity, and optimization with constraints (Lagrange multipliers);
+    \item we study vector fields with their divergence and curl, and integrals over regions of $\mathbb{R}^n$: Fubini's theorem, the change of variables formula, line integrals, and the divergence theorem, which leads to integration by parts in $\mathbb{R}^n$; these are the tools for probability densities in Lecture~4, for generative models, and for the differential equations of Lecture~5.
 \end{itemize}
 We use the linear algebra of Lectures~1 and~2 throughout: derivatives are linear maps, given by matrices; the direction of steepest ascent comes from the Cauchy--Schwarz inequality; and the shape of a function near a minimum is described by the eigenvalues of a symmetric matrix. Some results from analysis, such as the existence of maxima on closed and bounded sets and the implicit function theorem, are only stated here; the separate appendix on topology and differential topology proves them and puts them in a wider context.
 
@@ -517,7 +522,7 @@ If $m = n$, the Jacobian is a square matrix, and its determinant describes how $
 \end{figure}
 
 \begin{remark}[Change of variables]\label{rem:change-of-variables}
-    More generally, if $f$ is a differentiable bijection between open subsets $U$ and $V$ of $\mathbb{R}^n$ with a differentiable inverse, then $\int_V g(\mathbf{y}) \, d\mathbf{y} = \int_U g(f(\mathbf{x})) \, |\det Df(\mathbf{x})| \, d\mathbf{x}$; we do not prove this here. In probability, it says that if a random vector $X$ has the density $p_X$, then $Y = f(X)$ has the density $p_Y$ with $p_Y(f(\mathbf{x})) = \frac{p_X(\mathbf{x})}{|\det Df(\mathbf{x})|}$. Normalizing flows are generative models that turn simple random vectors (e.g., Gaussian ones) into complicated ones in this way. They use neural networks $f$ whose Jacobian determinant is cheap to compute, for example networks with triangular Jacobians, whose determinant is the product of the diagonal entries (Lecture~1).
+    More generally, if $f$ is a differentiable bijection between open subsets $U$ and $V$ of $\mathbb{R}^n$ with a differentiable inverse, then $\int_V g(\mathbf{y}) \, d\mathbf{y} = \int_U g(f(\mathbf{x})) \, |\det Df(\mathbf{x})| \, d\mathbf{x}$ (Theorem~\ref{thm:change-of-variables}). In probability, it says that if a random vector $X$ has the density $p_X$, then $Y = f(X)$ has the density $p_Y$ with $p_Y(f(\mathbf{x})) = \frac{p_X(\mathbf{x})}{|\det Df(\mathbf{x})|}$. Normalizing flows are generative models that turn simple random vectors (e.g., Gaussian ones) into complicated ones in this way. They use neural networks $f$ whose Jacobian determinant is cheap to compute, for example networks with triangular Jacobians, whose determinant is the product of the diagonal entries (Lecture~1).
 \end{remark}
 
 \section{The Chain Rule}\label{sec:chain-rule}
@@ -1077,6 +1082,14 @@ By Theorem~\ref{thm:steepest}, $-\nabla f(\mathbf{x}_k)$ is the direction of ste
 \[f(\mathbf{x}_k - \eta\nabla f(\mathbf{x}_k)) = f(\mathbf{x}_k) - \eta\norm{\nabla f(\mathbf{x}_k)}^2 + o(\eta),\]
 so a small enough step decreases $f$, unless $\nabla f(\mathbf{x}_k) = \mathbf{0}$. But how small is small enough? If $\eta$ is too small, we make little progress; if it is too large, the linear approximation is no longer valid, and $f$ can increase. The answer depends on how fast the gradient changes.
 
+\begin{example}[Gradient descent for linear regression]\label{ex:gd-mse}
+    For linear regression with the mean squared error $L(\mathbf{w}) = \frac{1}{N}\norm{X\mathbf{w} - \mathbf{y}}^2 = \frac{1}{N}\sum_i (\mathbf{w}^\top\mathbf{x}_i - y_i)^2$, Example~\ref{ex:ls-gradient} gives $\nabla L(\mathbf{w}) = \frac{2}{N}X^\top(X\mathbf{w} - \mathbf{y})$. So gradient descent is
+    \[\mathbf{w}_{k+1} = \mathbf{w}_k - \eta\,\frac{2}{N}\sum_{i=1}^N (\mathbf{w}_k^\top\mathbf{x}_i - y_i)\,\mathbf{x}_i.\]
+    Each data point pulls the weights in the direction of its input $\mathbf{x}_i$, in proportion to its residual: badly predicted points have the most influence, and perfectly predicted points none. Unlike the normal equations, each step only needs two matrix-vector products, which cost $O(Nd)$ for $N$ data points with $d$ features, so the method works for very large data sets, and with mini-batches (Remark~\ref{rem:sgd}) even for data that do not fit into memory.
+
+    For example, for the model $y = wx$ with a single weight and the data $(1, 2)$, $(2, 3)$, $(3, 5)$, we have $L'(w) = \frac{2}{3}\sum_i (wx_i - y_i)x_i = \frac{2}{3}(14w - 23)$, so the minimum is $w^* = \frac{23}{14} \approx 1.643$. With $\eta = 0.1$ and $w_0 = 0$, the iterates are $w_1 = 1.533$, $w_2 = 1.636$, $w_3 = 1.642$: the error is multiplied by $1 - 0.1 \cdot \frac{28}{3} = \frac{1}{15}$ in every step. Since $L'' = \frac{28}{3}$, gradient descent converges if and only if $\eta < \frac{2}{28/3} = \frac{3}{14} \approx 0.21$ (Theorem~\ref{thm:gd-quadratic} below); for $\eta = 0.3$, the error is multiplied by $1 - 2.8 = -1.8$ in every step, and the iterates diverge.
+\end{example}
+
 \subsection{Convergence for smooth functions}
 
 \begin{definition}[$L$-smooth function]
@@ -1439,6 +1452,310 @@ Equality constraints can be added to the KKT conditions with multipliers of any 
     whose margin is $\frac{1}{\norm{\mathbf{w}}}$. The stationarity condition gives $\mathbf{w} = \sum_i \mu_i y_i\mathbf{x}_i$, and by complementary slackness, $\mu_i > 0$ only for the points with $y_i(\mathbf{w}^\top\mathbf{x}_i + b) = 1$, which lie exactly on the margin. These points are the support vectors: the classifier only depends on them.
 \end{remark}
 
+\section{Vector Fields: Divergence and Curl}\label{sec:vector-fields}
+
+\begin{definition}[Vector field]\label{def:vector-field}
+    A vector field on an open set $D \subseteq \mathbb{R}^n$ is a function $F: D \to \mathbb{R}^n$. We picture it by attaching to every point $\mathbf{x} \in D$ the arrow $F(\mathbf{x})$, starting at $\mathbf{x}$.
+\end{definition}
+
+The most important examples for us are gradient fields: the gradient $\nabla f$ of a differentiable function $f: D \to \mathbb{R}$ is a vector field, whose arrows point in the direction of steepest ascent of $f$ and are orthogonal to its level sets (Section~\ref{sec:gradients}). Another example is the velocity field of a fluid, which tells us how fast and in which direction a particle at $\mathbf{x}$ moves. This motion is described by a differential equation, the subject of Lecture~5.
+
+The derivative of a vector field is a square matrix, the Jacobian $DF(\mathbf{x}) \in \mathbb{R}^{n \times n}$, and in this section we extract two geometric quantities from it: the divergence, which measures how much of $F$ flows out of small regions, and the curl, which measures how $F$ rotates.
+
+\begin{example}\label{ex:vector-fields}
+    \begin{enumerate}
+        \item The gradient field of $f(\mathbf{x}) = \frac{1}{2}\norm{\mathbf{x}}^2$ is $F(\mathbf{x}) = \mathbf{x}$, which points away from the origin. For a symmetric matrix $A$, the field $A\mathbf{x}$ is the gradient field of $\frac{1}{2}\mathbf{x}^\top A\mathbf{x}$ (Proposition~\ref{prop:basic-gradients}).
+        \item The rotation field $F(x, y) = (-y, x)^\top$ is orthogonal to the position vector $(x, y)^\top$ everywhere: its arrows go around the origin counterclockwise (Figure~\ref{fig:vector-fields}).
+        \item Let $p$ be a positive probability density on $\mathbb{R}^n$. Its score is the vector field $\mathbf{s}(\mathbf{x}) = \nabla\log p(\mathbf{x}) = \frac{\nabla p(\mathbf{x})}{p(\mathbf{x})}$, which points in the direction in which the density increases fastest. For the Gaussian density $p(\mathbf{x}) \propto \exp\big(-\frac{1}{2}(\mathbf{x} - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{x} - \boldsymbol{\mu})\big)$ of Lecture~4, $\mathbf{s}(\mathbf{x}) = -\Sigma^{-1}(\mathbf{x} - \boldsymbol{\mu})$ points towards the mean. Score-based generative models, such as diffusion models, learn the score of the distribution of the training data with a neural network $\mathbf{s}_{\boldsymbol{\theta}}: \mathbb{R}^n \to \mathbb{R}^n$ (Lecture~4).
+    \end{enumerate}
+\end{example}
+
+Near a point $\mathbf{x}$, $F(\mathbf{x} + \mathbf{h}) \approx F(\mathbf{x}) + DF(\mathbf{x})\mathbf{h}$, and every square matrix is the sum of a symmetric and a skew-symmetric matrix:
+\[DF(\mathbf{x}) = S + W, \qquad S = \tfrac{1}{2}\big(DF(\mathbf{x}) + DF(\mathbf{x})^\top\big), \qquad W = \tfrac{1}{2}\big(DF(\mathbf{x}) - DF(\mathbf{x})^\top\big).\]
+By the spectral theorem (Lecture~2), $S$ has an orthonormal basis of eigenvectors: the symmetric part stretches or compresses a small neighborhood of $\mathbf{x}$ along these orthogonal directions, at rates given by the eigenvalues. The skew-symmetric part satisfies $\mathbf{h}^\top W\mathbf{h} = 0$, so $W\mathbf{h}$ is orthogonal to $\mathbf{h}$: it is an infinitesimal rotation. The divergence summarizes the symmetric part, and the curl is the skew-symmetric part.
+
+\begin{definition}[Divergence]\label{def:divergence}
+    The divergence of a differentiable vector field $F$ is the function
+    \[\Div F(\mathbf{x}) = \frac{\partial F_1}{\partial x_1}(\mathbf{x}) + \cdots + \frac{\partial F_n}{\partial x_n}(\mathbf{x}) = \tr DF(\mathbf{x}).\]
+    It is also written $\nabla \cdot F$, as a formal dot product of $\nabla = (\frac{\partial}{\partial x_1}, \ldots, \frac{\partial}{\partial x_n})^\top$ with $F$.
+\end{definition}
+
+Since $\tr W = 0$, the divergence only depends on the symmetric part: $\Div F(\mathbf{x}) = \tr S$ is the sum of the stretching rates. To see what it measures, think of $F$ as the velocity field of a fluid, and consider a small box $Q$ around $\mathbf{x}$ with the side lengths $h_1, \ldots, h_n$. The two faces of $Q$ perpendicular to $\mathbf{e}_1$ have the area $\frac{\vol(Q)}{h_1}$ and the outward normals $\pm\mathbf{e}_1$, so the fluid flows out through them at the rates $F_1 \cdot \frac{\vol(Q)}{h_1}$ and $-F_1 \cdot \frac{\vol(Q)}{h_1}$, evaluated at the centers of the faces. The net outflow through the two faces is approximately
+\[\Big(F_1\big(\mathbf{x} + \tfrac{h_1}{2}\mathbf{e}_1\big) - F_1\big(\mathbf{x} - \tfrac{h_1}{2}\mathbf{e}_1\big)\Big)\frac{\vol(Q)}{h_1} \approx \frac{\partial F_1}{\partial x_1}(\mathbf{x})\vol(Q).\]
+Adding the contributions of all $n$ pairs of faces, we find that the net outflow from $Q$ is approximately $\Div F(\mathbf{x})$ times the volume of $Q$. In other words,
+\begin{center}
+    \emph{$\Div F(\mathbf{x})$ is the net outflow of $F$ per unit volume near $\mathbf{x}$.}
+\end{center}
+The divergence theorem (Theorem~\ref{thm:divergence}) makes this precise. A vector field with positive divergence at $\mathbf{x}$ acts like a source there, one with negative divergence like a sink, and a field with $\Div F = 0$ describes an incompressible fluid, in which as much flows into every region as flows out. In Lecture~5, we will see that the divergence is also the rate at which the flow of the differential equation $\mathbf{x}' = F(\mathbf{x})$ expands volumes.
+
+\begin{example}\label{ex:divergence}
+    \begin{enumerate}
+        \item $F(\mathbf{x}) = \mathbf{x}$ has $\Div F = n$: the field points away from the origin and grows in length, so more flows out of every small region than flows in.
+        \item The rotation field $(-y, x)^\top$ has $\Div F = 0 + 0 = 0$: the fluid circulates without being compressed.
+        \item For $F(\mathbf{x}) = A\mathbf{x}$, we have $DF = A$ and $\Div F = \tr A$. For example, the field of $A = \left(\begin{smallmatrix} -2 & 1 \\ 1 & -2 \end{smallmatrix}\right)$ has $\Div F = -4$ everywhere: it is a sink.
+        \item The field $-\nabla f$, which points downhill, has $\Div(-\nabla f) = -\tr\nabla^2 f$. Near a strict local minimum, where the Hessian is positive definite, it is a sink.
+    \end{enumerate}
+\end{example}
+
+\begin{definition}[Laplacian]\label{def:laplacian}
+    The Laplacian of a twice differentiable function $f: D \to \mathbb{R}$ is
+    \[\Delta f = \Div\nabla f = \frac{\partial^2 f}{\partial x_1^2} + \cdots + \frac{\partial^2 f}{\partial x_n^2} = \tr\nabla^2 f.\]
+    Functions with $\Delta f = 0$ are called harmonic.
+\end{definition}
+
+The trace of the Hessian is the sum of its eigenvalues, so $\Delta f(\mathbf{x})$ is the sum of the curvatures of $f$ in the principal directions (Section~\ref{sec:hessian-eigen}), and $\Delta f \geq 0$ at a local minimum. For example, $\Delta\norm{\mathbf{x}}^2 = 2n$, while $x^2 - y^2$ is harmonic: the curvatures $2$ and $-2$ of the saddle cancel. The Laplacian also describes diffusion, such as the spreading of heat, or of the probability density of a randomly moving particle (Lecture~5).
+
+\begin{definition}[Curl]\label{def:curl}
+    The curl of a differentiable vector field $F$ on $D \subseteq \mathbb{R}^2$ is the function $\curl F = \frac{\partial F_2}{\partial x_1} - \frac{\partial F_1}{\partial x_2}$. For $D \subseteq \mathbb{R}^3$, it is the vector field
+    \[\curl F = \nabla \times F = \Big(\frac{\partial F_3}{\partial x_2} - \frac{\partial F_2}{\partial x_3}, \ \frac{\partial F_1}{\partial x_3} - \frac{\partial F_3}{\partial x_1}, \ \frac{\partial F_2}{\partial x_1} - \frac{\partial F_1}{\partial x_2}\Big)^\top.\]
+\end{definition}
+
+Up to the factor $2$, the entries of the curl are the entries $W_{ij} = \frac{1}{2}\big(\frac{\partial F_i}{\partial x_j} - \frac{\partial F_j}{\partial x_i}\big)$ of the skew-symmetric part. For $n = 2$,
+\[W = \frac{\curl F(\mathbf{x})}{2}\begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix},\]
+so on top of the stretching by $S$, the field rotates a small neighborhood of $\mathbf{x}$ counterclockwise with the angular velocity $\frac{1}{2}\curl F(\mathbf{x})$: a small paddle wheel in a fluid with the velocity field $F$ spins at this rate. For $n = 3$, one checks that $W\mathbf{h} = \frac{1}{2}\curl F(\mathbf{x}) \times \mathbf{h}$, a rotation about the axis $\curl F(\mathbf{x})$ with the angular velocity $\frac{1}{2}\norm{\curl F(\mathbf{x})}$. In $n$ dimensions, the skew-symmetric matrix $W$ has $\frac{n(n - 1)}{2}$ independent entries, which is $1$ for $n = 2$ and $3$ for $n = 3$; only in three dimensions can they be arranged into a vector field.
+
+\begin{example}\label{ex:curl}
+    \begin{enumerate}
+        \item The rotation field $(-y, x)^\top$ has $\curl F = 1 - (-1) = 2$, so it rotates with the angular velocity $1$. The field $\mathbf{x}$ has $\curl F = 0$.
+        \item The shear field $F(x, y) = (y, 0)^\top$ (Figure~\ref{fig:vector-fields}) has $\Div F = 0$ and $\curl F = -1$. Its Jacobian splits as
+        \[\begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix} = \begin{pmatrix} 0 & \frac{1}{2} \\ \frac{1}{2} & 0 \end{pmatrix} + \begin{pmatrix} 0 & \frac{1}{2} \\ -\frac{1}{2} & 0 \end{pmatrix}:\]
+        the shear of Lecture~1 combines a stretching along $(1, 1)$ and a compression along $(1, -1)$ (the eigenvalues $\pm\frac{1}{2}$ of $S$) with a clockwise rotation with the angular velocity $\frac{1}{2}$.
+    \end{enumerate}
+\end{example}
+
+\begin{figure}[ht]
+    \centering
+    \newcommand{\fieldpanel}[4]{%
+        \begin{scope}[shift={(#1,0)}]
+            \draw[gray!60] (-1.3,0) -- (1.3,0) (0,-1.3) -- (0,1.3);
+            \foreach \x in {-1,-0.5,...,1}
+                \foreach \y in {-1,-0.5,...,1} {
+                    \pgfmathsetmacro{\u}{0.3*(#2)}
+                    \pgfmathsetmacro{\v}{0.3*(#3)}
+                    \pgfmathsetmacro{\len}{abs(\u) + abs(\v)}
+                    \ifdim \len pt > 0.001pt
+                        \draw[->, thick, blue!70!black] (\x,\y) -- ++(\u,\v);
+                    \else
+                        \fill[blue!70!black] (\x,\y) circle (0.9pt);
+                    \fi
+                }
+            \node[below, align=center, font=\small] at (0,-1.4) {#4};
+        \end{scope}}
+    \begin{tikzpicture}[x=1.35cm, y=1.35cm, >=Stealth]
+        \fieldpanel{0}{\x}{\y}{source $F = (x, y)$\\ $\Div F = 2$, \ $\curl F = 0$}
+        \fieldpanel{3.4}{0-(\y)}{\x}{rotation $F = (-y, x)$\\ $\Div F = 0$, \ $\curl F = 2$}
+        \fieldpanel{6.8}{\y}{0}{shear $F = (y, 0)$\\ $\Div F = 0$, \ $\curl F = -1$}
+    \end{tikzpicture}
+    \caption{Three linear vector fields. The source expands areas and does not rotate, the rotation turns without changing areas, and the shear is a combination of a stretching (along the diagonal) and a clockwise rotation, which preserves areas.}
+    \label{fig:vector-fields}
+\end{figure}
+
+\begin{proposition}\label{prop:curl-grad}
+    Let $f$ and $F$ be twice continuously differentiable.
+    \begin{enumerate}
+        \item The Jacobian of $\nabla f$ is the symmetric matrix $\nabla^2 f$. In particular, $\curl\nabla f = 0$ for $n = 2$ and $n = 3$.
+        \item For $n = 3$, $\Div\curl F = 0$.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    (1) This is Schwarz's theorem (Theorem~\ref{thm:schwarz}): the entries of $\curl\nabla f$ are differences $\frac{\partial^2 f}{\partial x_i\partial x_j} - \frac{\partial^2 f}{\partial x_j\partial x_i} = 0$. (2) By definition,
+    \[\Div\curl F = \frac{\partial^2 F_3}{\partial x_1\partial x_2} - \frac{\partial^2 F_2}{\partial x_1\partial x_3} + \frac{\partial^2 F_1}{\partial x_2\partial x_3} - \frac{\partial^2 F_3}{\partial x_2\partial x_1} + \frac{\partial^2 F_2}{\partial x_3\partial x_1} - \frac{\partial^2 F_1}{\partial x_3\partial x_2},\]
+    and the terms cancel in pairs by Schwarz's theorem.
+\end{proof}
+
+So a gradient field has no rotational part. Conversely, a vector field on $\mathbb{R}^n$ whose Jacobian is symmetric everywhere is a gradient field (Theorem~\ref{thm:poincare} below), while a field with a nonzero curl is not the gradient of any function. This matters whenever we follow a vector field and hope to minimize something.
+
+\begin{remark}[Vector fields in machine learning]\label{rem:vector-fields-ml}
+    \begin{enumerate}
+        \item (Games.) Generative adversarial networks (GANs) train two networks against each other: a generator with the parameters $\mathbf{x}$ minimizes a function $f(\mathbf{x}, \mathbf{y})$, which a discriminator with the parameters $\mathbf{y}$ maximizes. Simultaneous gradient descent--ascent follows the vector field $F = (-\nabla_{\mathbf{x}}f, \nabla_{\mathbf{y}}f)$, which is in general not a gradient field. For $f(x, y) = xy$, $F(x, y) = (-y, x)$ is the rotation field, which is not a gradient field, since its curl is $2$. Gradient descent--ascent with the step size $\eta$ moves $(x, y)$ to $(x - \eta y, \, y + \eta x)$, which multiplies the distance from the equilibrium $(0, 0)$ by $\sqrt{1 + \eta^2}$: the iterates spiral outwards instead of converging (Lecture~5 studies the continuous-time version). The oscillations of GAN training come from such rotational parts of the dynamics, and methods such as extragradient are designed to damp them.
+        \item (Scores.) A neural network $\mathbf{s}_{\boldsymbol{\theta}}: \mathbb{R}^n \to \mathbb{R}^n$ that approximates a score $\nabla\log p$ (Example~\ref{ex:vector-fields}) need not have a symmetric Jacobian, so in general it is not exactly a gradient field. Energy-based models instead learn a scalar function $E_{\boldsymbol{\theta}}$ and use the gradient field $-\nabla E_{\boldsymbol{\theta}}$.
+        \item (Computing divergences.) For a vector field $F: \mathbb{R}^n \to \mathbb{R}^n$ given by a neural network, computing $\Div F = \tr DF$ exactly needs $n$ passes of automatic differentiation, one for each diagonal entry. Hutchinson's estimator uses that $\mathbb{E}[\boldsymbol{\varepsilon}^\top A\boldsymbol{\varepsilon}] = \tr(A\,\mathbb{E}[\boldsymbol{\varepsilon}\boldsymbol{\varepsilon}^\top]) = \tr A$ for every random vector $\boldsymbol{\varepsilon}$ with $\mathbb{E}[\boldsymbol{\varepsilon}\boldsymbol{\varepsilon}^\top] = I$, for example with independent random signs as entries (expected values are treated in Lecture~4; see also Exercise~\ref{ex3:hutchinson}). So $\boldsymbol{\varepsilon}^\top DF(\mathbf{x})\boldsymbol{\varepsilon}$ is on average equal to $\Div F(\mathbf{x})$, and $\boldsymbol{\varepsilon}^\top DF(\mathbf{x})$ is a single vector-Jacobian product, computed by one pass of reverse mode (Section~\ref{sec:autodiff}). Averages over a few random vectors are used in score matching (Section~\ref{sec:integrals}) and in continuous normalizing flows (Lecture~5).
+    \end{enumerate}
+\end{remark}
+
+\section{Multiple Integrals and the Divergence Theorem}\label{sec:integrals}
+
+Probabilities and expectations of random vectors are integrals of densities over regions of $\mathbb{R}^n$ (Lecture~4), and we have already used integrals over the plane for the change of variables in Section~\ref{sec:jacobians}. In this section, we define integrals of functions of several variables, compute them as iterated one-dimensional integrals, and prove the analogue of the fundamental theorem of calculus for vector fields, the divergence theorem. Its main consequence for us is a rule for integration by parts in $\mathbb{R}^n$, which is behind score matching and, in Lecture~5, behind the evolution of probability densities under a flow.
+
+\subsection{Integrals over boxes and Fubini's theorem}
+
+A box is a product of intervals $Q = [a_1, b_1] \times \cdots \times [a_n, b_n]$, with the volume $\vol(Q) = (b_1 - a_1)\cdots(b_n - a_n)$. Dividing each interval into $k$ intervals of equal length divides $Q$ into $k^n$ small boxes $Q_1, \ldots, Q_{k^n}$, each with the volume $\frac{\vol(Q)}{k^n}$.
+
+\begin{definition}[Integral over a box]\label{def:multiple-integral}
+    A bounded function $f: Q \to \mathbb{R}$ is integrable if the Riemann sums $\sum_{j=1}^{k^n} f(\boldsymbol{\xi}_j)\vol(Q_j)$ converge as $k \to \infty$, to the same limit for all choices of points $\boldsymbol{\xi}_j \in Q_j$. The limit is the integral $\int_Q f(\mathbf{x})\, d\mathbf{x}$, also written $\iint_Q f(x, y)\, dx\, dy$ for $n = 2$.
+\end{definition}
+
+As in one variable, continuous functions on boxes are integrable, the integral is linear, and $f \leq g$ implies $\int_Q f \leq \int_Q g$. For $f \geq 0$, the integral is the volume of the region below the graph of $f$. To integrate over a bounded set $D$, we choose a box $Q \supseteq D$ and integrate the function that agrees with $f$ on $D$ and is $0$ outside, $\int_D f(\mathbf{x})\, d\mathbf{x} = \int_Q f(\mathbf{x})\mathbf{1}_D(\mathbf{x})\, d\mathbf{x}$, where $\mathbf{1}_D$ is the indicator function of $D$. This works, for example, for continuous functions $f$ and regions $D$ bounded by graphs of continuous functions. In particular, $\vol(D) = \int_D 1\, d\mathbf{x}$. Integrals over unbounded sets, such as $\mathbb{R}^n$, are defined as limits of integrals over growing boxes, like improper integrals in one variable.
+
+Integrals of several variables are computed one variable at a time.
+
+\begin{theorem}[Fubini]\label{thm:fubini}
+    Let $f$ be continuous on the rectangle $Q = [a, b] \times [c, d]$. Then
+    \[\iint_Q f(x, y)\, dx\, dy = \int_a^b \bigg(\int_c^d f(x, y)\, dy\bigg) dx = \int_c^d \bigg(\int_a^b f(x, y)\, dx\bigg) dy.\]
+    The same holds for boxes in $\mathbb{R}^n$, integrating over one variable after the other in any order.
+\end{theorem}
+
+We do not give a complete proof, but the idea is simple. With the grid points $x_i$ and $y_j$, a Riemann sum is a double sum $\sum_i\sum_j f(x_i, y_j)\,\Delta x\,\Delta y$. Summing over $j$ first gives
+\[\sum_i \Big(\sum_j f(x_i, y_j)\,\Delta y\Big)\Delta x \approx \sum_i \bigg(\int_c^d f(x_i, y)\, dy\bigg)\Delta x,\]
+a Riemann sum of the iterated integral with $y$ first; summing over $i$ first gives the other order. Geometrically, we compute a volume by cutting it into slices and integrating the areas of the slices. For a region $D = \{(x, y) : a \leq x \leq b, \ g_1(x) \leq y \leq g_2(x)\}$ between the graphs of continuous functions $g_1 \leq g_2$, Fubini's theorem gives
+\[\iint_D f(x, y)\, dx\, dy = \int_a^b \bigg(\int_{g_1(x)}^{g_2(x)} f(x, y)\, dy\bigg) dx.\]
+
+\begin{example}\label{ex:fubini}
+    \begin{enumerate}
+        \item For the triangle $T = \{(x, y) : 0 \leq y \leq x \leq 1\}$,
+        \[\iint_T xy\, dx\, dy = \int_0^1 \int_0^x xy\, dy\, dx = \int_0^1 \frac{x^3}{2}\, dx = \frac{1}{8}.\]
+        Describing $T$ by $0 \leq y \leq 1$ and $y \leq x \leq 1$ gives the same result, $\int_0^1 \int_y^1 xy\, dx\, dy = \int_0^1 \frac{y(1 - y^2)}{2}\, dy = \frac{1}{8}$.
+        \item (A probability.) Let $X$ and $Y$ be independent waiting times with the exponential densities $\lambda e^{-\lambda x}$ and $\mu e^{-\mu y}$ on $[0, \infty)$, so that $(X, Y)$ has the joint density $\lambda\mu e^{-\lambda x - \mu y}$ (Lecture~4). The probability that $Y$ ends first is the integral of the joint density over $\{0 \leq y < x\}$:
+        \begin{align*}
+            P(Y < X) &= \int_0^\infty \lambda e^{-\lambda x}\bigg(\int_0^x \mu e^{-\mu y}\, dy\bigg) dx = \int_0^\infty \lambda e^{-\lambda x}(1 - e^{-\mu x})\, dx \\
+            &= 1 - \frac{\lambda}{\lambda + \mu} = \frac{\mu}{\lambda + \mu}.
+        \end{align*}
+        \item (The order can matter.) Let $f(x, y) = \frac{x^2 - y^2}{(x^2 + y^2)^2}$ on $(0, 1]^2$. Since $\frac{\partial}{\partial y}\frac{y}{x^2 + y^2} = f(x, y)$, we get $\int_0^1 f(x, y)\, dy = \frac{1}{1 + x^2}$ and $\int_0^1\int_0^1 f(x, y)\, dy\, dx = \frac{\pi}{4}$. Since $f(y, x) = -f(x, y)$, the other order gives $-\frac{\pi}{4}$. Fubini's theorem does not apply, because $f$ is unbounded near the origin; in fact, $\iint |f| = \infty$.
+    \end{enumerate}
+\end{example}
+
+For unbounded functions or regions, Fubini's theorem remains true if $f \geq 0$ or if $\int |f| < \infty$ (the Fubini--Tonelli theorem), which covers the integrals of probability theory.
+
+\subsection{Change of variables}
+
+\begin{theorem}[Change of variables]\label{thm:change-of-variables}
+    Let $\Phi: U \to V$ be a bijection between open sets $U, V \subseteq \mathbb{R}^n$, such that $\Phi$ and $\Phi^{-1}$ are continuously differentiable. Then for every integrable function $g$ on $V$,
+    \[\int_V g(\mathbf{y})\, d\mathbf{y} = \int_U g(\Phi(\mathbf{x}))\,|\det D\Phi(\mathbf{x})|\, d\mathbf{x}.\]
+\end{theorem}
+
+This is the formula of Remark~\ref{rem:change-of-variables}, and it comes from the interpretation of $|\det D\Phi(\mathbf{x})|$ as the factor by which $\Phi$ scales small volumes (Section~\ref{sec:jacobians}): the images $\Phi(Q_j)$ of small boxes $Q_j$ in $U$ cover $V$ and have the volumes $|\det D\Phi(\boldsymbol{\xi}_j)|\vol(Q_j)$ approximately, so Riemann sums for the two sides are approximately equal. We do not make this precise.
+
+\begin{example}[The Gaussian integral in $n$ dimensions]\label{ex:gauss-integral}
+    Let $\Sigma$ be symmetric positive definite. We show that
+    \[\int_{\mathbb{R}^n} \exp\big(-\tfrac{1}{2}\mathbf{x}^\top\Sigma^{-1}\mathbf{x}\big)\, d\mathbf{x} = (2\pi)^{n/2}\sqrt{\det\Sigma},\]
+    which gives the normalizing constant of the multivariate Gaussian distribution in Lecture~4. For $\Sigma = I$, the integrand is the product $e^{-x_1^2/2}\cdots e^{-x_n^2/2}$, so by Fubini's theorem the integral is the product of $n$ one-dimensional integrals $\int_{-\infty}^\infty e^{-t^2/2}\, dt = \sqrt{2\pi}$ (Example~\ref{ex:polar}, with the substitution $t = \sqrt{2}x$). In general, write $\Sigma = AA^\top$ with an invertible matrix $A$, for example $A = Q\Lambda^{1/2}$ from the spectral decomposition $\Sigma = Q\Lambda Q^\top$ (Lecture~2), where $\Lambda^{1/2}$ is the diagonal matrix of the square roots of the positive eigenvalues. Substitute $\mathbf{x} = A\mathbf{z}$. Then $\mathbf{x}^\top\Sigma^{-1}\mathbf{x} = \mathbf{z}^\top A^\top A^{-\top}A^{-1}A\mathbf{z} = \norm{\mathbf{z}}^2$ and $|\det A| = \sqrt{\det\Sigma}$, so the integral is $\sqrt{\det\Sigma}\int_{\mathbb{R}^n} e^{-\norm{\mathbf{z}}^2/2}\, d\mathbf{z} = (2\pi)^{n/2}\sqrt{\det\Sigma}$.
+\end{example}
+
+\subsection{Differentiating under the integral sign}
+
+\begin{proposition}[Leibniz rule]\label{prop:leibniz}
+    Let $f(x, \theta)$ and $\frac{\partial f}{\partial\theta}(x, \theta)$ be continuous for $x \in [a, b]$ and $\theta$ in an open interval $I$. Then
+    \[\frac{d}{d\theta}\int_a^b f(x, \theta)\, dx = \int_a^b \frac{\partial f}{\partial\theta}(x, \theta)\, dx \qquad \text{for all } \theta \in I.\]
+\end{proposition}
+
+\begin{proof}
+    The function $g(\theta) = \int_a^b \frac{\partial f}{\partial\theta}(x, \theta)\, dx$ is continuous (we do not check this). Fix $\theta_0 \in I$. By Fubini's theorem and the fundamental theorem of calculus,
+    \[\int_{\theta_0}^\theta g(s)\, ds = \int_a^b \int_{\theta_0}^\theta \frac{\partial f}{\partial\theta}(x, s)\, ds\, dx = \int_a^b f(x, \theta)\, dx - \int_a^b f(x, \theta_0)\, dx.\]
+    Differentiating with respect to $\theta$ gives the claim, again by the fundamental theorem of calculus.
+\end{proof}
+
+The same holds for integrals over boxes in $\mathbb{R}^n$ and for several parameters, and, under an additional condition (for example, if $|\frac{\partial f}{\partial\theta}|$ is bounded by an integrable function that does not depend on $\theta$), for integrals over unbounded regions such as $\mathbb{R}^n$. In machine learning, we often need the gradient of an expectation $\int g(\mathbf{x})p_{\boldsymbol{\theta}}(\mathbf{x})\, d\mathbf{x}$ with respect to the parameters $\boldsymbol{\theta}$ of a distribution, for example of a policy in reinforcement learning. Differentiating under the integral sign and using $\nabla_{\boldsymbol{\theta}}p_{\boldsymbol{\theta}} = p_{\boldsymbol{\theta}}\nabla_{\boldsymbol{\theta}}\log p_{\boldsymbol{\theta}}$ gives
+\[\nabla_{\boldsymbol{\theta}}\int g(\mathbf{x})p_{\boldsymbol{\theta}}(\mathbf{x})\, d\mathbf{x} = \int g(\mathbf{x})\,\nabla_{\boldsymbol{\theta}}\log p_{\boldsymbol{\theta}}(\mathbf{x})\,p_{\boldsymbol{\theta}}(\mathbf{x})\, d\mathbf{x},\]
+again an expectation with respect to $p_{\boldsymbol{\theta}}$, which can be estimated by averaging over samples. This is the score function (or REINFORCE) estimator of policy gradient methods.
+
+\subsection{Line integrals and gradient fields}
+
+\begin{definition}[Line integral]\label{def:line-integral}
+    Let $\gamma: [a, b] \to D$ be a continuously differentiable curve, and let $F$ be a continuous vector field on $D$. The line integral of $F$ along $\gamma$ is
+    \[\int_\gamma F \cdot d\mathbf{x} = \int_a^b F(\gamma(t))^\top\gamma'(t)\, dt.\]
+\end{definition}
+
+If $F$ is a force, the line integral is the work done by it along the path. By the substitution rule, the line integral does not change if we reparametrize the curve in the same direction, and it changes its sign if we reverse the direction. For gradient fields, it only depends on the endpoints.
+
+\begin{theorem}[Fundamental theorem for line integrals]\label{thm:gradient-theorem}
+    If $f$ is continuously differentiable on $D$, then for every continuously differentiable curve $\gamma: [a, b] \to D$,
+    \[\int_\gamma \nabla f \cdot d\mathbf{x} = f(\gamma(b)) - f(\gamma(a)).\]
+    In particular, the line integral of a gradient field along a closed curve ($\gamma(a) = \gamma(b)$) is $0$.
+\end{theorem}
+
+\begin{proof}
+    By the chain rule (Corollary~\ref{cor:chain-special}), $\frac{d}{dt}f(\gamma(t)) = \nabla f(\gamma(t))^\top\gamma'(t)$; now integrate from $a$ to $b$.
+\end{proof}
+
+\begin{example}[Integrated gradients]\label{ex:integrated-gradients}
+    To explain the prediction $f(\mathbf{x})$ of a model, the method of integrated gradients compares $\mathbf{x}$ with a baseline input $\mathbf{x}'$, such as a black image, and assigns to the $i$-th input feature the attribution
+    \[A_i = (x_i - x_i')\int_0^1 \frac{\partial f}{\partial x_i}\big(\mathbf{x}' + t(\mathbf{x} - \mathbf{x}')\big)\, dt.\]
+    The sum of the attributions is the line integral of $\nabla f$ along the segment $\gamma(t) = \mathbf{x}' + t(\mathbf{x} - \mathbf{x}')$, so $A_1 + \cdots + A_n = f(\mathbf{x}) - f(\mathbf{x}')$ by Theorem~\ref{thm:gradient-theorem}: the attributions account exactly for the change of the output. For example, for $f(\mathbf{x}) = x_1x_2$, $\mathbf{x} = (2, 3)^\top$ and $\mathbf{x}' = \mathbf{0}$, we get $A_1 = 2\int_0^1 3t\, dt = 3$ and $A_2 = 3\int_0^1 2t\, dt = 3$, which add up to $f(\mathbf{x}) = 6$. The simpler attributions $x_i\frac{\partial f}{\partial x_i}(\mathbf{x})$ (``gradient times input'') are $6$ and $6$, which add up to $12$.
+\end{example}
+
+Conversely, if the line integrals of $F$ only depend on the endpoints, then $F$ is a gradient field: fix a point $\mathbf{x}_0$, and let $f(\mathbf{x})$ be the line integral of $F$ along any curve from $\mathbf{x}_0$ to $\mathbf{x}$. On $\mathbb{R}^n$, a symmetric Jacobian is enough.
+
+\begin{theorem}[Poincar\'e lemma]\label{thm:poincare}
+    Let $F: \mathbb{R}^n \to \mathbb{R}^n$ be continuously differentiable, with a symmetric Jacobian $DF(\mathbf{x})$ for every $\mathbf{x}$. Then $F = \nabla f$ for the function
+    \[f(\mathbf{x}) = \int_0^1 F(t\mathbf{x})^\top\mathbf{x}\, dt,\]
+    the line integral of $F$ along the segment from $\mathbf{0}$ to $\mathbf{x}$.
+\end{theorem}
+
+\begin{proof}
+    By the Leibniz rule and the product rule, and since $\frac{\partial F_j}{\partial x_i} = \frac{\partial F_i}{\partial x_j}$,
+    \begin{align*}
+        \frac{\partial f}{\partial x_i}(\mathbf{x}) &= \int_0^1 \Big(F_i(t\mathbf{x}) + \sum_{j=1}^n t\,\frac{\partial F_j}{\partial x_i}(t\mathbf{x})\,x_j\Big)\, dt = \int_0^1 \Big(F_i(t\mathbf{x}) + t\sum_{j=1}^n \frac{\partial F_i}{\partial x_j}(t\mathbf{x})\,x_j\Big)\, dt.
+    \end{align*}
+    By the chain rule, the integrand is $\frac{d}{dt}\big(tF_i(t\mathbf{x})\big)$, so $\frac{\partial f}{\partial x_i}(\mathbf{x}) = 1 \cdot F_i(\mathbf{x}) - 0 = F_i(\mathbf{x})$.
+\end{proof}
+
+\begin{example}[A field with zero curl that is not a gradient field]\label{ex:vortex}
+    On $D = \mathbb{R}^2 \setminus \{\mathbf{0}\}$, let $F(x, y) = \frac{1}{x^2 + y^2}(-y, x)^\top$. A short computation gives $\frac{\partial F_2}{\partial x} = \frac{y^2 - x^2}{(x^2 + y^2)^2} = \frac{\partial F_1}{\partial y}$, so $\curl F = 0$. But along the unit circle $\gamma(t) = (\cos t, \sin t)^\top$, $0 \leq t \leq 2\pi$, we have $F(\gamma(t)) = (-\sin t, \cos t)^\top = \gamma'(t)$, so
+    \[\int_\gamma F \cdot d\mathbf{x} = \int_0^{2\pi} (\sin^2 t + \cos^2 t)\, dt = 2\pi \neq 0,\]
+    and $F$ is not a gradient field on $D$. Near each point, $F$ is the gradient of the polar angle, but the angle cannot be defined continuously along a closed curve around the origin. The Poincar\'e lemma does not apply because $D$ has a hole: whether vector fields with zero curl are gradient fields depends on the topology of the domain.
+\end{example}
+
+\subsection{The divergence theorem}
+
+Let $V \subseteq \mathbb{R}^n$ be a bounded region whose boundary $\partial V$ is smooth, such as a ball, or a box (whose boundary is smooth except at the edges), and let $\mathbf{n}(\mathbf{x})$ be the outward unit normal vector at $\mathbf{x} \in \partial V$. We also need integrals $\int_{\partial V} g\, dS$ over the boundary, with respect to its $(n-1)$-dimensional volume (length for $n = 2$, area for $n = 3$). We do not define them in general. For $n = 2$ and a curve $\gamma: [a, b] \to \mathbb{R}^2$ that traverses $\partial V$ once, $\int_{\partial V} g\, dS = \int_a^b g(\gamma(t))\norm{\gamma'(t)}\, dt$; and the faces of a box are boxes of dimension $n - 1$.
+
+\begin{theorem}[Divergence theorem]\label{thm:divergence}
+    For every continuously differentiable vector field $F$ on an open set that contains $V$ and $\partial V$,
+    \[\int_V \Div F(\mathbf{x})\, d\mathbf{x} = \int_{\partial V} F^\top\mathbf{n}\, dS.\]
+\end{theorem}
+
+The right side is the flux of $F$ through the boundary: if $F$ is the velocity field of a fluid, it is the net amount of fluid that flows out of $V$ per unit time. So the theorem says that the total strength of the sources inside $V$ equals the net outflow through its boundary, which shows again that the divergence is the outflow per unit volume. For $n = 1$ and $V = [a, b]$, with the outward normals $+1$ at $b$ and $-1$ at $a$, it is the fundamental theorem of calculus $\int_a^b F'(x)\, dx = F(b) - F(a)$.
+
+\begin{proof}[Proof for a box]
+    Let $V = [a_1, b_1] \times \cdots \times [a_n, b_n]$, and consider the term $\frac{\partial F_1}{\partial x_1}$ of $\Div F$. Write $\mathbf{x} = (x_1, \tilde{\mathbf{x}})$ with $\tilde{\mathbf{x}}$ in the box $\tilde Q = [a_2, b_2] \times \cdots \times [a_n, b_n]$. By Fubini's theorem and the fundamental theorem of calculus,
+    \begin{align*}
+        \int_V \frac{\partial F_1}{\partial x_1}\, d\mathbf{x} &= \int_{\tilde Q}\bigg(\int_{a_1}^{b_1}\frac{\partial F_1}{\partial x_1}(x_1, \tilde{\mathbf{x}})\, dx_1\bigg) d\tilde{\mathbf{x}} = \int_{\tilde Q} F_1(b_1, \tilde{\mathbf{x}})\, d\tilde{\mathbf{x}} - \int_{\tilde Q} F_1(a_1, \tilde{\mathbf{x}})\, d\tilde{\mathbf{x}}.
+    \end{align*}
+    This is the flux of the vector field $F_1\mathbf{e}_1$ through the boundary of $V$: through the face $x_1 = b_1$ with the outward normal $\mathbf{e}_1$, through the face $x_1 = a_1$ with the outward normal $-\mathbf{e}_1$, and nothing through the other faces, whose normals $\pm\mathbf{e}_j$ ($j \neq 1$) are orthogonal to $\mathbf{e}_1$. Adding the same identities for $F_2\mathbf{e}_2, \ldots, F_n\mathbf{e}_n$ proves the theorem for $V$.
+\end{proof}
+
+For a general region, one approximates $V$ by many small boxes. When we add the identities for all boxes, the fluxes through the faces shared by two neighboring boxes cancel, since the outward normal of one box is the inward normal of the other, and only the fluxes through the outer boundary remain. Making this precise requires more care, and we omit it.
+
+\begin{example}\label{ex:divergence-theorem}
+    For $F(\mathbf{x}) = \mathbf{x}$, $\Div F = n$, and on the sphere of radius $R$, $\mathbf{n} = \frac{\mathbf{x}}{R}$ and $F^\top\mathbf{n} = R$. So the divergence theorem for the ball $B_R$ of radius $R$ says that $n\vol(B_R) = R\area(\partial B_R)$: for $n = 2$, $2\pi R^2 = R \cdot 2\pi R$, and for $n = 3$, $3 \cdot \frac{4}{3}\pi R^3 = R \cdot 4\pi R^2$.
+\end{example}
+
+In the plane, the divergence theorem has a second form. If $\gamma$ traverses $\partial V$ counterclockwise (with $V$ on its left), then the unit tangent vector is $\boldsymbol{\tau} = \frac{\gamma'}{\norm{\gamma'}}$, and the outward normal is $\boldsymbol{\tau}$ rotated clockwise by $90^\circ$, $\mathbf{n} = (\tau_2, -\tau_1)^\top$. For the vector field $G = (F_2, -F_1)^\top$, we have $\Div G = \curl F$ and $G^\top\mathbf{n} = F^\top\boldsymbol{\tau}$, so the divergence theorem for $G$ gives the following.
+
+\begin{theorem}[Green]\label{thm:green}
+    Let $V \subseteq \mathbb{R}^2$ be a bounded region whose boundary is a closed curve $\gamma$, traversed counterclockwise. Then for every continuously differentiable vector field $F$ on an open set that contains $V$ and $\partial V$,
+    \[\int_\gamma F \cdot d\mathbf{x} = \iint_V \curl F\, dx\, dy.\]
+\end{theorem}
+
+The left side is the circulation of $F$ around $V$, so the curl is the circulation per unit area. For example, $F = \frac{1}{2}(-y, x)^\top$ has $\curl F = 1$, so the area of $V$ is the line integral of $F$ along its boundary. (The vortex field of Example~\ref{ex:vortex} is not differentiable at the origin, so Green's theorem does not apply to it on the unit disk.)
+
+\begin{remark}[Stokes' theorem]
+    In three dimensions, Stokes' theorem says that $\int_{\partial S} F \cdot d\mathbf{x} = \int_S (\curl F)^\top\mathbf{n}\, dS$ for a surface $S$ with the boundary curve $\partial S$; for a flat surface, it is Green's theorem. The fundamental theorem of calculus, the fundamental theorem for line integrals, Green's theorem, the divergence theorem and Stokes' theorem are all special cases of one theorem about differential forms on manifolds, the general Stokes theorem: the integral of a derivative over a region equals an integral over its boundary. Surface integrals and differential forms are beyond the scope of these notes. For machine learning, the most important of these theorems is the divergence theorem, through its consequence, integration by parts.
+\end{remark}
+
+\subsection{Integration by parts and its applications}
+
+\begin{corollary}[Integration by parts]\label{cor:integration-by-parts}
+    Let $g: \mathbb{R}^n \to \mathbb{R}$ and $F: \mathbb{R}^n \to \mathbb{R}^n$ be continuously differentiable. Then
+    \[\int_V g\Div F\, d\mathbf{x} = \int_{\partial V} gF^\top\mathbf{n}\, dS - \int_V \nabla g^\top F\, d\mathbf{x}.\]
+    If $gF$ vanishes outside a bounded set, or decays so fast that its flux through spheres of radius $R$ tends to $0$ as $R \to \infty$, then $\int_{\mathbb{R}^n} g\Div F\, d\mathbf{x} = -\int_{\mathbb{R}^n} \nabla g^\top F\, d\mathbf{x}$.
+\end{corollary}
+
+\begin{proof}
+    By the product rule, $\frac{\partial}{\partial x_i}(gF_i) = \frac{\partial g}{\partial x_i}F_i + g\frac{\partial F_i}{\partial x_i}$, and summing over $i$ gives $\Div(gF) = \nabla g^\top F + g\Div F$. Now apply the divergence theorem to $gF$. For the second statement, take for $V$ balls with growing radii.
+\end{proof}
+
+For $n = 1$, this is the familiar rule $\int_a^b gF'\, dx = [gF]_a^b - \int_a^b g'F\, dx$. We give an application to machine learning; in Lecture~5, the same rule describes how probability densities move under the flow of a differential equation.
+
+\begin{example}[Score matching]\label{ex:score-matching}
+    We want to fit a model $\mathbf{s}_{\boldsymbol{\theta}}$ of the score $\nabla\log p$ of an unknown data density $p$, given samples from $p$ (Example~\ref{ex:vector-fields}). The natural loss
+    \[J(\boldsymbol{\theta}) = \frac{1}{2}\int p(\mathbf{x})\norm{\mathbf{s}_{\boldsymbol{\theta}}(\mathbf{x}) - \nabla\log p(\mathbf{x})}^2\, d\mathbf{x}\]
+    seems useless, since it contains the unknown score. Expanding the square gives $\frac{1}{2}\int p\norm{\mathbf{s}_{\boldsymbol{\theta}}}^2\, d\mathbf{x} - \int p\,\mathbf{s}_{\boldsymbol{\theta}}^\top\nabla\log p\, d\mathbf{x} + C$, where $C$ does not depend on $\boldsymbol{\theta}$. Since $p\nabla\log p = \nabla p$, integration by parts (with $g = p$ and $F = \mathbf{s}_{\boldsymbol{\theta}}$, assuming that $p\,\mathbf{s}_{\boldsymbol{\theta}}$ decays fast enough) turns the middle term into
+    \[-\int \mathbf{s}_{\boldsymbol{\theta}}^\top\nabla p\, d\mathbf{x} = \int p\Div\mathbf{s}_{\boldsymbol{\theta}}\, d\mathbf{x}.\]
+    So $J(\boldsymbol{\theta}) = \int p(\mathbf{x})\big(\frac{1}{2}\norm{\mathbf{s}_{\boldsymbol{\theta}}(\mathbf{x})}^2 + \Div\mathbf{s}_{\boldsymbol{\theta}}(\mathbf{x})\big)\, d\mathbf{x} + C$: an average over the data distribution, in which the unknown score no longer appears. It is estimated by the average of $\frac{1}{2}\norm{\mathbf{s}_{\boldsymbol{\theta}}(\mathbf{x}_i)}^2 + \Div\mathbf{s}_{\boldsymbol{\theta}}(\mathbf{x}_i)$ over the training data $\mathbf{x}_1, \ldots, \mathbf{x}_N$, with Hutchinson's estimator for the divergence (Remark~\ref{rem:vector-fields-ml}). This is Hyv\"arinen's score matching; diffusion models use a variant of it, denoising score matching.
+\end{example}
+
 \section{Key Takeaways}
 \begin{itemize}[leftmargin=*]
     \item A function $f: D \to \mathbb{R}^m$ on an open set $D \subseteq \mathbb{R}^n$ is differentiable at $\mathbf{x}$ if it is approximated by a linear map near $\mathbf{x}$: $f(\mathbf{x} + \mathbf{h}) = f(\mathbf{x}) + Df(\mathbf{x})\mathbf{h} + o(\norm{\mathbf{h}})$. The Jacobian $Df(\mathbf{x})$ is the $m \times n$ matrix of partial derivatives $\frac{\partial f_i}{\partial x_j}$; its rows belong to the outputs, its columns to the inputs. Existence of the partial derivatives alone is not enough, but continuous partial derivatives imply differentiability.
@@ -1453,6 +1770,8 @@ Equality constraints can be added to the KKT conditions with multipliers of any 
     \item Gradient descent $\mathbf{x}_{k+1} = \mathbf{x}_k - \eta\nabla f(\mathbf{x}_k)$ decreases an $L$-smooth function for $\eta \leq \frac{1}{L}$ and finds approximate critical points. On quadratic functions, it converges for $\eta < \frac{2}{\lambda_{\max}}$, at best with the rate $\frac{\kappa - 1}{\kappa + 1}$, where $\kappa$ is the condition number: ill-conditioned problems zig-zag. Newton's method $\mathbf{x}_{k+1} = \mathbf{x}_k - \nabla^2 f(\mathbf{x}_k)^{-1}\nabla f(\mathbf{x}_k)$ converges quadratically near a minimum, but is too expensive for large models. SGD uses cheap, noisy mini-batch gradients.
     \item A differentiable function is convex if and only if it lies above its tangent planes, and a twice differentiable one if and only if its Hessian is positive semidefinite everywhere. For convex functions, every critical point and every local minimum is a global minimum. Least squares, logistic regression and softmax regression have convex losses; neural networks do not.
     \item Lagrange multipliers: at a constrained local minimum (with linearly independent constraint gradients), $\nabla f + \sum_i \lambda_i\nabla g_i = \mathbf{0}$. This gives eigenvectors for $\max_{\norm{\mathbf{x}} = 1}\mathbf{x}^\top A\mathbf{x}$ and the minimum norm solution $A^\top(AA^\top)^{-1}\mathbf{b}$. For inequality constraints, the KKT conditions add $\mu_i \geq 0$ and complementary slackness $\mu_i g_i(\mathbf{x}^*) = 0$, and for convex problems they are sufficient.
+    \item A vector field $F: D \to \mathbb{R}^n$ has a square Jacobian, which splits into a symmetric part (stretching) and a skew-symmetric part (rotation). The divergence $\Div F = \tr DF$ is the net outflow of $F$ per unit volume, and the Laplacian is $\Delta f = \Div\nabla f = \tr\nabla^2 f$. The curl ($\frac{\partial F_2}{\partial x_1} - \frac{\partial F_1}{\partial x_2}$ in the plane, $\nabla \times F$ in space) measures rotation. Gradient fields have zero curl, and on $\mathbb{R}^n$ the converse holds; the rotation field $(-y, x)$ of the game $\min_x\max_y xy$ is not the gradient of anything.
+    \item Multiple integrals are computed as iterated one-dimensional integrals (Fubini), which needs $\int |f| < \infty$ for unbounded functions or regions. Under a change of variables, small volumes scale by $|\det D\Phi|$; for example, $\int e^{-\frac{1}{2}\mathbf{x}^\top\Sigma^{-1}\mathbf{x}}\, d\mathbf{x} = (2\pi)^{n/2}\sqrt{\det\Sigma}$. Line integrals of gradients depend only on the endpoints (integrated gradients). The divergence theorem $\int_V \Div F\, d\mathbf{x} = \int_{\partial V} F^\top\mathbf{n}\, dS$ (Green's theorem in the plane) gives integration by parts, $\int g\Div F = -\int \nabla g^\top F$, the basis of score matching.
 \end{itemize}
 
 \section{Exercises}\label{sec:exercises}
@@ -1513,6 +1832,31 @@ Equality constraints can be added to the KKT conditions with multipliers of any 
         \item Find the rectangle with sides parallel to the axes and the largest area that fits into the ellipse $\frac{x^2}{a^2} + \frac{y^2}{b^2} \leq 1$.
     \end{enumerate}
     \item Solve the problem: minimize $x^2 + y^2$ subject to $x + y \geq 2$, using the KKT conditions. Which constraint is active, and what is the multiplier? What changes for the constraint $x + y \geq -2$?
+    \item \begin{enumerate}[label=(\alph*)]
+        \item Compute the divergence and the curl of $F(x, y, z) = (yz, xz, xy)^\top$ and of $G(x, y, z) = (-y, x, z)^\top$. Find a function $f$ with $\nabla f = F$. Is $G$ a gradient field?
+        \item Show that $\Div(gF) = g\Div F + \nabla g^\top F$ and $\Delta(fg) = g\Delta f + 2\nabla f^\top\nabla g + f\Delta g$.
+        \item Show that $\Delta\log\norm{\mathbf{x}} = 0$ on $\mathbb{R}^2 \setminus \{\mathbf{0}\}$, and that $\Delta\norm{\mathbf{x}}^{2-n} = 0$ on $\mathbb{R}^n \setminus \{\mathbf{0}\}$ for $n \geq 3$. (Hint: $\nabla\norm{\mathbf{x}} = \frac{\mathbf{x}}{\norm{\mathbf{x}}}$, and use (b).)
+    \end{enumerate}
+    \item Let $F(\mathbf{x}) = A\mathbf{x}$ with $A \in \mathbb{R}^{n \times n}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\Div F = \tr A$, that $F$ is a gradient field if and only if $A$ is symmetric, and that then $F = \nabla(\frac{1}{2}\mathbf{x}^\top A\mathbf{x})$.
+        \item For $A = \begin{pmatrix} -1 & 2 \\ 0 & -1 \end{pmatrix}$, split $A$ into its symmetric and skew-symmetric parts, and describe how the vector field stretches and rotates small neighborhoods of the origin. Compute $\Div F$ and $\curl F$.
+    \end{enumerate}
+    \item\label{ex3:hutchinson} (Hutchinson's estimator.) Let $A \in \mathbb{R}^{n \times n}$ be symmetric, and let $\boldsymbol{\varepsilon} \in \{-1, 1\}^n$ be a vector of signs. Show that $\boldsymbol{\varepsilon}^\top A\boldsymbol{\varepsilon} = \tr A + 2\sum_{i < j} A_{ij}\varepsilon_i\varepsilon_j$, and conclude that the average of $\boldsymbol{\varepsilon}^\top A\boldsymbol{\varepsilon}$ over all $2^n$ sign vectors is $\tr A$. For which matrices is every single estimate exact?
+    \item \begin{enumerate}[label=(\alph*)]
+        \item Compute $\iint_D (x + y)\, dx\, dy$ for $D = \{(x, y) : 0 \leq x \leq 1, \ x^2 \leq y \leq x\}$, integrating first over $y$ and then over $x$, and in the other order.
+        \item A random point $\mathbf{X}$ is uniformly distributed on the unit disk, i.e., it has the density $\frac{1}{\pi}$ on the disk and $0$ outside. Use polar coordinates to compute its average distance $\int \frac{1}{\pi}\norm{\mathbf{x}}\, d\mathbf{x}$ from the center. Find the density of the first coordinate $X_1$ by integrating out $x_2$.
+    \end{enumerate}
+    \item \begin{enumerate}[label=(\alph*)]
+        \item Differentiate $\int_{-\infty}^\infty e^{-ax^2}\, dx = \sqrt{\pi/a}$ (for $a > 0$) with respect to $a$ under the integral sign, and conclude that $\int_{-\infty}^\infty x^2e^{-x^2/2}\, dx = \sqrt{2\pi}$.
+        \item (Stein's identity.) Let $\varphi(x) = \frac{1}{\sqrt{2\pi}}e^{-x^2/2}$. Use integration by parts to show that for every polynomial $f$,
+        \[\int_{-\infty}^\infty f'(x)\varphi(x)\, dx = \int_{-\infty}^\infty xf(x)\varphi(x)\, dx,\]
+        and use it to compute $\int x^4\varphi(x)\, dx$.
+    \end{enumerate}
+    \item \begin{enumerate}[label=(\alph*)]
+        \item Verify the divergence theorem for $F(x, y) = (x^3, y^3)^\top$ on the unit disk.
+        \item Use Green's theorem to show that the area enclosed by a closed curve $(x(t), y(t))$, $0 \leq t \leq T$, traversed counterclockwise, is $\frac{1}{2}\int_0^T \big(x(t)y'(t) - y(t)x'(t)\big)\, dt$. Compute the area of the ellipse $\frac{x^2}{a^2} + \frac{y^2}{b^2} \leq 1$ in this way.
+    \end{enumerate}
 \end{enumerate}
 
 \section{Programming Exercises}\label{sec:programming}
@@ -1630,6 +1974,20 @@ y = X @ w_true + 0.5 * rng.normal(size=N)
         \item (Projected gradient ascent.) For a random symmetric positive semidefinite matrix $A = B^\top B$, maximize $\mathbf{x}^\top A\mathbf{x}$ on the unit sphere by repeating $\mathbf{x} \leftarrow \frac{\mathbf{x} + \eta A\mathbf{x}}{\norm{\mathbf{x} + \eta A\mathbf{x}}}$. Compare the result with the top eigenvector from \py{np.linalg.eigh} (Example~\ref{ex:lagrange-eigen}). What happens as $\eta \to \infty$? (Compare with power iteration from Lecture~1.)
         \item (Projected gradient descent.) Let \py{A = rng.normal(size=(30, 10))}, let \py{x_true} be a random vector of norm $3$, and \py{b = A @ x_true + 0.1 * rng.normal(size=30)}. Minimize $\norm{A\mathbf{x} - \mathbf{b}}^2$ subject to $\norm{\mathbf{x}} \leq 1$, by alternating gradient steps with step size $\frac{1}{L}$, where $L = 2\norm{A}_2^2$, with the projection of Example~\ref{ex:kkt-ball}. At the result, compute the multiplier $\mu$ from the stationarity condition, and check all four KKT conditions.
         \item (Minimum norm solutions.) For a random $3 \times 6$ matrix $A$ and $\mathbf{b} \in \mathbb{R}^3$, compute $\mathbf{x}^* = A^\top(AA^\top)^{-1}\mathbf{b}$ (Example~\ref{ex:min-norm}) and compare it with \py{np.linalg.pinv(A) @ b}. Get a basis of $\Null(A)$ from the SVD (the last rows of $V^\top$), and check that adding a null space vector to $\mathbf{x}^*$ gives another solution of $A\mathbf{x} = \mathbf{b}$ with a larger norm.
+    \end{itemize}
+
+    \item \textbf{Vector fields.}
+    \begin{itemize}
+        \item Plot the three vector fields of Figure~\ref{fig:vector-fields} and the vortex field of Example~\ref{ex:vortex} with \py{plt.quiver}. Compute their divergence and curl on a grid with \py{np.gradient}, which approximates partial derivatives by central differences, and compare with the exact values.
+        \item (Hutchinson's estimator.) Let $F(\mathbf{x}) = \tanh(W\mathbf{x} + \mathbf{b})$ (entrywise) with a random $100 \times 100$ matrix $W$ and a random vector $\mathbf{b}$. Show that $\Div F(\mathbf{x}) = \sum_i (1 - \tanh^2 z_i)W_{ii}$ with $\mathbf{z} = W\mathbf{x} + \mathbf{b}$, and that $\boldsymbol{\varepsilon}^\top DF(\mathbf{x}) = \big(\boldsymbol{\varepsilon} \odot (1 - \tanh^2\mathbf{z})\big)^\top W$. At a random point, average $\boldsymbol{\varepsilon}^\top DF(\mathbf{x})\boldsymbol{\varepsilon}$ over $m$ random sign vectors, and plot the error against $m = 1, 10, 100, 1000$ on a log-log scale. What is the slope?
+        \item (Game dynamics.) For $f(x, y) = xy$, start at $(1, 1)$ and run $1000$ steps with $\eta = 0.1$ of (i) simultaneous gradient descent--ascent, $(x, y) \leftarrow (x - \eta y, \, y + \eta x)$; (ii) alternating updates, $x \leftarrow x - \eta y$ and then $y \leftarrow y + \eta x$ with the new $x$; (iii) the extragradient method, which computes the trial point $(\tilde x, \tilde y) = (x - \eta y, \, y + \eta x)$ and then updates $(x, y) \leftarrow (x - \eta\tilde y, \, y + \eta\tilde x)$ with the gradients at the trial point. Plot the paths and $\norm{(x_k, y_k)}$ against $k$. Show that (i) multiplies the norm by $\sqrt{1 + \eta^2}$ in each step, and (iii) by $\sqrt{1 - \eta^2 + \eta^4}$.
+    \end{itemize}
+
+    \item \textbf{Multiple integrals.}
+    \begin{itemize}
+        \item By Fubini's theorem, $\int_{[0, 1]^d} e^{-\norm{\mathbf{x}}^2}\, d\mathbf{x} = \big(\int_0^1 e^{-t^2}\, dt\big)^d$. Compute the one-dimensional integral accurately with the midpoint rule (the Riemann sum with the midpoints of the small intervals). Then approximate the $d$-dimensional integral for $d = 1, 2, 3, 5, 8$ by the midpoint rule on a grid with $k$ points per axis ($k^d$ evaluations of the function), and by the average of the function over $N$ uniformly random points (Monte Carlo, Lecture~4) with the same number of evaluations. Plot the errors against the number of evaluations. Which method is better in low dimensions, and which in high dimensions?
+        \item Check the divergence theorem numerically for $F(x, y) = (x^3 + y, \, \sin x + y^2)^\top$ on the ellipse $\frac{x^2}{4} + y^2 \leq 1$: compute the left side on a fine grid, using the indicator function of the ellipse, and the right side with the parametrization $\gamma(t) = (2\cos t, \sin t)$, for which $\mathbf{n}\norm{\gamma'(t)} = (\gamma_2'(t), -\gamma_1'(t))^\top$.
+        \item (Integrated gradients.) For the logistic regression model $f(\mathbf{x}) = \sigma(\mathbf{w}^\top\mathbf{x})$ of P5, compute the attributions of Example~\ref{ex:integrated-gradients} for a few data points with the baseline $\mathbf{x}' = \mathbf{0}$ (approximate the integrals by the midpoint rule with $50$ points), and check that they add up to $f(\mathbf{x}) - f(\mathbf{x}')$. Compare with the attributions $x_i\frac{\partial f}{\partial x_i}(\mathbf{x})$ (``gradient times input'').
     \end{itemize}
 \end{enumerate}
 

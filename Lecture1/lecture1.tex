@@ -85,6 +85,28 @@
 \maketitle
 \tableofcontents
 
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Machine learning works with data, and data are almost always stored as lists of numbers: an image is a list of pixel intensities, a customer is a list of features such as age and income, and a word is represented by an embedding, a list of a few hundred numbers. Linear algebra is the mathematics of such lists, which we call vectors, and of the maps between them that are compatible with adding and scaling, the linear transformations. It is the language of the whole subject:
+\begin{itemize}
+    \item a data set of $N$ examples with $n$ features each is an $N \times n$ matrix, and a linear model predicts a number from a feature vector $x$ by $w_1x_1 + \cdots + w_nx_n$;
+    \item a layer of a neural network multiplies its input vector by a weight matrix, so a network is built from matrix multiplications and simple nonlinear functions;
+    \item fitting a linear model to data leads to a system of linear equations, and whether its solution is unique depends on the rank of the data matrix;
+    \item eigenvalues and eigenvectors describe what happens when a linear map is applied again and again, as in Markov chains and the PageRank algorithm, and they are the basis of principal component analysis (Lecture~2).
+\end{itemize}
+In this lecture:
+\begin{itemize}
+    \item we start from fields, the number systems in which we can add, subtract, multiply and divide, and define vector spaces over them, with bases, dimension and subspaces;
+    \item we study linear transformations and the matrices that represent them: matrix operations, row reduction for solving linear systems and computing inverses, special types of matrices, and the trace and the determinant, which measures how a linear map scales areas and volumes;
+    \item we relate the null space, the column space and the rank of a matrix by the rank--nullity theorem;
+    \item we introduce dual spaces, which explain what the transpose of a matrix is, and quotient spaces with the isomorphism theorems;
+    \item we find eigenvalues and eigenvectors, diagonalize matrices, and use powers of matrices to analyze Fibonacci numbers, Markov chains and power iteration.
+\end{itemize}
+Lecture~2 adds geometry to vector spaces: lengths, angles and orthogonality. The later lectures use the language of this lecture throughout: derivatives are linear maps (Lecture~3), covariance matrices describe random vectors (Lecture~4), and the eigenvalues of a matrix decide whether the solutions of a linear differential equation grow or decay (Lecture~5).
+
+\paragraph{Notation.} Vectors are denoted by lowercase letters such as $u$, $v$ and $x$, scalars by letters such as $a$, $b$ and $\lambda$, and matrices by capital letters such as $A$. (From Lecture~3 on, vectors are written in bold.)
+
 \section{Number Sets and Fields}
 
 \begin{remark}

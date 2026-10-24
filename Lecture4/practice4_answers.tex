@@ -1,0 +1,176 @@
+\documentclass[11pt]{article}
+
+% Answers and hints for the practice problems of Lecture 4
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+% Problem numbers are read from practice4.aux, so compile practice4.tex first.
+\externaldocument{practice4}[practice4.pdf]
+\usepackage{xcolor}
+
+\title{Lecture 4: Practice Problems --- Answers and Hints}
+\author{Math for Machine Learning}
+\date{\today}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\softmax}{softmax}
+
+\begin{document}
+
+\maketitle
+
+\section*{Probability Spaces}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:dice}.] (a) $\frac{5}{36}$. (b) $\frac{6}{36} = \frac{1}{6}$. (c) $\frac{6}{36} = \frac{1}{6}$. (d) $1 - \frac{25}{36} = \frac{11}{36}$. (e) $\frac{16 - 9}{36} = \frac{7}{36}$ (both dice at most $4$, but not both at most $3$). (f) $\frac{1}{2}$: the second die must be odd.
+    \item[\ref{pr:machines}.] (a) $0.5 \cdot 0.01 + 0.3 \cdot 0.02 + 0.2 \cdot 0.03 = 0.017$. (b) $\frac{0.006}{0.017} = \frac{6}{17} \approx 0.35$ for the third machine, and also $\frac{6}{17}$ for the second; the first machine has probability $\frac{5}{17}$.
+    \item[\ref{pr:squares}.] The pairs in which one number is the square of the other are $(1, 1)$, $(2, 4)$, $(4, 2)$, $(3, 9)$, $(9, 3)$, so the probability is $1 - \frac{5}{100} = 0.95$.
+    \item[\ref{pr:divisible}.] $\frac{333 + 200 - 66}{1000} = 0.467$, and $\frac{333 + 200 + 142 - 66 - 47 - 28 + 9}{1000} = 0.543$.
+    \item[\ref{pr:independent-events}.] $P(A \cap B) = \frac{2}{6} = \frac{1}{2} \cdot \frac{4}{6}$: independent. $P(A \cap C) = \frac{1}{6} \neq \frac{1}{4}$: not independent. $P(B \cap C) = \frac{1}{2} \neq \frac{2}{3} \cdot \frac{1}{2}$: not independent.
+    \item[\ref{pr:monty-hall}.] Let $C_i$ = ``the car is behind door $i$'' and $O$ = ``the host opens door $3$''. Then $P(O \mid C_1) = \frac{1}{2}$, $P(O \mid C_2) = 1$, $P(O \mid C_3) = 0$, so $P(O) = \frac{1}{2}$ and $P(C_2 \mid O) = \frac{1 \cdot 1/3}{1/2} = \frac{2}{3}$. Switching wins with probability $\frac{2}{3}$.
+\end{description}
+
+\section*{Random Variables and Their Distributions}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:guessing}.] (a) Binomial$(20, \frac{1}{4})$; $P(X = 5) = \binom{20}{5}\frac{3^{15}}{4^{20}} \approx 0.202$ and $P(X \geq 1) = 1 - 0.75^{20} \approx 0.9968$. (b) $\E[X] = 5$, $\Var(X) = 3.75$.
+    \item[\ref{pr:poisson}.] $e^{-3} \approx 0.050$; $1 - e^{-3}(1 + 3) \approx 0.801$; $e^{-3}\frac{3^3}{3!} \approx 0.224$.
+    \item[\ref{pr:density}.] (a) $c = \frac{3}{8}$, and $F(x) = \frac{x^3}{8}$ for $0 \leq x \leq 2$ ($0$ before, $1$ after). (b) $P(X \leq 1) = \frac{1}{8}$, and the median is $m = 4^{1/3} \approx 1.587$.
+    \item[\ref{pr:transformations}.] (a) $2y$ on $[0, 1]$. (b) $\frac{1}{y^2}$ for $y > 1$. (c) $\frac{1}{2}e^{-y/2}$ for $y > 0$, the Exponential$(\frac{1}{2})$ distribution.
+    \item[\ref{pr:inverse-transform}.] (a) $F(x) = x^2$, so $X = \sqrt{U}$ (compare with Problem~\ref{pr:transformations}). (b) $X = (1 - U)^{-1/a}$, or equivalently $U^{-1/a}$. (c) $X = \tan\big(\pi(U - \frac{1}{2})\big)$.
+    \item[\ref{pr:heights}.] $\Phi(2) - \Phi(-1) = 0.9772 - 0.1587 \approx 0.819$; $1 - \Phi(1.5) \approx 0.067$; $170 \pm 1.96 \cdot 10 = [150.4, 189.6]$.
+\end{description}
+
+\section*{Expectation and Variance}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:density-moments}.] (a) $\E[X] = \int_0^2 x \cdot \frac{3}{8}x^2\, dx = 1.5$, $\E[X^2] = 2.4$, $\Var(X) = 0.15$. (b) $\E[X] = \frac{1}{n}\cdot\frac{n(n + 1)}{2}$; with $\E[X^2] = \frac{(n + 1)(2n + 1)}{6}$, $\Var(X) = \frac{(n + 1)(2n + 1)}{6} - \frac{(n + 1)^2}{4} = \frac{n^2 - 1}{12}$.
+    \item[\ref{pr:fixed-points}.] $X = \sum_i I_i$, where $I_i = 1$ if $i$ stays at position $i$; $\E[I_i] = P(I_i = 1) = \frac{1}{n}$, so $\E[X] = n \cdot \frac{1}{n} = 1$. (The $I_i$ are not independent, but linearity does not need independence.)
+    \item[\ref{pr:markov-chebyshev}.] (a) $P(X \geq 50) \leq \frac{10}{50} = 0.2$. (b) $P(|X - 10| \geq 5) \leq \frac{4}{25} = 0.16$, and $P(X \geq 15) \leq P(|X - 10| \geq 5) \leq 0.16$.
+    \item[\ref{pr:jensen}.] (a) $\E[\sqrt{X}] = 1.5 < \sqrt{2.5} \approx 1.58$, since $\sqrt{\cdot}$ is concave. (b) Apply Jensen's inequality with the convex function $t \mapsto t^2$ to the random variable $X^2$.
+    \item[\ref{pr:coupons}.] The number of boxes is $T = \sum_{k=0}^5 T_k$, where $T_k$ is Geometric$(\frac{6 - k}{6})$ with mean $\frac{6}{6 - k}$. So $\E[T] = \frac{6}{6} + \frac{6}{5} + \cdots + \frac{6}{1} = 14.7$.
+\end{description}
+
+\section*{Joint Distributions and Independence}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:joint-table}.] (a) $p_X = (0.2, 0.3, 0.5)$, $p_Y = (0.4, 0.6)$; $P(Y = 1 \mid X = x) = 0.5, \frac{1}{3}, 0.8$; not independent (these differ from $0.6$). (b) $\E[X] = 1.3$, $\E[Y] = 0.6$, $\E[XY] = 0.9$, $\Cov(X, Y) = 0.12$; with $\Var(X) = 0.61$ and $\Var(Y) = 0.24$, $\Corr(X, Y) \approx 0.31$. (c) $\E[X \mid Y = 0] = 1$ and $\E[X \mid Y = 1] = 1.5$; $0.4 \cdot 1 + 0.6 \cdot 1.5 = 1.3$.
+    \item[\ref{pr:portfolio}.] (a) $19$, $16 + 9 - 12 = 13$, and $\frac{3}{2 \cdot 3} = 0.5$. (b) $\Var = 4t^2 + 9(1 - t)^2 + 6t(1 - t)$ is minimal for $t = \frac{9 - 3}{4 + 9 - 6} = \frac{6}{7}$, with variance $\frac{189}{49} \approx 3.86 < 4$: combining two correlated estimates (or models) can reduce the variance below that of the better one.
+    \item[\ref{pr:continuous-joint}.] (a) $\int_0^1\int_0^1 (x + y)\, dy\, dx = 1$, and $p_X(x) = x + \frac{1}{2}$. (b) $\E[X] = \frac{7}{12}$; $\E[XY] = \frac{1}{3}$, so $\Cov(X, Y) = \frac{1}{3} - \frac{49}{144} = -\frac{1}{144}$. (c) $p(y \mid x) = \frac{x + y}{x + 1/2}$ and $\E[Y \mid X = x] = \frac{x/2 + 1/3}{x + 1/2}$.
+    \item[\ref{pr:uncorrelated-dependent}.] $\E[X] = \E[Y] = \E[XY] = 0$, so $\Cov(X, Y) = 0$. But $P(X = 1, Y = 1) = 0 \neq \frac{1}{4} \cdot \frac{1}{4}$; in fact, $X \neq 0$ forces $Y = 0$.
+    \item[\ref{pr:best-predictor}.] $m(0) = 0.5$, $m(1) = \frac{1}{3}$, $m(2) = 0.8$. Its MSE is $\E[\Var(Y \mid X)] = 0.2 \cdot 0.25 + 0.3 \cdot \frac{2}{9} + 0.5 \cdot 0.16 \approx 0.197$, compared with $\Var(Y) = 0.24$ for the constant prediction $\E[Y] = 0.6$.
+\end{description}
+
+\section*{Random Vectors and Covariance Matrices}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:cov-whitening}.] (a) $6$ and $2$; the variance is largest in the direction $\frac{1}{\sqrt{2}}(1, 1)$ of the eigenvector with eigenvalue $3$ (the other eigenvalue is $1$). (b) $\Sigma^{-1/2} = \frac{1}{2}\begin{pmatrix} 1 + 1/\sqrt{3} & 1/\sqrt{3} - 1 \\ 1/\sqrt{3} - 1 & 1 + 1/\sqrt{3} \end{pmatrix} \approx \begin{pmatrix} 0.789 & -0.211 \\ -0.211 & 0.789 \end{pmatrix}$, and $\Sigma^{-1/2}\Sigma\Sigma^{-1/2} = I$. (c) With $\Sigma^{-1} = \frac{1}{3}\begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}$: $\sqrt{2/3} \approx 0.82$ and $\sqrt{2} \approx 1.41$. The point $(1, 1)$ lies in the direction of large variance, where it is not unusual.
+    \item[\ref{pr:sample-cov}.] Mean $(1.5, 3)$; $S = \begin{pmatrix} 1.25 & 1.75 \\ 1.75 & 3.5 \end{pmatrix}$ with $\frac{1}{N}$, and $\begin{pmatrix} 5/3 & 7/3 \\ 7/3 & 14/3 \end{pmatrix}$ with $\frac{1}{N - 1}$; correlation $\frac{1.75}{\sqrt{1.25 \cdot 3.5}} \approx 0.84$; the first principal component points in the direction $(0.479, 0.878)$ (eigenvalue $4.46$ of $S$).
+    \item[\ref{pr:affine-cov}.] Mean $A(1, -1)^\top + \mathbf{b} = (0, 3)^\top$; covariance $A\Sigma A^\top = \begin{pmatrix} 4 & -1 \\ -1 & 2 \end{pmatrix}$.
+    \item[\ref{pr:equicorrelation}.] The covariance matrix $(1 - \rho)I + \rho\mathbf{1}\mathbf{1}^\top$ has the eigenvalues $1 + 2\rho$ (eigenvector $\mathbf{1}$) and $1 - \rho$ (twice), so it is positive semidefinite if and only if $-\frac{1}{2} \leq \rho \leq 1$. For $\rho = -\frac{1}{2}$: with i.i.d.\ $W_1, W_2, W_3 \sim \mathcal{N}(0, 1)$ and their mean $\bar W$, the variables $\sqrt{3/2}\,(W_i - \bar W)$ work; they sum to $0$, so $\Var(X_1 + X_2 + X_3) = 3 + 6\rho = 0$.
+\end{description}
+
+\section*{The Gaussian Distribution}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:gauss-conditional}.] (a) $X_1 + X_2 \sim \mathcal{N}(3, 4 + 3 + 4) = \mathcal{N}(3, 11)$, so $P(X_1 + X_2 > 3) = \frac{1}{2}$. (b) $X_2 \mid X_1 = 3 \sim \mathcal{N}\big(2 + \frac{2}{4}(3 - 1), \, 3 - \frac{4}{4}\big) = \mathcal{N}(3, 2)$, and $X_1 \mid X_2 = 0 \sim \mathcal{N}\big(1 + \frac{2}{3}(0 - 2), \, 4 - \frac{4}{3}\big) = \mathcal{N}(-\frac{1}{3}, \frac{8}{3})$.
+    \item[\ref{pr:cholesky}.] $L = \begin{pmatrix} 2 & 0 \\ 1 & \sqrt{2} \end{pmatrix}$; $\boldsymbol{\mu} + L\mathbf{z} = (3, \, 3 - \sqrt{2}) \approx (3, 1.586)$.
+    \item[\ref{pr:denoising}.] $(X, Y) \sim \mathcal{N}\Big(\mathbf{0}, \begin{pmatrix} 1 & 2 \\ 2 & 5 \end{pmatrix}\Big)$, and $X \mid Y = y \sim \mathcal{N}(\frac{2}{5}y, \frac{1}{5})$. For $y = 5$, the best estimate (in the sense of the MSE) is $\E[X \mid Y = 5] = 2$, not $\frac{5}{2}$: the measurement is shrunk towards the prior mean $0$.
+    \item[\ref{pr:gauss-difference}.] $X - Y \sim \mathcal{N}(2, 13)$, and $P(X > Y) = \Phi(\frac{2}{\sqrt{13}}) \approx \Phi(0.555) \approx 0.71$.
+    \item[\ref{pr:gauss-shell}.] $\E[Z_i^2] = 1$ and $\Var(Z_i^2) = 3 - 1 = 2$; sum over $i$. For $d = 100$, $\norm{\mathbf{Z}}^2$ is about $100 \pm 14$, so $\norm{\mathbf{Z}}$ is typically between about $9.3$ and $10.7$. The density is largest at $\mathbf{0}$, but the volume near $\mathbf{0}$ is tiny; the volume of a shell of radius $r$ grows like $r^{d-1}$, and most of the probability lies in a thin shell of radius about $\sqrt{d}$.
+\end{description}
+
+\section*{Limit Theorems and Monte Carlo Methods}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:clt-dice}.] (a) $\E[S] = 2100$, $\Var(S) = 600 \cdot \frac{35}{12} = 1750$, standard deviation $\approx 41.8$; $P(S \geq 2200) \approx 1 - \Phi\big(\frac{2199.5 - 2100}{41.8}\big) = 1 - \Phi(2.38) \approx 0.009$. (b) The number of sixes has mean $100$ and standard deviation $\sqrt{600 \cdot \frac{1}{6} \cdot \frac{5}{6}} \approx 9.13$, so the probability is approximately $1 - \Phi(2.14) \approx 0.016$ (the exact binomial value is $0.018$).
+    \item[\ref{pr:sample-size}.] Central limit theorem: $1.96\sqrt{0.05 \cdot 0.95/N} \leq 0.005$ for $N \geq 7300$. Chebyshev: $\frac{0.0475}{N \cdot 0.005^2} \leq 0.05$ for $N \geq 38\,000$. Hoeffding: $2e^{-2N \cdot 0.005^2} \leq 0.05$ for $N \geq 73\,800$ (it does not use the small variance).
+    \item[\ref{pr:monte-carlo-integral}.] The integral is $\E[e^{-U^2}]$ for $U \sim$ Uniform$(0, 1)$, estimated by $\frac{1}{N}\sum_i e^{-u_i^2}$. $\Var(e^{-U^2}) = 0.5981 - 0.7468^2 \approx 0.0404$, so the standard error is $\frac{0.201}{100} \approx 0.002$.
+    \item[\ref{pr:lln-fails}.] (a) $\bar X_N = X$, which is $0$ or $1$ with probability $\frac{1}{2}$ each, for every $N$: no convergence to $\frac{1}{2}$. (b) $\bar X_N$ has the same Cauchy distribution for every $N$, so it does not concentrate; averaging does not help when the mean does not exist (heavy tails).
+    \item[\ref{pr:rejection}.] (a) $M = 2$, acceptance rate $\frac{1}{2}$: draw $X$ and $U$ uniformly, and accept $X$ if $U \leq \frac{2X}{2} = X$. (b) $M = 1.5$ (the maximum of $6x(1 - x)$, at $x = \frac{1}{2}$), acceptance rate $\frac{2}{3}$. (c) $\frac{p(\mathbf{x})}{q(\mathbf{x})} = \frac{(2\pi)^{-d/2}e^{-\norm{\mathbf{x}}^2/2}}{(4\pi)^{-d/2}e^{-\norm{\mathbf{x}}^2/4}} = 2^{d/2}e^{-\norm{\mathbf{x}}^2/4}$, whose maximum (at $\mathbf{x} = \mathbf{0}$) is $2^{d/2}$. Acceptance rates $\frac{1}{2}$, $\frac{1}{32}$ and $\frac{1}{1024}$.
+    \item[\ref{pr:importance}.] (a) $w(x) = \frac{e^{-x}}{0.2e^{-0.2x}} = 5e^{-0.8x}$, and $\hat p = \frac{1}{N}\sum_i \mathbf{1}_{y_i > 5}\,5e^{-0.8y_i}$ with $y_i \sim$ Exponential$(0.2)$. (b) $\E_q[\mathbf{1}_{Y > 5}w(Y)^2] = \int_5^\infty \frac{e^{-2x}}{0.2e^{-0.2x}}\, dx = \frac{5}{1.8}e^{-9} \approx 3.43 \cdot 10^{-4}$, so the variance is $3.43 \cdot 10^{-4} - e^{-10} \approx 2.97 \cdot 10^{-4}$, compared with $p(1 - p) \approx 6.69 \cdot 10^{-3}$ (about $22$ times larger). Relative standard errors for $N = 10^4$: about $2.6\%$ with importance sampling and $12\%$ with plain Monte Carlo.
+\end{description}
+
+\section*{Markov Chains}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:lazy-chain}.] (a) Irreducible (all states communicate through state $2$), and aperiodic, since $P_{11} > 0$. (b) $(0.375, 0.5, 0.125)$. (c) $\boldsymbol{\pi} = (\frac{1}{4}, \frac{1}{2}, \frac{1}{4})$; $\pi_1 P_{12} = \frac{1}{8} = \pi_2 P_{21}$ and $\pi_2 P_{23} = \frac{1}{8} = \pi_3 P_{32}$. (d) $1$, $\frac{1}{2}$, $0$: the distance to $\boldsymbol{\pi}$ shrinks by the factor $\frac{1}{2}$ per step.
+    \item[\ref{pr:two-state}.] With $a = 0.2$ and $b = 0.3$: $\boldsymbol{\pi} = (0.6, 0.4)$, the second eigenvalue is $1 - a - b = 0.5$, and $P(X_t = 1) = 0.6 + 0.4 \cdot 0.5^t$, which is $0.65$ for $t = 3$.
+    \item[\ref{pr:graph-walk}.] The degrees are $3, 2, 3, 2$, so $\boldsymbol{\pi} = (0.3, 0.2, 0.3, 0.2)$ by detailed balance. The eigenvalues of $P$ are $1, 0, -\frac{1}{3}, -\frac{2}{3}$: the chain is aperiodic, since the triangle $1, 2, 3$ gives a cycle of odd length (the square alone is bipartite, with period $2$ and the eigenvalue $-1$).
+    \item[\ref{pr:gamblers-ruin}.] First-step analysis: from $i \in \{1, 2\}$, the next state is $i \pm 1$ with probability $\frac{1}{2}$ each. The equations give $h_1 = \frac{1}{3}$ and $h_2 = \frac{2}{3}$, i.e., $h_i = \frac{i}{3}$. The states $0$ and $3$ are absorbing ($P_{00} = P_{33} = 1$); the chain is not irreducible, and every mixture of the point masses at $0$ and $3$ is stationary.
+    \item[\ref{pr:metropolis}.] $P = \begin{pmatrix} 0 & 0.5 & 0.5 \\ 1/3 & 1/6 & 0.5 \\ 0.2 & 0.3 & 0.5 \end{pmatrix}$. For example, $P_{21} = \frac{1}{2} \cdot \frac{0.2}{0.3} = \frac{1}{3}$. Then $\boldsymbol{\pi}P = (0.1 + 0.1, \, 0.1 + 0.05 + 0.15, \, 0.1 + 0.15 + 0.25) = (0.2, 0.3, 0.5)$.
+    \item[\ref{pr:bigram}.] The transitions are $a \to b$ (three times), $b \to a$, $a \to a$, $b \to c$, $c \to a$. So $P(b \mid a) = \frac{3}{4}$, $P(a \mid a) = \frac{1}{4}$, $P(a \mid b) = P(c \mid b) = \frac{1}{2}$, $P(a \mid c) = 1$, and all other transitions have probability $0$ (for example, $c \to c$ or $a \to c$). A model that assigns probability $0$ to every unseen word pair cannot handle new sentences; smoothing with pseudo-counts (as in Bayesian inference) fixes this.
+\end{description}
+
+\section*{Parameter Estimation}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:mle-data}.] (a) $\hat\lambda = \frac{1}{\bar x} = \frac{1}{3}$. (b) $\hat\lambda = \bar x = 2$. (c) $\hat\mu = 6$, $\hat\sigma^2 = 2$, $s^2 = 2.5$.
+    \item[\ref{pr:shrinkage}.] (a) The bias is $(c - 1)\mu$ and the variance $c^2\frac{\sigma^2}{N}$; the MSE is minimal for $c = \frac{\mu^2}{\mu^2 + \sigma^2/N}$. (b) $c = \frac{1}{2}$, with MSE $0.25 + 0.25 = 0.5$, compared with $1$ for $\bar X_N$. The optimal $c$ depends on the unknown $\mu$, but the example shows that shrinking towards $0$ can reduce the MSE when the noise is large compared with the signal, which is the idea behind ridge regression.
+    \item[\ref{pr:mom}.] (a) $\hat k = \frac{4^2}{8} = 2$ and $\hat s = \frac{8}{4} = 2$. (b) $\hat\theta = 2\bar x = 80.5$, compared with the MLE $60$ and the unbiased estimate $74$. For the data $1, 2, 30$, the estimate $2\bar x = 22$ is smaller than the observation $30$, which is impossible. (c) $\E[X] = \lambda$ gives $\hat\lambda = \bar x$, the MLE.
+    \item[\ref{pr:fisher}.] (a) $s = \frac{x}{\theta} - \frac{1 - x}{1 - \theta}$, so $\E[s] = 1 - 1 = 0$, and $\E[s^2] = \theta \cdot \frac{1}{\theta^2} + (1 - \theta)\frac{1}{(1 - \theta)^2} = \frac{1}{\theta} + \frac{1}{1 - \theta}$. Also $\frac{\partial s}{\partial\theta} = -\frac{x}{\theta^2} - \frac{1 - x}{(1 - \theta)^2}$, with $-\E[\frac{\partial s}{\partial\theta}] = \frac{1}{\theta} + \frac{1}{1 - \theta} = \frac{1}{\theta(1 - \theta)}$. (b) $\log p = x\log\lambda - \lambda - \log x!$, $s = \frac{x}{\lambda} - 1$, and $I(\lambda) = \frac{\Var(X)}{\lambda^2} = \frac{1}{\lambda}$. The bound is $\frac{\lambda}{N} = 0.06$ (a standard deviation of $0.245$), and the MLE $\bar X_N$ attains it, since $\Var(\bar X_N) = \frac{\lambda}{N}$. (c) $-\ell''(p) = \frac{k}{p^2} + \frac{N - k}{(1 - p)^2}$, which is $\frac{N}{\hat p(1 - \hat p)}$ at $\hat p = \frac{k}{N}$. So $\mathrm{SE} = \sqrt{\hat p(1 - \hat p)/N} \approx 0.0192$, the same as before.
+    \item[\ref{pr:regression-mle}.] With $\bar x = 1.5$ and $\bar y = 4$, least squares gives the slope $\hat w_1 = 2.2$ and the intercept $\hat w_0 = 4 - 2.2 \cdot 1.5 = 0.7$; the residuals are $0.3, 0.1, -1.1, 0.7$, so $\hat\sigma^2 = \frac{1.8}{4} = 0.45$.
+    \item[\ref{pr:german-tank}.] The likelihood of $\theta \geq 60$ is $1/\binom{\theta}{4}$ (and $0$ for $\theta < 60$), which decreases in $\theta$, so the MLE is $60$. The unbiased estimate is $60 \cdot \frac{5}{4} - 1 = 74$. The MLE is biased since the largest observation is always at most $\theta$, and usually smaller.
+    \item[\ref{pr:click-ci}.] $\hat p = 0.18$, standard error $\sqrt{0.18 \cdot 0.82/400} \approx 0.0192$, interval $0.18 \pm 0.038 = [0.142, 0.218]$.
+    \item[\ref{pr:categorical-mle}.] Maximize $\sum_k n_k\log p_k$ subject to $\sum_k p_k = 1$: $\frac{n_k}{p_k} = \lambda$ for all $k$, so $p_k = \frac{n_k}{\lambda}$, and the constraint gives $\lambda = N$.
+    \item[\ref{pr:consistency}.] (a) Unbiased, but not consistent: its distribution does not depend on $N$, and it is not concentrated at $\mu$ since $\sigma^2 > 0$. (b) Biased (the bias is $\frac{1}{N}$), but consistent, since the bias and the variance $\frac{\sigma^2}{N}$ tend to $0$. (c) The expectation is $\frac{N\mu}{N - 1}$, so it is biased (unless $\mu = 0$), but the bias $\frac{\mu}{N - 1}$ and the variance $\frac{N\sigma^2}{(N - 1)^2}$ tend to $0$, so it is consistent. The MLE $\max_i X_i$ is consistent: its bias $-\frac{\theta}{N + 1}$ and its variance, which behaves like $\frac{\theta^2}{N^2}$, tend to $0$.
+    \item[\ref{pr:cr-variance}.] (a) $\log p = -\frac{1}{2}\log(2\pi v) - \frac{(x - \mu)^2}{2v}$, and $\frac{\partial^2}{\partial v^2}\log p = \frac{1}{2v^2} - \frac{(x - \mu)^2}{v^3}$, whose expectation is $\frac{1}{2v^2} - \frac{1}{v^2} = -\frac{1}{2v^2}$. (b) $\E[(X - \mu)^2] = v$, and $(X - \mu)^2 = vZ^2$ has the variance $v^2(\E[Z^4] - 1) = 2v^2$, so $\Var(\hat v) = \frac{2v^2}{N} = \frac{1}{N\,I(v)}$. (c) $\frac{2v^2}{N - 1} > \frac{2v^2}{N}$: not knowing $\mu$ costs about one observation (one ``degree of freedom'' is used to estimate $\mu$). The difference disappears as $N \to \infty$.
+\end{description}
+
+\section*{Hypothesis Testing}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:coin-test}.] (a) $P(S \geq 15) = \frac{1}{2^{20}}\sum_{k=15}^{20}\binom{20}{k} \approx 0.0207$, and the two-sided p-value is $0.0414$. (b) Both reject at $0.05$; neither rejects at $0.01$. (c) $0.0207$: for discrete statistics, the level of a test is usually smaller than the nominal $0.05$.
+    \item[\ref{pr:error-test}.] Under $H_0$, the standard error is $\sqrt{0.1 \cdot 0.9/2000} \approx 0.0067$, so $z = \frac{0.08 - 0.10}{0.0067} \approx -2.98$ and the one-sided p-value is $\Phi(-2.98) \approx 0.0014$. Confidence interval: $0.08 \pm 1.96\sqrt{0.08 \cdot 0.92/2000} = [0.068, 0.092]$.
+    \item[\ref{pr:pvalue-dist}.] (a) Under $H_0$, $Z \sim \mathcal{N}(0, 1)$, so $P(1 - \Phi(Z) \leq u) = P(Z \geq \Phi^{-1}(1 - u)) = u$. Under $H_1$, $Z$ is shifted to the right, and the p-values concentrate near $0$. (b) $100 \cdot 0.05 = 5$.
+    \item[\ref{pr:multiple}.] (a) $5$; $1 - 0.95^8 \approx 0.34$. (b) The threshold $0.05/8 = 0.00625$ rejects $1$ hypothesis. (c) The thresholds $0.00625k$ are $0.00625, 0.0125, 0.01875, 0.025, 0.03125, \ldots$; $p_{(4)} = 0.021 \leq 0.025$, but $p_{(k)} > 0.00625k$ for $k \geq 5$, so $4$ hypotheses are rejected.
+    \item[\ref{pr:permutation}.] The difference is $\frac{31}{3} - \frac{27}{4} = \frac{43}{12} \approx 3.58$. With the total $58$, the difference for a group A with sum $t$ is $\frac{t}{3} - \frac{58 - t}{4}$, which is at least $\frac{43}{12}$ if and only if $t \geq 31$. Only $\{8, 11, 12\}$ and $\{9, 11, 12\}$ have $t \geq 31$, so the p-value is $\frac{2}{35} \approx 0.057$.
+    \item[\ref{pr:bootstrap-mean}.] (a) The number of multisets of size $3$ from $3$ values, $\binom{5}{3} = 10$. (b) $\hat\sigma^2 = \frac{9 + 1 + 16}{3} = \frac{26}{3}$, so the bootstrap standard error is $\sqrt{26/9} \approx 1.70$, while $\frac{s}{\sqrt{N}} = \sqrt{13/3} \approx 2.08$; for small $N$, the bootstrap underestimates the uncertainty.
+    \item[\ref{pr:power}.] (a) Reject if $\bar x > \frac{1.645}{5} = 0.329$. Power: $P(\bar X > 0.329 \mid \mu = 0.5) = 1 - \Phi\big(5(0.329 - 0.5)\big) = \Phi(0.855) \approx 0.80$. (b) $\sqrt{N} \cdot 0.5 = 1.645 + 1.2816$ gives $N \approx 34.3$, so $N = 35$.
+\end{description}
+
+\section*{Evaluating Models and Experiments}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:cv-stats}.] (a) $0.21$, $0.026$ and $0.012$. The fold errors are positively correlated, since the training sets overlap heavily, so they vary less than independent estimates would, and the naive formula underestimates the uncertainty. (b) The differences are $0.02, 0.01, 0.03, 0.01, 0.02$, with mean $0.018$ and standard deviation $0.0084$, so the statistic is $\approx 4.8$. Treating the errors as independent gives the standard error $\sqrt{0.0118^2 + 0.0097^2} \approx 0.015$ and the statistic $\approx 1.2$. The paired comparison removes the variation that both models share (some folds are harder than others).
+    \item[\ref{pr:winners-curse}.] About $0.20 - 1.54 \cdot 0.02 \approx 0.169$, although all settings are equally good. Estimate the error of the selected setting on a test set that was not used for the selection, or with nested cross-validation.
+    \item[\ref{pr:ab-test}.] (a) Pooled rate $0.05625$, standard error $\sqrt{0.05625 \cdot 0.94375 \cdot \frac{2}{2400}} \approx 0.00665$, $z \approx 1.88$, two-sided p-value $\approx 0.060$: not significant at $0.05$. (b) $0.0125 \pm 1.96\sqrt{\frac{0.05 \cdot 0.95}{2400} + \frac{0.0625 \cdot 0.9375}{2400}} \approx [-0.0005, 0.0255]$, which contains $0$. (c) $n \approx \frac{(1.96 + 0.84)^2 \cdot 2 \cdot 0.05625 \cdot 0.94375}{0.0125^2} \approx 5330$ per group, more than twice the users of the experiment: it was underpowered.
+    \item[\ref{pr:peeking}.] The event $|Z_2| > 1.96$ alone has probability $0.05$, and the event $|Z_1| > 1.96$ adds the cases where only the first look is significant; since the correlation is less than $1$, these cases have positive probability. Testing each look at the level $0.025$ (the threshold $2.24$) keeps the overall rate at most $0.05$ by the Bonferroni correction; group sequential designs use better thresholds.
+    \item[\ref{pr:paired-design}.] Same examples: $\Var(\bar d) = \frac{1 + 1 - 2 \cdot 0.8}{1000} = 0.0004$. Separate examples: $\frac{1 + 1}{1000} = 0.002$, five times larger. The second design would need $5000$ examples per model.
+\end{description}
+
+\section*{Bayesian Inference}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:beta-update}.] Beta$(12, 4)$; mean $\frac{12}{16} = 0.75$; MAP $\frac{11}{14} \approx 0.786$; MLE $0.9$; predictive probability $0.75$. The prior acts like $2$ extra heads and $2$ extra tails (for the MAP) and pulls the estimates towards $\frac{1}{2}$.
+    \item[\ref{pr:gauss-gauss}.] Precision $1 + \frac{4}{4} = 2$, so the variance is $\frac{1}{2}$, and the mean is $\frac{0 + 4 \cdot 3/4}{2} = 1.5$. With $100$ measurements: precision $26$, mean $\frac{75}{26} \approx 2.88$, variance $\approx 0.038$; the data dominate the prior.
+    \item[\ref{pr:gp-one-point}.] (a) With $N = 1$, $K + \sigma^2 = 1.25$ and $k_* = e^{-x_*^2/2}$, the formula for Gaussian process regression gives the mean $\frac{k_*}{1.25} \cdot 1 = 0.8\,e^{-x_*^2/2}$ and the variance $1 - \frac{k_*^2}{1.25} = 1 - 0.8\,e^{-x_*^2}$. (b) Means $0.8$, $0.485$, $0.108$, $0.009$, and variances $0.2$, $0.706$, $0.985$, $1.000$. Far away from the data, the posterior returns to the prior $\mathcal{N}(0, 1)$: the observation carries no information about distant values. (c) The mean tends to $1$ and the variance to $0$: without noise, the posterior mean interpolates the data. With noise, the posterior mean is a compromise between the observation and the prior mean $0$, as in Problem~\ref{pr:gauss-gauss}.
+    \item[\ref{pr:soft-threshold}.] For $w > 0$, $f'(w) = w - a + \lambda = 0$ gives $w = a - \lambda$, which is valid if $a > \lambda$; similarly $w = a + \lambda$ for $a < -\lambda$. If $|a| \leq \lambda$, then $f$ is decreasing for $w < 0$ and increasing for $w > 0$, so $w^* = 0$. Since the penalty has a kink at $0$, small values of $a$ are set exactly to $0$, which makes lasso solutions sparse.
+    \item[\ref{pr:blr-practice}.] $S = (1 + \frac{1 + 4}{0.5})^{-1} = \frac{1}{11}$ and $m = \frac{1}{0.5} \cdot \frac{1}{11}(1 \cdot 1 + 2 \cdot 3) = \frac{14}{11} \approx 1.27$. Predictive at $x = 3$: $\mathcal{N}(\frac{42}{11}, \frac{9}{11} + 0.5) \approx \mathcal{N}(3.82, 1.32)$. Ridge with $\lambda = 0.5$: $\frac{7}{5 + 0.5} = \frac{14}{11}$.
+    \item[\ref{pr:gp-kernels}.] (a) $1 + xx' = \boldsymbol{\phi}(x)^\top\boldsymbol{\phi}(x')$ with $\boldsymbol{\phi}(x) = (1, x)$: the random functions are lines $w_0 + w_1x$ with $w_0, w_1 \sim \mathcal{N}(0, 1)$ independent. $\cos(x - x') = \boldsymbol{\phi}(x)^\top\boldsymbol{\phi}(x')$ with $\boldsymbol{\phi}(x) = (\cos x, \sin x)$: the random functions $a\cos x + b\sin x$ are sinusoids with the period $2\pi$ and a random amplitude and phase. (b) $\mathbf{u}^\top(K_1 + K_2)\mathbf{u} = \mathbf{u}^\top K_1\mathbf{u} + \mathbf{u}^\top K_2\mathbf{u} \geq 0$. (It is the kernel of the sum of two independent Gaussian processes.) (c) For the points $0$ and $1$, $K = \left(\begin{smallmatrix} 0 & 1 \\ 1 & 0 \end{smallmatrix}\right)$ has the eigenvalue $-1$; e.g., $\mathbf{u} = (1, -1)$ gives $\mathbf{u}^\top K\mathbf{u} = -2$. (d) The correlation is $e^{-x^2/(2\ell^2)}$: $0.607$, $0.135$ and $0.011$.
+    \item[\ref{pr:two-tests}.] After the first test, $P(D) = \frac{1}{6}$, and after the second,
+    \[P(D \mid {+}{+}) = \frac{0.99 \cdot \frac{1}{6}}{0.99 \cdot \frac{1}{6} + 0.05 \cdot \frac{5}{6}} \approx 0.798. \qquad \text{Directly:} \quad \frac{0.01 \cdot 0.99^2}{0.01 \cdot 0.99^2 + 0.99 \cdot 0.05^2} \approx 0.798.\]
+    \item[\ref{pr:gp-evidence}.] $y$ is the sum of the independent variables $f(x) \sim \mathcal{N}(0, c)$ and $\varepsilon \sim \mathcal{N}(0, \sigma^2)$. With $v = c + \sigma^2$, $\log p(y) = -\frac{y^2}{2v} - \frac{1}{2}\log v + \text{const}$, whose derivative $\frac{y^2}{2v^2} - \frac{1}{2v}$ is positive for $v < y^2$ and negative for $v > y^2$. Since $v \geq \sigma^2$, the maximum is at $v = y^2$ if $y^2 > \sigma^2$, and otherwise the likelihood decreases in $c$. For $y = 2$ and $\sigma^2 = 0.5$: $c = 3.5$. The marginal likelihood chooses the signal variance that explains the size of the data beyond the noise; if the data are no larger than the noise, it concludes that there is no signal.
+\end{description}
+
+\section*{Information Theory}
+
+\begin{description}[leftmargin=0pt, itemsep=0.3em]
+    \item[\ref{pr:entropy-code}.] (a) $H(p) = \frac{1}{2} \cdot 1 + \frac{1}{4} \cdot 2 + 2 \cdot \frac{1}{8} \cdot 3 = 1.75$ bits, compared with $2$ bits for the uniform distribution; $\KL(p \,\|\, u) = 2 - 1.75 = 0.25$ bits. (b) The average length is also $1.75$ bits: each codeword has length $-\log_2 p_k$, so this code is optimal.
+    \item[\ref{pr:cross-entropy}.] (a) $-\log 0.7 \approx 0.357$. (b) $H(p, q) \approx 0.677$, $H(p) \approx 0.639$, $\KL(p \,\|\, q) \approx 0.038$ (in nats).
+    \item[\ref{pr:kl-gauss-practice}.] $\log 2 + \frac{1 + 1}{8} - \frac{1}{2} \approx 0.443$ and $\log\frac{1}{2} + \frac{4 + 1}{2} - \frac{1}{2} \approx 1.307$. The second is larger because $\mathcal{N}(0, 1)$ assigns very small densities to the far-out regions where $\mathcal{N}(1, 4)$ has a lot of mass; the KL divergence $\KL(p \,\|\, q)$ heavily penalizes places where $p$ is large but $q$ is small.
+    \item[\ref{pr:channel}.] $H(Y) = 1$ bit (since $Y$ is again a fair bit) and $H(Y \mid X) = H(0.1, 0.9) \approx 0.469$ bits, so $I(X; Y) \approx 0.531$ bits. A perfect channel gives $1$ bit, and a channel that flips with probability $\frac{1}{2}$ gives $0$ bits.
+    \item[\ref{pr:max-entropy-softmax}.] With multipliers $\lambda$ for $\sum_k p_k = 1$ and $\beta$ for $\sum_k p_k E_k = \bar E$, the Lagrange condition is $-\log p_k - 1 - \lambda - \beta E_k = 0$, so $p_k \propto e^{-\beta E_k}$, and normalizing gives the softmax. The value of $\beta$ is determined by the constraint on the mean energy.
+\end{description}
+
+\end{document}

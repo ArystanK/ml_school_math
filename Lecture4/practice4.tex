@@ -1,0 +1,546 @@
+\documentclass[11pt]{article}
+
+% Practice problems for Lecture 4
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{Lecture 4: Practice Problems}
+\author{Math for Machine Learning}
+\date{\today}
+
+\theoremstyle{definition}
+\newtheorem{problem}{Problem}[section]
+
+% Mandatory problems are marked in their title; change this macro to restyle all of them.
+\newcommand{\mandatory}{\textcolor{red!70!black}{\textbf{Mandatory}}}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\softmax}{softmax}
+
+\begin{document}
+
+\maketitle
+
+\section{Probability Spaces}
+
+\begin{problem}[\mandatory]\label{pr:dice}
+    Two fair dice are rolled. Find the probability that
+    \begin{enumerate}[label=(\alph*)]
+        \item the sum is $8$;
+        \item the two dice show the same number;
+        \item the sum is at least $10$;
+        \item at least one die shows a $3$;
+        \item the larger of the two numbers is $4$;
+        \item the sum is even, given that the first die shows a $3$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:machines}
+    A factory has three machines, which produce $50\%$, $30\%$ and $20\%$ of all items. Their defect rates are $1\%$, $2\%$ and $3\%$.
+    \begin{enumerate}[label=(\alph*)]
+        \item What fraction of all items is defective?
+        \item An item is defective. What is the probability that it was produced by the third machine? By the second?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:squares}
+    Sofia and Tess each choose one of the integers $1, 2, \ldots, 10$ uniformly at random, independently of each other. What is the probability that neither of the two numbers is the square of the other?
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:divisible}
+    An integer is chosen uniformly at random from $1, 2, \ldots, 1000$. Use the inclusion--exclusion formula to compute the probability that it is divisible by $3$ or by $5$, and the probability that it is divisible by $3$, $5$ or $7$.
+\end{problem}
+
+\begin{problem}\label{pr:independent-events}
+    A fair die is rolled. Let $A$ = ``the result is even'', $B$ = ``the result is at most $4$'', and $C$ = ``the result is at most $3$''. Which of the pairs $(A, B)$, $(A, C)$ and $(B, C)$ are independent?
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:monty-hall}
+    (The Monty Hall problem.) A car is hidden behind one of three doors, each with probability $\frac{1}{3}$. You choose door $1$. The host, who knows where the car is, opens one of the two other doors that does not hide the car (choosing uniformly at random if both are possible), say door $3$. Use Bayes' theorem to compute the probability that the car is behind door $2$. Should you switch?
+\end{problem}
+
+\section{Random Variables and Their Distributions}
+
+\begin{problem}[\mandatory]\label{pr:guessing}
+    A student guesses the answers to $20$ multiple-choice questions, each with $4$ options, independently and uniformly at random. Let $X$ be the number of correct answers.
+    \begin{enumerate}[label=(\alph*)]
+        \item What is the distribution of $X$? Compute $P(X = 5)$ and $P(X \geq 1)$.
+        \item Compute $\E[X]$ and $\Var(X)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:poisson}
+    The number of emails that arrive in an hour is Poisson$(3)$. Compute the probability that no email arrives, that at least two emails arrive, and that exactly three emails arrive.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:density}
+    Let $X$ have the density $p(x) = cx^2$ for $0 \leq x \leq 2$, and $p(x) = 0$ otherwise.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find $c$ and the CDF of $X$.
+        \item Compute $P(X \leq 1)$ and the median of $X$, i.e., the number $m$ with $P(X \leq m) = \frac{1}{2}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:transformations}
+    Let $U \sim$ Uniform$(0, 1)$. Find the densities of (a) $\sqrt{U}$; (b) $\frac{1}{U}$; (c) $-2\log U$. Which of them is a distribution you know?
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:inverse-transform}
+    Use inverse transform sampling to find a formula that turns a uniform random number $U \in (0, 1)$ into a sample of
+    \begin{enumerate}[label=(\alph*)]
+        \item the distribution with the density $2x$ on $[0, 1]$;
+        \item the Pareto distribution with the CDF $F(x) = 1 - x^{-a}$ for $x \geq 1$ (with $a > 0$), a model for incomes and file sizes;
+        \item the Cauchy distribution with the CDF $F(x) = \frac{1}{2} + \frac{1}{\pi}\arctan x$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:heights}
+    The heights of adults in a population are approximately $\mathcal{N}(170, 10^2)$ (in cm). What fraction of the people are between $160$ and $190$ cm tall? What fraction is taller than $185$ cm? Find an interval around $170$ that contains $95\%$ of the population. (Use $\Phi(1) \approx 0.8413$, $\Phi(1.5) \approx 0.9332$, $\Phi(2) \approx 0.9772$.)
+\end{problem}
+
+\section{Expectation and Variance}
+
+\begin{problem}[\mandatory]\label{pr:density-moments}
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\E[X]$ and $\Var(X)$ for the random variable of Problem~\ref{pr:density}.
+        \item Let $X$ be uniform on $\{1, 2, \ldots, n\}$. Show that $\E[X] = \frac{n + 1}{2}$ and $\Var(X) = \frac{n^2 - 1}{12}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:fixed-points}
+    The numbers $1, \ldots, n$ are shuffled into a uniformly random order. Let $X$ be the number of fixed points, i.e., of numbers that stay at their original position. Show that $\E[X] = 1$ for every $n$. (Hint: write $X$ as a sum of indicator variables, and use linearity of expectation.)
+\end{problem}
+
+\begin{problem}\label{pr:markov-chebyshev}
+    A random variable $X \geq 0$ has mean $10$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Bound $P(X \geq 50)$.
+        \item If moreover $\Var(X) = 4$, bound $P(|X - 10| \geq 5)$, and $P(X \geq 15)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:jensen}
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $X$ be uniform on $\{1, 4\}$. Compute $\E[\sqrt{X}]$ and $\sqrt{\E[X]}$, and explain the inequality between them with Jensen's inequality.
+        \item Show that $\E[X^4] \geq \E[X^2]^2$ for every random variable $X$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:coupons}
+    (The coupon collector.) Each box of cereal contains one of $6$ different toys, each with probability $\frac{1}{6}$, independently. Show that the expected number of boxes needed to collect all $6$ toys is $6\big(1 + \frac{1}{2} + \cdots + \frac{1}{6}\big) = 14.7$. (Hint: after you have $k$ different toys, the number of boxes until a new toy appears is Geometric$(\frac{6 - k}{6})$.)
+\end{problem}
+
+\section{Joint Distributions and Independence}
+
+\begin{problem}[\mandatory]\label{pr:joint-table}
+    Let $X \in \{0, 1, 2\}$ and $Y \in \{0, 1\}$ have the joint pmf
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{c|cc}
+            & $Y = 0$ & $Y = 1$ \\
+            \hline
+            $X = 0$ & $0.1$ & $0.1$ \\
+            $X = 1$ & $0.2$ & $0.1$ \\
+            $X = 2$ & $0.1$ & $0.4$
+        \end{tabular}
+    \end{center}
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the marginal distributions, and the conditional probabilities $P(Y = 1 \mid X = x)$ for $x = 0, 1, 2$. Are $X$ and $Y$ independent?
+        \item Compute $\E[X]$, $\E[Y]$, $\Cov(X, Y)$ and $\Corr(X, Y)$.
+        \item Compute $\E[X \mid Y = 0]$ and $\E[X \mid Y = 1]$, and check the tower property.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:portfolio}
+    Let $\Var(X) = 4$, $\Var(Y) = 9$ and $\Cov(X, Y) = 3$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\Var(X + Y)$, $\Var(2X - Y)$ and $\Corr(X, Y)$.
+        \item (Ensembles and portfolios.) Find the $t \in \mathbb{R}$ that minimizes $\Var(tX + (1 - t)Y)$, and the minimal variance. Compare it with $\Var(X)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:continuous-joint}
+    Let $(X, Y)$ have the joint density $p(x, y) = x + y$ on the unit square $[0, 1]^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Check that $p$ is a density, and find the marginal density of $X$.
+        \item Compute $\E[X]$ and $\Cov(X, Y)$.
+        \item Find the conditional density $p(y \mid x)$ and $\E[Y \mid X = x]$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:uncorrelated-dependent}
+    Let $(X, Y)$ be uniformly distributed on the four points $(1, 0)$, $(-1, 0)$, $(0, 1)$, $(0, -1)$. Show that $X$ and $Y$ are uncorrelated, but not independent.
+\end{problem}
+
+\begin{problem}\label{pr:best-predictor}
+    For the random variables of Problem~\ref{pr:joint-table}, find the best predictor $m(X)$ of $Y$ in the sense of the mean squared error, and its mean squared error $\E[(Y - m(X))^2]$. Compare with the mean squared error of the best constant prediction.
+\end{problem}
+
+\section{Random Vectors and Covariance Matrices}
+
+\begin{problem}[\mandatory]\label{pr:cov-whitening}
+    Let $\mathbf{X}$ have mean $\mathbf{0}$ and covariance matrix $\Sigma = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\Var(X_1 + X_2)$ and $\Var(X_1 - X_2)$. In which direction is the variance largest?
+        \item Compute the whitening matrix $\Sigma^{-1/2}$, and check that $\Sigma^{-1/2}\mathbf{X}$ has covariance matrix $I$.
+        \item Compute the Mahalanobis distances of $(1, 1)$ and of $(1, -1)$ from $\mathbf{0}$. Why are they different, although both points have the same Euclidean norm?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:sample-cov}
+    For the data points $(0, 1)$, $(1, 3)$, $(2, 2)$, $(3, 6)$, compute the sample mean, the sample covariance matrix (with the factor $\frac{1}{N}$ and with $\frac{1}{N - 1}$), the sample correlation, and the direction of the first principal component.
+\end{problem}
+
+\begin{problem}\label{pr:affine-cov}
+    Let $\mathbf{X}$ have mean $(1, -1)^\top$ and covariance matrix $\begin{pmatrix} 1 & 0.5 \\ 0.5 & 2 \end{pmatrix}$, and let $\mathbf{Y} = A\mathbf{X} + \mathbf{b}$ with $A = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$ and $\mathbf{b} = (0, 1)^\top$. Compute the mean and the covariance matrix of $\mathbf{Y}$.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:equicorrelation}
+    Three random variables have variance $1$ each, and every pair has correlation $\rho$. For which $\rho$ is this possible? (Hint: the covariance matrix must be positive semidefinite; find its eigenvalues.) Give an example with $\rho = -\frac{1}{2}$.
+\end{problem}
+
+\section{The Gaussian Distribution}
+
+\begin{problem}[\mandatory]\label{pr:gauss-conditional}
+    Let $\mathbf{X} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$ with $\boldsymbol{\mu} = (1, 2)^\top$ and $\Sigma = \begin{pmatrix} 4 & 2 \\ 2 & 3 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the distribution of $X_1 + X_2$, and $P(X_1 + X_2 > 3)$.
+        \item Find the conditional distribution of $X_2$ given $X_1 = 3$, and of $X_1$ given $X_2 = 0$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:cholesky}
+    Find the lower triangular matrix $L$ with positive diagonal entries such that $LL^\top = \begin{pmatrix} 4 & 2 \\ 2 & 3 \end{pmatrix}$ (the Cholesky factorization). Which sample of $\mathcal{N}(\boldsymbol{\mu}, \Sigma)$ from Problem~\ref{pr:gauss-conditional} does the standard normal vector $\mathbf{z} = (1, -1)^\top$ produce?
+\end{problem}
+
+\begin{problem}\label{pr:denoising}
+    Let $X \sim \mathcal{N}(0, 1)$ be a signal, and let $Y = 2X + \varepsilon$ be a noisy measurement with independent noise $\varepsilon \sim \mathcal{N}(0, 1)$. Find the joint distribution of $(X, Y)$, and the conditional distribution of $X$ given $Y = y$. What is the best estimate of the signal from the measurement $y = 5$?
+\end{problem}
+
+\begin{problem}\label{pr:gauss-difference}
+    Let $X \sim \mathcal{N}(1, 4)$ and $Y \sim \mathcal{N}(-1, 9)$ be independent. Find the distribution of $X - Y$, and $P(X > Y)$.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:gauss-shell}
+    Let $\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, I)$ in $\mathbb{R}^d$. Show that $\E[\norm{\mathbf{Z}}^2] = d$ and $\Var(\norm{\mathbf{Z}}^2) = 2d$ (use $\E[Z_i^4] = 3$). For $d = 100$, between which values does $\norm{\mathbf{Z}}$ typically lie? Although the density is largest at $\mathbf{0}$, almost no samples are close to $\mathbf{0}$; explain.
+\end{problem}
+
+\section{Limit Theorems and Monte Carlo Methods}
+
+\begin{problem}[\mandatory]\label{pr:clt-dice}
+    A fair die is rolled $600$ times.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the mean and the standard deviation of the sum $S$ of the results, and use the central limit theorem to approximate $P(S \geq 2200)$.
+        \item Approximate the probability of at least $120$ sixes.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:sample-size}
+    The click rate $p$ of an online ad is about $0.05$. How many users must see the ad so that the observed click rate is within $\pm 0.005$ of $p$ with probability $95\%$? Answer with the central limit theorem, and compare with the guarantees from Chebyshev's inequality (with $\sigma^2 = 0.05 \cdot 0.95$) and Hoeffding's inequality.
+\end{problem}
+
+\begin{problem}\label{pr:monte-carlo-integral}
+    Explain how to estimate $\int_0^1 e^{-x^2}\, dx$ by Monte Carlo with uniform random numbers. The integral is $0.7468$, and $\int_0^1 e^{-2x^2}\, dx \approx 0.5981$. What is the standard error of the estimate with $N = 10\,000$ samples?
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:lln-fails}
+    The law of large numbers needs its assumptions.
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $X_1 = X_2 = \cdots = X$ for a single random variable $X \sim$ Bernoulli$(\frac{1}{2})$. Then the $X_i$ are identically distributed but not independent. What is the distribution of $\bar X_N$? Does it converge to $\frac{1}{2}$?
+        \item The Cauchy distribution (Problem~\ref{pr:inverse-transform}) has no mean, since $\int |x|\,\frac{1}{\pi(1 + x^2)}\, dx = \infty$. One can show that the mean of $N$ i.i.d.\ Cauchy random variables is again Cauchy distributed. What does this mean for the law of large numbers?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:rejection}
+    \begin{enumerate}[label=(\alph*)]
+        \item To sample from the density $p(x) = 2x$ on $[0, 1]$ by rejection sampling with the uniform proposal on $[0, 1]$, find the smallest $M$ with $p \leq Mq$, and the acceptance rate. Describe the algorithm in words.
+        \item Do the same for the Beta$(2, 2)$ density $6x(1 - x)$.
+        \item For the target $\mathcal{N}(\mathbf{0}, I)$ and the proposal $\mathcal{N}(\mathbf{0}, 2I)$ in $\mathbb{R}^d$, show that the smallest $M$ is $2^{d/2}$, and compute the acceptance rate for $d = 2$, $10$ and $20$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:importance}
+    Let $X \sim$ Exponential$(1)$, and let $p = P(X > 5) = e^{-5} \approx 0.0067$. We estimate $p$ by importance sampling with the proposal Exponential$(0.2)$, which has the density $0.2e^{-0.2x}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the importance weights $w(x)$, and write down the estimator.
+        \item Compute the variance of a single term of the estimator, and compare it with the variance $p(1 - p)$ of a single term of plain Monte Carlo. What are the relative standard errors of the two methods for $N = 10\,000$ samples?
+    \end{enumerate}
+\end{problem}
+
+\section{Markov Chains}
+
+\begin{problem}[\mandatory]\label{pr:lazy-chain}
+    Consider the Markov chain with the states $1, 2, 3$ and the transition matrix
+    \[P = \begin{pmatrix} 0.5 & 0.5 & 0 \\ 0.25 & 0.5 & 0.25 \\ 0 & 0.5 & 0.5 \end{pmatrix}.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item Draw the transition graph. Is the chain irreducible and aperiodic?
+        \item Compute the distribution of $X_2$ if $X_0 = 1$.
+        \item Find the stationary distribution, and check detailed balance.
+        \item Find the eigenvalues of $P$. How fast does the distribution converge?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:two-state}
+    A two-state chain has $P = \begin{pmatrix} 0.8 & 0.2 \\ 0.3 & 0.7 \end{pmatrix}$. Find the stationary distribution, the second eigenvalue of $P$, and a formula for $P(X_t = 1)$ if $X_0 = 1$. Evaluate it for $t = 3$.
+\end{problem}
+
+\begin{problem}\label{pr:graph-walk}
+    A walker moves on the graph with the vertices $1, 2, 3, 4$ and the edges $\{1, 2\}$, $\{2, 3\}$, $\{3, 4\}$, $\{4, 1\}$, $\{1, 3\}$ (a square with one diagonal), each time to a uniformly random neighbor. Write down the transition matrix, find the stationary distribution, and explain why the walk converges to it from every starting vertex, although the walk on the square without the diagonal does not.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:gamblers-ruin}
+    (Gambler's ruin.) A gambler starts with $1$ euro and bets $1$ euro at a time on fair coin flips, until reaching $0$ or $3$ euros. Let $h_i$ be the probability of reaching $3$ euros starting from $i$ euros. Explain why $h_0 = 0$, $h_3 = 1$ and $h_i = \frac{1}{2}h_{i-1} + \frac{1}{2}h_{i+1}$ for $i = 1, 2$, and solve these equations. Which states of the chain are absorbing, and why does the chain have more than one stationary distribution?
+\end{problem}
+
+\begin{problem}\label{pr:metropolis}
+    Construct the Metropolis chain for the target distribution $\boldsymbol{\pi} = (0.2, 0.3, 0.5)$ on the states $1, 2, 3$, with the proposal that picks one of the two other states uniformly at random. Write down the transition matrix, and check that $\boldsymbol{\pi}P = \boldsymbol{\pi}$.
+\end{problem}
+
+\begin{problem}\label{pr:bigram}
+    Estimate the transition probabilities of a bigram model from the sequence ``a b a a b c a b'' by counting (maximum likelihood). Which transitions get probability $0$, and why is this a problem for a language model?
+\end{problem}
+
+\section{Parameter Estimation}
+
+\begin{problem}[\mandatory]\label{pr:mle-data}
+    Compute the maximum likelihood estimates for the following data, assuming i.i.d.\ samples:
+    \begin{enumerate}[label=(\alph*)]
+        \item lifetimes $2, 5, 1, 4, 3$ from an Exponential$(\lambda)$ distribution;
+        \item counts $2, 0, 3, 1, 4$ from a Poisson$(\lambda)$ distribution;
+        \item measurements $4, 7, 5, 8, 6$ from $\mathcal{N}(\mu, \sigma^2)$; also compute the unbiased estimate $s^2$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:shrinkage}
+    Let $X_1, \ldots, X_N$ be i.i.d.\ with mean $\mu$ and variance $\sigma^2$, and consider the shrinkage estimators $c\bar X_N$ for $c \in \mathbb{R}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the MSE of $c\bar X_N$ is $(c - 1)^2\mu^2 + c^2\frac{\sigma^2}{N}$, and find the $c$ that minimizes it.
+        \item For $\mu = 1$, $\sigma^2 = 4$ and $N = 4$, compare the MSE of the best $c\bar X_N$ with the MSE of $\bar X_N$. Why can we not use this estimator in practice, and what does it suggest?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:mom}
+    Use the method of moments to estimate:
+    \begin{enumerate}[label=(\alph*)]
+        \item the shape $k$ and the scale $s$ of a Gamma distribution (mean $ks$, variance $ks^2$), for data with the sample mean $4$ and the sample variance $8$;
+        \item $\theta$ for Uniform$(0, \theta)$ data, using the serial numbers $19, 40, 42, 60$ of Problem~\ref{pr:german-tank}. Compare with the MLE and the unbiased estimate of that problem. Give an example of data for which the method of moments estimate is impossible;
+        \item $\lambda$ for Poisson$(\lambda)$ data, and compare with the MLE.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:fisher}
+    (Fisher information.)
+    \begin{enumerate}[label=(\alph*)]
+        \item For Bernoulli$(\theta)$, compute the score $s(x; \theta)$. Check that $\E[s] = 0$, and that both formulas $\E[s^2]$ and $-\E[\frac{\partial s}{\partial\theta}]$ give $I(\theta) = \frac{1}{\theta(1 - \theta)}$.
+        \item Compute the Fisher information of Poisson$(\lambda)$ and the Cram\'er--Rao bound for $\lambda = 3$ and $N = 50$. Which estimator attains it?
+        \item In Problem~\ref{pr:click-ci}, compute the standard error of $\hat p$ from the observed information $-\ell''(\hat p)$, and compare.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:regression-mle}
+    Fit the model $y = w_0 + w_1 x + \varepsilon$ with Gaussian noise to the data $(0, 1)$, $(1, 3)$, $(2, 4)$, $(3, 8)$ by maximum likelihood: find $\hat w_0$, $\hat w_1$ and the MLE of the noise variance.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:german-tank}
+    (The German tank problem.) Tanks are numbered $1, 2, \ldots, \theta$, and we observe the serial numbers $19, 40, 42, 60$ of four tanks, which we assume to be a uniformly random sample without replacement. Show that the MLE of $\theta$ is $60$. One can show that $M(1 + \frac{1}{N}) - 1$, where $M$ is the largest observed number, is unbiased. Compute it. Why is the MLE biased?
+\end{problem}
+
+\begin{problem}\label{pr:click-ci}
+    Of $400$ users who saw an ad, $72$ clicked on it. Compute the estimated click rate, its standard error, and an approximate $95\%$ confidence interval.
+\end{problem}
+
+\begin{problem}\label{pr:categorical-mle}
+    Data $x_1, \ldots, x_N \in \{1, \ldots, K\}$ are i.i.d.\ Categorical$(\mathbf{p})$, and $n_k$ is the number of data points equal to $k$. Use a Lagrange multiplier (Lecture~3) to show that the MLE is $\hat p_k = \frac{n_k}{N}$.
+\end{problem}
+
+\begin{problem}\label{pr:consistency}
+    Let $X_1, \ldots, X_N$ be i.i.d.\ with mean $\mu$ and variance $\sigma^2 > 0$. Which of the following estimators of $\mu$ are unbiased, and which are consistent?
+    \begin{enumerate}[label=(\alph*)]
+        \item $X_1$;
+        \item $\bar X_N + \frac{1}{N}$;
+        \item $\frac{1}{N - 1}\sum_{i=1}^N X_i$.
+    \end{enumerate}
+    Is the MLE $\max_i X_i$ of $\theta$ for Uniform$(0, \theta)$ data consistent? (Its expectation is $\frac{N}{N + 1}\theta$, and its variance is $\frac{N\theta^2}{(N + 1)^2(N + 2)}$.)
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:cr-variance}
+    Let $X_1, \ldots, X_N$ be i.i.d.\ $\mathcal{N}(\mu, v)$ with known $\mu$, and consider the variance $v = \sigma^2$ as the parameter.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $I(v) = \frac{1}{2v^2}$.
+        \item Show that $\hat v = \frac{1}{N}\sum_i (X_i - \mu)^2$ is unbiased with the variance $\frac{2v^2}{N}$, so that it is efficient. (Use $\E[Z^4] = 3$ for $Z \sim \mathcal{N}(0, 1)$.)
+        \item If $\mu$ is unknown, the sample variance $s^2$ of Gaussian data has the variance $\frac{2v^2}{N - 1}$. Compare with the bound. What is the price of not knowing $\mu$?
+    \end{enumerate}
+\end{problem}
+
+\section{Hypothesis Testing}
+
+\begin{problem}[\mandatory]\label{pr:coin-test}
+    A coin shows $15$ heads in $20$ flips.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the one-sided p-value $P(S \geq 15)$ for $H_0$: the coin is fair, against $H_1$: it favors heads, and the two-sided p-value.
+        \item Which of the two tests rejects $H_0$ at the level $0.05$? At the level $0.01$?
+        \item What is the exact probability of a type I error of the test ``reject $H_0$ if $S \geq 15$''?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:error-test}
+    A new classifier makes $160$ errors on $2000$ independent test examples, while the old classifier is known to have the error rate $0.10$. Test $H_0$: the new error rate is $0.10$ against $H_1$: it is smaller, with a z-test. Compute the p-value and a $95\%$ confidence interval for the new error rate.
+\end{problem}
+
+\begin{problem}\label{pr:pvalue-dist}
+    \begin{enumerate}[label=(\alph*)]
+        \item For the one-sided z-test with known $\sigma$, show directly that the p-value $1 - \Phi(Z)$ is uniformly distributed if $H_0$ is true. How are the p-values distributed if $H_1$ is true?
+        \item A scientist tests $100$ hypotheses that are all true at the level $0.05$. How many rejections do you expect?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:multiple}
+    Eight tests give the p-values
+    \[0.002, \ 0.009, \ 0.013, \ 0.021, \ 0.04, \ 0.12, \ 0.3, \ 0.7.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item How many hypotheses are rejected at the level $0.05$ without correction? If all null hypotheses were true and the tests independent, what would be the probability of at least one rejection?
+        \item How many are rejected with the Bonferroni correction at $\alpha = 0.05$?
+        \item How many are rejected by the Benjamini--Hochberg procedure with $q = 0.05$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:permutation}
+    Group A has the values $8, 11, 12$, and group B the values $5, 6, 7, 9$. Compute the difference of the group means, and the exact one-sided p-value of the permutation test with this statistic. (Hint: the difference only depends on the sum of the three values assigned to group A.)
+\end{problem}
+
+\begin{problem}\label{pr:bootstrap-mean}
+    For the data $2, 4, 9$:
+    \begin{enumerate}[label=(\alph*)]
+        \item How many different bootstrap samples are there, if the order of the values does not matter?
+        \item Compute the bootstrap standard error of the mean (for $B \to \infty$), and compare it with $\frac{s}{\sqrt{N}}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:power}
+    Data $x_1, \ldots, x_N$ are i.i.d.\ $\mathcal{N}(\mu, 1)$. Consider the one-sided z-test of $H_0$: $\mu = 0$ against $H_1$: $\mu > 0$ at the level $0.05$ (with $z_{0.95} \approx 1.645$).
+    \begin{enumerate}[label=(\alph*)]
+        \item For $N = 25$, for which values of $\bar x$ is $H_0$ rejected? What is the power of the test if $\mu = 0.5$?
+        \item How large must $N$ be for a power of $0.9$ if $\mu = 0.5$ (with $z_{0.9} \approx 1.2816$)?
+    \end{enumerate}
+\end{problem}
+
+\section{Evaluating Models and Experiments}
+
+\begin{problem}[\mandatory]\label{pr:cv-stats}
+    Two models are evaluated with $5$-fold cross-validation on the same folds. Their fold errors are $0.20, 0.18, 0.25, 0.22, 0.20$ (model A) and $0.18, 0.17, 0.22, 0.21, 0.18$ (model B).
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the cross-validation error, the standard deviation of the fold errors, and the naive standard error of model A. Why is the naive standard error too optimistic?
+        \item Compute the paired differences $A - B$, their mean and standard deviation, and the statistic $\frac{\bar d}{s_d/\sqrt{5}}$. Compare with the statistic that treats the two models' errors as independent. Why is the paired comparison so much sharper?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:winners-curse}
+    Ten hyperparameter settings all have the true error $0.20$, and their cross-validation estimates have independent errors with standard deviation $0.02$. The expected maximum of $10$ independent standard normal random variables is about $1.54$. What is the expected cross-validation error of the selected (best-looking) setting? How should its error be estimated instead?
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:ab-test}
+    In an A/B test, $120$ of $2400$ users convert with version A and $150$ of $2400$ with version B.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the two-proportion z-statistic and the two-sided p-value. Is the difference significant at the level $0.05$?
+        \item Compute a $95\%$ confidence interval for $p_B - p_A$.
+        \item How many users per group would be needed to detect an increase from $5\%$ to $6.25\%$ with power $0.8$ at the level $0.05$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:peeking}
+    An A/B test with two identical versions is analyzed twice: after half of the users, and at the end. The two z-statistics $Z_1$ and $Z_2$ are approximately standard normal, with correlation $\sqrt{1/2}$ (they share half of the data). Explain why $P(|Z_1| > 1.96 \text{ or } |Z_2| > 1.96) > 0.05$; a simulation gives about $0.083$. How can you keep the false positive rate at $0.05$ with two looks?
+\end{problem}
+
+\begin{problem}\label{pr:paired-design}
+    Two models are evaluated on test examples, and their losses on a single example have variance $1$ each and correlation $0.8$. Compare the variance of the estimated difference of the mean losses when both models are evaluated on the same $1000$ examples, and when each model is evaluated on its own $1000$ independent examples. How many examples would the second design need for the same precision?
+\end{problem}
+
+\section{Bayesian Inference}
+
+\begin{problem}[\mandatory]\label{pr:beta-update}
+    With the prior Beta$(3, 3)$, a coin shows $9$ heads in $10$ flips. Find the posterior distribution, the posterior mean, the MAP estimate, the MLE, and the predictive probability that the next flip shows heads. Explain the differences.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:gauss-gauss}
+    Measurements $x_i \sim \mathcal{N}(\mu, 4)$ are i.i.d., and the prior is $\mu \sim \mathcal{N}(0, 1)$. Four measurements have the mean $\bar x = 3$. Find the posterior distribution of $\mu$ (use the formula of the conjugacy exercise in the lecture). How do the posterior mean and variance change with $100$ measurements with the same mean?
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:gp-one-point}
+    Let $f \sim \mathcal{GP}(0, k)$ with the squared exponential kernel $k(x, x') = \exp\big(-\frac{(x - x')^2}{2}\big)$ (the length scale $\ell = 1$), and suppose that we observe $y = 1$ at $x = 0$, with the noise variance $\sigma^2 = 0.25$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the posterior mean and variance of $f(x_*)$ are $0.8\,e^{-x_*^2/2}$ and $1 - 0.8\,e^{-x_*^2}$.
+        \item Evaluate them at $x_* = 0, 1, 2, 3$, and sketch them. Explain the behavior far away from the data.
+        \item What happens at $x_* = 0$ as $\sigma^2 \to 0$? Why is the posterior mean at $0$ smaller than the observed value?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:soft-threshold}
+    (MAP with a Laplace prior.) Show that the minimizer of $f(w) = \frac{1}{2}(w - a)^2 + \lambda|w|$ for $\lambda > 0$ is the soft-thresholding $w^* = \mathrm{sign}(a)\max(|a| - \lambda, 0)$. (Hint: consider $w > 0$, $w < 0$ and $w = 0$ separately.) Explain why $\ell_1$ regularization produces exactly zero weights.
+\end{problem}
+
+\begin{problem}\label{pr:blr-practice}
+    Fit the model $y = wx + \varepsilon$ with $\varepsilon \sim \mathcal{N}(0, 0.5)$ and the prior $w \sim \mathcal{N}(0, 1)$ to the data $(1, 1)$, $(2, 3)$ with Bayesian linear regression. Find the posterior of $w$, and the predictive distribution of $y$ at $x = 3$. Check that the posterior mean is the ridge solution with $\lambda = \alpha\sigma^2$.
+\end{problem}
+
+\begin{problem}\label{pr:gp-kernels}
+    (Valid kernels.) A function $k$ is a valid covariance function if all matrices with the entries $K_{ij} = k(x_i, x_j)$ are symmetric positive semidefinite.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $k(x, x') = 1 + xx'$ and $k(x, x') = \cos(x - x')$ are valid by finding feature maps, and describe the random functions of the two Gaussian processes. (Hint: $\cos(a - b) = \cos a\cos b + \sin a\sin b$.)
+        \item Show that the sum of two valid kernels is valid.
+        \item Show that $k(x, x') = (x - x')^2$ is not valid. (Hint: take two points.)
+        \item For the squared exponential kernel with the length scale $\ell$, compute the correlation of $f(0)$ and $f(x)$ for $x = \ell, 2\ell, 3\ell$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:two-tests}
+    In the medical test example of the lecture (prevalence $1\%$, sensitivity $99\%$, false positive rate $5\%$), a person tests positive twice, with independent tests. Use the posterior after the first test as the prior for the second test to find the probability that the person is sick. Check the result with a single application of Bayes' theorem.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:gp-evidence}
+    (Choosing a hyperparameter by the marginal likelihood.) Let $f \sim \mathcal{GP}(0, c\,k)$ with $k(x, x) = 1$ and an unknown scale $c > 0$, and suppose that we observe a single value $y = f(x) + \varepsilon$ with the noise variance $\sigma^2$. Show that $y \sim \mathcal{N}(0, c + \sigma^2)$, and that the marginal likelihood $p(y)$ is maximized by $c = y^2 - \sigma^2$ if $y^2 > \sigma^2$, while it increases as $c \to 0$ if $y^2 \leq \sigma^2$. Evaluate for $y = 2$ and $\sigma^2 = 0.5$, and interpret.
+\end{problem}
+
+\section{Information Theory}
+
+\begin{problem}[\mandatory]\label{pr:entropy-code}
+    Let $p = (\frac{1}{2}, \frac{1}{4}, \frac{1}{8}, \frac{1}{8})$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $H(p)$ in bits, and compare with the entropy of the uniform distribution on four outcomes. Compute $\KL(p \,\|\, u)$.
+        \item Encode the four outcomes with the codewords $0$, $10$, $110$, $111$. Compute the average codeword length under $p$, and compare it with $H(p)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:cross-entropy}
+    A classifier predicts the class probabilities $q = (0.2, 0.7, 0.1)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the cross-entropy loss if the correct class is $2$.
+        \item With the ``soft label'' $p = (0.1, 0.8, 0.1)$, compute $H(p, q)$, $H(p)$ and $\KL(p \,\|\, q)$, and check $H(p, q) = H(p) + \KL(p \,\|\, q)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:kl-gauss-practice}
+    Compute $\KL\big(\mathcal{N}(0, 1) \,\|\, \mathcal{N}(1, 4)\big)$ and $\KL\big(\mathcal{N}(1, 4) \,\|\, \mathcal{N}(0, 1)\big)$. Explain why the second is larger.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:channel}
+    A fair bit $X$ is sent over a noisy channel, which flips it with probability $0.1$; let $Y$ be the received bit. Compute the mutual information $I(X; Y) = H(Y) - H(Y \mid X)$ in bits, where $H(Y \mid X) = \sum_x p_X(x)H(Y \mid X = x)$. Compare with the cases of a perfect channel and a channel that flips with probability $\frac{1}{2}$.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:max-entropy-softmax}
+    Let $E_1, \ldots, E_K$ be numbers (``energies''). Use Lagrange multipliers (Lecture~3) to maximize the entropy $H(p) = -\sum_k p_k\log p_k$ over all probability vectors $p$ with a prescribed mean energy,
+    \[\sum_{k=1}^K p_k E_k = \bar E.\]
+    Show that the maximizer has the form $p_k = \frac{e^{-\beta E_k}}{\sum_j e^{-\beta E_j}}$, i.e., $p = \softmax(-\beta\mathbf{E})$ for some $\beta$. (This is the Boltzmann distribution of statistical physics.)
+\end{problem}
+
+\end{document}
