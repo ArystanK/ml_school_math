@@ -543,4 +543,56 @@
     Show that the maximizer has the form $p_k = \frac{e^{-\beta E_k}}{\sum_j e^{-\beta E_j}}$, i.e., $p = \softmax(-\beta\mathbf{E})$ for some $\beta$. (This is the Boltzmann distribution of statistical physics.)
 \end{problem}
 
+\section{Stochastic Differential Equations}
+
+\begin{problem}[\mandatory]\label{pr:brownian}
+    Let $B(t)$ be a Brownian motion.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the distribution of $B(4) - B(1)$, and $P(B(4) > 2)$.
+        \item Compute $\Corr(B(1), B(2))$ and the distribution of $B(1) + B(2)$. (Hint: write $B(2) = B(1) + (B(2) - B(1))$.)
+        \item Given $B(1) = 1$, what is the distribution of $B(2)$? Given $B(2) = 2$, what is the distribution of $B(1)$? (Use the conditioning theorem for Gaussians.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:euler-maruyama}
+    Consider the SDE $dX = -2X\,dt + 0.5\,dB$ with $X(0) = 1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Perform two Euler--Maruyama steps with $h = 0.1$, using the standard normal samples $Z_0 = 0.5$ and $Z_1 = -1$.
+        \item Find $\E[X_k]$ for the Euler--Maruyama chain, and compare $\E[X_{10}]$ with the mean $e^{-2t}$ of the SDE at $t = 1$.
+        \item Find the stationary variance of the SDE, and of the chain with $h = 0.1$. For which step sizes does the chain have a stationary distribution?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:sqrt-h}
+    (Why $\sqrt{h}$?) Divide $[0, t]$ into $n = t/h$ steps, and consider a scheme that adds the noise $\sigma h^\gamma Z_k$ in step $k$, with i.i.d.\ $Z_k \sim \mathcal{N}(0, 1)$. Compute the variance of the total noise $\sigma h^\gamma(Z_0 + \cdots + Z_{n-1})$, and show that as $h \to 0$, it tends to $0$ for $\gamma > \frac{1}{2}$ and to $\infty$ for $\gamma < \frac{1}{2}$, while it equals $\sigma^2t$ for $\gamma = \frac{1}{2}$.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:quadratic-variation}
+    (Quadratic variation.) Divide $[0, T]$ into $n$ intervals of the length $h = T/n$, and let
+    \[Q_n = \sum_{k=0}^{n-1}\big(B((k + 1)h) - B(kh)\big)^2.\]
+    \begin{enumerate}[label=(\alph*)]
+        \item Using $\E[Z^4] = 3$ for $Z \sim \mathcal{N}(0, 1)$, show that $\E[Q_n] = T$ and $\Var(Q_n) = 2Th$, so that $Q_n \to T$ as $n \to \infty$.
+        \item Show that for a continuously differentiable function $f$ on $[0, T]$, the sum $\sum_k \big(f((k + 1)h) - f(kh)\big)^2$ tends to $0$. (Hint: mean value theorem.) Conclude that Brownian paths are not continuously differentiable.
+    \end{enumerate}
+    (This is the rule ``$(dB)^2 = dt$'' of stochastic calculus.)
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:ula}
+    (Langevin sampling of a Gaussian.) Let $U(x) = \frac{(x - \mu)^2}{2s^2}$, so that $e^{-U}$ is proportional to the density of $\mathcal{N}(\mu, s^2)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write down the unadjusted Langevin algorithm for $U$ with the step $h$, and show that it has the form $x_{k+1} - \mu = a(x_k - \mu) + \sqrt{2h}\,z_k$.
+        \item Show that for $0 < h < 2s^2$, the chain has the stationary distribution $\mathcal{N}\big(\mu, \frac{2s^2}{2 - h/s^2}\big)$. Evaluate the variance for $\mu = 2$, $s^2 = 0.25$ and $h = 0.01$.
+        \item What does the algorithm do without the noise term? How is this related to MAP estimation?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:diffusion-forward}
+    (The forward process of a diffusion model.) A data point $x_0 = 3$ is gradually noised by $x_t = \sqrt{1 - \beta}\,x_{t-1} + \sqrt{\beta}\,z_t$ for $t = 1, 2, \ldots$, with i.i.d.\ $z_t \sim \mathcal{N}(0, 1)$ and $\beta = 0.02$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show by induction that $x_t \sim \mathcal{N}\big((1 - \beta)^{t/2}x_0, \, 1 - (1 - \beta)^t\big)$. Why is this useful for training, where $x_t$ is needed for random times $t$?
+        \item Compute the mean and the variance for $t = 10$, $100$ and $500$. What is the distribution of $x_t$ for large $t$, whatever the data point?
+        \item Show that the process is approximately the Euler--Maruyama scheme with $h = \beta$ for the Ornstein--Uhlenbeck SDE $dX = -\frac{1}{2}X\,dt + dB$. (Hint: $\sqrt{1 - \beta} \approx 1 - \frac{\beta}{2}$.)
+    \end{enumerate}
+\end{problem}
+
 \end{document}

@@ -20,7 +20,7 @@ In this lecture:
     \item we introduce dual spaces, which explain what the transpose of a matrix is, and quotient spaces with the isomorphism theorems;
     \item we find eigenvalues and eigenvectors, diagonalize matrices, and use powers of matrices to analyze Fibonacci numbers, Markov chains and power iteration.
 \end{itemize}
-Lecture~2 adds geometry to vector spaces: lengths, angles and orthogonality. The later lectures use the language of this lecture throughout: derivatives are linear maps (Lecture~3), covariance matrices describe random vectors (Lecture~4), and the eigenvalues of a matrix decide whether the solutions of a linear differential equation grow or decay (Lecture~5).
+Lecture~2 adds geometry to vector spaces: lengths, angles and orthogonality. The later lectures use the language of this lecture throughout: derivatives are linear maps (Lecture~3), covariance matrices describe random vectors (Lecture~4), and the eigenvalues of a matrix decide whether the solutions of a linear differential equation grow or decay (Lecture~3).
 
 \paragraph{Notation.} Vectors are denoted by lowercase letters such as $u$, $v$ and $x$, scalars by letters such as $a$, $b$ and $\lambda$, and matrices by capital letters such as $A$. (From Lecture~3 on, vectors are written in bold.)
 
@@ -1662,7 +1662,7 @@ One of the two cases always occurs: if $\RREF(A) \neq I_n$, then, as we saw in t
 \end{example}
 
 \begin{remark}\label{L1-rem:solve-practice}
-    In practice, if we only want to solve $Ax = b$ for one particular $b$, we do not need $A^{-1}$: it is faster, and numerically more accurate, to row reduce the matrix $(A \mid b)$ directly. If $A$ is invertible, the row operations that turn $A$ into $I_n$ turn $(A \mid b)$ into $(I_n \mid A^{-1}b)$, so the solution can be read off from the last column. This is also what numerical libraries do: for example, in NumPy one uses \texttt{numpy.linalg.solve(A, b)} rather than \texttt{numpy.linalg.inv(A) @ b}.
+    In practice, if we only want to solve $Ax = b$ for one particular $b$, we do not need $A^{-1}$: it is faster, and numerically more accurate, to row reduce the matrix $(A \mid b)$ directly. If $A$ is invertible, the row operations that turn $A$ into $I_n$ turn $(A \mid b)$ into $(I_n \mid A^{-1}b)$, so the solution can be read off from the last column. This is also what numerical libraries do: for example, in NumPy one uses \py{np.linalg.solve(A, b)} rather than \py{np.linalg.inv(A) @ b}.
 \end{remark}
 
 \subsubsection{Invertible matrices and isomorphisms}
@@ -2918,8 +2918,8 @@ Expanding the determinant shows that $p_A(\lambda)$ is a polynomial of degree $n
     If $A$ is triangular, so is $A - \lambda I_n$, and by Corollary~\ref{L1-cor:det-easy}, $p_A(\lambda) = (A_{11} - \lambda) \cdots (A_{nn} - \lambda)$.
 \end{proof}
 
-\begin{example}[Eigenvectors of the transformations in Figure~\ref{L1-fig:gallery}]\label{L1-ex:eigen-geometric}
-    Geometric intuition often tells us the eigenvectors without any computation.
+\begin{example}[Eigenvectors from geometry]\label{L1-ex:eigen-geometric}
+    Geometric intuition often tells us the eigenvectors without any computation. The shear and the rotations below also appear in the gallery of Figure~\ref{L1-fig:gallery}.
     \begin{itemize}
         \item The projection onto the $x$-axis, $\begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix}$, has the eigenvalue $1$ with eigenspace the $x$-axis, and the eigenvalue $0$ with eigenspace the $y$-axis.
         \item The reflection in the line $y = x$, $\begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$, fixes this line (eigenvalue $1$) and flips the line $y = -x$ (eigenvalue $-1$).
@@ -3160,7 +3160,7 @@ We state this theorem without proof. The second part says that we need ``enough'
 % Inline code cannot be hyphenated, so allow a little extra stretch in this section.
 \setlength{\emergencystretch}{3em}
 
-In these exercises, you implement the main algorithms of this lecture in Python. You need Python~3 with NumPy, and Matplotlib for Exercise~P6. Implement the algorithms yourself, using only loops, indexing and arithmetic on NumPy arrays; use NumPy's built-in linear algebra routines (\py{np.linalg}) only to check your results. Start each file with
+In these exercises, you implement the main algorithms of this lecture in Python. You need Python~3 with NumPy, and Matplotlib for Exercises~P6 and~P12. Implement the algorithms yourself, using only loops, indexing and arithmetic on NumPy arrays; use NumPy's built-in linear algebra routines (\py{np.linalg}) only to check your results. Start each file with
 \begin{lstlisting}
 import numpy as np
 rng = np.random.default_rng(0)  # random number generator for test matrices

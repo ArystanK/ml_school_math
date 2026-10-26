@@ -597,4 +597,67 @@
     \end{enumerate}
 \end{problem}
 
+\section{Ordinary Differential Equations}
+
+\begin{problem}[\mandatory]\label{pr:scalar-ode}
+    \begin{enumerate}[label=(\alph*)]
+        \item Solve $x' = -2x$ with $x(0) = 3$. Compute $x(1)$ and the time after which $x$ has halved.
+        \item Show that $x(t) = \frac{1}{1 + 4e^{-t}}$ solves the logistic equation $x' = x(1 - x)$ with $x(0) = 0.2$, and write it with the sigmoid function. Compute $x(2)$ and $\lim_{t \to \infty} x(t)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:existence}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $x(t) = \frac{1}{1 - t}$ solves $x' = x^2$ with $x(0) = 1$. What happens as $t \to 1$? Why does this not contradict the existence and uniqueness theorem?
+        \item Show that $x(t) = 0$ and $x(t) = t^2$ both solve $x' = 2\sqrt{|x|}$ for $t \geq 0$, with $x(0) = 0$. Which assumption of the theorem fails?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:linear-system}
+    Let $A = \begin{pmatrix} -1 & 2 \\ 2 & -1 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the eigenvalues and eigenvectors of $A$, and solve $\mathbf{x}' = A\mathbf{x}$ with $\mathbf{x}(0) = (1, 0)^\top$. Compute $\mathbf{x}(1)$.
+        \item For which initial values does the solution tend to $\mathbf{0}$? Sketch the solutions. (The origin is a saddle point of this ODE.)
+        \item Compute $e^{At}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:rotation-ode}
+    Let $A = \begin{pmatrix} 0 & -\omega \\ \omega & 0 \end{pmatrix}$ with $\omega > 0$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the solutions of $\mathbf{x}' = A\mathbf{x}$ move on circles with angular speed $\omega$. What is the period?
+        \item Show that Euler's method satisfies $\norm{\mathbf{x}_{k+1}}^2 = (1 + h^2\omega^2)\norm{\mathbf{x}_k}^2$, so the numerical solution spirals outwards. For $\omega = 1$ and $h = 0.1$, by which factor does $\norm{\mathbf{x}_k}$ grow during one period?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:gradient-flow}
+    Let $f(x_1, x_2) = x_1^2 + 4x_2^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Solve the gradient flow $\mathbf{x}' = -\nabla f(\mathbf{x})$ with $\mathbf{x}(0) = (2, 1)^\top$, and check that $f(\mathbf{x}(t))$ decreases.
+        \item Write down Euler's method for this flow with step $h$, and compare it with gradient descent. For which $h$ do the iterates converge to $\mathbf{0}$? What happens for $h = 0.2$ and $h = 0.3$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:euler-error}
+    Apply Euler's method to $x' = -x$, $x(0) = 1$ on the interval $[0, 1]$, with $h = 0.25$ and $h = 0.125$. Compare with $x(1) = e^{-1}$. By which factor does the error shrink when $h$ is halved?
+\end{problem}
+
+\section{Flows, Volumes and Densities}
+
+\begin{problem}[\mandatory]\label{pr:volume-flow}
+    \begin{enumerate}[label=(\alph*)]
+        \item For the ODE $\mathbf{x}' = A\mathbf{x}$ with $A = \begin{pmatrix} 1 & 2 \\ 0 & -3 \end{pmatrix}$, compute the divergence of the vector field and the factor by which the flow changes areas in the time $t$. Check the result with the eigenvalues of $A$.
+        \item Let $F(x, y) = (x - x^3, \, -y)^\top$. Compute $\Div F$. Find the points where $F = \mathbf{0}$, and the divergence there. Where does the flow preserve areas to first order, and where does it compress them?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:continuity-1d}
+    Let $x' = -x$, and let $x(0)$ be random with the standard normal density $\varphi$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $x(t) = e^{-t}x(0)$ has the density $p_t(x) = e^t\varphi(e^tx)$.
+        \item Verify the continuity equation $\frac{\partial p_t}{\partial t} = -\frac{\partial}{\partial x}(p_tF)$ for $F(x) = -x$.
+        \item Show that $\log p_t(x(t))$ increases at the rate $1 = -\Div F$ along each solution, and explain this with the volume interpretation of the divergence.
+    \end{enumerate}
+\end{problem}
+
 \end{document}

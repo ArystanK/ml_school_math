@@ -95,7 +95,7 @@ Taking complements, $f$ is continuous if and only if preimages of closed sets ar
     These are the preimages of the open set $(-\infty, c)$ and the closed sets $(-\infty, c]$ and $\{c\}$.
 \end{proof}
 
-So the feasible sets of the constrained problems in Lecture~3, such as $\{\mathbf{x} : g_1(\mathbf{x}) \leq 0, \ldots, g_m(\mathbf{x}) \leq 0\}$ for continuous $g_i$, are closed. Similarly, the set $GL(n, \mathbb{R})$ of invertible $n \times n$ matrices is open in $\mathbb{R}^{n \times n}$, as the preimage of the open set $\mathbb{R} \setminus \{0\}$ under the continuous function $\det$ (a polynomial in the entries).
+So the feasible sets of the constrained problems in Lecture~3, such as $\{\mathbf{x} : g_1(\mathbf{x}) \leq 0, \ldots, g_m(\mathbf{x}) \leq 0\}$ for continuous $g_i$, are closed. Similarly, the set $\mathrm{GL}(n, \mathbb{R})$ of invertible $n \times n$ matrices is open in $\mathbb{R}^{n \times n}$, as the preimage of the open set $\mathbb{R} \setminus \{0\}$ under the continuous function $\det$ (a polynomial in the entries).
 
 Proposition~\ref{A-prop:continuity-open} suggests an abstraction: forget the metric, and only remember which sets are open.
 
@@ -147,7 +147,7 @@ The real numbers have no gaps. This is the completeness axiom, which we take as 
     Let $K$ be closed and bounded, and let $(\mathbf{x}_k)$ be a sequence in $K$. By Theorem~\ref{A-thm:bolzano}, a subsequence converges, and by Proposition~\ref{A-prop:closed-limits}, its limit lies in $K$. Conversely, if $K$ is unbounded, there are $\mathbf{x}_k \in K$ with $\norm{\mathbf{x}_k} \geq k$, and no subsequence converges, since convergent sequences are bounded. If $K$ is not closed, there is a sequence in $K$ that converges to a point outside $K$ (Proposition~\ref{A-prop:closed-limits}), and all its subsequences converge to the same point, so none converges to a point of $K$.
 \end{proof}
 
-For example, spheres, closed balls (for any norm), and the set $O(n)$ of orthogonal matrices are compact. $O(n)$ is closed, as the preimage of $\{I\}$ under the continuous map $Q \mapsto Q^\top Q$, and bounded, since $\norm{Q}_F^2 = \tr(Q^\top Q) = n$. The hyperbola $\{xy = 1\}$ is closed but unbounded, and the open ball is bounded but not closed; neither is compact.
+For example, spheres, closed balls (for any norm), and the set $\mathrm{O}(n)$ of orthogonal matrices are compact. $\mathrm{O}(n)$ is closed, as the preimage of $\{I\}$ under the continuous map $Q \mapsto Q^\top Q$, and bounded, since $\norm{Q}_F^2 = \tr(Q^\top Q) = n$. The hyperbola $\{xy = 1\}$ is closed but unbounded, and the open ball is bounded but not closed; neither is compact.
 
 \begin{theorem}[Extreme value theorem]\label{A-thm:extreme-value}
     Let $K$ be a nonempty compact set, and let $f: K \to \mathbb{R}$ be continuous. Then $f$ attains a minimum and a maximum on $K$.
@@ -215,7 +215,7 @@ Together, (1) and (2) give the intermediate value theorem: a continuous function
     \begin{enumerate}
         \item $\mathbb{R}^n$, balls, and the sphere $S^{n-1}$ for $n \geq 2$ are path-connected, hence connected.
         \item The hyperbola $\{xy = 1\}$ is not connected: it lies in the union of the open half-planes $\{x > 0\}$ and $\{x < 0\}$, and meets both.
-        \item $GL(n, \mathbb{R})$ is not connected: it is the union of the disjoint open sets $\{\det > 0\}$ and $\{\det < 0\}$. In particular, an invertible matrix with $\det < 0$ (a reflection) cannot be continuously deformed into the identity through invertible matrices. Similarly, $O(n)$ consists of the two pieces $\det Q = 1$ (the rotations, Lecture~2) and $\det Q = -1$; one can show that the rotations form a connected set.
+        \item $\mathrm{GL}(n, \mathbb{R})$ is not connected: it is the union of the disjoint open sets $\{\det > 0\}$ and $\{\det < 0\}$. In particular, an invertible matrix with $\det < 0$ (a reflection) cannot be continuously deformed into the identity through invertible matrices. Similarly, $\mathrm{O}(n)$ consists of the two pieces $\det Q = 1$ (the rotations, Lecture~2) and $\det Q = -1$; one can show that the rotations form a connected set.
         \item A circle and an interval are not homeomorphic. If we remove a point from a circle, the rest is still connected (it is an arc); if we remove an interior point from an interval, the rest is disconnected. A homeomorphism would map a point and its complement to a point and its complement, and it preserves connectedness by Proposition~\ref{A-prop:connected}(2).
     \end{enumerate}
 \end{example}
@@ -339,9 +339,9 @@ So locally, $M$ is cut out by $n - k$ independent equations. In particular, if $
     \begin{enumerate}
         \item The sphere $S^{n-1} = \{\mathbf{x} : \norm{\mathbf{x}}^2 = 1\}$ is an $(n - 1)$-dimensional submanifold, since $F(\mathbf{x}) = \norm{\mathbf{x}}^2 - 1$ has $DF(\mathbf{x}) = 2\mathbf{x}^\top \neq \mathbf{0}$ on the sphere.
         \item The graph $\{(\mathbf{x}, \mathbf{g}(\mathbf{x}))\}$ of a smooth $\mathbf{g}: \mathbb{R}^k \to \mathbb{R}^{n-k}$ is a $k$-dimensional submanifold: $F(\mathbf{x}, \mathbf{y}) = \mathbf{y} - \mathbf{g}(\mathbf{x})$ has $DF = (-D\mathbf{g}, \, I)$, of rank $n - k$.
-        \item $GL(n, \mathbb{R})$ is open in $\mathbb{R}^{n \times n}$, hence an $n^2$-dimensional submanifold.
-        \item The special linear group $SL(n, \mathbb{R}) = \{X : \det X = 1\}$ is a submanifold of dimension $n^2 - 1$. By Jacobi's formula (Proposition~\ref{L3-prop:det-gradient}), $D\det(X)H = \det(X)\tr(X^{-1}H)$, which for $\det X = 1$ and $H = X$ equals $n \neq 0$. So $D\det(X) \neq 0$, and $1$ is a regular value of $\det$.
-        \item The orthogonal group $O(n) = \{Q : Q^\top Q = I\}$ is a submanifold of dimension $\frac{n(n-1)}{2}$. Let $F(Q) = Q^\top Q$, a map from $\mathbb{R}^{n \times n}$ to the space $\mathrm{Sym}(n)$ of symmetric matrices, which has dimension $\frac{n(n+1)}{2}$. Its derivative is $DF(Q)H = H^\top Q + Q^\top H$. For $Q \in O(n)$ and any symmetric $S$, the matrix $H = \frac{1}{2}QS$ satisfies $DF(Q)H = \frac{1}{2}SQ^\top Q + \frac{1}{2}Q^\top QS = S$, so $DF(Q)$ is surjective, i.e., has full rank $\frac{n(n+1)}{2}$, and $O(n)$ has dimension $n^2 - \frac{n(n+1)}{2} = \frac{n(n-1)}{2}$. For $n = 2$, this is $1$ (one rotation angle), and for $n = 3$, it is $3$ (three angles, as for the rotations $R_1$, $R_2$, $R_3$ of Lecture~2).
+        \item $\mathrm{GL}(n, \mathbb{R})$ is open in $\mathbb{R}^{n \times n}$, hence an $n^2$-dimensional submanifold.
+        \item The special linear group $\mathrm{SL}(n, \mathbb{R}) = \{X : \det X = 1\}$ is a submanifold of dimension $n^2 - 1$. By Jacobi's formula (Proposition~\ref{L3-prop:det-gradient}), $D\det(X)H = \det(X)\tr(X^{-1}H)$, which for $\det X = 1$ and $H = X$ equals $n \neq 0$. So $D\det(X) \neq 0$, and $1$ is a regular value of $\det$.
+        \item The orthogonal group $\mathrm{O}(n) = \{Q : Q^\top Q = I\}$ is a submanifold of dimension $\frac{n(n-1)}{2}$. Let $F(Q) = Q^\top Q$, a map from $\mathbb{R}^{n \times n}$ to the space $\mathrm{Sym}_n$ of symmetric matrices, which has dimension $\frac{n(n+1)}{2}$. Its derivative is $DF(Q)H = H^\top Q + Q^\top H$. For $Q \in \mathrm{O}(n)$ and any symmetric $S$, the matrix $H = \frac{1}{2}QS$ satisfies $DF(Q)H = \frac{1}{2}SQ^\top Q + \frac{1}{2}Q^\top QS = S$, so $DF(Q)$ is surjective, i.e., has full rank $\frac{n(n+1)}{2}$, and $\mathrm{O}(n)$ has dimension $n^2 - \frac{n(n+1)}{2} = \frac{n(n-1)}{2}$. For $n = 2$, this is $1$ (one rotation angle), and for $n = 3$, it is $3$ (three angles, as for the rotations $R_1$, $R_2$, $R_3$ of Lecture~2).
     \end{enumerate}
 \end{example}
 
@@ -381,8 +381,8 @@ Not every level set is a submanifold. The level set $\{x^2 - y^2 = 0\}$ of Figur
 \begin{example}\label{A-ex:tangent-spaces}
     \begin{enumerate}
         \item $T_{\mathbf{p}}S^{n-1} = \Null(2\mathbf{p}^\top) = \{\mathbf{v} : \mathbf{p}^\top\mathbf{v} = 0\} = \mathbf{p}^\perp$: the tangent vectors of a sphere are orthogonal to the radius (Figure~\ref{A-fig:tangent}).
-        \item $T_I SL(n, \mathbb{R}) = \{H : D\det(I)H = 0\} = \{H : \tr H = 0\}$, the traceless matrices: to first order, $\det(I + tH) = 1 + t\tr H$ (Lemma~\ref{L3-lem:det-identity}), so a matrix curve through $I$ keeps determinant $1$ only if its velocity has trace $0$.
-        \item $T_Q O(n) = \{H : H^\top Q + Q^\top H = 0\}$. With $K = Q^\top H$, the condition says $K^\top + K = 0$, so $T_Q O(n) = \{QK : K^\top = -K\}$, and $T_I O(n)$ is the space of skew-symmetric matrices, of dimension $\frac{n(n-1)}{2}$. For example, the rotations $R(t)$ by the angle $t$ in the plane have $R'(0) = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$.
+        \item $T_I \mathrm{SL}(n, \mathbb{R}) = \{H : D\det(I)H = 0\} = \{H : \tr H = 0\}$, the traceless matrices: to first order, $\det(I + tH) = 1 + t\tr H$ (Lemma~\ref{L3-lem:det-identity}), so a matrix curve through $I$ keeps determinant $1$ only if its velocity has trace $0$.
+        \item $T_Q \mathrm{O}(n) = \{H : H^\top Q + Q^\top H = 0\}$. With $K = Q^\top H$, the condition says $K^\top + K = 0$, so $T_Q \mathrm{O}(n) = \{QK : K^\top = -K\}$, and $T_I \mathrm{O}(n)$ is the space of skew-symmetric matrices, of dimension $\frac{n(n-1)}{2}$. For example, the rotations $R(t)$ by the angle $t$ in the plane have $R'(0) = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$.
     \end{enumerate}
 \end{example}
 
@@ -409,7 +409,7 @@ Since $\nabla f(\mathbf{p}) - \grad_M f(\mathbf{p})$ is orthogonal to $T_{\mathb
 
 Riemannian gradient descent minimizes $f$ on $M$ by taking a step in the direction $-\grad_M f(\mathbf{p}_k)$, which leaves $M$ slightly, and mapping the result back to $M$ with a retraction $R$:
 \[\mathbf{p}_{k+1} = R\big(\mathbf{p}_k - \eta\grad_M f(\mathbf{p}_k)\big).\]
-On the sphere, $P_{\mathbf{p}} = I - \mathbf{p}\mathbf{p}^\top$, so $\grad_M f(\mathbf{p}) = \nabla f(\mathbf{p}) - (\mathbf{p}^\top\nabla f(\mathbf{p}))\mathbf{p}$, and the retraction can simply normalize: $R(\mathbf{x}) = \frac{\mathbf{x}}{\norm{\mathbf{x}}}$. On $O(n)$, one can retract with the $Q$ factor of the QR decomposition (Lecture~2). Such methods are used for PCA, for orthogonality constraints on weight matrices, and for low-rank matrix problems.
+On the sphere, $P_{\mathbf{p}} = I - \mathbf{p}\mathbf{p}^\top$, so $\grad_M f(\mathbf{p}) = \nabla f(\mathbf{p}) - (\mathbf{p}^\top\nabla f(\mathbf{p}))\mathbf{p}$, and the retraction can simply normalize: $R(\mathbf{x}) = \frac{\mathbf{x}}{\norm{\mathbf{x}}}$. On $\mathrm{O}(n)$, one can retract with the $Q$ factor of the QR decomposition (Lecture~2). Such methods are used for PCA, for orthogonality constraints on weight matrices, and for low-rank matrix problems.
 
 \begin{example}[The Rayleigh quotient on the sphere]\label{A-ex:rayleigh-sphere}
     Let $A$ be symmetric with eigenvalues $\lambda_1 > \lambda_2 > \cdots > \lambda_n$ and unit eigenvectors $\mathbf{q}_1, \ldots, \mathbf{q}_n$, and let $f(\mathbf{x}) = \mathbf{x}^\top A\mathbf{x}$ on $S^{n-1}$. Then $\grad_M f(\mathbf{x}) = 2A\mathbf{x} - 2(\mathbf{x}^\top A\mathbf{x})\mathbf{x}$, which is $\mathbf{0}$ if and only if $\mathbf{x}$ is an eigenvector: the critical points are the $2n$ points $\pm\mathbf{q}_i$. To see their types, move from $\mathbf{q}_i$ towards $\mathbf{q}_j$ along the great circle $\boldsymbol{\gamma}(t) = \cos t\,\mathbf{q}_i + \sin t\,\mathbf{q}_j$:
@@ -564,10 +564,10 @@ We end with a few places where the ideas of this appendix appear in machine lear
 \begin{itemize}[leftmargin=*]
     \item Open sets, closed sets, convergence and continuity only depend on the notion of nearness. A map is continuous if and only if preimages of open sets are open; so sublevel sets $\{f \leq c\}$ and level sets of continuous functions are closed. All norms on $\mathbb{R}^n$ define the same open sets.
     \item A subset of $\mathbb{R}^n$ is compact if and only if it is closed and bounded (Heine--Borel). A continuous function on a nonempty compact set attains its minimum and maximum, and a continuous coercive function on $\mathbb{R}^n$ has a global minimum; regularization makes losses coercive.
-    \item Continuous maps preserve connectedness; this gives the intermediate value theorem, and shows, e.g., that $GL(n, \mathbb{R})$ has two pieces and that a circle is not homeomorphic to an interval.
+    \item Continuous maps preserve connectedness; this gives the intermediate value theorem, and shows, e.g., that $\mathrm{GL}(n, \mathbb{R})$ has two pieces and that a circle is not homeomorphic to an interval.
     \item A contraction of a closed set has a unique fixed point, found by iteration (Banach). This proves the inverse function theorem: a map with an invertible Jacobian is locally invertible, with $D(\mathbf{f}^{-1}) = (D\mathbf{f})^{-1}$. Residual layers $\mathbf{x} + \mathbf{g}(\mathbf{x})$ with a contractive $\mathbf{g}$ are invertible.
     \item The implicit function theorem solves $F(\mathbf{x}, \mathbf{y}) = \mathbf{0}$ locally for $\mathbf{y} = \mathbf{g}(\mathbf{x})$ when $D_{\mathbf{y}}F$ is invertible, with $D\mathbf{g} = -D_{\mathbf{y}}F^{-1}D_{\mathbf{x}}F$; this is implicit differentiation, also used for implicit layers and hyperparameter optimization.
-    \item The level set of a regular value of $F: \mathbb{R}^n \to \mathbb{R}^m$ is an $(n - m)$-dimensional submanifold, which is locally a graph. Its tangent space is $\Null DF(\mathbf{p})$, and its normal space is spanned by the gradients $\nabla F_i(\mathbf{p})$. Examples: spheres, $SL(n)$ (dimension $n^2 - 1$, tangent space at $I$: traceless matrices), $O(n)$ (dimension $\frac{n(n-1)}{2}$, tangent space at $I$: skew-symmetric matrices).
+    \item The level set of a regular value of $F: \mathbb{R}^n \to \mathbb{R}^m$ is an $(n - m)$-dimensional submanifold, which is locally a graph. Its tangent space is $\Null DF(\mathbf{p})$, and its normal space is spanned by the gradients $\nabla F_i(\mathbf{p})$. Examples: spheres, $\mathrm{SL}(n)$ (dimension $n^2 - 1$, tangent space at $I$: traceless matrices), $\mathrm{O}(n)$ (dimension $\frac{n(n-1)}{2}$, tangent space at $I$: skew-symmetric matrices).
     \item Lagrange multipliers say that $\nabla f$ is normal to the constraint manifold at a constrained extremum. The Riemannian gradient is the projection of $\nabla f$ onto the tangent space; Riemannian gradient descent alternates such steps with retractions.
     \item By Sard's theorem, almost all values of a smooth map are regular. A critical point is nondegenerate if its Hessian is invertible, and its index is the number of negative eigenvalues. Nondegenerate critical points are isolated, and by the Morse lemma $f$ is exactly a sum of $\pm y_i^2$ near them. Almost every linear perturbation of a function is a Morse function.
     \item Sublevel sets change their topology only at critical values: a critical point of index $k$ attaches a $k$-cell. On a compact manifold, $\chi(M) = \sum_k (-1)^k c_k$.
@@ -580,14 +580,14 @@ We end with a few places where the ideas of this appendix appear in machine lear
     \item Show that the union of infinitely many closed sets need not be closed. Show that a set $U \subseteq X$ is open if and only if it is a union of open balls.
     \item \begin{enumerate}[label=(\alph*)]
         \item Show that the set of $m \times n$ matrices of rank at most $r$ is closed in $\mathbb{R}^{m \times n}$. (Hint: the rank is at most $r$ if and only if all $(r + 1) \times (r + 1)$ minors are $0$.)
-        \item Show that every square matrix $A$ is a limit of invertible matrices. (Hint: $\det(A + tI)$ is a polynomial in $t$.) So $GL(n, \mathbb{R})$ is open and dense in $\mathbb{R}^{n \times n}$.
+        \item Show that every square matrix $A$ is a limit of invertible matrices. (Hint: $\det(A + tI)$ is a polynomial in $t$.) So $\mathrm{GL}(n, \mathbb{R})$ is open and dense in $\mathbb{R}^{n \times n}$.
     \end{enumerate}
-    \item Which of the following sets are compact? (a) The closed unit ball of the $\ell_1$ norm in $\mathbb{R}^n$; (b) $\{(x, y) : xy = 1\}$; (c) $SO(n)$; (d) $GL(n, \mathbb{R})$; (e) the ellipsoid $\{\mathbf{x} : \mathbf{x}^\top A\mathbf{x} \leq 1\}$ for a symmetric positive definite $A$; (f) the same set for $A = \diag(1, -1)$.
+    \item Which of the following sets are compact? (a) The closed unit ball of the $\ell_1$ norm in $\mathbb{R}^n$; (b) $\{(x, y) : xy = 1\}$; (c) $\mathrm{SO}(n)$; (d) $\mathrm{GL}(n, \mathbb{R})$; (e) the ellipsoid $\{\mathbf{x} : \mathbf{x}^\top A\mathbf{x} \leq 1\}$ for a symmetric positive definite $A$; (f) the same set for $A = \diag(1, -1)$.
     \item Show that the regularized logistic regression loss $\frac{1}{N}\sum_i \log(1 + e^{-y_i\mathbf{w}^\top\mathbf{x}_i}) + \lambda\norm{\mathbf{w}}^2$ with $\lambda > 0$ has a global minimum, and that it is unique. (Use Proposition~\ref{A-prop:coercive} and Lecture~3.)
     \item Let $A \in \mathbb{R}^{n \times n}$. Show that $N(\mathbf{x}) = \norm{A\mathbf{x}}$ is a norm if and only if $A$ is invertible, and that the best constants in $c\norm{\mathbf{x}} \leq N(\mathbf{x}) \leq C\norm{\mathbf{x}}$ are the smallest and the largest singular value of $A$ (Lecture~2).
     \item \begin{enumerate}[label=(\alph*)]
         \item Show that the unit circle $S^1$ is path-connected, and that the hyperbola $\{x^2 - y^2 = 1\}$ is not connected.
-        \item Show that $SO(2)$ is path-connected, and that $O(2)$ is not connected.
+        \item Show that $\mathrm{SO}(2)$ is path-connected, and that $\mathrm{O}(2)$ is not connected.
         \item Show that no continuous injective map from $S^1$ to $\mathbb{R}$ exists. (Hint: intermediate value theorem.)
     \end{enumerate}
     \item Use the iteration $x_{k+1} = \cos x_k$ with $x_0 = 1$ to compute the solution of $\cos x = x$ to six decimal places. How many steps does the a priori bound of Theorem~\ref{A-thm:banach} require, and how many do you actually need?
@@ -596,9 +596,9 @@ We end with a few places where the ideas of this appendix appear in machine lear
     \item Let $F(x, y, z) = x^2 + y^2 - z^2$. Find all critical points and critical values of $F$. For which $c$ is $F^{-1}(c)$ a submanifold? Describe the level sets for $c > 0$, $c = 0$ and $c < 0$; which of them are connected?
     \item \begin{enumerate}[label=(\alph*)]
         \item Find the tangent space of the sphere $x^2 + y^2 + z^2 = 9$ at $(1, 2, 2)$ as $\Null DF$, and the tangent plane $(1, 2, 2) + T_{(1, 2, 2)}M$ as an equation.
-        \item Show that $T_Q O(n) = \{QK : K^\top = -K\}$ and $T_I SL(n, \mathbb{R}) = \{H : \tr H = 0\}$ have the dimensions predicted by Example~\ref{A-ex:submanifolds}.
+        \item Show that $T_Q \mathrm{O}(n) = \{QK : K^\top = -K\}$ and $T_I \mathrm{SL}(n, \mathbb{R}) = \{H : \tr H = 0\}$ have the dimensions predicted by Example~\ref{A-ex:submanifolds}.
     \end{enumerate}
-    \item (Orthogonal Procrustes problem.) Given $A \in \mathbb{R}^{n \times n}$ with SVD $A = U\Sigma V^\top$, show that $\tr(Q^\top A)$ is maximal over $Q \in O(n)$ for $Q = UV^\top$. (Hint: $\tr(Q^\top A) = \tr(\Sigma Z)$ with the orthogonal matrix $Z = V^\top Q^\top U$, whose entries are at most $1$ in absolute value.) This is how one aligns two point clouds by a rotation or reflection.
+    \item (Orthogonal Procrustes problem.) Given $A \in \mathbb{R}^{n \times n}$ with SVD $A = U\Sigma V^\top$, show that $\tr(Q^\top A)$ is maximal over $Q \in \mathrm{O}(n)$ for $Q = UV^\top$. (Hint: $\tr(Q^\top A) = \tr(\Sigma Z)$ with the orthogonal matrix $Z = V^\top Q^\top U$, whose entries are at most $1$ in absolute value.) This is how one aligns two point clouds by a rotation or reflection.
     \item \begin{enumerate}[label=(\alph*)]
         \item Find all critical points of the monkey saddle $f(x, y) = x^3 - 3xy^2$. Show that the origin is a degenerate critical point. In polar coordinates, $f = r^3\cos 3\varphi$; describe the regions where $f > 0$ and $f < 0$.
         \item For which $a \in \mathbb{R}$ is $x^3 - ax$ a Morse function? Find its critical points and their indices.
@@ -634,7 +634,7 @@ rng = np.random.default_rng(0)
         \item Start exactly at an eigenvector $\mathbf{q}_i$ with $i > 1$. What happens? Now add a perturbation of size $10^{-8}$. How many steps does it take to escape from the saddle point, and how does this depend on $\lambda_1 - \lambda_i$?
     \end{itemize}
 
-    \item \textbf{Orthogonal Procrustes.} Generate a point cloud \py{X = rng.normal(size=(50, 3))}, a random orthogonal matrix $Q_0$ (from \py{np.linalg.qr}), and $Y = XQ_0^\top + 0.01\cdot$noise. Recover $Q_0$ by maximizing $\tr(Q^\top Y^\top X)$ over $O(3)$ with the SVD formula of Exercise~13. Then solve the same problem with Riemannian gradient ascent on $O(3)$: project $G = \nabla_Q$ onto $T_Q O(3)$ by $Q\,\frac{1}{2}(Q^\top G - G^\top Q)$, take a step, and retract with the $Q$ factor of a QR decomposition (fixing the signs so that the diagonal of $R$ is positive). Compare the results.
+    \item \textbf{Orthogonal Procrustes.} Generate a point cloud \py{X = rng.normal(size=(50, 3))}, a random orthogonal matrix $Q_0$ (from \py{np.linalg.qr}), and $Y = XQ_0^\top + 0.01\cdot$noise. Recover $Q_0$ by maximizing $\tr(Q^\top Y^\top X)$ over $\mathrm{O}(3)$ with the SVD formula of Exercise~13. Then solve the same problem with Riemannian gradient ascent on $\mathrm{O}(3)$: project $G = \nabla_Q$ onto $T_Q \mathrm{O}(3)$ by $Q\,\frac{1}{2}(Q^\top G - G^\top Q)$, take a step, and retract with the $Q$ factor of a QR decomposition (fixing the signs so that the diagonal of $R$ is positive). Compare the results.
 
     \item \textbf{Counting components of sublevel sets.} For $f(x, y) = x^4 - 2x^2 + y^2 + 0.3x$, evaluate $f$ on a fine grid over $[-2, 2]^2$, and for $50$ values of $c$, count the connected components of the grid points with $f \leq c$ (write a breadth-first search over neighboring grid points). Plot the number of components against $c$, and compare the values of $c$ where it changes with the critical values of $f$, which you can find with Newton's method applied to $\nabla f = \mathbf{0}$.
 \end{enumerate}

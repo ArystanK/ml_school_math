@@ -25,7 +25,6 @@ CHAPTERS = [
     ("Lecture2/lecture2.tex", "L2-", "lecture2.tex"),
     ("Lecture3/lecture3.tex", "L3-", "lecture3.tex"),
     ("Lecture4/lecture4.tex", "L4-", "lecture4.tex"),
-    ("Lecture5/lecture5.tex", "L5-", "lecture5.tex"),
     ("Lecture3/appendix_topology.tex", "A-", "appendix_topology.tex"),
 ]
 
@@ -34,9 +33,6 @@ REWORDING = {
     "Lecture3/lecture3.tex": [
         ("the separate appendix on topology and differential topology",
          "Appendix~\\ref{A-chapter} on topology and differential topology"),
-    ],
-    "Lecture5/lecture5.tex": [
-        ("the appendix to Lecture~3", "Appendix~\\ref{A-chapter}"),
     ],
 }
 
