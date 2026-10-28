@@ -16,7 +16,7 @@ Almost every machine learning model is trained by solving an optimization proble
     \item we solve ordinary differential equations (ODEs) $\mathbf{x}' = F(\mathbf{x})$, in particular linear systems, with the eigenvalues and eigenvectors of Lecture~1, and see that gradient descent is Euler's method for the gradient flow $\mathbf{x}' = -\nabla f(\mathbf{x})$, which explains its step size limit;
     \item we study how the flow of a vector field changes volumes and probability densities, using the divergence; this is the basis of continuous normalizing flows, and, with noise added, of the stochastic differential equations of Lecture~4.
 \end{itemize}
-We use the linear algebra of Lectures~1 and~2 throughout: derivatives are linear maps, given by matrices; the direction of steepest ascent comes from the Cauchy--Schwarz inequality; and the shape of a function near a minimum is described by the eigenvalues of a symmetric matrix. Some results from analysis, such as the existence of maxima on closed and bounded sets and the implicit function theorem, are only stated here; Appendix~\ref{A-chapter} on topology and differential topology proves them and puts them in a wider context.
+We use the linear algebra of Lectures~1 and~2 throughout: derivatives are linear maps, given by matrices; the direction of steepest ascent comes from the Cauchy--Schwarz inequality; and the shape of a function near a minimum is described by the eigenvalues of a symmetric matrix. Some results from analysis, such as the existence of maxima on closed and bounded sets, the implicit function theorem and the existence of solutions of differential equations, are only stated here; Appendix~\ref{A-chapter} on topology, differential topology and functional analysis proves them and puts them in a wider context.
 
 \paragraph{Notation.} In this lecture, vectors are written in bold, $\mathbf{x} = (x_1, \ldots, x_n)^\top \in \mathbb{R}^n$, to distinguish them from numbers. As before, vectors are columns, $\mathbf{e}_1, \ldots, \mathbf{e}_n$ is the standard basis of $\mathbb{R}^n$, $\norm{\cdot}$ is the Euclidean norm, and $\log$ is the natural logarithm.
 
@@ -1540,7 +1540,7 @@ a Riemann sum of the iterated integral with $y$ first; summing over $i$ first gi
     \end{enumerate}
 \end{example}
 
-For unbounded functions or regions, Fubini's theorem remains true if $f \geq 0$ or if $\int |f| < \infty$ (the Fubini--Tonelli theorem), which covers the integrals of probability theory.
+For unbounded functions or regions, Fubini's theorem remains true if $f \geq 0$ or if $\int |f| < \infty$ (the Fubini--Tonelli theorem of Lecture~4), which covers the integrals of probability theory.
 
 \subsection{Change of variables}
 
@@ -1570,7 +1570,7 @@ This is the formula of Remark~\ref{L3-rem:change-of-variables}, and it comes fro
     Differentiating with respect to $\theta$ gives the claim, again by the fundamental theorem of calculus.
 \end{proof}
 
-The same holds for integrals over boxes in $\mathbb{R}^n$ and for several parameters, and, under an additional condition (for example, if $|\frac{\partial f}{\partial\theta}|$ is bounded by an integrable function that does not depend on $\theta$), for integrals over unbounded regions such as $\mathbb{R}^n$. In machine learning, we often need the gradient of an expectation $\int g(\mathbf{x})p_{\boldsymbol{\theta}}(\mathbf{x})\, d\mathbf{x}$ with respect to the parameters $\boldsymbol{\theta}$ of a distribution, for example of a policy in reinforcement learning. Differentiating under the integral sign and using $\nabla_{\boldsymbol{\theta}}p_{\boldsymbol{\theta}} = p_{\boldsymbol{\theta}}\nabla_{\boldsymbol{\theta}}\log p_{\boldsymbol{\theta}}$ gives
+The same holds for integrals over boxes in $\mathbb{R}^n$ and for several parameters, and, under an additional condition (for example, if $|\frac{\partial f}{\partial\theta}|$ is bounded by an integrable function that does not depend on $\theta$), for integrals over unbounded regions such as $\mathbb{R}^n$ (Lecture~4 proves this with the dominated convergence theorem). In machine learning, we often need the gradient of an expectation $\int g(\mathbf{x})p_{\boldsymbol{\theta}}(\mathbf{x})\, d\mathbf{x}$ with respect to the parameters $\boldsymbol{\theta}$ of a distribution, for example of a policy in reinforcement learning. Differentiating under the integral sign and using $\nabla_{\boldsymbol{\theta}}p_{\boldsymbol{\theta}} = p_{\boldsymbol{\theta}}\nabla_{\boldsymbol{\theta}}\log p_{\boldsymbol{\theta}}$ gives
 \[\nabla_{\boldsymbol{\theta}}\int g(\mathbf{x})p_{\boldsymbol{\theta}}(\mathbf{x})\, d\mathbf{x} = \int g(\mathbf{x})\,\nabla_{\boldsymbol{\theta}}\log p_{\boldsymbol{\theta}}(\mathbf{x})\,p_{\boldsymbol{\theta}}(\mathbf{x})\, d\mathbf{x},\]
 again an expectation with respect to $p_{\boldsymbol{\theta}}$, which can be estimated by averaging over samples. This is the score function (or REINFORCE) estimator of policy gradient methods.
 
@@ -1695,7 +1695,7 @@ Geometrically, a solution is a curve that is tangent to the vector field at each
     If $F$ is Lipschitz continuous, i.e., $\norm{F(\mathbf{x}) - F(\mathbf{y})} \leq L\norm{\mathbf{x} - \mathbf{y}}$ for all $\mathbf{x}, \mathbf{y}$, then for every $\mathbf{x}_0$, the ODE $\mathbf{x}' = F(\mathbf{x})$ has exactly one solution with $\mathbf{x}(0) = \mathbf{x}_0$, defined for all $t \in \mathbb{R}$.
 \end{theorem}
 
-We do not prove this theorem (the Picard--Lindel\"of theorem). The idea is that $\mathbf{x}$ solves the problem if and only if $\mathbf{x}(t) = \mathbf{x}_0 + \int_0^t F(\mathbf{x}(s))\, ds$ for all $t$, so a solution is a fixed point of the map that sends a curve $\mathbf{x}$ to the right-hand side; on short time intervals, this map is a contraction, and the Banach fixed-point theorem applies (see Appendix~\ref{A-chapter} on topology and differential topology).
+We do not prove this theorem (the Picard--Lindel\"of theorem). The idea is that $\mathbf{x}$ solves the problem if and only if $\mathbf{x}(t) = \mathbf{x}_0 + \int_0^t F(\mathbf{x}(s))\, ds$ for all $t$, so a solution is a fixed point of the map that sends a curve $\mathbf{x}$ to the right-hand side; with respect to a suitable norm, this map is a contraction, and the Banach fixed-point theorem applies. Theorem~\ref{A-thm:picard-lindelof} carries out this proof.
 
 \begin{example}\label{L3-ex:scalar-ode}
     \begin{enumerate}

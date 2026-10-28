@@ -13,44 +13,77 @@ Machine learning is about learning from data, and data is noisy, incomplete and 
     \item stochastic gradient descent uses random mini-batches, and works because averages of many random terms concentrate around their mean;
     \item generative models, such as normalizing flows (Lecture~3), learn probability distributions.
 \end{itemize}
-In this lecture, we introduce probability spaces, conditional probability and Bayes' theorem, random variables, expectation and variance, and random vectors with their covariance matrices, where the linear algebra of Lectures~1 and~2 enters. We then study the Gaussian distribution in detail, the law of large numbers and the central limit theorem, Monte Carlo sampling, and Markov chains. The second half of the lecture is about learning from data: estimation (the method of moments, maximum likelihood, and the Cram\'er--Rao bound), hypothesis testing (p-values, multiple testing, the bootstrap and permutation tests), the evaluation of models and experiments (cross-validation and A/B testing), Bayesian inference (including Gaussian processes), and information theory (entropy, cross-entropy and the Kullback--Leibler divergence). Finally, we add Gaussian noise to the ordinary differential equations of Lecture~3: Brownian motion, stochastic differential equations and the Ornstein--Uhlenbeck process, and Langevin dynamics, which samples from a distribution by noisy gradient descent and is behind diffusion models.
+In this lecture, we build probability theory on measure theory, which treats discrete and continuous distributions, and everything in between, in a single framework: events form a $\sigma$-algebra, probabilities are measures, random variables are measurable functions, and expectations are Lebesgue integrals, with powerful theorems for exchanging limits and expectations. On this foundation, we study conditional probability and Bayes' theorem, independence, densities, conditional expectation as an orthogonal projection, martingales, and random vectors with their covariance matrices, where the linear algebra of Lectures~1 and~2 enters. We then study the Gaussian distribution in detail, the different ways in which random variables converge, the laws of large numbers and the central limit theorem, Monte Carlo sampling, and Markov chains. The second half of the lecture is about learning from data: estimation (the method of moments, maximum likelihood, the Cram\'er--Rao bound, sufficiency and the Rao--Blackwell theorem), hypothesis testing (p-values, power, $t$-tests and $\chi^2$-tests, multiple testing, the bootstrap and permutation tests), the evaluation of models and experiments (cross-validation and A/B testing), Bayesian inference (including Gaussian processes), and information theory (entropy, cross-entropy and the Kullback--Leibler divergence). Finally, we add Gaussian noise to the ordinary differential equations of Lecture~3: Brownian motion, stochastic differential equations and the Ornstein--Uhlenbeck process, and Langevin dynamics, which samples from a distribution by noisy gradient descent and is behind diffusion models.
 
-\paragraph{Notation.} As in Lecture~3, vectors are bold. Random variables are denoted by capital letters such as $X$ and $Y$, their values by small letters such as $x$ and $y$, and random vectors by bold capital letters such as $\mathbf{X}$. We write $P(A)$ for the probability of an event $A$, $\E[X]$ for the expectation of $X$, and $\log$ for the natural logarithm.
+\paragraph{Notation.} As in Lecture~3, vectors are bold. Random variables are denoted by capital letters such as $X$ and $Y$, their values by small letters such as $x$ and $y$, and random vectors by bold capital letters such as $\mathbf{X}$. We write $P(A)$ for the probability of an event $A$, $\mathbf{1}_A$ for its indicator function, which is $1$ on $A$ and $0$ outside $A$, $\E[X]$ for the expectation of $X$, and $\log$ for the natural logarithm.
 
 \section{Probability Spaces}\label{L4-sec:probability}
 
-A random experiment has a set of possible outcomes, and we want to assign probabilities to sets of outcomes.
+A random experiment has a set $\Omega$ of possible outcomes, the sample space, and we want to assign probabilities to sets of outcomes, the events. If there are only finitely or countably many outcomes, every set of outcomes can be an event. For experiments with a continuum of outcomes, such as a uniformly random point of $[0, 1]$, this is impossible (Remark~\ref{L4-rem:vitali}), and we have to specify which sets are events. Measure theory provides the framework: the events form a $\sigma$-algebra, and the probability is a measure on it.
 
-\begin{definition}[Probability space]\label{L4-def:probability}
-    A probability space consists of a sample space $\Omega$, the set of all possible outcomes, and a probability $P$, which assigns a number $P(A)$ to every event $A \subseteq \Omega$, such that:
+\begin{definition}[$\sigma$-algebra]\label{L4-def:sigma-algebra}
+    A $\sigma$-algebra on a set $\Omega$ is a collection $\mathcal{F}$ of subsets of $\Omega$ such that
     \begin{enumerate}
-        \item $P(A) \geq 0$ for every event $A$;
-        \item $P(\Omega) = 1$;
-        \item if $A_1, A_2, \ldots$ are pairwise disjoint events, then $P(A_1 \cup A_2 \cup \cdots) = P(A_1) + P(A_2) + \cdots$.
+        \item $\Omega \in \mathcal{F}$;
+        \item if $A \in \mathcal{F}$, then $A^c = \Omega \setminus A \in \mathcal{F}$;
+        \item if $A_1, A_2, \ldots \in \mathcal{F}$, then $A_1 \cup A_2 \cup \cdots \in \mathcal{F}$.
     \end{enumerate}
+    The pair $(\Omega, \mathcal{F})$ is called a measurable space, and the sets in $\mathcal{F}$ are called measurable sets, or events.
 \end{definition}
 
-\begin{remark}[Measure theory]
-    If $\Omega$ is uncountable, such as $\Omega = \mathbb{R}$, it is impossible to assign a probability to every subset of $\Omega$ in a consistent way. A rigorous treatment specifies a collection of events (a $\sigma$-algebra) and uses measure theory. All sets that we meet in practice, such as intervals, balls and their unions and complements, are events, and we ignore these technicalities in this lecture.
+A $\sigma$-algebra contains $\emptyset = \Omega^c$, and since $\bigcap_k A_k = \big(\bigcup_k A_k^c\big)^c$ (De Morgan's law), it is also closed under countable intersections, and under finite unions, intersections and differences $A \setminus B = A \cap B^c$. So the usual set operations, applied countably many times, lead from events to events. The ``$\sigma$'' stands for countable unions; closedness under countable, not only finite, operations is what allows us to take limits.
+
+\begin{example}[$\sigma$-algebras]\label{L4-ex:sigma-algebras}
+    \begin{enumerate}
+        \item The power set $2^\Omega$, the set of all subsets of $\Omega$, is a $\sigma$-algebra; we use it whenever $\Omega$ is countable. The smallest $\sigma$-algebra on $\Omega$ is $\{\emptyset, \Omega\}$.
+        \item (Information.) Let $\Omega$ be partitioned into disjoint sets $B_1, \ldots, B_n$. The unions of some of the $B_i$ form a $\sigma$-algebra $\mathcal{G}$ with $2^n$ elements. It describes the information of an observer who only learns which $B_i$ contains the outcome: an event belongs to $\mathcal{G}$ if and only if this observer can decide whether it has happened. For two dice, an observer who only learns the sum knows whether the event ``the sum is even'' has happened, but not whether ``the first die shows $6$'' has. We use $\sigma$-algebras in this way to describe information in Sections~\ref{L4-sec:conditional-expectation} and~\ref{L4-sec:martingales}.
+        \item (Generated $\sigma$-algebras.) An intersection of $\sigma$-algebras on $\Omega$ is again a $\sigma$-algebra. So for every collection $\mathcal{C}$ of subsets of $\Omega$, there is a smallest $\sigma$-algebra $\sigma(\mathcal{C})$ that contains $\mathcal{C}$, namely the intersection of all $\sigma$-algebras that contain $\mathcal{C}$. It is called the $\sigma$-algebra generated by $\mathcal{C}$.
+        \item (Borel sets.) The Borel $\sigma$-algebra $\mathcal{B}(\mathbb{R}^n)$ is the $\sigma$-algebra generated by the open subsets of $\mathbb{R}^n$, and its elements are called Borel sets. They include all open and closed sets, all boxes and all countable sets, and everything that can be built from them by countably many set operations. The Borel $\sigma$-algebra is also generated by the boxes $(a_1, b_1] \times \cdots \times (a_n, b_n]$, and for $n = 1$ by the intervals $(-\infty, x]$ with $x \in \mathbb{R}$.
+    \end{enumerate}
+\end{example}
+
+\begin{definition}[Measure and probability space]\label{L4-def:probability}
+    A measure on a measurable space $(\Omega, \mathcal{F})$ is a function $\mu: \mathcal{F} \to [0, \infty]$ with $\mu(\emptyset) = 0$ that is countably additive: if $A_1, A_2, \ldots \in \mathcal{F}$ are pairwise disjoint, then
+    \[\mu(A_1 \cup A_2 \cup \cdots) = \mu(A_1) + \mu(A_2) + \cdots.\]
+    The triple $(\Omega, \mathcal{F}, \mu)$ is called a measure space. A probability measure is a measure $P$ with $P(\Omega) = 1$, and a probability space is a measure space $(\Omega, \mathcal{F}, P)$ with a probability measure $P$.
+\end{definition}
+
+These are Kolmogorov's axioms of probability (1933). A measure is finite if $\mu(\Omega) < \infty$, and $\sigma$-finite if $\Omega$ is a countable union of sets of finite measure.
+
+\begin{example}[Measures]\label{L4-ex:measures}
+    \begin{enumerate}
+        \item (Discrete probability.) Let $\Omega = \{\omega_1, \omega_2, \ldots\}$ be countable, and let $p_1, p_2, \ldots \geq 0$ with $\sum_i p_i = 1$. Then $P(A) = \sum_{i : \omega_i \in A} p_i$ defines a probability measure on $2^\Omega$; it is countably additive, since series of nonnegative terms can be rearranged. If $\Omega$ is finite and all outcomes are equally likely, then $P(A) = \frac{|A|}{|\Omega|}$.
+        \item (Counting and Dirac measures.) The counting measure $\mu(A) = |A|$, the number of elements of $A$ (or $\infty$), is a $\sigma$-finite measure on $2^{\mathbb{Z}}$. The Dirac measure $\delta_x(A) = \mathbf{1}_A(x)$ is the probability measure of an outcome that is $x$ with certainty.
+        \item (Lebesgue measure.) There is exactly one measure $\lambda$ on $\mathcal{B}(\mathbb{R}^n)$ that assigns to every box its volume. We do not prove this theorem; it follows from Carath\'eodory's extension theorem, which extends a function on boxes to the $\sigma$-algebra that they generate. Since $\lambda(\{x\}) = 0$, countable additivity gives $\lambda(A) = 0$ for every countable set $A$, for example $\lambda(\mathbb{Q}) = 0$. The uniform distribution on $[0, 1]$ is the probability measure $P(A) = \lambda(A)$ on the Borel subsets of $[0, 1]$.
+    \end{enumerate}
+\end{example}
+
+\begin{remark}[Why not all subsets?]\label{L4-rem:vitali}
+    There is no measure on all subsets of $[0, 1)$ that gives every interval its length and is invariant under translations modulo $1$. Here is the idea of Vitali's argument (1905). Call $x, y \in [0, 1)$ equivalent if $x - y$ is rational, and choose one point from each equivalence class; let $V$ be the set of chosen points (this needs the axiom of choice). The translates $V_q = \{v + q \bmod 1 : v \in V\}$ for the countably many rationals $q \in [0, 1)$ are pairwise disjoint and cover $[0, 1)$. If $V$ had a measure $m$, then so would every $V_q$, and countable additivity would give $1 = m + m + m + \cdots$, which is impossible both for $m = 0$ and for $m > 0$. Sets like $V$ never arise from explicit constructions; all sets that we meet in practice are Borel sets.
 \end{remark}
 
 \begin{proposition}\label{L4-prop:probability-rules}
-    For all events $A$, $B$ and $A_1, A_2, \ldots$:
+    For all events $A$, $B$ and $A_1, A_2, \ldots$ of a probability space:
     \begin{enumerate}
-        \item $P(A^c) = 1 - P(A)$, where $A^c = \Omega \setminus A$, and $P(\emptyset) = 0$;
+        \item $P(A^c) = 1 - P(A)$;
         \item if $A \subseteq B$, then $P(A) \leq P(B)$;
         \item $P(A \cup B) = P(A) + P(B) - P(A \cap B)$;
-        \item (union bound) $P(A_1 \cup A_2 \cup \cdots) \leq P(A_1) + P(A_2) + \cdots$.
+        \item (union bound) $P(A_1 \cup A_2 \cup \cdots) \leq P(A_1) + P(A_2) + \cdots$;
+        \item (continuity) if $A_1 \subseteq A_2 \subseteq \cdots$, then $P\big(\bigcup_k A_k\big) = \lim_{k \to \infty} P(A_k)$, and if $A_1 \supseteq A_2 \supseteq \cdots$, then $P\big(\bigcap_k A_k\big) = \lim_{k \to \infty} P(A_k)$.
     \end{enumerate}
 \end{proposition}
 
 \begin{proof}
-    (1) $A$ and $A^c$ are disjoint with union $\Omega$, so $P(A) + P(A^c) = 1$; for $A = \Omega$, this gives $P(\emptyset) = 0$. (2) $B$ is the disjoint union of $A$ and $B \setminus A$, so $P(B) = P(A) + P(B \setminus A) \geq P(A)$. (3) $A \cup B$ is the disjoint union of $A$ and $B \setminus A$, and $B$ is the disjoint union of $B \setminus A$ and $A \cap B$; so $P(A \cup B) = P(A) + P(B \setminus A) = P(A) + P(B) - P(A \cap B)$. (4) Let $B_1 = A_1$ and $B_k = A_k \setminus (A_1 \cup \cdots \cup A_{k-1})$. The $B_k$ are disjoint, $B_k \subseteq A_k$, and they have the same union as the $A_k$; now use the third axiom and (2).
+    (1) $A$ and $A^c$ are disjoint with union $\Omega$, so $P(A) + P(A^c) = 1$. (2) $B$ is the disjoint union of $A$ and $B \setminus A$, so $P(B) = P(A) + P(B \setminus A) \geq P(A)$. (3) $A \cup B$ is the disjoint union of $A$ and $B \setminus A$, and $B$ is the disjoint union of $B \setminus A$ and $A \cap B$; so $P(A \cup B) = P(A) + P(B \setminus A) = P(A) + P(B) - P(A \cap B)$. (4) Let $B_1 = A_1$ and $B_k = A_k \setminus (A_1 \cup \cdots \cup A_{k-1})$. The $B_k$ are disjoint, $B_k \subseteq A_k$, and they have the same union as the $A_k$; now use countable additivity and (2). (5) For increasing events, $B_k = A_k \setminus A_{k-1}$ and $A_n = B_1 \cup \cdots \cup B_n$, so $P\big(\bigcup_k A_k\big) = \sum_k P(B_k) = \lim_{n \to \infty}\sum_{k \leq n} P(B_k) = \lim_{n \to \infty} P(A_n)$. For decreasing events, apply this to the increasing complements and use (1).
 \end{proof}
 
-\begin{example}[Equally likely outcomes]\label{L4-ex:dice}
-    If $\Omega$ is finite and all outcomes are equally likely, then $P(A) = \frac{|A|}{|\Omega|}$. For two fair dice, $\Omega = \{1, \ldots, 6\}^2$ has $36$ outcomes. The sum is $7$ for the $6$ outcomes $(1, 6), (2, 5), \ldots, (6, 1)$, so $P(\text{sum} = 7) = \frac{6}{36} = \frac{1}{6}$. The event ``at least one six'' is the complement of ``no six'', which has $5 \cdot 5 = 25$ outcomes, so its probability is $1 - \frac{25}{36} = \frac{11}{36}$.
+Parts (2), (4) and (5) hold for every measure, except that for decreasing sets in (5), we need $\mu(A_1) < \infty$.
+
+\begin{example}[Two dice]\label{L4-ex:dice}
+    For two fair dice, $\Omega = \{1, \ldots, 6\}^2$ has $36$ equally likely outcomes. The sum is $7$ for the $6$ outcomes $(1, 6), (2, 5), \ldots, (6, 1)$, so $P(\text{sum} = 7) = \frac{6}{36} = \frac{1}{6}$. The event ``at least one six'' is the complement of ``no six'', which has $5 \cdot 5 = 25$ outcomes, so its probability is $1 - \frac{25}{36} = \frac{11}{36}$.
 \end{example}
+
+An event with probability $1$ happens almost surely (a.s.), and an event with probability $0$ is a null event. Null events need not be impossible: a uniformly random point of $[0, 1]$ is irrational almost surely, since $\lambda(\mathbb{Q} \cap [0, 1]) = 0$, although every rational number in $[0, 1]$ is a possible outcome.
 
 \subsection{Conditional probability and Bayes' theorem}
 
@@ -85,28 +118,46 @@ Bayes' theorem reverses conditional probabilities: from the probability of the e
 \subsection{Independence}
 
 \begin{definition}[Independence]\label{L4-def:independence}
-    Two events $A$ and $B$ are independent if $P(A \cap B) = P(A)P(B)$. Events $A_1, \ldots, A_n$ are (mutually) independent if $P(A_{i_1} \cap \cdots \cap A_{i_k}) = P(A_{i_1}) \cdots P(A_{i_k})$ for every choice of indices $i_1 < \cdots < i_k$.
+    Two events $A$ and $B$ are independent if $P(A \cap B) = P(A)P(B)$. Events $A_1, \ldots, A_n$ are (mutually) independent if $P(A_{i_1} \cap \cdots \cap A_{i_k}) = P(A_{i_1}) \cdots P(A_{i_k})$ for every choice of indices $i_1 < \cdots < i_k$, and infinitely many events are independent if any finitely many of them are. More generally, $\sigma$-algebras $\mathcal{G}_1, \ldots, \mathcal{G}_n \subseteq \mathcal{F}$ are independent if $P(G_1 \cap \cdots \cap G_n) = P(G_1)\cdots P(G_n)$ for all $G_1 \in \mathcal{G}_1, \ldots, G_n \in \mathcal{G}_n$: they describe pieces of information that tell us nothing about each other.
 \end{definition}
 
 If $P(B) > 0$, then $A$ and $B$ are independent if and only if $P(A \mid B) = P(A)$: learning that $B$ happened does not change the probability of $A$. For example, for two fair dice, the events $A$ = ``the first die is even'' and $B$ = ``the sum is $7$'' are independent: $A \cap B$ consists of the $3$ outcomes $(2, 5), (4, 3), (6, 1)$, so $P(A \cap B) = \frac{3}{36} = \frac{1}{2} \cdot \frac{1}{6} = P(A)P(B)$. Independence is not the same as disjointness: disjoint events with positive probabilities are never independent, since $P(A \cap B) = 0$.
 
+\begin{example}[Infinitely many coin flips]\label{L4-ex:coin-flips}
+    Many questions about random sequences need infinitely many independent events on one probability space. Let $\Omega = [0, 1)$ with the uniform distribution, and let $D_1(\omega), D_2(\omega), \ldots \in \{0, 1\}$ be the digits of the binary expansion $\omega = \sum_k D_k(\omega)2^{-k}$ (choosing the expansion that does not end with infinitely many $1$s). For every pattern $d_1, \ldots, d_n$, the set of $\omega$ whose first $n$ digits are $d_1, \ldots, d_n$ is an interval of length $2^{-n}$, so $P(D_1 = d_1, \ldots, D_n = d_n) = 2^{-n}$. Summing over the digits that we do not care about, it follows that the events $\{D_k = 1\}$ are independent, with probability $\frac{1}{2}$ each: the digits behave exactly like independent fair coin flips, with $1$ for heads. The events ``the first $n$ flips are tails'' have the probabilities $2^{-n}$ and decrease to the event ``all flips are tails'', so by continuity, its probability is $\lim_n 2^{-n} = 0$: almost surely, heads eventually appears. (The event ``all flips are tails'' is $\{0\}$, a possible but null event.) In the same way, one can construct a probability space that carries an infinite sequence of independent random variables (Section~\ref{L4-sec:joint}) with any given distributions; this is a theorem of Kolmogorov, which we do not prove.
+\end{example}
+
 \section{Random Variables and Their Distributions}\label{L4-sec:random-variables}
 
-\begin{definition}[Random variable]\label{L4-def:random-variable}
-    A random variable is a function $X: \Omega \to \mathbb{R}$ on a probability space. Its distribution describes the probabilities $P(X \in I) = P(\{\omega : X(\omega) \in I\})$ for intervals $I$. Its cumulative distribution function (CDF) is $F(x) = P(X \leq x)$.
+A random variable is a numerical quantity that depends on the outcome of the experiment. To ask for the probability that it lies in a set $B$, the set of outcomes for which it does must be an event.
+
+\begin{definition}[Random variable and distribution]\label{L4-def:random-variable}
+    Let $(\Omega, \mathcal{F}, P)$ be a probability space. A random variable is a measurable function $X: \Omega \to \mathbb{R}$, i.e., a function with
+    \[\{X \in B\} = \{\omega \in \Omega : X(\omega) \in B\} \in \mathcal{F} \qquad \text{for every Borel set } B \subseteq \mathbb{R}.\]
+    Its distribution (or law) is the probability measure $P_X(B) = P(X \in B)$ on $(\mathbb{R}, \mathcal{B}(\mathbb{R}))$, and its cumulative distribution function (CDF) is $F(x) = P(X \leq x)$.
 \end{definition}
 
-The CDF is nondecreasing, tends to $0$ as $x \to -\infty$ and to $1$ as $x \to \infty$, and $P(a < X \leq b) = F(b) - F(a)$. In practice, we rarely look at the sample space: a random variable is described by its distribution. Most distributions in machine learning are of one of two kinds.
+The distribution $P_X$ is a probability measure, since taking preimages commutes with complements and countable unions; it is called the image (or pushforward) of $P$ under $X$. To check that $X$ is measurable, it suffices to check $\{X \leq x\} \in \mathcal{F}$ for all $x$: the Borel sets $B$ with $\{X \in B\} \in \mathcal{F}$ form a $\sigma$-algebra, and if it contains the intervals $(-\infty, x]$, it contains all Borel sets. One can show that continuous functions of random variables, and sums, products, maxima and limits of sequences of random variables, are again random variables. We use such facts without comment: in practice, every function that we write down is measurable.
+
+\begin{theorem}[The CDF determines the distribution]\label{L4-thm:cdf}
+    The CDF $F$ of a random variable $X$ is nondecreasing and right-continuous, with $\lim_{x \to -\infty} F(x) = 0$ and $\lim_{x \to \infty} F(x) = 1$, and $P(a < X \leq b) = F(b) - F(a)$ for $a < b$. Random variables with the same CDF have the same distribution. Conversely, every function $F$ with these four properties is the CDF of a random variable.
+\end{theorem}
+
+\begin{proof}[Proof of some parts]
+    $F$ is nondecreasing by Proposition~\ref{L4-prop:probability-rules}(2). If $x_k \downarrow x$, the events $\{X \leq x_k\}$ decrease to $\{X \leq x\}$, so $F(x_k) \to F(x)$ by continuity; the limits at $\pm\infty$ follow in the same way from $\bigcap_k \{X \leq -k\} = \emptyset$ and $\bigcup_k \{X \leq k\} = \Omega$. That the CDF determines $P_X$ follows from a uniqueness theorem of measure theory, which we do not prove: two probability measures that agree on a collection of sets that is closed under intersections, such as the intervals $(-\infty, x]$, agree on the $\sigma$-algebra that it generates. The converse is Theorem~\ref{L4-thm:inverse-transform} below.
+\end{proof}
+
+So in practice, we rarely look at the sample space: a random variable is described by its distribution, i.e., by its CDF. The jumps of the CDF are the values that have positive probability: since $\{X < x\} = \bigcup_k \{X \leq x - \frac{1}{k}\}$, continuity gives $P(X < x) = \lim_{y \uparrow x} F(y)$, so $P(X = x) = F(x) - \lim_{y \uparrow x} F(y)$. Most distributions in machine learning are of one of two kinds.
 
 \begin{definition}[Discrete and continuous random variables]\label{L4-def:pmf-pdf}
     \begin{enumerate}
         \item $X$ is discrete if it takes only finitely or countably many values $x_1, x_2, \ldots$. Its probability mass function (pmf) is $p(x) = P(X = x)$, and $\sum_i p(x_i) = 1$.
-        \item $X$ is continuous if there is a function $p \geq 0$, its probability density function (pdf), with
+        \item $X$ is continuous if there is a measurable function $p \geq 0$, its probability density function (pdf), with
         \[P(a \leq X \leq b) = \int_a^b p(x) \, dx \qquad \text{for all } a \leq b, \qquad \text{and} \qquad \int_{-\infty}^\infty p(x) \, dx = 1.\]
     \end{enumerate}
 \end{definition}
 
-For a continuous random variable, $P(X = x) = 0$ for every single value $x$, and the density is the derivative of the CDF, $p = F'$ (where $p$ is continuous). A density is not a probability: it can be larger than $1$. For a small interval, $P(x \leq X \leq x + h) \approx p(x)h$.
+Then $P(X \in B) = \int_B p(x)\, dx$ for every Borel set $B$, since both sides are probability measures that agree on intervals. Here, and from now on, integrals are Lebesgue integrals (Section~\ref{L4-sec:lebesgue}), which agree with the integrals of Lecture~3 whenever these converge absolutely. In Section~\ref{L4-sec:densities}, we will see that pmfs and pdfs are both densities with respect to a measure, and that some distributions have neither. For a continuous random variable, $P(X = x) = 0$ for every single value $x$, and the density is the derivative of the CDF, $p = F'$ (where $p$ is continuous). A density is not a probability: it can be larger than $1$. For a small interval, $P(x \leq X \leq x + h) \approx p(x)h$.
 
 \begin{example}[Discrete distributions]\label{L4-ex:discrete}
     \begin{enumerate}
@@ -181,26 +232,66 @@ If $X$ is a random variable and $g: \mathbb{R} \to \mathbb{R}$ is a function, th
 \end{example}
 
 \begin{theorem}[Inverse transform sampling]\label{L4-thm:inverse-transform}
-    Let $F$ be a continuous, strictly increasing CDF, and let $U \sim$ Uniform$(0, 1)$. Then $X = F^{-1}(U)$ has the CDF $F$.
+    Let $F$ be nondecreasing and right-continuous with the limits $0$ at $-\infty$ and $1$ at $\infty$, let
+    \[F^{-1}(u) = \min\{x \in \mathbb{R} : F(x) \geq u\} \qquad \text{for } 0 < u < 1\]
+    be its quantile function, and let $U \sim$ Uniform$(0, 1)$. Then $X = F^{-1}(U)$ has the CDF $F$.
 \end{theorem}
 
 \begin{proof}
-    $P(X \leq x) = P(F^{-1}(U) \leq x) = P(U \leq F(x)) = F(x)$, since $P(U \leq u) = u$ for $u \in [0, 1]$.
+    For $0 < u < 1$, the set $\{x : F(x) \geq u\}$ is nonempty and bounded below, since $F$ tends to $1$ and to $0$. Since $F$ is nondecreasing, it is an interval that extends to $\infty$, and since $F$ is right-continuous, it contains its left endpoint. So the minimum exists, and $F^{-1}(u) \leq x$ if and only if $F(x) \geq u$. Hence $P(X \leq x) = P(U \leq F(x)) = F(x)$.
 \end{proof}
 
-So a computer that can generate uniform random numbers can generate random numbers with any such distribution. For example, the Exponential$(\lambda)$ distribution has $F(x) = 1 - e^{-\lambda x}$, so $X = -\frac{1}{\lambda}\log(1 - U)$ is exponentially distributed. Normalizing flows (Lecture~3) generalize this idea to many dimensions: they transform simple random vectors by learned invertible maps.
+If $F$ is continuous and strictly increasing, $F^{-1}$ is the inverse function of $F$. So a computer that can generate uniform random numbers can generate random numbers with any distribution on $\mathbb{R}$, and the random variable $F^{-1}(U)$ on the probability space $\big((0, 1), \mathcal{B}, \lambda\big)$, with $U(\omega) = \omega$, proves the last part of Theorem~\ref{L4-thm:cdf}. For example, the Exponential$(\lambda)$ distribution has $F(x) = 1 - e^{-\lambda x}$, so $X = -\frac{1}{\lambda}\log(1 - U)$ is exponentially distributed. For a Bernoulli$(p)$ variable, $F$ jumps from $0$ to $1 - p$ at $0$ and from $1 - p$ to $1$ at $1$, so $F^{-1}(u) = 0$ for $u \leq 1 - p$ and $F^{-1}(u) = 1$ for $u > 1 - p$: we return $1$ if $U > 1 - p$, which has the probability $p$. Normalizing flows (Lecture~3) generalize this idea to many dimensions: they transform simple random vectors by learned invertible maps.
 
-\section{Expectation and Variance}\label{L4-sec:expectation}
+\section{Expectation and Integration}\label{L4-sec:expectation}
 
-\begin{definition}[Expectation]\label{L4-def:expectation}
-    The expectation (expected value, or mean) of a random variable $X$ is
-    \[\E[X] = \sum_i x_i\,p(x_i) \qquad \text{or} \qquad \E[X] = \int_{-\infty}^\infty x\,p(x) \, dx,\]
-    for discrete and continuous $X$, respectively, provided that the sum or integral converges absolutely.
+The expectation of a random variable is its average value, weighted by probability. For a random variable with finitely many values $x_1, \ldots, x_k$, it is the sum $\sum_i x_iP(X = x_i)$. In general, it is an integral with respect to the probability measure $P$, the Lebesgue integral. The construction works for every measure, and for the Lebesgue measure on $\mathbb{R}^n$, it extends the integral of Lecture~3.
+
+\subsection{The Lebesgue integral}\label{L4-sec:lebesgue}
+
+Let $(\Omega, \mathcal{F}, \mu)$ be a measure space. A function $f: \Omega \to \mathbb{R}$ or $f: \Omega \to [0, \infty]$ is measurable if $\{f \leq x\} \in \mathcal{F}$ for all $x \in \mathbb{R}$; on a probability space, the measurable real-valued functions are the random variables.
+
+\begin{definition}[Lebesgue integral]\label{L4-def:lebesgue}
+    \begin{enumerate}
+        \item A simple function is a finite sum $s = \sum_{i=1}^k a_i\mathbf{1}_{A_i}$ with $a_i \geq 0$ and $A_i \in \mathcal{F}$, and its integral is $\int s\, d\mu = \sum_{i=1}^k a_i\mu(A_i)$, with $0 \cdot \infty = 0$.
+        \item For a measurable $f: \Omega \to [0, \infty]$,
+        \[\int f\, d\mu = \sup\Big\{\int s\, d\mu : s \text{ simple, } 0 \leq s \leq f\Big\} \in [0, \infty].\]
+        \item A measurable $f: \Omega \to \mathbb{R}$ is integrable if $\int |f|\, d\mu < \infty$, and then $\int f\, d\mu = \int f^+\, d\mu - \int f^-\, d\mu$, where $f^+ = \max(f, 0)$ and $f^- = \max(-f, 0)$, so that $f = f^+ - f^-$ and $|f| = f^+ + f^-$.
+    \end{enumerate}
+    For $A \in \mathcal{F}$, we write $\int_A f\, d\mu = \int f\mathbf{1}_A\, d\mu$. Other notations are $\int f(\omega)\, \mu(d\omega)$, and for the Lebesgue measure, $\int f(\mathbf{x})\, d\mathbf{x}$.
 \end{definition}
 
-The expectation is the center of mass of the distribution: if we put the mass $p(x_i)$ at each point $x_i$, the balance point is $\E[X]$. To compute the expectation of a function of $X$, we do not need the distribution of $g(X)$; one can show that
-\[\E[g(X)] = \sum_i g(x_i)\,p(x_i) \qquad \text{or} \qquad \E[g(X)] = \int_{-\infty}^\infty g(x)\,p(x) \, dx.\]
-The expectation is linear: $\E[aX + bY + c] = a\E[X] + b\E[Y] + c$ for all random variables $X$, $Y$ with finite expectations, and all numbers $a$, $b$, $c$ (we prove this in Section~\ref{L4-sec:joint} for discrete random variables).
+(One checks that the integral of a simple function does not depend on how it is written as a sum.) The Riemann integral of Lecture~3 divides the domain into small boxes. The Lebesgue integral divides the range instead: the simple functions
+\[s_n = \min\big(n, \, 2^{-n}\lfloor 2^nf\rfloor\big),\]
+which round $f$ down to a multiple of $2^{-n}$ and cut it off at $n$, increase to $f$, and $\int s_n\, d\mu$ adds up the values $j2^{-n}$, weighted by the measures of the sets $\{j2^{-n} \leq f < (j + 1)2^{-n}\}$. One can show that the integral is linear and monotone ($f \leq g$ implies $\int f\, d\mu \leq \int g\, d\mu$), that $\int |f|\, d\mu = 0$ if and only if $f = 0$ almost everywhere, i.e., outside a set of measure $0$, and that functions which agree almost everywhere have the same integral. For bounded Riemann integrable functions on boxes, and for absolutely convergent improper Riemann integrals, the Lebesgue integral agrees with the Riemann integral. But it integrates many more functions. For example, the indicator function $\mathbf{1}_{\mathbb{Q}}$ of the rationals on $[0, 1]$ is not Riemann integrable, since every Riemann sum can be made $0$ or $1$ by choosing irrational or rational points, but its Lebesgue integral is $\lambda(\mathbb{Q} \cap [0, 1]) = 0$. For the counting measure on $\mathbb{N}$, the integral is a series: $\int f\, d\mu = \sum_k f(k)$.
+
+\subsection{Expectation}
+
+\begin{definition}[Expectation]\label{L4-def:expectation}
+    The expectation (expected value, or mean) of a random variable $X$ on a probability space $(\Omega, \mathcal{F}, P)$ is
+    \[\E[X] = \int X\, dP,\]
+    defined if $X \geq 0$ (then possibly $\E[X] = \infty$) or if $X$ is integrable, i.e., $\E[|X|] < \infty$.
+\end{definition}
+
+The expectation is linear, $\E[aX + bY + c] = a\E[X] + b\E[Y] + c$, and monotone, since the integral is, and $\E[\mathbf{1}_A] = P(A)$ for every event $A$. It is the center of mass of the distribution: if we put the mass $P(X = x_i)$ at each value $x_i$, the balance point is $\E[X]$. To compute expectations, we do not need the sample space, only the distribution.
+
+\begin{theorem}[Expectations from distributions]\label{L4-thm:lotus}
+    Let $X$ be a random variable, and let $g: \mathbb{R} \to \mathbb{R}$ be measurable with $g \geq 0$ or $\E[|g(X)|] < \infty$. Then $\E[g(X)] = \int_{\mathbb{R}} g\, dP_X$. In particular,
+    \[\E[g(X)] = \sum_i g(x_i)\,p(x_i) \qquad \text{or} \qquad \E[g(X)] = \int_{-\infty}^\infty g(x)\,p(x) \, dx\]
+    for discrete $X$ with the pmf $p$ and continuous $X$ with the density $p$, respectively.
+\end{theorem}
+
+\begin{proof}
+    For $g = \mathbf{1}_B$, both sides are $P(X \in B)$, by the definition of $P_X$. By linearity, the formula holds for simple functions $g$, and by the monotone convergence theorem below, applied to simple functions that increase to $g$, for all $g \geq 0$. For integrable $g(X)$, apply it to $g^+$ and $g^-$. The two formulas follow in the same way from Definition~\ref{L4-def:density} below, with the counting measure and the Lebesgue measure.
+\end{proof}
+
+\begin{example}[Tail sums]\label{L4-ex:tail-sum}
+    Let $X$ take values in $\{0, 1, 2, \ldots\}$. Then $X = \sum_{k=0}^\infty \mathbf{1}_{\{X > k\}}$, since exactly the first $X$ terms are $1$. By the monotone convergence theorem below, the expectation of a series of nonnegative random variables is the series of their expectations, so
+    \[\E[X] = \sum_{k=0}^\infty P(X > k).\]
+    For a Geometric$(p)$ variable, $P(X > k) = (1 - p)^k$, the probability that the first $k$ trials fail, so $\E[X] = \sum_{k \geq 0}(1 - p)^k = \frac{1}{p}$. Example~\ref{L4-ex:tail-integral} gives the analogous formula for continuous random variables.
+\end{example}
+
+\subsection{Variance and moments}
 
 \begin{definition}[Variance]\label{L4-def:variance}
     The variance of $X$ with mean $\mu = \E[X]$ is $\Var(X) = \E[(X - \mu)^2]$, and its standard deviation is $\sigma = \sqrt{\Var(X)}$.
@@ -240,6 +331,73 @@ and $\Var(aX + b) = \E[(aX - a\mu)^2] = a^2\Var(X)$: shifting does not change th
     For a fair die, $\E[X] = \frac{1 + 2 + \cdots + 6}{6} = 3.5$, which is not a possible value, and $\E[X^2] = \frac{91}{6}$, so $\Var(X) = \frac{91}{6} - \frac{49}{4} = \frac{35}{12} \approx 2.92$.
 \end{example}
 
+\subsection{Convergence theorems}
+
+When can we exchange a limit and an expectation? This question comes up constantly: for limits of random variables, for infinite series, and for derivatives of expectations with respect to parameters. The answer is the main advantage of the Lebesgue integral.
+
+\begin{theorem}[Monotone convergence]\label{L4-thm:monotone}
+    Let $0 \leq f_1 \leq f_2 \leq \cdots$ be measurable functions with $f_n \to f$ pointwise. Then $\int f_n\, d\mu \to \int f\, d\mu$.
+\end{theorem}
+
+\begin{proof}
+    By monotonicity, the integrals $\int f_n\, d\mu$ increase to a limit $L \leq \int f\, d\mu$. Conversely, let $s = \sum_i a_i\mathbf{1}_{A_i}$ be simple with $0 \leq s \leq f$, and let $0 < c < 1$. The sets $E_n = \{f_n \geq cs\}$ increase to $\Omega$: where $s > 0$, we have $f_n \to f \geq s > cs$, and where $s = 0$, trivially $f_n \geq cs$. Hence
+    \[\int f_n\, d\mu \geq \int cs\mathbf{1}_{E_n}\, d\mu = c\sum_i a_i\mu(A_i \cap E_n) \to c\int s\, d\mu,\]
+    by the continuity of measures (Proposition~\ref{L4-prop:probability-rules}(5), whose proof works for every measure). So $L \geq c\int s\, d\mu$ for all $c < 1$ and all such $s$, i.e., $L \geq \int f\, d\mu$.
+\end{proof}
+
+\begin{theorem}[Fatou's lemma and dominated convergence]\label{L4-thm:dominated}
+    \begin{enumerate}
+        \item (Fatou) For measurable $f_n \geq 0$, $\int \liminf_n f_n\, d\mu \leq \liminf_n \int f_n\, d\mu$.
+        \item (Dominated convergence) Let $f_n \to f$ pointwise (or almost everywhere), and let $|f_n| \leq g$ for all $n$, with an integrable function $g$. Then $f$ is integrable, and $\int f_n\, d\mu \to \int f\, d\mu$.
+    \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+    (1) The functions $g_k = \inf_{n \geq k} f_n$ increase to $\liminf_n f_n$, and $\int g_k\, d\mu \leq \int f_n\, d\mu$ for all $n \geq k$. By monotone convergence, $\int \liminf_n f_n\, d\mu = \lim_k \int g_k\, d\mu \leq \liminf_n \int f_n\, d\mu$. (2) Since $|f| \leq g$, $f$ is integrable. Fatou's lemma, applied to the nonnegative functions $g + f_n$ and $g - f_n$, gives
+    \[\int g\, d\mu + \int f\, d\mu \leq \int g\, d\mu + \liminf_n \int f_n\, d\mu \qquad \text{and} \qquad \int g\, d\mu - \int f\, d\mu \leq \int g\, d\mu - \limsup_n \int f_n\, d\mu.\]
+    Hence $\limsup_n \int f_n\, d\mu \leq \int f\, d\mu \leq \liminf_n \int f_n\, d\mu$.
+\end{proof}
+
+\begin{example}\label{L4-ex:escaping-mass}
+    \begin{enumerate}
+        \item (Mass can escape.) On $[0, 1]$ with the Lebesgue measure, let $f_n = n\mathbf{1}_{(0, 1/n)}$. Then $f_n(x) \to 0$ for every $x$, but $\int f_n\, d\lambda = 1$ for all $n$: the limit of the integrals is not the integral of the limit. In the language of probability, $X_n = n\mathbf{1}_{\{U < 1/n\}}$ for a uniform $U$ is a lottery ticket that wins $n$ euros with probability $\frac{1}{n}$; it is $0$ for all large $n$, but $\E[X_n] = 1$. Dominated convergence does not apply, since $\sup_n f_n(x) \geq \frac{1}{2x}$ for $0 < x \leq \frac{1}{2}$, which is not integrable.
+        \item (Differentiating under the integral sign.) Let $f(x, \theta)$ be integrable in $x$ and differentiable in $\theta$, with $|\frac{\partial f}{\partial\theta}(x, \theta)| \leq g(x)$ for all $\theta$ in an open interval, where $\int g\, d\mu < \infty$. Then
+        \[\frac{d}{d\theta}\int f(x, \theta)\, d\mu(x) = \int \frac{\partial f}{\partial\theta}(x, \theta)\, d\mu(x).\]
+        Indeed, for $h_n \to 0$, the difference quotients $\frac{f(x, \theta + h_n) - f(x, \theta)}{h_n}$ converge to $\frac{\partial f}{\partial\theta}(x, \theta)$, and by the mean value theorem, they are bounded by $g(x)$; now apply dominated convergence. This proves the Leibniz rule (Proposition~\ref{L3-prop:leibniz}) for unbounded regions, under the condition stated there, and for general measures. It also shows that the gradient of an expected loss is the expected gradient, $\nabla_{\boldsymbol{\theta}}\E[\ell(\boldsymbol{\theta}; \mathbf{X})] = \E[\nabla_{\boldsymbol{\theta}}\ell(\boldsymbol{\theta}; \mathbf{X})]$, if the partial derivatives are dominated in this way. This is why the gradient on a random training example is an unbiased estimate of the gradient of the expected loss.
+    \end{enumerate}
+\end{example}
+
+\subsection{Densities and the Radon--Nikodym theorem}\label{L4-sec:densities}
+
+Discrete and continuous distributions look different, but they are two cases of one notion.
+
+\begin{definition}[Density with respect to a measure]\label{L4-def:density}
+    Let $\mu$ be a measure on $(\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))$. A random vector $\mathbf{X}$, or its distribution, has the density $p \geq 0$ with respect to $\mu$ if
+    \[P(\mathbf{X} \in B) = \int_B p\, d\mu \qquad \text{for all Borel sets } B.\]
+    Then $\E[g(\mathbf{X})] = \int g\,p\, d\mu$ for every measurable $g \geq 0$, by the argument of Theorem~\ref{L4-thm:lotus}.
+\end{definition}
+
+For the Lebesgue measure, $p$ is the density of Section~\ref{L4-sec:random-variables}. For the counting measure on a countable set $\{x_1, x_2, \ldots\}$ of values, $\int_B p\, d\mu = \sum_{x_i \in B} p(x_i)$, so $p$ is the pmf. So sums with pmfs and integrals with pdfs are integrals with respect to different reference measures, and everything that we prove for integrals holds for both. A necessary condition for a density is that $\mu(B) = 0$ implies $P(\mathbf{X} \in B) = 0$, since an integral over a null set is $0$. The distribution is then called absolutely continuous with respect to $\mu$, and this condition is also sufficient.
+
+\begin{theorem}[Radon--Nikodym]\label{L4-thm:radon-nikodym}
+    Let $\mu$ and $\nu$ be $\sigma$-finite measures on $(\Omega, \mathcal{F})$ such that $\mu(A) = 0$ implies $\nu(A) = 0$ (written $\nu \ll \mu$). Then there is a measurable $p \geq 0$ with $\nu(A) = \int_A p\, d\mu$ for all $A \in \mathcal{F}$, and $p$ is unique up to changes on a set of $\mu$-measure $0$. It is called the Radon--Nikodym derivative $\frac{d\nu}{d\mu}$.
+\end{theorem}
+
+We do not prove this theorem here; Appendix~\ref{A-chapter} proves it with the Riesz representation theorem for Hilbert spaces. Not every distribution has a density with respect to the Lebesgue measure or a counting measure.
+
+\begin{example}[The ReLU of a Gaussian]\label{L4-ex:relu-gaussian}
+    Let $Z \sim \mathcal{N}(0, 1)$, and let $Y = \max(0, Z)$ be the activation of a ReLU unit with a Gaussian input. Then $P(Y = 0) = P(Z \leq 0) = \frac{1}{2}$, and $P(a \leq Y \leq b) = \int_a^b \varphi(y)\, dy$ for $0 < a < b$. So $Y$ is neither discrete nor continuous: it has an atom of mass $\frac{1}{2}$ at $0$, which the Lebesgue measure does not see. But $Y$ has a density with respect to $\mu = \delta_0 + \lambda$, namely $p(0) = \frac{1}{2}$ and $p(y) = \varphi(y)\mathbf{1}_{\{y > 0\}}$ for $y \neq 0$. Hence
+    \[\E[Y] = 0 \cdot \tfrac{1}{2} + \int_0^\infty y\varphi(y)\, dy = \frac{1}{\sqrt{2\pi}} \approx 0.399, \qquad \E[Y^2] = \int_0^\infty y^2\varphi(y)\, dy = \frac{1}{2},\]
+    so $\Var(Y) = \frac{1}{2} - \frac{1}{2\pi} \approx 0.341$. Mixed distributions of this kind also describe zero-inflated data, such as daily rainfall, or the amount that a visitor of a web shop spends.
+\end{example}
+
+\begin{remark}[Singular distributions and likelihood ratios]\label{L4-rem:singular}
+    \begin{enumerate}
+        \item Some distributions have neither atoms nor a density with respect to the Lebesgue measure. An example is the Cantor distribution, the distribution of $X = \sum_{k=1}^\infty 2D_k3^{-k}$ with independent fair coin flips $D_k \in \{0, 1\}$, a random number whose ternary digits are all $0$ or $2$. Its CDF, the Cantor function, is continuous, so $X$ has no atoms. But $X$ lies in the Cantor set, which has Lebesgue measure $0$, so it has no density. One can show that every distribution on $\mathbb{R}$ is a mixture of a discrete, an absolutely continuous, and such a singular part (the Lebesgue decomposition).
+        \item If $P \ll Q$, the Radon--Nikodym derivative $\frac{dP}{dQ}$ is the likelihood ratio, which is $\frac{p}{q}$ if $P$ and $Q$ have the densities $p$ and $q$. The weights of importance sampling (Section~\ref{L4-sec:monte-carlo}) are likelihood ratios, $\E_P[f] = \E_Q[f\frac{dP}{dQ}]$, and the KL divergence of Section~\ref{L4-sec:information} is $\KL(P \,\|\, Q) = \E_P[\log\frac{dP}{dQ}]$ for $P \ll Q$, and $\infty$ otherwise. So these notions make sense for arbitrary distributions.
+    \end{enumerate}
+\end{remark}
+
 \subsection{Inequalities}
 
 The variance controls how likely large deviations from the mean are.
@@ -252,7 +410,7 @@ The variance controls how likely large deviations from the mean are.
 \end{proposition}
 
 \begin{proof}
-    (1) Since $X \geq 0$, we have $X \geq a\mathbf{1}_{X \geq a}$, where $\mathbf{1}_{X \geq a}$ is $1$ if $X \geq a$ and $0$ otherwise. Taking expectations, $\E[X] \geq a P(X \geq a)$. (2) Apply (1) to $(X - \mu)^2$ and $a = k^2$: $P(|X - \mu| \geq k) = P((X - \mu)^2 \geq k^2) \leq \frac{\sigma^2}{k^2}$.
+    (1) Since $X \geq 0$, we have $X \geq a\mathbf{1}_{\{X \geq a\}}$. Taking expectations, $\E[X] \geq a P(X \geq a)$. (2) Apply (1) to $(X - \mu)^2$ and $a = k^2$: $P(|X - \mu| \geq k) = P((X - \mu)^2 \geq k^2) \leq \frac{\sigma^2}{k^2}$.
 \end{proof}
 
 For example, every random variable is at least $2$ standard deviations from its mean with probability at most $\frac{1}{4}$. This bound holds for all distributions, so it is weak for specific ones: for a normal distribution, the probability is only $0.046$.
@@ -267,12 +425,18 @@ For example, every random variable is at least $2$ standard deviations from its 
 
 For example, $f(x) = x^2$ gives $\E[X]^2 \leq \E[X^2]$, i.e., $\Var(X) \geq 0$, and the concave function $\log$ gives $\E[\log X] \leq \log\E[X]$ for $X > 0$. We will use the latter to show that the Kullback--Leibler divergence is nonnegative (Section~\ref{L4-sec:information}).
 
+\begin{example}[The Chernoff bound]\label{L4-ex:chernoff}
+    Markov's inequality becomes much stronger when it is applied to an exponential: for every $t > 0$, $P(X \geq a) = P(e^{tX} \geq e^{ta}) \leq e^{-ta}\E[e^{tX}]$, and we may choose the best $t$. For $S \sim$ Binomial$(n, \frac{1}{2})$, the sum of $n$ independent fair coin flips, $\E[e^{tS}] = \big(\frac{1 + e^t}{2}\big)^n$ (by Proposition~\ref{L4-prop:independent-product} below). For $n = 100$ and $a = 60$, the best choice is $e^t = \frac{3}{2}$, which gives $P(S \geq 60) \leq \big(\frac{5}{4}\big)^{100}\big(\frac{2}{3}\big)^{60} \approx 0.134$, while Chebyshev's inequality only gives $P(S \geq 60) \leq P(|S - 50| \geq 10) \leq \frac{25}{100} = 0.25$; the exact value is $0.028$. As $n$ grows, Chernoff bounds decrease exponentially, while Chebyshev's bound only decreases like $\frac{1}{n}$. Hoeffding's inequality (Theorem~\ref{L4-thm:hoeffding}) is proved in this way.
+\end{example}
+
+\paragraph{$L^p$ spaces.} For $p \geq 1$, the random variables with $\E[|X|^p] < \infty$ form a vector space $L^p$, and $\norm{X}_p = \E[|X|^p]^{1/p}$ is a norm on it, if we do not distinguish random variables that are equal almost surely (the triangle inequality is Minkowski's inequality, which we do not prove). By Jensen's inequality for the convex function $y \mapsto y^{q/p}$ on $[0, \infty)$, $\norm{X}_p \leq \norm{X}_q$ for $p \leq q$, so $L^q \subseteq L^p$. The space $L^2$, with the inner product $\E[XY]$, is complete, which makes it a Hilbert space (see Appendix~\ref{A-chapter}); we use this for the conditional expectation in Section~\ref{L4-sec:conditional-expectation}.
+
 \section{Joint Distributions and Independence}\label{L4-sec:joint}
 
-To describe how several random variables depend on each other, we need their joint distribution.
+To describe how several random variables depend on each other, we need their joint distribution. A random vector $\mathbf{X} = (X_1, \ldots, X_n)$ is a measurable map from $\Omega$ to $\mathbb{R}^n$, i.e., $\{\mathbf{X} \in B\} \in \mathcal{F}$ for all Borel sets $B \subseteq \mathbb{R}^n$; one can show that this holds if and only if every $X_i$ is a random variable. Its joint distribution is the probability measure $P_{\mathbf{X}}(B) = P(\mathbf{X} \in B)$ on $\mathbb{R}^n$, and the distributions of the $X_i$ are its marginals. For two random variables, we describe them by pmfs and densities.
 
 \begin{definition}[Joint, marginal and conditional distributions]\label{L4-def:joint}
-    The joint pmf of two discrete random variables $X$ and $Y$ is $p(x, y) = P(X = x, Y = y)$. Two continuous random variables have a joint density $p(x, y) \geq 0$ if $P((X, Y) \in A) = \iint_A p(x, y) \, dx \, dy$ for all (reasonable) sets $A \subseteq \mathbb{R}^2$. The marginal distributions of $X$ and $Y$ are
+    The joint pmf of two discrete random variables $X$ and $Y$ is $p(x, y) = P(X = x, Y = y)$. Two continuous random variables have a joint density $p(x, y) \geq 0$ if $P((X, Y) \in A) = \iint_A p(x, y) \, dx \, dy$ for all Borel sets $A \subseteq \mathbb{R}^2$. The marginal distributions of $X$ and $Y$ are
     \[p_X(x) = \sum_y p(x, y) \qquad \text{or} \qquad p_X(x) = \int_{-\infty}^\infty p(x, y) \, dy,\]
     and similarly for $p_Y$. The conditional distribution of $Y$ given $X = x$ (for $p_X(x) > 0$) is
     \[p(y \mid x) = \frac{p(x, y)}{p_X(x)}.\]
@@ -280,9 +444,22 @@ To describe how several random variables depend on each other, we need their joi
 
 The formulas $p_X(x) = \sum_y p(x, y)$ (the sum rule) and $p(x, y) = p(y \mid x)\,p_X(x)$ (the product rule) are the two basic rules of probabilistic machine learning, and Bayes' theorem $p(x \mid y) = \frac{p(y \mid x)p_X(x)}{p_Y(y)}$ follows from them. The same definitions apply to more than two random variables.
 
+\paragraph{Product measures and independence.} On a product of two measure spaces, there is a natural measure.
+
+\begin{theorem}[Product measures and Fubini--Tonelli]\label{L4-thm:fubini-tonelli}
+    Let $\mu$ and $\nu$ be $\sigma$-finite measures on $(\Omega_1, \mathcal{F}_1)$ and $(\Omega_2, \mathcal{F}_2)$, and let $\mathcal{F}_1 \otimes \mathcal{F}_2$ be the $\sigma$-algebra on $\Omega_1 \times \Omega_2$ generated by the products $A \times B$ with $A \in \mathcal{F}_1$ and $B \in \mathcal{F}_2$. There is exactly one measure $\mu \otimes \nu$ on it with $(\mu \otimes \nu)(A \times B) = \mu(A)\nu(B)$, the product measure. For every measurable $f \geq 0$ (Tonelli), and for every $f$ that is integrable with respect to $\mu \otimes \nu$ (Fubini),
+    \[\int f\, d(\mu \otimes \nu) = \int\bigg(\int f(x, y)\, d\nu(y)\bigg) d\mu(x) = \int\bigg(\int f(x, y)\, d\mu(x)\bigg) d\nu(y).\]
+\end{theorem}
+
+We do not prove this theorem. The Lebesgue measure on $\mathbb{R}^2$ is $\lambda \otimes \lambda$, and the theorem contains Fubini's theorem of Lecture~3, including its condition: for nonnegative functions, the order of integration never matters, and for functions of both signs, it does not matter if $\int |f| < \infty$ (compare with Example~\ref{L3-ex:fubini}, in which the two orders give $\frac{\pi}{4}$ and $-\frac{\pi}{4}$).
+
 \begin{definition}[Independent random variables]\label{L4-def:independent-rv}
-    $X$ and $Y$ are independent if $p(x, y) = p_X(x)\,p_Y(y)$ for all $x$ and $y$; equivalently, $p(y \mid x) = p_Y(y)$ whenever $p_X(x) > 0$. Random variables $X_1, \ldots, X_n$ are independent if their joint pmf or density is the product of the marginal ones. They are independent and identically distributed (i.i.d.) if moreover they all have the same distribution.
+    Random variables $X_1, \ldots, X_n$ are independent if
+    \[P(X_1 \in B_1, \ldots, X_n \in B_n) = P(X_1 \in B_1)\cdots P(X_n \in B_n) \qquad \text{for all Borel sets } B_1, \ldots, B_n,\]
+    i.e., if their joint distribution is the product $P_{X_1} \otimes \cdots \otimes P_{X_n}$ of their distributions. Infinitely many random variables are independent if any finitely many of them are. They are independent and identically distributed (i.i.d.) if moreover they all have the same distribution.
 \end{definition}
+
+For discrete random variables, independence means $p(x, y) = p_X(x)\,p_Y(y)$ for all values $x$ and $y$, and for random variables with a joint density, it means that the joint density factorizes as $p(x, y) = p_X(x)\,p_Y(y)$ (outside a null set); equivalently, $p(y \mid x) = p_Y(y)$ whenever $p_X(x) > 0$. In the language of $\sigma$-algebras, the information contained in $X$ is the $\sigma$-algebra $\sigma(X) = \{\{X \in B\} : B \text{ Borel}\}$ generated by $X$, and $X$ and $Y$ are independent if and only if $\sigma(X)$ and $\sigma(Y)$ are independent (Definition~\ref{L4-def:independence}). Since $\sigma(g(X)) \subseteq \sigma(X)$ for measurable $g$, functions $g(X)$ and $h(Y)$ of independent random variables are again independent.
 
 The standard assumption in machine learning is that the training examples are i.i.d.\ samples from an unknown distribution: each example is drawn from the same distribution, independently of the others.
 
@@ -302,18 +479,32 @@ The standard assumption in machine learning is that the training examples are i.
     The marginals are the row and column sums. The conditional probabilities are $P(Y = 1 \mid X = 1) = \frac{0.4}{0.5} = 0.8$ and $P(Y = 1 \mid X = 0) = \frac{0.2}{0.5} = 0.4$. Since $p(1, 1) = 0.4 \neq 0.5 \cdot 0.6 = p_X(1)p_Y(1)$, $X$ and $Y$ are not independent: learning $X$ changes the probabilities of $Y$.
 \end{example}
 
-For a function $g(X, Y)$, the expectation is $\E[g(X, Y)] = \sum_{x, y} g(x, y)\,p(x, y)$, or the corresponding integral. In particular, linearity of expectation follows: for discrete $X$ and $Y$,
-\[\E[X + Y] = \sum_{x, y}(x + y)\,p(x, y) = \sum_x x\sum_y p(x, y) + \sum_y y\sum_x p(x, y) = \E[X] + \E[Y].\]
+For a function $g(X, Y)$, Theorem~\ref{L4-thm:lotus} for random vectors gives $\E[g(X, Y)] = \int g\, dP_{(X, Y)}$, i.e., $\sum_{x, y} g(x, y)\,p(x, y)$ or the corresponding integral of the joint density.
 
 \begin{proposition}\label{L4-prop:independent-product}
-    If $X$ and $Y$ are independent, then $\E[XY] = \E[X]\,\E[Y]$, and more generally $\E[g(X)h(Y)] = \E[g(X)]\,\E[h(Y)]$.
+    If $X$ and $Y$ are independent, and $g(X)$ and $h(Y)$ are integrable (or nonnegative), then $\E[g(X)h(Y)] = \E[g(X)]\,\E[h(Y)]$. In particular, $\E[XY] = \E[X]\,\E[Y]$ for integrable $X$ and $Y$.
 \end{proposition}
 
 \begin{proof}
-    For discrete random variables,
-    \[\E[g(X)h(Y)] = \sum_{x, y} g(x)h(y)p_X(x)p_Y(y) = \Big(\sum_x g(x)p_X(x)\Big)\Big(\sum_y h(y)p_Y(y)\Big);\]
-    for densities, the same computation works with integrals.
+    The joint distribution is $P_X \otimes P_Y$, so by Theorem~\ref{L4-thm:lotus} and Tonelli's theorem (for nonnegative functions) or Fubini's theorem,
+    \[\E[g(X)h(Y)] = \int\!\!\int g(x)h(y)\, dP_X(x)\, dP_Y(y) = \int g\, dP_X\int h\, dP_Y = \E[g(X)]\,\E[h(Y)]. \qedhere\]
 \end{proof}
+
+\begin{example}[Sums of independent random variables]\label{L4-ex:convolution}
+    If $X$ and $Y$ are independent with the densities $p_X$ and $p_Y$, then $X + Y$ has the density
+    \[p_{X+Y}(z) = \int_{-\infty}^\infty p_X(x)\,p_Y(z - x)\, dx,\]
+    the convolution of $p_X$ and $p_Y$. Indeed, by Tonelli's theorem and the substitution $y = z - x$,
+    \[P(X + Y \leq t) = \int\!\!\int \mathbf{1}_{\{x + y \leq t\}}\,p_X(x)\,p_Y(y)\, dy\, dx = \int_{-\infty}^t \int_{-\infty}^\infty p_X(x)\,p_Y(z - x)\, dx\, dz.\]
+    For two independent Uniform$(0, 1)$ variables, the integrand is $1$ for $\max(0, z - 1) \leq x \leq \min(1, z)$ and $0$ otherwise, so $p_{X+Y}(z) = z$ for $0 \leq z \leq 1$ and $p_{X+Y}(z) = 2 - z$ for $1 \leq z \leq 2$: a triangular density, and $P(X + Y \leq \frac{1}{2}) = \frac{1}{8}$. For independent $X \sim$ Poisson$(\lambda)$ and $Y \sim$ Poisson$(\mu)$, the same computation with sums and the binomial theorem gives
+    \[P(X + Y = n) = \sum_{k=0}^n e^{-\lambda}\frac{\lambda^k}{k!}\,e^{-\mu}\frac{\mu^{n-k}}{(n - k)!} = e^{-(\lambda + \mu)}\frac{(\lambda + \mu)^n}{n!},\]
+    so $X + Y \sim$ Poisson$(\lambda + \mu)$. For example, if a website gets independent Poisson numbers of clicks from search engines and from ads, with the means $3$ and $2$ per minute, then the total number of clicks per minute is Poisson$(5)$.
+\end{example}
+
+\begin{example}[Tail integrals]\label{L4-ex:tail-integral}
+    For a random variable $X \geq 0$, we have $X = \int_0^\infty \mathbf{1}_{\{t < X\}}\, dt$, and Tonelli's theorem for $P \otimes \lambda$ gives
+    \[\E[X] = \int_0^\infty P(X > t)\, dt,\]
+    the continuous version of Example~\ref{L4-ex:tail-sum}. For example, for $X \sim$ Exponential$(\lambda)$, $\E[X] = \int_0^\infty e^{-\lambda t}\, dt = \frac{1}{\lambda}$, without integration by parts. Similarly, $\E[X^p] = \int_0^\infty pt^{p-1}P(X > t)\, dt$ for $p > 0$, which computes moments from tail bounds.
+\end{example}
 
 \subsection{Covariance and correlation}
 
@@ -335,7 +526,7 @@ The covariance is positive if $X$ and $Y$ tend to be larger than their means at 
 
 For example, a Binomial$(n, p)$ random variable is the sum of $n$ independent Bernoulli$(p)$ random variables, so its mean is $np$ and its variance is $np(1 - p)$, as claimed in Proposition~\ref{L4-prop:moments}.
 
-The covariance behaves like an inner product. For random variables $U$ and $V$ with finite variances, $\ip{U}{V} = \E[UV]$ is bilinear, symmetric, and $\ip{U}{U} = \E[U^2] \geq 0$, with equality only if $U = 0$ with probability $1$. So, if we do not distinguish random variables that are equal with probability $1$, it is an inner product as in Lecture~2. For centered random variables, the inner product is the covariance, the norm is the standard deviation, and the correlation is the cosine of the angle between them.
+The covariance behaves like an inner product. For random variables $U$ and $V$ with finite variances, $\ip{U}{V} = \E[UV]$ is bilinear, symmetric, and $\ip{U}{U} = \E[U^2] \geq 0$, with equality only if $U = 0$ with probability $1$. So, if we do not distinguish random variables that are equal with probability $1$, it is an inner product as in Lecture~2: the inner product of the space $L^2$ of Section~\ref{L4-sec:expectation}. For centered random variables, the inner product is the covariance, the norm is the standard deviation, and the correlation is the cosine of the angle between them.
 
 \begin{theorem}\label{L4-thm:correlation}
     $|\Cov(X, Y)| \leq \sigma_X\sigma_Y$, i.e., $-1 \leq \Corr(X, Y) \leq 1$. Moreover, $|\Corr(X, Y)| = 1$ if and only if $Y = aX + b$ with probability $1$, for some $a \neq 0$ and $b$; the sign of the correlation is the sign of $a$.
@@ -351,7 +542,7 @@ The covariance behaves like an inner product. For random variables $U$ and $V$ w
     In Example~\ref{L4-ex:joint-table}, $\E[XY] = P(X = 1, Y = 1) = 0.4$, so $\Cov(X, Y) = 0.4 - 0.5 \cdot 0.6 = 0.1$. With $\Var(X) = 0.25$ and $\Var(Y) = 0.24$, the correlation is $\frac{0.1}{\sqrt{0.06}} \approx 0.41$.
 \end{example}
 
-\subsection{Conditional expectation}
+\subsection{Conditional expectation}\label{L4-sec:conditional-expectation}
 
 \begin{definition}[Conditional expectation]\label{L4-def:conditional-expectation}
     The conditional expectation of $Y$ given $X = x$ is the mean of the conditional distribution,
@@ -374,6 +565,77 @@ The covariance behaves like an inner product. For random variables $U$ and $V$ w
 \end{proof}
 
 So $\E[Y \mid X]$ is the best prediction of $Y$ from $X$ in the sense of the mean squared error: it is the orthogonal projection of $Y$ onto the space of functions of $X$, with respect to the inner product $\E[UV]$ (compare with orthogonal projections in Lecture~2). A regression model trained with the squared loss on enough data therefore estimates the conditional mean $\E[Y \mid X = \mathbf{x}]$. In Example~\ref{L4-ex:joint-table}, $\E[Y \mid X = 0] = 0.4$ and $\E[Y \mid X = 1] = 0.8$, and indeed $0.5 \cdot 0.4 + 0.5 \cdot 0.8 = 0.6 = \E[Y]$.
+
+\paragraph{Conditioning on information.} The conditional expectation $\E[Y \mid X]$ only depends on the information contained in $X$: it is a function of $X$, and by the proof of Theorem~\ref{L4-thm:conditional-expectation}, $\E\big[(Y - \E[Y \mid X])\mathbf{1}_G\big] = 0$ for every event $G = \{X \in B\}$ in $\sigma(X)$. These two properties define the conditional expectation in general: also when $P(X = x) = 0$ for all $x$ and there is no joint density, and for conditioning on infinitely many random variables.
+
+\begin{definition}[Conditional expectation given a $\sigma$-algebra]\label{L4-def:conditional-expectation-general}
+    Let $Y$ be integrable, and let $\mathcal{G} \subseteq \mathcal{F}$ be a $\sigma$-algebra. A conditional expectation of $Y$ given $\mathcal{G}$ is a $\mathcal{G}$-measurable integrable random variable $\E[Y \mid \mathcal{G}]$ with
+    \[\E\big[\E[Y \mid \mathcal{G}]\,\mathbf{1}_G\big] = \E[Y\mathbf{1}_G] \qquad \text{for all } G \in \mathcal{G}.\]
+    For a random variable or random vector $X$, $\E[Y \mid X] = \E[Y \mid \sigma(X)]$.
+\end{definition}
+
+\begin{theorem}\label{L4-thm:conditional-expectation-general}
+    The conditional expectation exists, and it is unique up to changes on a null set. If $\E[Y^2] < \infty$, then $\E[Y \mid \mathcal{G}]$ is the orthogonal projection of $Y$ onto the subspace $L^2(\mathcal{G})$ of $\mathcal{G}$-measurable random variables in $L^2$: it minimizes $\E[(Y - Z)^2]$ over all $Z \in L^2(\mathcal{G})$. Moreover, for integrable $Y$:
+    \begin{enumerate}
+        \item (Tower property) $\E\big[\E[Y \mid \mathcal{G}]\big] = \E[Y]$, and $\E\big[\E[Y \mid \mathcal{G}] \mid \mathcal{H}\big] = \E[Y \mid \mathcal{H}]$ for $\sigma$-algebras $\mathcal{H} \subseteq \mathcal{G}$;
+        \item (Taking out what is known) $\E[ZY \mid \mathcal{G}] = Z\,\E[Y \mid \mathcal{G}]$ for every bounded $\mathcal{G}$-measurable random variable $Z$;
+        \item (Independence) if $\sigma(Y)$ and $\mathcal{G}$ are independent, then $\E[Y \mid \mathcal{G}] = \E[Y]$.
+    \end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof of some parts]
+    Existence for $Y \in L^2$: one can show that $L^2(\mathcal{G})$ is a closed subspace of $L^2$, so by the projection theorem for Hilbert spaces (see Appendix~\ref{A-chapter}), $Y$ has an orthogonal projection $\hat Y$ onto it. The error $Y - \hat Y$ is orthogonal to every element of $L^2(\mathcal{G})$, in particular to $\mathbf{1}_G$ for $G \in \mathcal{G}$, which is the defining property. For integrable $Y \geq 0$, one applies the Radon--Nikodym theorem to the measure $G \mapsto \E[Y\mathbf{1}_G]$ on $\mathcal{G}$. Uniqueness: if $Z_1$ and $Z_2$ both have the defining property, then $G = \{Z_1 > Z_2\} \in \mathcal{G}$ gives $\E[(Z_1 - Z_2)\mathbf{1}_G] = 0$, so $Z_1 \leq Z_2$ almost surely, and by symmetry, $Z_1 = Z_2$ almost surely. (1) The first statement is the defining property for $G = \Omega$. For the second, $\E[Y \mid \mathcal{H}]$ is $\mathcal{H}$-measurable, and for $H \in \mathcal{H} \subseteq \mathcal{G}$, $\E\big[\E[Y \mid \mathcal{H}]\mathbf{1}_H\big] = \E[Y\mathbf{1}_H] = \E\big[\E[Y \mid \mathcal{G}]\mathbf{1}_H\big]$, which is the defining property of $\E\big[\E[Y \mid \mathcal{G}] \mid \mathcal{H}\big]$. (3) The constant $\E[Y]$ is $\mathcal{G}$-measurable, and $\E[Y\mathbf{1}_G] = \E[Y]\,P(G) = \E\big[\E[Y]\mathbf{1}_G\big]$ by independence (Proposition~\ref{L4-prop:independent-product}). We omit the proof of (2).
+\end{proof}
+
+By the Doob--Dynkin lemma, which we do not prove, every $\sigma(X)$-measurable random variable is a measurable function of $X$. So $\E[Y \mid X] = m(X)$ for a measurable function $m$, and for discrete $X$ or a joint density, $m(x)$ is the conditional mean $\E[Y \mid X = x]$ of Definition~\ref{L4-def:conditional-expectation}; Theorem~\ref{L4-thm:conditional-expectation} is the case $\mathcal{G} = \sigma(X)$ of Theorem~\ref{L4-thm:conditional-expectation-general}.
+
+\begin{example}\label{L4-ex:conditional-partition}
+    \begin{enumerate}
+        \item (Finitely many pieces of information.) Let $\mathcal{G}$ be generated by a partition $B_1, \ldots, B_n$ of $\Omega$ with $P(B_i) > 0$ (Example~\ref{L4-ex:sigma-algebras}). A $\mathcal{G}$-measurable random variable is constant on each $B_i$, and the defining property with $G = B_i$ gives
+        \[\E[Y \mid \mathcal{G}] = \sum_{i=1}^n \frac{\E[Y\mathbf{1}_{B_i}]}{P(B_i)}\,\mathbf{1}_{B_i}:\]
+        on each piece, $\E[Y \mid \mathcal{G}]$ is the average of $Y$ over that piece.
+        \item (Symmetry.) Let $X_1, \ldots, X_n$ be i.i.d.\ and integrable, and $S = X_1 + \cdots + X_n$. The pairs $(X_i, S)$ all have the same joint distribution, so the $\E[X_i \mid S]$ are the same function of $S$, and they add up to $\E[S \mid S] = S$. Hence $\E[X_1 \mid S] = \frac{S}{n}$. For example, the expected value of the first of two dice, given that their sum is $8$, is $4$.
+        \item (Law of total variance.) For $Y \in L^2$, the decomposition $Y - \E[Y] = \big(Y - \E[Y \mid X]\big) + \big(\E[Y \mid X] - \E[Y]\big)$ is orthogonal, and Pythagoras gives
+        \[\Var(Y) = \E\big[\Var(Y \mid X)\big] + \Var\big(\E[Y \mid X]\big), \qquad \text{where } \Var(Y \mid X) = \E\big[(Y - \E[Y \mid X])^2 \mid X\big].\]
+        For example, let the number of customers of a shop on a day be $N \sim$ Poisson$(\lambda)$, and let customer $i$ spend $Y_i$, where the $Y_i$ are i.i.d.\ with mean $m$ and variance $v$, and independent of $N$. The revenue $T = Y_1 + \cdots + Y_N$ has $\E[T \mid N] = Nm$ and $\Var(T \mid N) = Nv$, so $\E[T] = \lambda m$ and $\Var(T) = \E[N]v + \Var(N)m^2 = \lambda(v + m^2)$. For $\lambda = 50$, $m = 20$ and $v = 100$, the revenue has the mean $1000$ and the standard deviation $\sqrt{25\,000} \approx 158$.
+    \end{enumerate}
+\end{example}
+
+\subsection{Martingales}\label{L4-sec:martingales}
+
+Conditional expectations describe what we expect, given the information that is available at a certain time. A filtration is an increasing sequence of $\sigma$-algebras $\mathcal{F}_0 \subseteq \mathcal{F}_1 \subseteq \cdots \subseteq \mathcal{F}$, where $\mathcal{F}_n$ is the information available at time $n$; for example, $\mathcal{F}_n = \sigma(X_1, \ldots, X_n)$ for a sequence of observations $X_1, X_2, \ldots$, and $\mathcal{F}_0 = \{\emptyset, \Omega\}$.
+
+\begin{definition}[Martingale]\label{L4-def:martingale}
+    A sequence of integrable random variables $M_0, M_1, \ldots$ is a martingale with respect to a filtration $(\mathcal{F}_n)$ if every $M_n$ is $\mathcal{F}_n$-measurable and $\E[M_{n+1} \mid \mathcal{F}_n] = M_n$ for all $n$.
+\end{definition}
+
+A martingale is a fair game: given the past, the expected next value is the current value. By the tower property, $\E[M_n] = \E[M_0]$ for all $n$.
+
+\begin{example}\label{L4-ex:martingales}
+    \begin{enumerate}
+        \item (Random walks.) Let $X_1, X_2, \ldots$ be independent with mean $0$, and let $S_n = X_1 + \cdots + X_n$, with $S_0 = 0$. Taking out what is known and independence give $\E[S_{n+1} \mid \mathcal{F}_n] = S_n + \E[X_{n+1}] = S_n$, so $(S_n)$ is a martingale. If the $X_i$ also have the variance $\sigma^2$, then $S_n^2 - n\sigma^2$ is a martingale, since $\E[S_{n+1}^2 \mid \mathcal{F}_n] = S_n^2 + 2S_n\E[X_{n+1}] + \E[X_{n+1}^2] = S_n^2 + \sigma^2$.
+        \item (Accumulating information.) For every integrable $Y$, $M_n = \E[Y \mid \mathcal{F}_n]$ is a martingale, by the tower property: it is the best prediction of $Y$, updated as information arrives. For example, the posterior mean $\E[\theta \mid X_1, \ldots, X_n]$ of Bayesian inference (Section~\ref{L4-sec:bayesian}) is a martingale.
+        \item (Likelihood ratios.) Let $X_1, X_2, \ldots$ be i.i.d.\ with the density $q$, and let $p$ be another density with $p(x) = 0$ whenever $q(x) = 0$. Then the likelihood ratio $L_n = \prod_{i=1}^n \frac{p(X_i)}{q(X_i)}$ of the data under $p$ versus $q$ is a martingale with $\E[L_n] = 1$, since its factors are independent with the mean $\int \frac{p}{q}\,q\, dx = 1$. By Ville's inequality, which we do not prove, $P\big(L_n \geq \frac{1}{\alpha} \text{ for some } n\big) \leq \alpha$ for every nonnegative martingale with $L_0 = 1$. So we may compute $L_n$ after every observation and reject the hypothesis that the data have the density $q$ as soon as $L_n \geq \frac{1}{\alpha}$: unlike repeated z-tests (Section~\ref{L4-sec:evaluation}), this sequential test keeps its level $\alpha$, however often we look at the data. If the data actually have the density $p$, the strong law of large numbers (Theorem~\ref{L4-thm:slln}) gives $\frac{1}{n}\log L_n \to \E_p\big[\log\frac{p(X_1)}{q(X_1)}\big] = \KL(p \,\|\, q)$ (Section~\ref{L4-sec:information}), so $L_n$ grows exponentially fast, and the test eventually rejects.
+    \end{enumerate}
+\end{example}
+
+A stopping time is a random time $\tau$ with values in $\{0, 1, 2, \ldots\} \cup \{\infty\}$ such that $\{\tau = n\} \in \mathcal{F}_n$ for all $n$: whether we stop at time $n$ only depends on the information available at time $n$, not on the future.
+
+\begin{theorem}[Optional stopping]\label{L4-thm:optional-stopping}
+    Let $(M_n)$ be a martingale and $\tau$ a stopping time with $\tau < \infty$ almost surely, and let $|M_{\min(n, \tau)}| \leq C$ for all $n$, with a constant $C$. Then $\E[M_\tau] = \E[M_0]$.
+\end{theorem}
+
+\begin{proof}
+    The stopped process $N_n = M_{\min(n, \tau)}$ is again a martingale: $N_{n+1} - N_n = \mathbf{1}_{\{\tau > n\}}(M_{n+1} - M_n)$, and since $\{\tau > n\} \in \mathcal{F}_n$, taking out what is known gives $\E[N_{n+1} - N_n \mid \mathcal{F}_n] = \mathbf{1}_{\{\tau > n\}}\E[M_{n+1} - M_n \mid \mathcal{F}_n] = 0$. So $\E[N_n] = \E[M_0]$ for all $n$. As $n \to \infty$, $N_n \to M_\tau$ almost surely, and $|N_n| \leq C$, so dominated convergence gives $\E[M_\tau] = \E[M_0]$.
+\end{proof}
+
+So no stopping rule turns a fair game into a favorable one, as long as the stakes stay bounded. Without this condition, the theorem fails: a gambler who doubles the stake after every loss in a fair game wins $1$ euro almost surely, but needs an unbounded fortune to do so.
+
+\begin{example}[Gambler's ruin]\label{L4-ex:gamblers-ruin}
+    A gambler starts with $a$ euros and bets $1$ euro on fair coin flips, until the fortune reaches $a + b$ euros or $0$. The fortune is $a + S_n$ with the simple random walk $S_n$ (with steps $\pm 1$ of probability $\frac{1}{2}$ each), and the game ends at the first time $\tau$ with $S_\tau = b$ or $S_\tau = -a$. One can show that $\tau < \infty$ almost surely, and $|S_{\min(n, \tau)}| \leq \max(a, b)$. By optional stopping,
+    \[0 = \E[S_\tau] = b\,P(S_\tau = b) - a\,P(S_\tau = -a), \qquad \text{so} \qquad P(S_\tau = b) = \frac{a}{a + b}.\]
+    Applying optional stopping to the martingale $S_n^2 - n$ (with more care, since it is not bounded) gives $\E[\tau] = \E[S_\tau^2] = b^2\frac{a}{a + b} + a^2\frac{b}{a + b} = ab$. For $a = 10$ and $b = 90$, the gambler reaches $100$ euros with probability $0.1$, and the game lasts $900$ rounds on average.
+\end{example}
 
 \section{Random Vectors and Covariance Matrices}\label{L4-sec:random-vectors}
 
@@ -527,7 +789,7 @@ So the standard deviation of the sample mean, its standard error, is $\frac{\sig
     Chebyshev's inequality (Proposition~\ref{L4-prop:markov}) for $\bar X_N$, which has mean $\mu$ and variance $\frac{\sigma^2}{N}$.
 \end{proof}
 
-The law of large numbers says that the sample mean is very likely close to $\mu$ for large $N$. (The strong law of large numbers, which we do not prove, even says that $\bar X_N \to \mu$ with probability $1$.) The central limit theorem describes the size and shape of the remaining fluctuations: they are approximately Gaussian, whatever the distribution of the $X_i$.
+The law of large numbers says that the sample mean is very likely close to $\mu$ for large $N$. (The strong law of large numbers, Theorem~\ref{L4-thm:slln} below, even says that $\bar X_N \to \mu$ with probability $1$.) The central limit theorem describes the size and shape of the remaining fluctuations: they are approximately Gaussian, whatever the distribution of the $X_i$.
 
 \begin{theorem}[Central limit theorem]\label{L4-thm:clt}
     In the situation of Proposition~\ref{L4-prop:sample-mean}, with $\sigma > 0$, for every $z \in \mathbb{R}$,
@@ -574,6 +836,99 @@ We do not prove this theorem. For example, let a classifier have the (unknown) e
         \item In stochastic gradient descent (Lecture~3), the mini-batch gradient of $B$ randomly chosen examples is an unbiased estimate of the full gradient, and its covariance matrix decreases like $\frac{1}{B}$ (for sampling with replacement), by Proposition~\ref{L4-prop:sample-mean} applied to each coordinate. Larger batches give less noisy gradients, but each step costs more.
     \end{enumerate}
 \end{remark}
+
+\subsection{Modes of convergence and the strong law}\label{L4-sec:convergence}
+
+The weak law of large numbers is a statement about probabilities, for each $N$. Measure theory allows statements about the whole random sequence: for example, that $\bar X_N(\omega) \to \mu$ for almost every outcome $\omega$, i.e., along almost every infinite sequence of observations. Random variables can converge in several different senses.
+
+\begin{definition}[Modes of convergence]\label{L4-def:convergence-modes}
+    Let $X, X_1, X_2, \ldots$ be random variables on the same probability space. We say that $X_n \to X$
+    \begin{enumerate}
+        \item almost surely if $P(X_n \to X) = 1$, i.e., $X_n(\omega) \to X(\omega)$ for all $\omega$ outside a null set;
+        \item in probability if $P(|X_n - X| > \varepsilon) \to 0$ for every $\varepsilon > 0$;
+        \item in $L^p$, for $p \geq 1$, if $\E[|X_n - X|^p] \to 0$; for $p = 2$, this is convergence in mean square.
+    \end{enumerate}
+    Random variables $X_n$ and $X$, possibly on different probability spaces, converge in distribution if $F_{X_n}(x) \to F_X(x)$ at every point $x$ at which $F_X$ is continuous.
+\end{definition}
+
+The weak law of large numbers (Theorem~\ref{L4-thm:lln}) is convergence in probability, and the central limit theorem (Theorem~\ref{L4-thm:clt}) is convergence in distribution of the standardized means to $\mathcal{N}(0, 1)$.
+
+\begin{proposition}\label{L4-prop:convergence-modes}
+    Almost sure convergence and convergence in $L^p$ each imply convergence in probability, which implies convergence in distribution. None of the converse implications holds in general.
+\end{proposition}
+
+\begin{proof}[Proof of some parts]
+    If $X_n \to X$ almost surely, the events $A_n = \{|X_m - X| > \varepsilon \text{ for some } m \geq n\}$ decrease to an event that is contained in the null event $\{X_n \not\to X\}$, so $P(|X_n - X| > \varepsilon) \leq P(A_n) \to 0$ by continuity. Convergence in $L^p$ implies convergence in probability by Markov's inequality: $P(|X_n - X| > \varepsilon) \leq \frac{\E[|X_n - X|^p]}{\varepsilon^p}$. We omit the proof of the last implication; Example~\ref{L4-ex:convergence-counterexamples} disproves the converses.
+\end{proof}
+
+\begin{example}\label{L4-ex:convergence-counterexamples}
+    Let $U$ be uniform on $[0, 1)$.
+    \begin{enumerate}
+        \item The lottery tickets $X_n = n\mathbf{1}_{\{U < 1/n\}}$ of Example~\ref{L4-ex:escaping-mass} converge to $0$ almost surely, since $X_n = 0$ as soon as $n > \frac{1}{U}$, but not in $L^1$, since $\E[X_n] = 1$.
+        \item (A sliding block.) Write $n = 2^k + j$ with $0 \leq j < 2^k$, and let $X_n = \mathbf{1}_{\{j2^{-k} \leq U < (j + 1)2^{-k}\}}$: the indicator of a block of length $2^{-k}$, which slides across $[0, 1)$, and then starts again with half the length. Then $\E[|X_n|^p] = 2^{-k} \to 0$, so $X_n \to 0$ in every $L^p$ and in probability. But for every value of $U$, one block of every generation $k$ covers it, so $X_n = 1$ for infinitely many $n$, and the sequence $X_n(\omega)$ converges for no outcome $\omega$.
+        \item If $X \sim \mathcal{N}(0, 1)$ and $X_n = -X$ for all $n$, then $X_n \to X$ in distribution, since $-X$ has the same distribution as $X$, but $|X_n - X| = 2|X|$ does not converge to $0$ in probability.
+    \end{enumerate}
+\end{example}
+
+The main tool for proving almost sure convergence is the following lemma.
+
+\begin{lemma}[Borel--Cantelli]\label{L4-lem:borel-cantelli}
+    Let $A_1, A_2, \ldots$ be events, and let $\{A_n \text{ i.o.}\}$ be the event that infinitely many of them happen (``infinitely often'').
+    \begin{enumerate}
+        \item If $\sum_n P(A_n) < \infty$, then $P(A_n \text{ i.o.}) = 0$.
+        \item If the $A_n$ are independent and $\sum_n P(A_n) = \infty$, then $P(A_n \text{ i.o.}) = 1$.
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+    (1) For every $k$, $\{A_n \text{ i.o.}\} \subseteq \bigcup_{n \geq k} A_n$, which has probability at most $\sum_{n \geq k} P(A_n)$ by the union bound, and this tends to $0$ as $k \to \infty$. (2) The complement of $\{A_n \text{ i.o.}\}$ is the union over $k$ of the events $\bigcap_{n \geq k} A_n^c$. By independence and $1 - x \leq e^{-x}$, for all $m \geq k$,
+    \[P\Big(\bigcap_{n=k}^m A_n^c\Big) = \prod_{n=k}^m \big(1 - P(A_n)\big) \leq \exp\Big(-\sum_{n=k}^m P(A_n)\Big),\]
+    which tends to $0$ as $m \to \infty$. So every $\bigcap_{n \geq k} A_n^c$ is a null event, and so is their countable union.
+\end{proof}
+
+\begin{example}\label{L4-ex:borel-cantelli}
+    Consider infinitely many fair coin flips (Example~\ref{L4-ex:coin-flips}). The events $A_k$ that the flips $2k - 1$ and $2k$ are both heads are independent and have the probability $\frac{1}{4}$, so by part (2), almost surely, two heads in a row appear infinitely often; the same argument works for every finite pattern, for example for the text of this lecture, encoded in bits. On the other hand, let $B_k$ be the event that the $\lceil 2\log_2 k\rceil$ flips starting with flip $k$ are all heads. Then $P(B_k) \leq k^{-2}$, which is summable, so by part (1), almost surely, only finitely many $B_k$ happen: the longest run of heads among the first $n$ flips is eventually shorter than about $2\log_2 n$.
+\end{example}
+
+\begin{theorem}[Strong law of large numbers]\label{L4-thm:slln}
+    Let $X_1, X_2, \ldots$ be i.i.d.\ and integrable with mean $\mu$. Then $\bar X_N \to \mu$ almost surely.
+\end{theorem}
+
+\begin{proof}[Proof if $X_1$ has a finite fourth moment]
+    Let $Y_i = X_i - \mu$ and $S_N = Y_1 + \cdots + Y_N$. When we expand $S_N^4 = \sum_{i, j, k, l} Y_iY_jY_kY_l$, every term in which some $Y_i$ appears exactly once has expectation $0$, by independence. What remains are the $N$ terms $Y_i^4$ and the $3N(N - 1)$ terms $Y_i^2Y_j^2$ with $i \neq j$, so $\E[S_N^4] = N\E[Y_1^4] + 3N(N - 1)\sigma^4 \leq CN^2$ for a constant $C$. By Markov's inequality,
+    \[P(|\bar X_N - \mu| \geq \varepsilon) = P(S_N^4 \geq N^4\varepsilon^4) \leq \frac{C}{N^2\varepsilon^4},\]
+    which is summable. By the Borel--Cantelli lemma, almost surely, $|\bar X_N - \mu| \geq \varepsilon$ only for finitely many $N$. Applying this to $\varepsilon = \frac{1}{m}$ for $m = 1, 2, \ldots$ (countably many null events) gives $\bar X_N \to \mu$ almost surely.
+\end{proof}
+
+\begin{example}[Normal numbers]\label{L4-ex:normal-numbers}
+    The binary digits of a uniformly random $U \in [0, 1)$ are i.i.d.\ fair coin flips (Example~\ref{L4-ex:coin-flips}). By the strong law, the fraction of $1$s among the first $N$ digits converges to $\frac{1}{2}$ almost surely: almost every number in $[0, 1)$ has asymptotically equally many $0$s and $1$s in its binary expansion (Borel's normal number theorem, 1909). Yet for natural constants such as $\sqrt{2} - 1$, it is not known whether they have this property. This is typical of probabilistic arguments: they show that almost all objects have a property, without exhibiting one.
+\end{example}
+
+\paragraph{Convergence in distribution.} Two rules allow us to combine limits in distribution.
+
+\begin{theorem}[Continuous mapping and Slutsky]\label{L4-thm:slutsky}
+    Let $X_n \to X$ in distribution.
+    \begin{enumerate}
+        \item If $g$ is continuous, then $g(X_n) \to g(X)$ in distribution.
+        \item (Slutsky) If $Y_n \to c$ in probability for a constant $c$, then $X_n + Y_n \to X + c$ and $X_nY_n \to cX$ in distribution.
+    \end{enumerate}
+\end{theorem}
+
+We do not prove this theorem. It justifies the confidence intervals of Section~\ref{L4-sec:estimation}, in which we replace $\sigma$ by the sample standard deviation $s_N$. By the strong law, applied to the $X_i$ and the $X_i^2$, $s_N \to \sigma$ almost surely, so by Slutsky's theorem,
+\[\frac{\sqrt{N}(\bar X_N - \mu)}{s_N} = \frac{\sigma}{s_N} \cdot \frac{\sqrt{N}(\bar X_N - \mu)}{\sigma} \to \mathcal{N}(0, 1) \qquad \text{in distribution},\]
+and $\bar x \pm 1.96\frac{s}{\sqrt{N}}$ is an asymptotic $95\%$ confidence interval.
+
+\begin{proposition}[Delta method]\label{L4-prop:delta-method}
+    Let $\sqrt{N}(T_N - \theta) \to \mathcal{N}(0, \tau^2)$ in distribution, and let $g$ be continuously differentiable. Then $\sqrt{N}\big(g(T_N) - g(\theta)\big) \to \mathcal{N}\big(0, g'(\theta)^2\tau^2\big)$ in distribution.
+\end{proposition}
+
+\begin{proof}[Sketch of proof]
+    By the mean value theorem, $g(T_N) - g(\theta) = g'(\xi_N)(T_N - \theta)$ for some $\xi_N$ between $\theta$ and $T_N$. Since $T_N - \theta = \frac{1}{\sqrt{N}} \cdot \sqrt{N}(T_N - \theta) \to 0$ in probability (by Slutsky's theorem), $\xi_N \to \theta$ and $g'(\xi_N) \to g'(\theta)$ in probability. Now apply Slutsky's theorem to $g'(\xi_N) \cdot \sqrt{N}(T_N - \theta)$.
+\end{proof}
+
+\begin{example}[Confidence intervals on the log-odds scale]\label{L4-ex:delta}
+    For a proportion $\hat p = \bar X_N$ of $N$ Bernoulli$(p)$ observations, $\sqrt{N}(\hat p - p) \to \mathcal{N}(0, p(1 - p))$ by the central limit theorem. The log-odds $g(p) = \log\frac{p}{1 - p}$ have the derivative $g'(p) = \frac{1}{p(1 - p)}$, so the estimated log-odds $g(\hat p)$ have approximately the standard error $\frac{1}{\sqrt{Np(1 - p)}}$. For $30$ successes in $100$ trials, the log-odds are $\log\frac{0.3}{0.7} \approx -0.847$, with the estimated standard error $\frac{1}{\sqrt{21}} \approx 0.218$. This gives the approximate $95\%$ confidence interval $-0.847 \pm 1.96 \cdot 0.218 \approx [-1.275, -0.420]$ for the log-odds, and, transforming back with the sigmoid function, $[0.218, 0.397]$ for $p$. Unlike the interval $\hat p \pm 1.96\sqrt{\hat p(1 - \hat p)/N} = [0.210, 0.390]$, it is not symmetric around $\hat p$, and it never leaves $[0, 1]$. Logistic regression (Lecture~3) models the log-odds, and its standard errors are computed on this scale.
+\end{example}
 
 \subsection{Monte Carlo sampling}\label{L4-sec:monte-carlo}
 
@@ -760,6 +1115,12 @@ Statistics turns the questions of probability around: instead of computing proba
 
 A good estimator has a small bias and a small variance, and sometimes we accept some bias for a much smaller variance. This is the idea behind regularization: ridge regression shrinks the weights towards $0$, which introduces a bias but reduces the variance. For a prediction model, a similar decomposition says that the expected squared test error is the sum of the squared bias, the variance and the irreducible noise; very flexible models have a small bias but a large variance (they overfit), and very simple ones the opposite.
 
+\begin{example}[Shrinkage]\label{L4-ex:shrinkage}
+    Let $X_1, \ldots, X_N$ be i.i.d.\ $\mathcal{N}(\mu, \sigma^2)$, and consider the estimators $\hat\mu_c = c\bar X_N$ with $0 \leq c \leq 1$, which shrink the sample mean towards $0$. Their bias is $(c - 1)\mu$ and their variance $c^2\frac{\sigma^2}{N}$, so
+    \[\mathrm{MSE}(\hat\mu_c) = (1 - c)^2\mu^2 + c^2\frac{\sigma^2}{N},\]
+    which is minimal for $c^* = \frac{\mu^2}{\mu^2 + \sigma^2/N}$. For $\mu = 2$, $\sigma^2 = 16$ and $N = 4$, the unbiased sample mean has the MSE $4$, while $\hat\mu_{1/2}$ has the MSE $1 + 1 = 2$. The best $c$ depends on the unknown $\mu$, so this estimator is not available in practice, but it shows that some bias can pay off. Remarkably, the James--Stein estimator achieves this in a data-driven way: for the means of $d \geq 3$ independent Gaussians, it shrinks the sample means towards $0$, and its total MSE is smaller than that of the sample means, whatever the true means are.
+\end{example}
+
 By Proposition~\ref{L4-prop:sample-mean}, the sample mean is an unbiased estimator of $\mu$, with variance $\frac{\sigma^2}{N}$. The natural estimator of the variance, however, is biased.
 
 \begin{proposition}[Sample variance]\label{L4-prop:sample-variance}
@@ -833,7 +1194,7 @@ Taking logarithms turns the product into a sum, which is easier to differentiate
 How good can an estimator be? Two properties are central: an estimator should converge to the true parameter as the amount of data grows, and its variance should be as small as possible.
 
 \begin{definition}[Consistency]\label{L4-def:consistent}
-    A sequence of estimators $\hat\theta_N$, computed from $N$ data points, is consistent if for every $\varepsilon > 0$ and every true parameter $\theta$, $P(|\hat\theta_N - \theta| \geq \varepsilon) \to 0$ as $N \to \infty$.
+    A sequence of estimators $\hat\theta_N$, computed from $N$ data points, is consistent if $\hat\theta_N \to \theta$ in probability (Definition~\ref{L4-def:convergence-modes}) for every true parameter $\theta$, i.e., if $P(|\hat\theta_N - \theta| \geq \varepsilon) \to 0$ as $N \to \infty$ for every $\varepsilon > 0$.
 \end{definition}
 
 \begin{proposition}\label{L4-prop:consistency}
@@ -876,6 +1237,26 @@ An unbiased estimator that attains the bound is called efficient.
 
 We do not prove this theorem. It says that for large $N$, the MLE is approximately unbiased and attains the Cram\'er--Rao bound: maximum likelihood is asymptotically efficient, which is the main theoretical justification for it. In practice, the standard error of the MLE is estimated from the curvature of the log-likelihood at its maximum, $\mathrm{SE} \approx \big(-\ell''(\hat\theta)\big)^{-1/2}$ (the observed information). For example, for $k$ successes in $N$ Bernoulli trials, $-\ell''(\hat\theta) = \frac{k}{\hat\theta^2} + \frac{N - k}{(1 - \hat\theta)^2} = \frac{N}{\hat\theta(1 - \hat\theta)}$, which gives the familiar $\mathrm{SE} = \sqrt{\hat\theta(1 - \hat\theta)/N}$, e.g., $0.046$ for $30$ successes in $100$ trials. With several parameters, the Fisher information becomes a matrix, and the approximate covariance matrix of the MLE is the inverse of the Hessian of $-\ell$ (Lecture~3). The Fisher information matrix also defines the inner product of the natural gradient method mentioned in Lecture~3.
 
+\subsection{Sufficiency and the Rao--Blackwell theorem}
+
+Often, a few numbers computed from the data contain all the information about the parameter. A statistic $T = T(X_1, \ldots, X_N)$ is sufficient for $\theta$ if the conditional distribution of the data given $T$ does not depend on $\theta$: once we know $T$, the remaining details of the data are noise that tells us nothing about $\theta$. By the Fisher--Neyman factorization theorem, which we do not prove, $T$ is sufficient if and only if the joint pmf or density of the data can be written as $p(x_1, \ldots, x_N \mid \theta) = g\big(T(x_1, \ldots, x_N), \theta\big)\,h(x_1, \ldots, x_N)$. For Bernoulli data, $\prod_i \theta^{x_i}(1 - \theta)^{1 - x_i} = \theta^k(1 - \theta)^{N - k}$ only depends on the number $k$ of ones; for Poisson data, $\prod_i e^{-\lambda}\frac{\lambda^{x_i}}{x_i!} = e^{-N\lambda}\lambda^{\sum_i x_i} \cdot \prod_i \frac{1}{x_i!}$, so $\sum_i x_i$ is sufficient; and for Gaussian data, $\sum_i x_i$ and $\sum_i x_i^2$ together are sufficient for $(\mu, \sigma^2)$. Since the likelihood only depends on the data through $g(T, \theta)$, so does the MLE.
+
+\begin{theorem}[Rao--Blackwell]\label{L4-thm:rao-blackwell}
+    Let $T$ be sufficient for $\theta$, and let $\hat\theta$ be an estimator with $\E[\hat\theta^2] < \infty$. Then $\tilde\theta = \E[\hat\theta \mid T]$ is an estimator (it does not depend on $\theta$), it has the same bias as $\hat\theta$, and $\mathrm{MSE}(\tilde\theta) \leq \mathrm{MSE}(\hat\theta)$.
+\end{theorem}
+
+\begin{proof}
+    By sufficiency, the conditional distribution of the data given $T$, and hence $\E[\hat\theta \mid T]$, does not depend on $\theta$. By the tower property, $\E[\tilde\theta] = \E[\hat\theta]$, so the bias is the same. By the law of total variance (Example~\ref{L4-ex:conditional-partition}), $\Var(\hat\theta) = \E\big[\Var(\hat\theta \mid T)\big] + \Var(\tilde\theta) \geq \Var(\tilde\theta)$, and the bias--variance decomposition gives the claim.
+\end{proof}
+
+So averaging an estimator over all data sets with the same value of a sufficient statistic never hurts.
+
+\begin{example}[Estimating the probability of a quiet day]\label{L4-ex:rao-blackwell}
+    Let $X_1, \ldots, X_N$ be the numbers of server failures on $N$ days, i.i.d.\ Poisson$(\lambda)$, and suppose that we want to estimate the probability $e^{-\lambda} = P(X_1 = 0)$ of a day without failures. The indicator $\hat\theta = \mathbf{1}_{\{X_1 = 0\}}$ is unbiased, but it only uses the first day. Given $S = X_1 + \cdots + X_N = s$, a short computation with the Poisson pmf shows that $X_1$ is Binomial$(s, \frac{1}{N})$: each of the $s$ failures happened on day $1$ with probability $\frac{1}{N}$, independently. Hence
+    \[\tilde\theta = \E\big[\mathbf{1}_{\{X_1 = 0\}} \mid S\big] = \Big(1 - \frac{1}{N}\Big)^S.\]
+    It is unbiased, since $\E[t^S] = e^{N\lambda(t - 1)}$ for $S \sim$ Poisson$(N\lambda)$ (Example~\ref{L4-ex:convolution}). For $\lambda = 1$ and $N = 10$, its variance is $\E\big[(0.9)^{2S}\big] - e^{-2} = e^{-1.9} - e^{-2} \approx 0.014$, compared with $e^{-1}(1 - e^{-1}) \approx 0.233$ for $\hat\theta$. The plug-in estimator $e^{-\bar X_N}$, which is the MLE, is slightly biased; one can show that $\tilde\theta$ has the smallest variance among all unbiased estimators of $e^{-\lambda}$ (the Lehmann--Scheff\'e theorem).
+\end{example}
+
 \subsection{Loss functions as negative log-likelihoods}
 
 Maximum likelihood explains the loss functions of Lectures~2 and~3.
@@ -896,7 +1277,7 @@ Similarly, if $y_i \in \{0, 1\}$ is Bernoulli with $P(y_i = 1) = \sigma(\mathbf{
 
 An estimate is more useful with an error bar. By the central limit theorem, $\bar X_N$ is approximately $\mathcal{N}(\mu, \frac{\sigma^2}{N})$, so
 \[P\Big(|\bar X_N - \mu| \leq 1.96\frac{\sigma}{\sqrt{N}}\Big) \approx 0.95.\]
-Replacing the unknown $\sigma$ by the sample standard deviation $s$ (which is accurate for large $N$), the interval $\bar x \pm 1.96\frac{s}{\sqrt{N}}$ is an approximate $95\%$ confidence interval for $\mu$. For example, for $N = 100$ data points with $\bar x = 5.2$ and $s = 1.5$, it is $[4.91, 5.49]$. Note that $\mu$ is fixed and the interval is random: if we repeated the experiment many times, about $95\%$ of the intervals would contain $\mu$. For a classifier with accuracy $0.9$ on $1000$ independent test examples, the standard error is $\sqrt{0.9 \cdot 0.1/1000} \approx 0.0095$, so the accuracy is known up to about $\pm 0.019$, and a difference of one percentage point between two models on such a test set may well be due to chance.
+Replacing the unknown $\sigma$ by the sample standard deviation $s$ (which is justified for large $N$ by Slutsky's theorem, Theorem~\ref{L4-thm:slutsky}), the interval $\bar x \pm 1.96\frac{s}{\sqrt{N}}$ is an approximate $95\%$ confidence interval for $\mu$. For example, for $N = 100$ data points with $\bar x = 5.2$ and $s = 1.5$, it is $[4.91, 5.49]$. Note that $\mu$ is fixed and the interval is random: if we repeated the experiment many times, about $95\%$ of the intervals would contain $\mu$. For a classifier with accuracy $0.9$ on $1000$ independent test examples, the standard error is $\sqrt{0.9 \cdot 0.1/1000} \approx 0.0095$, so the accuracy is known up to about $\pm 0.019$, and a difference of one percentage point between two models on such a test set may well be due to chance.
 
 \section{Hypothesis Testing}\label{L4-sec:testing}
 
@@ -922,7 +1303,27 @@ Often we want to decide a yes-or-no question from data: is a coin fair? Does a n
     A coin shows $60$ heads in $100$ flips. Is it fair? With $H_0$: $\theta = \frac{1}{2}$ and the number of heads $S$ as the test statistic, the one-sided p-value is $P_{H_0}(S \geq 60) = 0.028$ (Example~\ref{L4-ex:clt-coins}). If we had no reason to expect more heads than tails, a two-sided test is appropriate: it counts deviations in both directions, and its p-value is $P_{H_0}(|S - 50| \geq 10) = 0.057$. At the level $\alpha = 0.05$, the one-sided test rejects $H_0$, and the two-sided test does not. The test must be chosen before looking at the data; otherwise its significance level is not what it claims.
 \end{example}
 
+\begin{example}[Power]\label{L4-ex:power}
+    For the coin of Example~\ref{L4-ex:coin-test}, the one-sided test at the level $0.05$ rejects $H_0$: $\theta = \frac{1}{2}$ if $S \geq 59$, since $P_{H_0}(S \geq 59) \approx 0.044 \leq 0.05 < P_{H_0}(S \geq 58) \approx 0.067$. If the coin actually has $\theta = 0.6$, the test rejects $H_0$ with the probability $P_{\theta = 0.6}(S \geq 59) \approx 0.62$: it misses this bias in more than a third of the experiments. With $400$ flips, the rejection region is $S \geq 217$, and the power for $\theta = 0.6$ is $0.99$. How to plan the sample size for a desired power is explained in Section~\ref{L4-sec:evaluation}.
+\end{example}
+
 \paragraph{Tests for a mean.} To test $H_0$: $\mu = \mu_0$ for i.i.d.\ data, we use the standardized statistic $Z = \frac{\bar X_N - \mu_0}{s/\sqrt{N}}$, which is approximately $\mathcal{N}(0, 1)$ under $H_0$ by the central limit theorem (the z-test). The two-sided p-value is $2(1 - \Phi(|z|))$. For small samples from a Gaussian distribution, $Z$ has a Student t-distribution with $N - 1$ degrees of freedom, whose quantiles are larger than $1.96$ (for example, $2.78$, $2.26$ and $2.05$ for $N = 5$, $10$ and $30$); this is the t-test. Tests and confidence intervals are two sides of the same coin: the two-sided test at level $0.05$ rejects $\mu = \mu_0$ exactly if $\mu_0$ lies outside the $95\%$ confidence interval $\bar x \pm 1.96\frac{s}{\sqrt{N}}$.
+
+\begin{example}[A paired $t$-test]\label{L4-ex:t-test}
+    A new model B is compared with a model A on $8$ benchmark data sets, and the differences of the accuracies (B minus A, in percentage points) are
+    \[1.2, \quad 0.4, \quad 2.1, \quad -0.3, \quad 1.5, \quad 0.8, \quad 1.1, \quad 0.6.\]
+    Their mean is $\bar d = 0.925$ and their standard deviation is $s = 0.729$, so $t = \frac{\bar d}{s/\sqrt{8}} \approx 3.59$. Under $H_0$: ``on average, there is no difference'', and if the differences are approximately Gaussian, $t$ has the t-distribution with $7$ degrees of freedom, and the two-sided p-value is $0.009$. So B is significantly better at the level $0.05$, and even at $0.01$. Analyzing the differences, rather than the two lists of accuracies, removes the large variation between the data sets (Section~\ref{L4-sec:evaluation}).
+\end{example}
+
+\paragraph{Goodness of fit.} To test whether categorical data with the counts $O_1, \ldots, O_K$ in $N$ observations follow given probabilities $p_1, \ldots, p_K$, Pearson's statistic compares the observed counts with the expected counts $E_k = Np_k$:
+\[\chi^2 = \sum_{k=1}^K \frac{(O_k - E_k)^2}{E_k}.\]
+Under $H_0$, for large $N$, it has approximately the $\chi^2$ distribution with $K - 1$ degrees of freedom, the distribution of $Z_1^2 + \cdots + Z_{K-1}^2$ for independent standard normal $Z_i$; one degree of freedom is lost because the counts add up to $N$. Large values speak against $H_0$.
+
+\begin{example}[Is the die fair?]\label{L4-ex:chi-square}
+    A die is rolled $120$ times, with the counts $18, 25, 16, 21, 13, 27$ for the faces $1, \ldots, 6$. The expected counts are $20$, so
+    \[\chi^2 = \frac{4 + 25 + 16 + 1 + 49 + 49}{20} = 7.2.\]
+    With $5$ degrees of freedom, the p-value is $P(\chi^2_5 \geq 7.2) \approx 0.21$: the data are consistent with a fair die, although the counts $13$ and $27$ may look suspicious at first sight. The same test checks, for example, whether the class frequencies predicted by a classifier match the observed ones, or whether a random number generator is uniform.
+\end{example}
 
 \begin{remark}[What a p-value is not]
     A p-value is not the probability that $H_0$ is true. That probability depends on the prior plausibility of $H_0$, as in the medical test of Example~\ref{L4-ex:medical}, and only Bayesian inference can compute it. A small p-value can also come from a tiny effect that is irrelevant in practice, if $N$ is huge (statistical versus practical significance), so effect sizes and confidence intervals should be reported as well. Conversely, a large p-value does not show that there is no effect: the test may just have too little power.
@@ -986,7 +1387,7 @@ per group, where $z_u = \Phi^{-1}(u)$. For $\alpha = 0.05$ and power $0.8$, $z_{
 
 \paragraph{Design principles and pitfalls.}
 \begin{itemize}
-    \item Fix the primary metric, the test and the sample size in advance. Peeking at the p-value repeatedly and stopping as soon as it is below $0.05$ inflates the false positive rate: in a simulation with two identical versions (conversion rate $5\%$, up to $10\,000$ users per group), checking after every $200$ users per group declared a significant difference in about one third of the runs. If early stopping is needed, use sequential tests designed for it.
+    \item Fix the primary metric, the test and the sample size in advance. Peeking at the p-value repeatedly and stopping as soon as it is below $0.05$ inflates the false positive rate: in a simulation with two identical versions (conversion rate $5\%$, up to $10\,000$ users per group), checking after every $200$ users per group declared a significant difference in about one third of the runs. If early stopping is needed, use sequential tests designed for it, such as the likelihood ratio test of Example~\ref{L4-ex:martingales}.
     \item Many metrics or user segments mean many tests: correct for multiple testing, or treat secondary results as hypotheses for future experiments.
     \item Randomize at the right level. If users influence each other (for example in a social network or a marketplace), or one user is counted several times, the observations are not independent, and the standard errors above are too small.
     \item Reduce variance by design. Paired or blocked designs compare similar units (for example, the same users or the same queries under both versions), and adjusting for measurements taken before the experiment can reduce the variance considerably.
@@ -1042,6 +1443,16 @@ A prior is called conjugate to a likelihood if the posterior belongs to the same
 To predict the next flip, Bayesian inference averages over all values of $\theta$, weighted by the posterior:
 \[P(X_{N+1} = 1 \mid \mathcal{D}) = \int_0^1 \theta\,p(\theta \mid \mathcal{D}) \, d\theta = \E[\theta \mid \mathcal{D}] = \frac{a + k}{a + b + N}.\]
 For the uniform prior ($a = b = 1$), this is Laplace's rule of succession $\frac{k + 1}{N + 2}$: after three heads in three flips, the probability of heads is $\frac{4}{5}$, not $1$. The same ``add pseudo-counts'' idea (Laplace smoothing) prevents zero probabilities for unseen words in language models.
+
+\begin{example}[Credible intervals]\label{L4-ex:credible}
+    A $95\%$ credible interval contains $\theta$ with posterior probability $0.95$, for example the interval between the $2.5\%$ and the $97.5\%$ quantiles of the posterior. For the posterior Beta$(22, 12)$ after $20$ heads in $30$ flips (Example~\ref{L4-ex:beta-coin}), it is $[0.48, 0.80]$ (computed numerically), close to the approximate confidence interval $\frac{2}{3} \pm 1.96\sqrt{\frac{2}{3} \cdot \frac{1}{3}/30} = [0.50, 0.84]$ of Section~\ref{L4-sec:estimation}. The interpretations differ: the credible interval makes a probability statement about $\theta$, given the data, while the confidence interval makes a probability statement about the random interval, for a fixed $\theta$. As the amount of data grows, the two intervals agree more and more (the Bernstein--von Mises theorem).
+\end{example}
+
+\begin{example}[Gamma--Poisson conjugacy]\label{L4-ex:gamma-poisson}
+    Let the numbers of clicks on an ad in $N$ hours be i.i.d.\ Poisson$(\lambda)$, and let the prior of $\lambda$ be the Gamma distribution with the shape $a$ and the rate $b$, i.e., with the density $\frac{b^a}{\Gamma(a)}\lambda^{a-1}e^{-b\lambda}$ for $\lambda > 0$ and the mean $\frac{a}{b}$ (the Gamma distribution of Example~\ref{L4-ex:moments} with the scale $\frac{1}{b}$). If $S$ is the total number of clicks, the posterior is
+    \[p(\lambda \mid \mathcal{D}) \propto e^{-N\lambda}\lambda^S \cdot \lambda^{a-1}e^{-b\lambda} = \lambda^{a + S - 1}e^{-(b + N)\lambda},\]
+    i.e., Gamma$(a + S, b + N)$: the prior acts like $b$ previous hours with $a$ clicks in total. The posterior mean $\frac{a + S}{b + N}$ lies between the prior mean $\frac{a}{b}$ and the MLE $\frac{S}{N}$. For the prior Gamma$(2, 1)$ and the counts $3, 5, 4, 6, 2$ in five hours, the posterior is Gamma$(22, 6)$, with the mean $\frac{22}{6} \approx 3.67$ (the MLE is $4$) and the standard deviation $\frac{\sqrt{22}}{6} \approx 0.78$. The predictive probability of an hour without clicks is $\int e^{-\lambda}\,p(\lambda \mid \mathcal{D})\, d\lambda = \big(\frac{6}{7}\big)^{22} \approx 0.034$, while plugging in the MLE gives $e^{-4} \approx 0.018$: the posterior accounts for the uncertainty about $\lambda$.
+\end{example}
 
 \subsection{Maximum a posteriori estimation and regularization}
 
@@ -1175,7 +1586,11 @@ Two consequences: the cross-entropy $H(p, q)$ is minimal for $q = p$, and for th
 
 This is why the loss of classifiers is called the cross-entropy loss: for each training example, it is the cross-entropy between the one-hot distribution of the true label and the predicted distribution, and training fits the model distribution to the data in the sense of the KL divergence.
 
-\paragraph{Continuous distributions.} For densities, the sums become integrals: the differential entropy is $h(p) = -\int p(x)\log p(x)\, dx$, and $\KL(p \,\|\, q) = \int p(x)\log\frac{p(x)}{q(x)}\, dx \geq 0$. The differential entropy of $\mathcal{N}(\mu, \sigma^2)$ is $\frac{1}{2}\log(2\pi e\sigma^2)$, and one can show that among all densities with variance $\sigma^2$, the Gaussian has the largest entropy.
+\paragraph{Continuous distributions.} For densities, the sums become integrals: the differential entropy is $h(p) = -\int p(x)\log p(x)\, dx$, and $\KL(p \,\|\, q) = \int p(x)\log\frac{p(x)}{q(x)}\, dx \geq 0$. The differential entropy of $\mathcal{N}(\mu, \sigma^2)$ is $\frac{1}{2}\log(2\pi e\sigma^2)$, and among all densities with variance $\sigma^2$, the Gaussian has the largest entropy.
+
+\begin{example}[Maximum entropy]\label{L4-ex:max-entropy}
+    Among the distributions on $\mathbb{R}$ with the variance $1$, the uniform distribution on $[-\sqrt{3}, \sqrt{3}]$ has the differential entropy $\log(2\sqrt{3}) \approx 1.24$, the Laplace distribution with the density $\frac{1}{\sqrt{2}}e^{-\sqrt{2}|x|}$ has $1 + \frac{1}{2}\log 2 \approx 1.35$, and $\mathcal{N}(0, 1)$ has the largest value, $\frac{1}{2}\log(2\pi e) \approx 1.42$ nats. In fact, for every density $p$ with mean $0$ and variance $1$, $\KL(p \,\|\, \mathcal{N}(0, 1)) = -h(p) + \E_p\big[\frac{1}{2}\log(2\pi) + \frac{X^2}{2}\big] = \frac{1}{2}\log(2\pi e) - h(p)$, which is nonnegative by Gibbs' inequality. This proves the maximum entropy property of the Gaussian, which is one justification for Gaussian noise models: they assume nothing beyond the variance.
+\end{example}
 
 \begin{proposition}[KL divergence between Gaussians]\label{L4-prop:kl-gaussian}
     For $p = \mathcal{N}(\mu_1, \sigma_1^2)$ and $q = \mathcal{N}(\mu_2, \sigma_2^2)$,
@@ -1216,6 +1631,8 @@ That such a process exists is a theorem of Norbert Wiener, which we do not prove
 \end{proof}
 
 So Brownian motion is a Gaussian process with mean $0$ and covariance function $\min(s, t)$ (Section~\ref{L4-sec:gp}). Its typical displacement in a time $h$ is $\sqrt{h}$, which is much larger than $h$ for small $h$: the difference quotient $\frac{B(t + h) - B(t)}{h}$ has the variance $\frac{1}{h} \to \infty$. In fact, the paths of Brownian motion are continuous but nowhere differentiable, and ordinary calculus does not apply to them.
+
+With the filtration $\mathcal{F}_s = \sigma(B(u) : u \leq s)$, the independence of the increments gives $\E[B(t) \mid \mathcal{F}_s] = B(s) + \E[B(t) - B(s)] = B(s)$ for $s \leq t$: Brownian motion is a martingale in continuous time (Section~\ref{L4-sec:martingales}), the continuous analogue of a fair random walk.
 
 \begin{definition}[Stochastic differential equation]\label{L4-def:sde}
     An SDE $dX = \mu(X)\,dt + \sigma(X)\,dB$, with drift $\mu$ and diffusion coefficient $\sigma$, describes a process with $X(t) = X(0) + \int_0^t \mu(X(s))\, ds + \int_0^t \sigma(X(s))\, dB(s)$, where the last integral is a stochastic (It\^o) integral. Its Euler--Maruyama approximation with step $h$ is
@@ -1288,44 +1705,69 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
 
 \section{Key Takeaways}
 \begin{itemize}[leftmargin=*]
-    \item A probability assigns numbers in $[0, 1]$ to events, additively for disjoint events. Conditional probability $P(A \mid B) = \frac{P(A \cap B)}{P(B)}$ and Bayes' theorem $P(B \mid A) = \frac{P(A \mid B)P(B)}{P(A)}$ update beliefs with evidence; ignoring the prior $P(B)$ is the base rate fallacy.
-    \item Random variables are described by a pmf or a density. The sum rule $p(x) = \sum_y p(x, y)$ and the product rule $p(x, y) = p(y \mid x)p(x)$ are the basic rules of probabilistic modeling; independence means that the joint distribution factorizes.
-    \item The expectation is linear; $\Var(X) = \E[X^2] - \E[X]^2$; Markov's, Chebyshev's and Jensen's inequalities relate them. For densities, $p_Y(y) = \frac{p_X(x)}{|g'(x)|}$ under $y = g(x)$, and $F^{-1}(U)$ samples from the CDF $F$.
-    \item Covariance is an inner product on centered random variables, and correlation is the cosine of their angle, so $|\Corr| \leq 1$. Uncorrelated does not imply independent. $\E[Y \mid X]$ is the best mean-squared-error predictor of $Y$, the orthogonal projection of $Y$ onto functions of $X$.
+    \item Probability theory is built on measure theory: events form a $\sigma$-algebra, a probability is a countably additive measure with $P(\Omega) = 1$, and random variables are measurable functions, described by their distributions, or equivalently by their CDFs; $F^{-1}(U)$ with the quantile function $F^{-1}$ samples from the CDF $F$. Probabilities are continuous along increasing and decreasing sequences of events, and null events can happen. Conditional probability $P(A \mid B) = \frac{P(A \cap B)}{P(B)}$ and Bayes' theorem $P(B \mid A) = \frac{P(A \mid B)P(B)}{P(A)}$ update beliefs with evidence; ignoring the prior $P(B)$ is the base rate fallacy.
+    \item The expectation is the Lebesgue integral $\E[X] = \int X\, dP$, computed from the distribution as $\E[g(X)] = \sum_i g(x_i)p(x_i)$ or $\int g(x)p(x)\, dx$. Monotone and dominated convergence allow us to exchange limits and expectations, and to differentiate under the integral sign; without a dominating function, mass can escape. Pmfs and pdfs are densities with respect to the counting and the Lebesgue measure (Radon--Nikodym), and mixed distributions such as the ReLU of a Gaussian have densities with respect to other measures.
+    \item The expectation is linear; $\Var(X) = \E[X^2] - \E[X]^2$; Markov's, Chebyshev's, Chernoff's and Jensen's inequalities relate them. For densities, $p_Y(y) = \frac{p_X(x)}{|g'(x)|}$ under $y = g(x)$.
+    \item The sum rule $p(x) = \sum_y p(x, y)$ and the product rule $p(x, y) = p(y \mid x)p(x)$ are the basic rules of probabilistic modeling. Independence means that the joint distribution is the product of the marginals; by Fubini--Tonelli, expectations of products of independent random variables factorize, and sums of independent random variables have the convolution of their densities.
+    \item Covariance is an inner product on centered random variables, and correlation is the cosine of their angle, so $|\Corr| \leq 1$. Uncorrelated does not imply independent. The conditional expectation $\E[Y \mid \mathcal{G}]$ is the orthogonal projection of $Y$ onto the $\mathcal{G}$-measurable random variables in $L^2$, the best mean-squared-error prediction of $Y$ from the information $\mathcal{G}$; it satisfies the tower property and the law of total variance.
+    \item A martingale is a fair game, $\E[M_{n+1} \mid \mathcal{F}_n] = M_n$; random walks, posterior means and likelihood ratios are martingales. Stopping at a stopping time does not change the expectation if the stopped martingale stays bounded (optional stopping), which solves the gambler's ruin, and Ville's inequality gives likelihood ratio tests that stay valid when we look at the data repeatedly.
     \item The covariance matrix $\Sigma = \E[(\mathbf{X} - \boldsymbol{\mu})(\mathbf{X} - \boldsymbol{\mu})^\top]$ is symmetric positive semidefinite, $\Cov(A\mathbf{X} + \mathbf{b}) = A\Sigma A^\top$, and $\Var(\mathbf{u}^\top\mathbf{X}) = \mathbf{u}^\top\Sigma\mathbf{u}$ is maximal for the top eigenvector (PCA). Whitening $\Sigma^{-1/2}(\mathbf{X} - \boldsymbol{\mu})$ gives identity covariance.
     \item $\mathcal{N}(\boldsymbol{\mu}, \Sigma)$ is the distribution of $\boldsymbol{\mu} + A\mathbf{Z}$ with $AA^\top = \Sigma$ and $\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, I)$; its level sets are ellipsoids along the eigenvectors of $\Sigma$. Affine maps, marginals and conditionals of Gaussians are Gaussian, with $\mathbf{X}_a \mid \mathbf{x}_b \sim \mathcal{N}\big(\boldsymbol{\mu}_a + \Sigma_{ab}\Sigma_{bb}^{-1}(\mathbf{x}_b - \boldsymbol{\mu}_b), \Sigma_{aa} - \Sigma_{ab}\Sigma_{bb}^{-1}\Sigma_{ba}\big)$; for jointly Gaussian vectors, uncorrelated means independent.
-    \item The sample mean of $N$ i.i.d.\ variables has standard error $\frac{\sigma}{\sqrt{N}}$; it converges to $\mu$ (law of large numbers), its fluctuations are approximately Gaussian (central limit theorem), and for bounded variables Hoeffding's inequality bounds large deviations exponentially. This underlies Monte Carlo methods, test set evaluation, and stochastic gradients. Rejection sampling draws exact samples using an envelope $p \leq Mq$ (acceptance rate $\frac{1}{M}$); importance sampling reweights samples from $q$ by $\frac{p}{q}$, which can reduce the variance dramatically for rare events.
+    \item The sample mean of $N$ i.i.d.\ variables has standard error $\frac{\sigma}{\sqrt{N}}$; it converges to $\mu$ in probability (weak law) and almost surely (strong law), its fluctuations are approximately Gaussian (central limit theorem), and for bounded variables Hoeffding's inequality bounds large deviations exponentially. Almost sure convergence and convergence in $L^p$ imply convergence in probability, which implies convergence in distribution, but not conversely; the Borel--Cantelli lemma proves almost sure statements, and Slutsky's theorem and the delta method carry limits in distribution over to estimated standard errors and to smooth functions of estimators.
+    \item Averages of samples underlie Monte Carlo methods, test set evaluation, and stochastic gradients. Rejection sampling draws exact samples using an envelope $p \leq Mq$ (acceptance rate $\frac{1}{M}$); importance sampling reweights samples from $q$ by the likelihood ratio $\frac{p}{q}$, which can reduce the variance dramatically for rare events.
     \item A Markov chain with transition matrix $P$ evolves by $\boldsymbol{\pi}_{t+1} = \boldsymbol{\pi}_t P$. Stationary distributions are left eigenvectors of $P$ with eigenvalue $1$; an irreducible, aperiodic chain converges to its unique stationary distribution, at a speed governed by the second largest eigenvalue in absolute value. Detailed balance $\pi_i P_{ij} = \pi_j P_{ji}$ implies stationarity; the Metropolis algorithm uses it to sample from distributions that are only known up to a constant (MCMC).
-    \item Estimators have a bias and a variance, and $\mathrm{MSE} = \text{bias}^2 + \text{variance}$; if both tend to $0$, the estimator is consistent. The sample variance needs the factor $\frac{1}{N - 1}$ to be unbiased. No unbiased estimator has a variance below the Cram\'er--Rao bound $\frac{1}{N\,I(\theta)}$, where the Fisher information $I(\theta)$ is the variance of the score $\frac{\partial}{\partial\theta}\log p(x \mid \theta)$; the MLE attains it asymptotically, and its standard error is estimated from the curvature of the log-likelihood.
+    \item Estimators have a bias and a variance, and $\mathrm{MSE} = \text{bias}^2 + \text{variance}$, so some bias (shrinkage) can pay off; if both tend to $0$, the estimator is consistent. The sample variance needs the factor $\frac{1}{N - 1}$ to be unbiased. No unbiased estimator has a variance below the Cram\'er--Rao bound $\frac{1}{N\,I(\theta)}$, where the Fisher information $I(\theta)$ is the variance of the score $\frac{\partial}{\partial\theta}\log p(x \mid \theta)$; the MLE attains it asymptotically, and its standard error is estimated from the curvature of the log-likelihood. A sufficient statistic carries all the information about $\theta$, and conditioning an estimator on it never increases the MSE (Rao--Blackwell).
     \item Maximum likelihood maximizes $\sum_i \log p(x_i \mid \theta)$. Least squares is maximum likelihood with Gaussian noise, and the cross-entropy loss is maximum likelihood for categorical labels; the MLE of a Gaussian is the sample mean and the (biased) sample covariance. The method of moments matches sample moments instead; it is simpler but usually less efficient. Confidence intervals $\bar x \pm 1.96\frac{s}{\sqrt{N}}$ quantify uncertainty.
-    \item A test rejects $H_0$ if the p-value, the probability under $H_0$ of data at least as extreme as observed, is at most $\alpha$; under $H_0$, p-values are uniform, so the false positive rate is $\alpha$. A p-value is not the probability that $H_0$ is true. Many tests need corrections: Bonferroni ($\frac{\alpha}{m}$) controls the family-wise error rate, Benjamini--Hochberg the false discovery rate. The bootstrap (resampling the data with replacement) estimates standard errors of any statistic, and permutation tests (relabeling the groups) give exact p-values without distributional assumptions.
+    \item A test rejects $H_0$ if the p-value, the probability under $H_0$ of data at least as extreme as observed, is at most $\alpha$; under $H_0$, p-values are uniform, so the false positive rate is $\alpha$, and the power is the probability of detecting a real effect. A p-value is not the probability that $H_0$ is true. Paired $t$-tests compare two models on the same data sets, and Pearson's $\chi^2$ test compares observed counts with expected counts. Many tests need corrections: Bonferroni ($\frac{\alpha}{m}$) controls the family-wise error rate, Benjamini--Hochberg the false discovery rate. The bootstrap (resampling the data with replacement) estimates standard errors of any statistic, and permutation tests (relabeling the groups) give exact p-values without distributional assumptions.
     \item Cross-validation estimates the generalization error, but its naive standard error is too small, and the best of many cross-validated models is optimistically biased; compare models with paired differences and evaluate the final choice on untouched data. A/B tests randomize to measure causal effects; plan the sample size $n \approx (z_{1-\alpha/2} + z_{1-\beta})^2\,2\bar p(1 - \bar p)/\delta^2$ per group in advance, and do not stop at the first significant peek.
-    \item Bayesian inference updates a prior to the posterior $p(\theta \mid \mathcal{D}) \propto p(\mathcal{D} \mid \theta)p(\theta)$. Conjugate priors (Beta for Bernoulli, Gaussian for linear regression) give closed-form posteriors. MAP estimation adds the regularizer $-\log p(\theta)$: a Gaussian prior gives ridge regression, a Laplace prior the lasso. The Bayesian posterior also gives predictive uncertainty. A Gaussian process is a prior on functions given by a kernel; its posterior follows from Gaussian conditioning, with the mean $\mathbf{k}_*^\top(K + \sigma^2I)^{-1}\mathbf{y}$ and a variance that is small near the data.
-    \item Entropy measures uncertainty, cross-entropy $H(p, q) = H(p) + \KL(p \,\|\, q)$, and $\KL(p \,\|\, q) \geq 0$ with equality only for $p = q$ (Gibbs). Maximum likelihood minimizes the cross-entropy and the KL divergence from the empirical distribution to the model.
-    \item Brownian motion has independent Gaussian increments $B(t) - B(s) \sim \mathcal{N}(0, t - s)$ and continuous, nowhere differentiable paths. An SDE $dX = \mu(X)\,dt + \sigma(X)\,dB$ is simulated by Euler--Maruyama, $X_{k+1} = X_k + \mu(X_k)h + \sigma(X_k)\sqrt{h}\,Z_k$: noise of size $\sqrt{h}$, not $h$. Langevin dynamics $d\mathbf{X} = -\nabla U\,dt + \sqrt{2}\,d\mathbf{B}$ samples from $p \propto e^{-U}$, the stationary solution of the Fokker--Planck equation; its discretization is gradient descent plus noise, and diffusion models generate data by reversing a noising SDE.
+    \item Bayesian inference updates a prior to the posterior $p(\theta \mid \mathcal{D}) \propto p(\mathcal{D} \mid \theta)p(\theta)$. Conjugate priors (Beta for Bernoulli, Gamma for Poisson, Gaussian for linear regression) give closed-form posteriors, and credible intervals are quantiles of the posterior. MAP estimation adds the regularizer $-\log p(\theta)$: a Gaussian prior gives ridge regression, a Laplace prior the lasso. The Bayesian posterior also gives predictive uncertainty. A Gaussian process is a prior on functions given by a kernel; its posterior follows from Gaussian conditioning, with the mean $\mathbf{k}_*^\top(K + \sigma^2I)^{-1}\mathbf{y}$ and a variance that is small near the data.
+    \item Entropy measures uncertainty, cross-entropy $H(p, q) = H(p) + \KL(p \,\|\, q)$, and $\KL(p \,\|\, q) \geq 0$ with equality only for $p = q$ (Gibbs). Maximum likelihood minimizes the cross-entropy and the KL divergence from the empirical distribution to the model. Among all densities with a given variance, the Gaussian has the largest entropy.
+    \item Brownian motion has independent Gaussian increments $B(t) - B(s) \sim \mathcal{N}(0, t - s)$ and continuous, nowhere differentiable paths, and it is a martingale. An SDE $dX = \mu(X)\,dt + \sigma(X)\,dB$ is simulated by Euler--Maruyama, $X_{k+1} = X_k + \mu(X_k)h + \sigma(X_k)\sqrt{h}\,Z_k$: noise of size $\sqrt{h}$, not $h$. Langevin dynamics $d\mathbf{X} = -\nabla U\,dt + \sqrt{2}\,d\mathbf{B}$ samples from $p \propto e^{-U}$, the stationary solution of the Fokker--Planck equation; its discretization is gradient descent plus noise, and diffusion models generate data by reversing a noising SDE.
 \end{itemize}
 
 \section{Exercises}\label{L4-sec:exercises}
 \begin{enumerate}[leftmargin=*]
+    \item ($\sigma$-algebras.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the intersection of two $\sigma$-algebras on $\Omega$ is a $\sigma$-algebra, but that their union need not be one. (Hint: $\Omega = \{1, 2, 3\}$.)
+        \item Let $\mathcal{G}$ be the $\sigma$-algebra on $\Omega = \{1, \ldots, 6\}^2$ generated by the events $\{\text{the sum is } s\}$ for two dice. How many elements does $\mathcal{G}$ have? Does it contain the event ``both dice show the same number''?
+    \end{enumerate}
     \item (The birthday problem.) Assume that birthdays are independent and uniformly distributed over $365$ days. Show that the probability that among $n$ people at least two share a birthday is $1 - \frac{365 \cdot 364 \cdots (365 - n + 1)}{365^n}$, and that it exceeds $\frac{1}{2}$ for $n = 23$. How many people are needed for $99\%$?
     \item \begin{enumerate}[label=(\alph*)]
         \item Prove the inclusion--exclusion formula $P(A \cup B \cup C) = P(A) + P(B) + P(C) - P(A \cap B) - P(A \cap C) - P(B \cap C) + P(A \cap B \cap C)$.
         \item Two fair coins are flipped. Let $A$ = ``the first coin shows heads'', $B$ = ``the second coin shows heads'', and $C$ = ``exactly one coin shows heads''. Show that any two of these events are independent, but the three events are not independent.
     \end{enumerate}
     \item A spam filter knows that $40\%$ of all emails are spam, that the word ``free'' appears in $30\%$ of the spam emails and in $2\%$ of the other emails. What is the probability that an email containing ``free'' is spam?
+    \item Let $X$ be a random variable with the CDF $F$. Use the continuity of probability to show that $P(X > t) \to 0$ as $t \to \infty$, and that $P(X = x) = F(x) - \lim_{y \uparrow x} F(y)$. Conclude that $F$ has at most countably many jumps. (Hint: there are at most $n$ jumps of size larger than $\frac{1}{n}$.)
     \item Let $X$ be Geometric$(p)$. Show that $\E[X] = \frac{1}{p}$ and that $P(X > s + t \mid X > s) = P(X > t)$ for all positive integers $s$ and $t$. How many times do you expect to roll a fair die until you see a six?
     \item Let $U$ and $V$ be independent and Uniform$(0, 1)$. Find the densities of (a) $U^2$, (b) $-\log U$, (c) $\max(U, V)$ (Hint: compute the CDF first.)
     \item Let $X$ be Poisson$(\lambda)$. Compute $\E[X(X - 1)]$, and use it to show that $\Var(X) = \lambda$.
+    \item (Limits and expectations.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Use monotone convergence to show that $\lim_{n \to \infty}\int_0^n \big(1 - \frac{x}{n}\big)^n\, dx = 1$. (Hint: $(1 - \frac{x}{n})^n\mathbf{1}_{[0, n]}(x)$ increases to $e^{-x}$.)
+        \item Let $X \geq 0$ with $\E[X] < \infty$. Show that $\E[X\mathbf{1}_{\{X > t\}}] \to 0$ as $t \to \infty$, and conclude that $nP(X > n) \to 0$.
+        \item Find random variables $X_n \geq 0$ with $X_n \to 0$ almost surely and $\E[X_n] \to \infty$.
+    \end{enumerate}
+    \item A waiting time $Z \sim$ Exponential$(1)$ is cut off after $2$ minutes: $Y = \min(Z, 2)$. Find the CDF of $Y$ and a density of $Y$ with respect to $\lambda + \delta_2$, and compute $\E[Y]$ in two ways: with this density, and with the tail integral of Example~\ref{L4-ex:tail-integral}.
     \item \begin{enumerate}[label=(\alph*)]
         \item A nonnegative random variable has mean $2$. Bound $P(X \geq 10)$ with Markov's inequality, and compare with the exact value for $X \sim$ Exponential$(\frac{1}{2})$.
         \item Use Jensen's inequality to show that $\E[\frac{1}{X}] \geq \frac{1}{\E[X]}$ for every positive random variable $X$, and that $\E[e^X] \geq e^{\E[X]}$.
     \end{enumerate}
-    \item Let $(X, Y)$ have the joint pmf $p(0, 0) = 0.1$, $p(0, 1) = 0.2$, $p(0, 2) = 0.1$, $p(1, 0) = 0.2$, $p(1, 1) = 0.1$, $p(1, 2) = 0.3$. Compute the marginal distributions, $\E[Y \mid X = 0]$ and $\E[Y \mid X = 1]$, and check the tower property. Compute $\Cov(X, Y)$. Are $X$ and $Y$ independent?
+    \item\label{L4-ex4:joint-pmf} Let $(X, Y)$ have the joint pmf $p(0, 0) = 0.1$, $p(0, 1) = 0.2$, $p(0, 2) = 0.1$, $p(1, 0) = 0.2$, $p(1, 1) = 0.1$, $p(1, 2) = 0.3$. Compute the marginal distributions, $\E[Y \mid X = 0]$ and $\E[Y \mid X = 1]$, and check the tower property. Compute $\Cov(X, Y)$. Are $X$ and $Y$ independent?
     \item Let $X \sim \mathcal{N}(0, 1)$. Show that $X$ and $X^2$ are uncorrelated, but not independent. Show that $\Corr(X, aX + b) = \sign(a)$ for $a \neq 0$.
+    \item Let $X$ and $Y$ be independent and Exponential$(\lambda)$. Show that $X + Y$ has the density $\lambda^2ze^{-\lambda z}$ for $z > 0$.
+    \item Let $X_1$ and $X_2$ be independent and Uniform$(0, 1)$, and $M = \max(X_1, X_2)$. Show that $\E[X_1 \mid M] = \frac{3}{4}M$, and check the tower property. (Hint: given $M = m$, $X_1 = m$ with probability $\frac{1}{2}$, and otherwise $X_1$ is uniform on $[0, m]$.)
+    \item (P\'olya's urn.) An urn contains one red and one blue ball. Repeatedly, a ball is drawn at random and put back together with another ball of the same color. Let $R_n$ be the fraction of red balls after $n$ draws. Show that $(R_n)$ is a martingale, and find $\E[R_n]$.
     \item Let $\mathbf{X}$ have the covariance matrix $\Sigma = \begin{pmatrix} 2 & -1 & 0 \\ -1 & 2 & -1 \\ 0 & -1 & 2 \end{pmatrix}$. Compute $\Var(X_1 + X_2 + X_3)$ and $\Var(X_1 - X_3)$. In which direction $\mathbf{u}$ (with $\norm{\mathbf{u}} = 1$) is $\Var(\mathbf{u}^\top\mathbf{X})$ largest, and what is it? Find a matrix $A$ such that $A\mathbf{X}$ has covariance matrix $I$.
     \item Let $(X, Y) \sim \mathcal{N}\Big(\mathbf{0}, \begin{pmatrix} 4 & 2 \\ 2 & 2 \end{pmatrix}\Big)$. Find the conditional distributions of $Y$ given $X = x$ and of $X$ given $Y = y$, the distribution of $X - Y$, and $P(X > Y)$. Describe the level curves of the density.
     \item Let $\mathbf{X} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$ in $\mathbb{R}^d$. Show that the squared Mahalanobis distance $(\mathbf{X} - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{X} - \boldsymbol{\mu})$ has the same distribution as $\norm{\mathbf{Z}}^2$ with $\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, I)$, and that its expectation is $d$. What does this say about where the probability mass of a high-dimensional Gaussian lies?
     \item How many times do we have to flip a fair coin so that the fraction of heads is within $0.01$ of $\frac{1}{2}$ with probability at least $95\%$? Answer with Chebyshev's inequality, with Hoeffding's inequality, and with the central limit theorem, and compare.
+    \item Let $X_n$ be independent with $P(X_n = 1) = p_n$ and $P(X_n = 0) = 1 - p_n$.
+    \begin{enumerate}[label=(\alph*)]
+        \item For $p_n = \frac{1}{n}$, show that $X_n \to 0$ in probability and in $L^1$, but not almost surely.
+        \item For $p_n = \frac{1}{n^2}$, show that $X_n \to 0$ almost surely.
+    \end{enumerate}
+    \item (Delta method.) Let $X_1, \ldots, X_N$ be i.i.d.\ Exponential$(\lambda)$. Show that $\sqrt{N}\big(\frac{1}{\bar X_N} - \lambda\big) \to \mathcal{N}(0, \lambda^2)$ in distribution, and compare with the Fisher information of the exponential distribution (Exercise~\ref{L4-ex4:fisher}).
     \item Let $p(x) = \sqrt{2/\pi}\,e^{-x^2/2}$ for $x > 0$ be the density of $|Z|$ for $Z \sim \mathcal{N}(0, 1)$, and let $q(x) = e^{-x}$ be the Exponential$(1)$ density.
     \begin{enumerate}[label=(\alph*)]
         \item Find the smallest $M$ with $p \leq Mq$, and the acceptance rate of rejection sampling with this proposal.
@@ -1339,21 +1781,23 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item Let the walker of Example~\ref{L4-ex:random-walk-graph} move on the cycle with the four vertices $1, 2, 3, 4$ (and the edges $\{1, 2\}, \{2, 3\}, \{3, 4\}, \{4, 1\}$). Find the stationary distribution and the eigenvalues of $P$. Show that the distribution of $X_t$ does not converge if $X_0 = 1$.
         \item The lazy walk stays at the current vertex with probability $\frac{1}{2}$, i.e., it has the transition matrix $\frac{1}{2}(I + P)$. Show that it has the same stationary distribution, find its eigenvalues, and explain why it converges.
     \end{enumerate}
-    \item Let $X_1, \ldots, X_N$ be i.i.d.\ Uniform$(0, \theta)$.
+    \item\label{L4-ex4:uniform-mle} Let $X_1, \ldots, X_N$ be i.i.d.\ Uniform$(0, \theta)$.
     \begin{enumerate}[label=(\alph*)]
         \item Show that the MLE of $\theta$ is $M = \max_i X_i$, and that $\E[M] = \frac{N}{N + 1}\theta$. (Hint: $P(M \leq t) = (t/\theta)^N$.)
         \item Show that $\frac{N + 1}{N}M$ and $2\bar X_N$ are unbiased, and compare their variances, $\frac{\theta^2}{N(N + 2)}$ and $\frac{\theta^2}{3N}$. Which estimator is better?
     \end{enumerate}
     \item Find the maximum likelihood estimates for i.i.d.\ data from (a) Poisson$(\lambda)$, (b) Exponential$(\lambda)$, (c) Geometric$(p)$.
-    \item (Fisher information.)
+    \item\label{L4-ex4:fisher} (Fisher information.)
     \begin{enumerate}[label=(\alph*)]
         \item Show that the Fisher information of Poisson$(\lambda)$ is $I(\lambda) = \frac{1}{\lambda}$, and that the MLE $\bar X_N$ is efficient.
         \item Show that $I(\lambda) = \frac{1}{\lambda^2}$ for Exponential$(\lambda)$. The sum $S$ of $N \geq 3$ i.i.d.\ Exponential$(\lambda)$ variables has the Gamma density $\frac{\lambda^N s^{N-1}e^{-\lambda s}}{(N - 1)!}$ for $s > 0$. Use it to show that the MLE $\frac{1}{\bar X_N}$ has the expectation $\frac{N\lambda}{N - 1}$, that $\frac{N - 1}{N\bar X_N}$ is unbiased, and that its variance $\frac{\lambda^2}{N - 2}$ is larger than the Cram\'er--Rao bound. Is the MLE asymptotically efficient?
         \item Counts of $N = 50$ independent Poisson observations have the sample mean $3$. Estimate the standard error of $\hat\lambda$ from the observed information $-\ell''(\hat\lambda)$, and give an approximate $95\%$ confidence interval for $\lambda$.
     \end{enumerate}
+    \item (Rao--Blackwell.) Let $X_1, \ldots, X_N$ be i.i.d.\ Uniform$(0, \theta)$. One can show that $M = \max_i X_i$ is sufficient for $\theta$. Show that $\E[2X_1 \mid M] = \frac{N + 1}{N}M$: Rao--Blackwellizing the unbiased estimator $2X_1$ gives the unbiased estimator of Exercise~\ref{L4-ex4:uniform-mle}. (Hint: given $M = m$, $X_1 = m$ with probability $\frac{1}{N}$, and otherwise $X_1$ is uniform on $[0, m]$.)
     \item Assume the regression model $y_i = \mathbf{w}^\top\mathbf{x}_i + \varepsilon_i$ with i.i.d.\ Laplace noise, with density $\frac{1}{2b}e^{-|\varepsilon|/b}$. Show that the MLE of $\mathbf{w}$ minimizes $\sum_i |y_i - \mathbf{w}^\top\mathbf{x}_i|$. In the special case $\mathbf{x}_i = 1$ (estimating a single number $w$), show that every median of the $y_i$ is a minimizer.
     \item Find the method of moments estimators of (a) $a$ and $b$ for Uniform$(a, b)$, using the mean and the variance; (b) the shape $k$ and the scale $s$ of a Gamma distribution, for data with the sample mean $4$ and the sample variance $8$.
     \item A die is rolled $120$ times and shows $30$ sixes. Test at the level $0.05$ whether the die favors sixes: state $H_0$ and $H_1$, and compute the exact one-sided p-value $P(S \geq 30)$ for $S \sim$ Binomial$(120, \frac{1}{6})$ with a computer, and its normal approximation.
+    \item Out of $200$ users, $70$, $80$ and $50$ prefer the layouts A, B and C. Use Pearson's $\chi^2$ test to test at the level $0.05$ whether the three layouts are equally popular. (The $\chi^2_2$ distribution has the tail $P(\chi^2_2 \geq c) = e^{-c/2}$.)
     \item \begin{enumerate}[label=(\alph*)]
         \item Show that for $m$ independent tests of true null hypotheses at the level $\frac{\alpha}{m}$, the probability of at least one rejection is $1 - (1 - \frac{\alpha}{m})^m \leq \alpha$.
         \item In a permutation test with two groups of three observations each, what is the smallest possible one-sided p-value? What does this mean for very small experiments?
@@ -1374,7 +1818,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item Compute the entropy of a fair die in bits.
         \item Compute $\KL(\text{Bernoulli}(p) \,\|\, \text{Bernoulli}(q))$, and show that
         \[\KL\big(\mathcal{N}(\mu_1, \sigma^2) \,\|\, \mathcal{N}(\mu_2, \sigma^2)\big) = \frac{(\mu_1 - \mu_2)^2}{2\sigma^2}.\]
-        \item Show that $I(X; Y) = H(X) + H(Y) - H(X, Y)$ for discrete random variables, where $H(X, Y)$ is the entropy of the joint distribution. Compute $I(X; Y)$ for Exercise~8.
+        \item Show that $I(X; Y) = H(X) + H(Y) - H(X, Y)$ for discrete random variables, where $H(X, Y)$ is the entropy of the joint distribution. Compute $I(X; Y)$ for Exercise~\ref{L4-ex4:joint-pmf}.
     \end{enumerate}
     \item (Brownian motion and the Ornstein--Uhlenbeck process.)
     \begin{enumerate}[label=(\alph*)]
@@ -1406,7 +1850,21 @@ rng = np.random.default_rng(0)
         \item $\mathcal{N}(\boldsymbol{\mu}, \Sigma)$ in $\mathbb{R}^2$ with $\Sigma = \begin{pmatrix} 3 & 1 \\ 1 & 3 \end{pmatrix}$, via $\boldsymbol{\mu} + L\mathbf{z}$ with the Cholesky factor $L$. Plot the samples together with the ellipses of Figure~\ref{L4-fig:gaussian}, and check the sample mean and covariance matrix. What fraction of the samples lies inside the ellipse with $r = 1$, and with $r = 2$? (Compare with $1 - e^{-r^2/2}$.)
     \end{itemize}
 
+    \item \textbf{Distributions without densities.}
+    \begin{itemize}
+        \item Implement the quantile function $F^{-1}(u) = \min\{x : F(x) \geq u\}$ of a discrete distribution with the values $x_1 < \cdots < x_K$ and the probabilities $p_1, \ldots, p_K$, using the cumulative sums and \py{np.searchsorted}, and sample from it with uniform random numbers (Theorem~\ref{L4-thm:inverse-transform}). Compare the frequencies with the probabilities.
+        \item Sample $10^5$ values of $\max(0, Z)$ for $Z \sim \mathcal{N}(0, 1)$, and check $P(Y = 0) = \frac{1}{2}$, $\E[Y] = \frac{1}{\sqrt{2\pi}}$ and $\Var(Y) = \frac{1}{2} - \frac{1}{2\pi}$ (Example~\ref{L4-ex:relu-gaussian}).
+        \item Sample from the Cantor distribution (Remark~\ref{L4-rem:singular}) with $30$ random ternary digits $0$ or $2$, plot the empirical CDF (the Cantor function), and check the mean $\frac{1}{2}$ and the variance $\frac{1}{8}$. What fraction of the samples lies in $(\frac{1}{3}, \frac{2}{3})$, and in $(\frac{1}{9}, \frac{2}{9})$?
+    \end{itemize}
+
     \item \textbf{The law of large numbers and the central limit theorem.} For $X_i \sim$ Exponential$(1)$, simulate $10^4$ sample means $\bar X_N$ for $N = 1, 2, 5, 30$, and plot histograms of the standardized means $\sqrt{N}(\bar X_N - 1)$ together with the standard normal density. Repeat with the Cauchy distribution (the ratio of two independent standard normal variables), which has no mean: plot $\bar X_N$ against $N$ for one long sequence. What happens?
+
+    \item \textbf{Modes of convergence.}
+    \begin{itemize}
+        \item For the sequences (1) and (2) of Example~\ref{L4-ex:convergence-counterexamples}, plot the paths $n \mapsto X_n$ for $n \leq 1000$ for a few values of $U$, and estimate $\E[X_n]$ and $P(X_n \neq 0)$ from $10^4$ values of $U$. Which sequence converges almost surely, which in probability, and which in $L^1$?
+        \item Simulate independent events $A_n$ with $P(A_n) = \frac{1}{n}$ and with $P(A_n) = \frac{1}{n^2}$, for $n \leq 10^6$. In $20$ runs, count how many of the events happen, and record when the last one happens. Compare with the Borel--Cantelli lemma; for $P(A_n) = \frac{1}{n}$, compare the count with $\sum_{n \leq N}\frac{1}{n} \approx \log N$.
+        \item (The strong law.) Plot $\bar X_N$ against $N \leq 10^4$ for $20$ independent sequences of Exponential$(1)$ variables, together with the curves $1 \pm 2/\sqrt{N}$. How does the spread of the paths shrink, and does every path converge?
+    \end{itemize}
 
     \item \textbf{Gaussian classifiers.} Generate two classes in $\mathbb{R}^2$ from Gaussians with means $(0, 0)$ and $(2, 1)$ and the same covariance matrix $\Sigma = \begin{pmatrix} 1 & 0.5 \\ 0.5 & 1 \end{pmatrix}$, with $200$ points each.
     \begin{itemize}
@@ -1416,6 +1874,12 @@ rng = np.random.default_rng(0)
     \end{itemize}
 
     \item \textbf{Maximum likelihood and bias.} Draw $10^5$ data sets of size $N = 5$ from $\mathcal{N}(2, 9)$. Compute the average of the MLE $\hat\sigma^2$ and of $s^2$ over the data sets, and compare with $\frac{N - 1}{N}\sigma^2 = 7.2$ and $\sigma^2 = 9$. Then estimate the mean squared errors of both estimators. Which one has the smaller MSE?
+
+    \item \textbf{Rao--Blackwell and the delta method.}
+    \begin{itemize}
+        \item For $10^5$ data sets of $N = 10$ Poisson$(1)$ counts, compute the three estimators $\mathbf{1}_{\{X_1 = 0\}}$, $(1 - \frac{1}{N})^S$ and $e^{-\bar X_N}$ of $e^{-1}$ (Example~\ref{L4-ex:rao-blackwell}), and estimate their biases, variances and mean squared errors.
+        \item For $N = 30$ Bernoulli$(p)$ observations with $p = 0.1$, estimate the coverage probabilities of the interval $\hat p \pm 1.96\sqrt{\hat p(1 - \hat p)/N}$ and of the log-odds interval of Example~\ref{L4-ex:delta} by simulation (skip the data sets with $\hat p \in \{0, 1\}$, and report how often this happens). Which interval keeps its promise of $95\%$ better?
+    \end{itemize}
 
     \item \textbf{The bootstrap.} For $N = 50$ samples from Exponential$(1)$, estimate the standard error of the sample median by resampling the data $2000$ times with replacement and computing the median of each resample. Compare with the standard error of the median over many independent data sets. Use the same method to compute a $95\%$ interval for the mean (the $2.5\%$ and $97.5\%$ quantiles of the bootstrapped means), and compare with $\bar x \pm 1.96\frac{s}{\sqrt{N}}$.
 
@@ -1458,6 +1922,12 @@ rng = np.random.default_rng(0)
         \item Generate $1000$ tests, of which $50$ have a real effect (data from $\mathcal{N}(0.8, 1)$) and $950$ do not (data from $\mathcal{N}(0, 1)$), each with $N = 20$. Count the true and false discoveries without correction, with Bonferroni, and with Benjamini--Hochberg at the level $0.05$.
         \item Implement a permutation test for the difference of the means of two groups, and apply it to two groups of $15$ samples from Exponential$(1)$ and Exponential$(0.6)$. Compare its p-value with the z-test.
         \item (Peeking.) Simulate A/B tests with two identical versions (conversion rate $5\%$) and up to $10\,000$ users per group, computing the two-proportion z-test after every $200$ users per group. What fraction of the experiments ever reaches $p < 0.05$? Compare with a single test at the end.
+    \end{itemize}
+
+    \item \textbf{Martingales.}
+    \begin{itemize}
+        \item Simulate the gambler's ruin of Example~\ref{L4-ex:gamblers-ruin} with $a = 10$ and $b = 90$, $10\,000$ times, and check the winning probability $0.1$ and the mean duration $900$. Then let the coin show heads with probability $0.49$. How do the two numbers change?
+        \item (A test that allows peeking.) For coin flips with $H_0$: $\theta = \frac{1}{2}$ and the alternative $\theta = 0.6$, compute the likelihood ratio $L_n = \prod_{i \leq n}\frac{0.6^{x_i}0.4^{1 - x_i}}{0.5}$ after every flip, and reject $H_0$ as soon as $L_n \geq 20$ (Example~\ref{L4-ex:martingales}). In $10\,000$ simulations of a fair coin with up to $1000$ flips, how often is $H_0$ rejected? How many flips are needed on average to reject $H_0$ when $\theta = 0.6$? Compare with the peeking z-test of the previous exercise.
     \end{itemize}
 
     \item \textbf{Cross-validation.} Use the polynomial regression data of the programming exercises of Lecture~2 ($20$ points $y = \sin(3x) + \varepsilon$).
