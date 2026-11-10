@@ -39,27 +39,27 @@
 
 \begin{problem}[\mandatory]\label{pr:norms-compute}
     \begin{enumerate}[label=(\alph*)]
-        \item Compute $\norm{x}_1$, $\norm{x}_2$ and $\norm{x}_\infty$ for $x = (2, -1, 2, -4)^\top$.
-        \item Compute $\norm{y}_p$ for $y = (3, 4)^\top$ and $p = 1, 2, 4, \infty$. What do you observe as $p$ grows?
-        \item Show that $\norm{x}_\infty \leq \norm{x}_p \leq n^{1/p} \norm{x}_\infty$ for every $x \in \mathbb{R}^n$ and $p \geq 1$, and conclude that $\norm{x}_p \to \norm{x}_\infty$ as $p \to \infty$.
+        \item Compute $\norm{\mathbf{x}}_1$, $\norm{\mathbf{x}}_2$ and $\norm{\mathbf{x}}_\infty$ for $\mathbf{x} = (2, -1, 2, -4)^\top$.
+        \item Compute $\norm{\mathbf{y}}_p$ for $\mathbf{y} = (3, 4)^\top$ and $p = 1, 2, 4, \infty$. What do you observe as $p$ grows?
+        \item Show that $\norm{\mathbf{x}}_\infty \leq \norm{\mathbf{x}}_p \leq n^{1/p} \norm{\mathbf{x}}_\infty$ for every $\mathbf{x} \in \mathbb{R}^n$ and $p \geq 1$, and conclude that $\norm{\mathbf{x}}_p \to \norm{\mathbf{x}}_\infty$ as $p \to \infty$.
     \end{enumerate}
 \end{problem}
 
 \begin{problem}[\mandatory]\label{pr:which-norms}
-    Which of the following functions are norms on $\mathbb{R}^2$? For each norm, sketch its unit ball $\{x : \norm{x} \leq 1\}$; for each function that is not a norm, find an axiom that fails.
+    Which of the following functions are norms on $\mathbb{R}^2$? For each norm, sketch its unit ball $\{\mathbf{x} : \norm{\mathbf{x}} \leq 1\}$; for each function that is not a norm, find an axiom that fails.
     \begin{enumerate}[label=(\alph*)]
-        \item $f(x) = |x_1| + 2|x_2|$;
-        \item $f(x) = |x_1| + x_2^2$;
-        \item $f(x) = |x_1 - x_2|$;
-        \item $f(x) = \max\{|x_1|, |x_2|\} + |x_1 + x_2|$;
-        \item $f(x) = \big(\sqrt{|x_1|} + \sqrt{|x_2|}\big)^2$.
+        \item $f(\mathbf{x}) = |x_1| + 2|x_2|$;
+        \item $f(\mathbf{x}) = |x_1| + x_2^2$;
+        \item $f(\mathbf{x}) = |x_1 - x_2|$;
+        \item $f(\mathbf{x}) = \max\{|x_1|, |x_2|\} + |x_1 + x_2|$;
+        \item $f(\mathbf{x}) = \big(\sqrt{|x_1|} + \sqrt{|x_2|}\big)^2$.
     \end{enumerate}
 \end{problem}
 
 \section{Inner Products}
 
 \begin{problem}[\mandatory]\label{pr:which-ip}
-    Which of the following functions are inner products on $\mathbb{R}^2$? For each inner product, find the symmetric positive definite matrix $A$ with $\ip{x}{y} = x^\top A y$.
+    Which of the following functions are inner products on $\mathbb{R}^2$? For each inner product, find the symmetric positive definite matrix $A$ with $\ip{\mathbf{x}}{\mathbf{y}} = \mathbf{x}^\top A \mathbf{y}$.
     \begin{enumerate}[label=(\alph*)]
         \item $x_1 y_1 + 2 x_2 y_2$;
         \item $x_1 y_1 - x_2 y_2$;
@@ -71,11 +71,11 @@
 \end{problem}
 
 \begin{problem}[\mandatory]\label{pr:ip-gram}
-    Consider the inner product $\ip{x}{y} = x^\top A y$ on $\mathbb{R}^2$ with $A = \begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix}$.
+    Consider the inner product $\ip{\mathbf{x}}{\mathbf{y}} = \mathbf{x}^\top A \mathbf{y}$ on $\mathbb{R}^2$ with $A = \begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
-        \item Compute $\ip{e_1}{e_2}$, $\norm{e_1}$, $\norm{e_2}$ and the angle between $e_1$ and $e_2$ with respect to this inner product.
-        \item Find a nonzero vector that is orthogonal to $e_1$ with respect to this inner product.
-        \item Apply the Gram--Schmidt process to $e_1, e_2$ with respect to this inner product to find an orthonormal basis.
+        \item Compute $\ip{\mathbf{e}_1}{\mathbf{e}_2}$, $\norm{\mathbf{e}_1}$, $\norm{\mathbf{e}_2}$ and the angle between $\mathbf{e}_1$ and $\mathbf{e}_2$ with respect to this inner product.
+        \item Find a nonzero vector that is orthogonal to $\mathbf{e}_1$ with respect to this inner product.
+        \item Apply the Gram--Schmidt process to $\mathbf{e}_1, \mathbf{e}_2$ with respect to this inner product to find an orthonormal basis.
     \end{enumerate}
 \end{problem}
 
@@ -115,7 +115,7 @@
 
 \begin{problem}[\mandatory]\label{pr:dist}
     \begin{enumerate}[label=(\alph*)]
-        \item Compute the distance between $(1, 2, 3)^\top$ and $(4, 0, -3)^\top$ with respect to the $\ell_1$, $\ell_2$ and $\ell_\infty$ norms, and with respect to the norm induced by the inner product $x^\top \diag(1, 4, 1)\, y$.
+        \item Compute the distance between $(1, 2, 3)^\top$ and $(4, 0, -3)^\top$ with respect to the $\ell_1$, $\ell_2$ and $\ell_\infty$ norms, and with respect to the norm induced by the inner product $\mathbf{x}^\top \diag(1, 4, 1)\, \mathbf{y}$.
         \item Prove the reverse triangle inequality $\big|\norm{x} - \norm{y}\big| \leq \norm{x - y}$ for every norm.
     \end{enumerate}
 \end{problem}
@@ -140,8 +140,8 @@
     Let $Q = \frac{1}{3}\begin{pmatrix} 1 & 2 & 2 \\ 2 & 1 & -2 \\ 2 & -2 & 1 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
         \item Show that $Q$ is orthogonal and symmetric, and conclude that $Q^2 = I_3$.
-        \item Compute $Qx$ for $x = (1, 1, 1)^\top$, and check that $\norm{Qx} = \norm{x}$.
-        \item Show that $Q = I_3 - 2uu^\top$ for the unit vector $u = \frac{1}{\sqrt{3}}(1, -1, -1)^\top$. Describe $Q$ geometrically, and find $\det(Q)$.
+        \item Compute $Q\mathbf{x}$ for $\mathbf{x} = (1, 1, 1)^\top$, and check that $\norm{Q\mathbf{x}} = \norm{\mathbf{x}}$.
+        \item Show that $Q = I_3 - 2\mathbf{u}\mathbf{u}^\top$ for the unit vector $\mathbf{u} = \frac{1}{\sqrt{3}}(1, -1, -1)^\top$. Describe $Q$ geometrically, and find $\det(Q)$.
     \end{enumerate}
 \end{problem}
 
@@ -158,7 +158,7 @@
 
 \begin{problem}[\mandatory, $\star$]\label{pr:gs-haar}
     \begin{enumerate}[label=(\alph*)]
-        \item Apply the Gram--Schmidt process to $v_1 = (1, 1, 1, 1)^\top$, $v_2 = (1, 1, 0, 0)^\top$ and $v_3 = (1, 0, 0, 0)^\top$.
+        \item Apply the Gram--Schmidt process to $\mathbf{v}_1 = (1, 1, 1, 1)^\top$, $\mathbf{v}_2 = (1, 1, 0, 0)^\top$ and $\mathbf{v}_3 = (1, 0, 0, 0)^\top$.
         \item Find a fourth vector that extends the result to an orthonormal basis of $\mathbb{R}^4$. (The resulting basis is the Haar basis, which is the starting point of wavelet methods in signal and image processing.)
     \end{enumerate}
 \end{problem}
@@ -167,7 +167,7 @@
     Let $b_1 = \frac{1}{3}(1, 2, 2)^\top$, $b_2 = \frac{1}{3}(2, 1, -2)^\top$ and $b_3 = \frac{1}{3}(2, -2, 1)^\top$.
     \begin{enumerate}[label=(\alph*)]
         \item Show that $b_1, b_2, b_3$ is an orthonormal basis of $\mathbb{R}^3$.
-        \item Write $v = (3, 0, 3)^\top$ in this basis, without solving a system of equations, and check Parseval's identity.
+        \item Write $\mathbf{v} = (3, 0, 3)^\top$ in this basis, without solving a system of equations, and check Parseval's identity.
     \end{enumerate}
 \end{problem}
 
@@ -185,20 +185,20 @@
     Let $A = \begin{pmatrix} 1 & 2 \\ 2 & 4 \\ 3 & 6 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
         \item Find bases of the four subspaces $\col(A)$, $\Null(A^\top)$, $\row(A)$ and $\Null(A)$, and check that $\Null(A) = \row(A)^\perp$ and $\Null(A^\top) = \col(A)^\perp$.
-        \item For which $b \in \mathbb{R}^3$ does the system $Ax = b$ have a solution? Express your answer as an orthogonality condition.
+        \item For which $\mathbf{b} \in \mathbb{R}^3$ does the system $A\mathbf{x} = \mathbf{b}$ have a solution? Express your answer as an orthogonality condition.
     \end{enumerate}
 \end{problem}
 
 \begin{problem}[\mandatory]\label{pr:classifier}
-    A linear classifier on $\mathbb{R}^2$ has the weight vector $w = (2, -1)^\top$ and the bias $b = 1$.
+    A linear classifier on $\mathbb{R}^2$ has the weight vector $\mathbf{w} = (2, -1)^\top$ and the bias $b = 1$.
     \begin{enumerate}[label=(\alph*)]
-        \item Sketch the decision boundary and the normal vector $w$.
+        \item Sketch the decision boundary and the normal vector $\mathbf{w}$.
         \item Classify the points $(1, 1)$, $(-1, 0)$ and $(0, 2)$, and compute their distances to the decision boundary. Which point is classified with the largest margin?
     \end{enumerate}
 \end{problem}
 
 \begin{problem}[$\star$]\label{pr:hyperplane-form}
-    Find an equation $w^\top x = c$ of the plane through the points $(1, 0, 0)$, $(0, 2, 0)$ and $(0, 0, 3)$, a normal vector of this plane, and the distance from the origin to the plane.
+    Find an equation $\mathbf{w}^\top \mathbf{x} = c$ of the plane through the points $(1, 0, 0)$, $(0, 2, 0)$ and $(0, 0, 3)$, a normal vector of this plane, and the distance from the origin to the plane.
 \end{problem}
 
 \section{Inner Products of Functions}
@@ -219,14 +219,14 @@
 \section{Orthogonal Projections}
 
 \begin{problem}[\mandatory]\label{pr:proj-line}
-    Project $x = (2, 1, 3)^\top$ onto the line spanned by $b = (1, 1, 1)^\top$. Write down the projection matrix, and check that $x - \pi(x)$ is orthogonal to $b$.
+    Project $\mathbf{x} = (2, 1, 3)^\top$ onto the line spanned by $\mathbf{b} = (1, 1, 1)^\top$. Write down the projection matrix, and check that $\mathbf{x} - \pi(\mathbf{x})$ is orthogonal to $\mathbf{b}$.
 \end{problem}
 
 \begin{problem}[\mandatory]\label{pr:proj-plane}
-    Let $U = \Span\{(1, 0, 1)^\top, (1, 1, 0)^\top\}$ and $x = (1, 2, 3)^\top$.
+    Let $U = \Span\{(1, 0, 1)^\top, (1, 1, 0)^\top\}$ and $\mathbf{x} = (1, 2, 3)^\top$.
     \begin{enumerate}[label=(\alph*)]
-        \item Compute $\pi_U(x)$ with the normal equations, and the distance from $x$ to $U$.
-        \item Find a vector $n$ with $U^\perp = \Span\{n\}$, and compute $\pi_U(x)$ a second way, as $x - \pi_{\Span\{n\}}(x)$.
+        \item Compute $\pi_U(\mathbf{x})$ with the normal equations, and the distance from $\mathbf{x}$ to $U$.
+        \item Find a vector $\mathbf{n}$ with $U^\perp = \Span\{\mathbf{n}\}$, and compute $\pi_U(\mathbf{x})$ a second way, as $\mathbf{x} - \pi_{\Span\{\mathbf{n}\}}(\mathbf{x})$.
     \end{enumerate}
 \end{problem}
 
@@ -234,7 +234,7 @@
     Let $\mathbf{1} = (1, \ldots, 1)^\top \in \mathbb{R}^n$, and let $C = I_n - \frac{1}{n}\mathbf{1}\mathbf{1}^\top$.
     \begin{enumerate}[label=(\alph*)]
         \item Show that $C$ is symmetric and that $C^2 = C$, and that $C$ is the matrix of the orthogonal projection onto $\Span\{\mathbf{1}\}^\perp$.
-        \item Show that $Cx$ is obtained from $x$ by subtracting the mean of its entries from every entry, and compute $Cx$ for $x = (1, 2, 3, 6)^\top$. (This is the ``centering'' of data used before PCA.)
+        \item Show that $C\mathbf{x}$ is obtained from $\mathbf{x}$ by subtracting the mean of its entries from every entry, and compute $C\mathbf{x}$ for $\mathbf{x} = (1, 2, 3, 6)^\top$. (This is the ``centering'' of data used before PCA.)
     \end{enumerate}
 \end{problem}
 
@@ -260,9 +260,18 @@
 
 \section{Rotations}
 
+\begin{problem}[\mandatory]\label{pr:rot-axis-angle}
+    Let $R = \frac{1}{3}\begin{pmatrix} 2 & -1 & 2 \\ 2 & 2 & -1 \\ -1 & 2 & 2 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $R$ is a rotation, i.e., $R^\top R = I_3$ and $\det(R) = 1$.
+        \item Find a unit vector $\mathbf{v}$ on the axis of $R$, i.e., with $R\mathbf{v} = \mathbf{v}$.
+        \item Write $R = QR_3(\theta)Q^\top$ as in the lecture, and use $\tr(AB) = \tr(BA)$ to show that $\tr(R) = 1 + 2\cos\theta$. Find the rotation angle $\theta$.
+    \end{enumerate}
+\end{problem}
+
 \begin{problem}\label{pr:rot-noncomm}
     With the rotations $R_1$ and $R_3$ of the lecture, compute
-    \[R_3\big(\tfrac{\pi}{2}\big) R_1\big(\tfrac{\pi}{2}\big) e_2 \qquad \text{and} \qquad R_1\big(\tfrac{\pi}{2}\big) R_3\big(\tfrac{\pi}{2}\big) e_2,\]
+    \[R_3\big(\tfrac{\pi}{2}\big) R_1\big(\tfrac{\pi}{2}\big) \mathbf{e}_2 \qquad \text{and} \qquad R_1\big(\tfrac{\pi}{2}\big) R_3\big(\tfrac{\pi}{2}\big) \mathbf{e}_2,\]
     and explain the result geometrically.
 \end{problem}
 
@@ -270,7 +279,7 @@
     Let $C = \begin{pmatrix} 0 & 0 & 1 \\ 1 & 0 & 0 \\ 0 & 1 & 0 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
         \item Show that $C$ is a rotation, and that $C^3 = I_3$.
-        \item Find the axis of $C$, i.e., a nonzero vector $v$ with $Cv = v$.
+        \item Find the axis of $C$, i.e., a nonzero vector $\mathbf{v}$ with $C\mathbf{v} = \mathbf{v}$.
         \item A rotation of $\mathbb{R}^3$ by the angle $\theta$ about some axis has trace $1 + 2\cos\theta$. Use this to find the angle of $C$, and compare with part (a).
     \end{enumerate}
 \end{problem}
@@ -290,7 +299,7 @@
 \section{The Spectral Theorem}
 
 \begin{problem}[\mandatory]\label{pr:spectral-2}
-    Find the spectral decompositions $A = Q\Lambda Q^\top = \sum_i \lambda_i q_i q_i^\top$ of
+    Find the spectral decompositions $A = Q\Lambda Q^\top = \sum_i \lambda_i \mathbf{q}_i \mathbf{q}_i^\top$ of
     \[A_1 = \begin{pmatrix} 3 & 1 \\ 1 & 3 \end{pmatrix} \qquad \text{and} \qquad A_2 = \begin{pmatrix} 1 & 2 \\ 2 & -2 \end{pmatrix}.\]
     Which of them is positive definite?
 \end{problem}
@@ -309,7 +318,7 @@
 \begin{problem}\label{pr:quadric}
     Describe the curves
     \[5x^2 + 4xy + 2y^2 = 1 \qquad \text{and} \qquad x^2 + 4xy + y^2 = 1\]
-    in the plane. Find the directions of their axes, and, for the ellipse, the lengths of its semi-axes. (Hint: write the left-hand side as $v^\top A v$ and diagonalize $A$.)
+    in the plane. Find the directions of their axes, and, for the ellipse, the lengths of its semi-axes. (Hint: write the left-hand side as $\mathbf{v}^\top A \mathbf{v}$ and diagonalize $A$.)
 \end{problem}
 
 \begin{problem}[$\star$]\label{pr:sym-idempotent}
@@ -321,6 +330,35 @@
     \end{enumerate}
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:laplacian-path}
+    Consider the path graph with the vertices $1, 2, 3, 4$ and the edges $\{1, 2\}$, $\{2, 3\}$, $\{3, 4\}$, all with weight $1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write down its degree matrix $D$, its weight matrix $W$ and its Laplacian $L = D - W$.
+        \item Compute $\mathbf{x}^\top L\mathbf{x}$ for $\mathbf{x} = (1, 2, 4, 7)^\top$ in two ways: by matrix multiplication, and as a sum over the edges.
+        \item Check that $q = (1, \sqrt{2} - 1, 1 - \sqrt{2}, -1)^\top$ is an eigenvector of $L$, and find its eigenvalue. The eigenvalues of $L$ are $0$, $2 - \sqrt{2}$, $2$ and $2 + \sqrt{2}$; which split of the path does spectral clustering suggest?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:laplacian-cycle}
+    Let $L$ be the Laplacian of the cycle $1 - 2 - 3 - 4 - 1$ with weights $1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the eigenvalues of $L$ are $0$, $2$, $2$ and $4$, and find orthonormal eigenvectors.
+        \item Compute the ratio cut of the splits $\{1, 2\} \mid \{3, 4\}$, $\{1, 3\} \mid \{2, 4\}$ and $\{1\} \mid \{2, 3, 4\}$, and compare them with $\lambda_2$. When does equality hold in $\mathrm{RatioCut}(A) \geq \lambda_2$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:laplacian-complete}
+    Let $L$ be the Laplacian of the complete graph on $n$ vertices, in which all pairs of distinct vertices are joined by edges of weight $1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $L = nI_n - \mathbf{1}\mathbf{1}^\top$, and find its eigenvalues with their multiplicities.
+        \item Show that every split of the vertices has the ratio cut $n$. What does this mean for spectral clustering?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:laplacian-components}
+    A graph on the vertices $1, \ldots, 5$ has the edges $\{1, 2\}$ with weight $2$, $\{2, 3\}$ with weight $1$, and $\{4, 5\}$ with weight $3$. Find a basis of $\Null(L)$ without computing any eigenvalues, and give the multiplicity of the eigenvalue $0$. Then find the remaining eigenvalues.
+\end{problem}
+
 \section{The Singular Value Decomposition}
 
 \begin{problem}\label{pr:svd-diag}
@@ -330,7 +368,7 @@
 \begin{problem}\label{pr:svd-rank1}
     Let $A = \begin{pmatrix} 1 & 1 \\ 1 & 1 \\ 0 & 0 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
-        \item Find the singular values of $A$, and write $A = \sigma_1 u_1 v_1^\top$.
+        \item Find the singular values of $A$, and write $A = \sigma_1 \mathbf{u}_1 \mathbf{v}_1^\top$.
         \item Use the SVD to find bases of the four fundamental subspaces of $A$.
         \item Compute the pseudo-inverse $A^+$.
     \end{enumerate}
@@ -340,7 +378,7 @@
     Let $A = \begin{pmatrix} 3 & 2 & 2 \\ 2 & 3 & -2 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
         \item Compute $AA^\top$ and its eigenvalues and eigenvectors, and use them to find the singular values and the left singular vectors of $A$. (This is easier than starting from the $3 \times 3$ matrix $A^\top A$.)
-        \item Find the right singular vectors $v_i = \frac{1}{\sigma_i} A^\top u_i$, and complete them to an orthonormal basis of $\mathbb{R}^3$.
+        \item Find the right singular vectors $\mathbf{v}_i = \frac{1}{\sigma_i} A^\top \mathbf{u}_i$, and complete them to an orthonormal basis of $\mathbb{R}^3$.
         \item Find the best rank-$1$ approximation $A_1$ of $A$, and compute $\norm{A - A_1}_F$, $\norm{A}_2$ and $\norm{A}_F$.
     \end{enumerate}
 \end{problem}

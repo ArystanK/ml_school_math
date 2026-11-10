@@ -81,6 +81,28 @@
     \end{enumerate}
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:Cn-membership}
+    For each function, find the largest $n$ such that it lies in $C^n(\mathbb{R})$ (write $n = \infty$ for smooth functions and $n = 0$ for $C(\mathbb{R})$), or say that it is not continuous on $\mathbb{R}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item $e^{-x^2}$;
+        \item $|x|^3$;
+        \item $\sqrt{|x|}$;
+        \item $f(x) = \frac{\sin x}{x}$ for $x \neq 0$, and $f(0) = 1$;
+        \item $g(x) = 1$ for $x \geq 0$, and $g(x) = 0$ for $x < 0$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:fn-sets}
+    Which of the following subsets of $C(\mathbb{R})$ are vector spaces with the pointwise operations? Justify your answers.
+    \begin{enumerate}[label=(\alph*)]
+        \item The functions with $f(x + 1) = f(x)$ for all $x$ (the periodic functions with period $1$).
+        \item The increasing functions, i.e., those with $f(x) \leq f(y)$ whenever $x \leq y$.
+        \item The functions with $\lim_{x \to \infty} f(x) = 0$.
+        \item The functions with $|f(x)| \leq 1$ for all $x$.
+        \item The functions that are $0$ outside the interval $[0, 1]$.
+    \end{enumerate}
+\end{problem}
+
 \section{Bases and Dimension}
 
 \begin{problem}[\mandatory]\label{pr:indep}
@@ -114,7 +136,7 @@
 \end{problem}
 
 \begin{problem}\label{pr:gallery}
-    For each of the following linear transformations of the plane, compute $T(e_1)$ and $T(e_2)$, sketch the image of the unit square and of the letter F from the gallery figure in the lecture, and find the kernel and the image of $T$.
+    For each of the following linear transformations of the plane, compute $T(\mathbf{e}_1)$ and $T(\mathbf{e}_2)$, sketch the image of the unit square and of the letter F from the gallery figure in the lecture, and find the kernel and the image of $T$.
     \begin{enumerate}[label=(\alph*)]
         \item the reflection in the line $y = x$, $T(x, y) = (y, x)$;
         \item the projection onto the $x$-axis, $T(x, y) = (x, 0)$;
@@ -157,6 +179,27 @@
     \end{enumerate}
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:calculus-maps}
+    Which of the following maps are linear transformations? Justify your answers.
+    \begin{enumerate}[label=(\alph*)]
+        \item $C^2(\mathbb{R}) \to C(\mathbb{R})$, $f \mapsto f'' - 3f' + 2f$;
+        \item $C[0, 1] \to \mathbb{R}$, $f \mapsto \int_0^1 x f(x)\, dx$;
+        \item $C[0, 1] \to \mathbb{R}$, $f \mapsto \int_0^1 f(x)^2\, dx$;
+        \item $C(\mathbb{R}) \to C(\mathbb{R})$, $f \mapsto g$ with $g(x) = f(x + 1)$;
+        \item $C^1(\mathbb{R}) \to C(\mathbb{R})$, $f \mapsto f' + 1$;
+        \item $C(\mathbb{R}) \to \mathbb{R}$, $f \mapsto f(0)f(1)$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:diff-int}
+    Let $D: C^\infty(\mathbb{R}) \to C^\infty(\mathbb{R})$, $Df = f'$, and $J: C^\infty(\mathbb{R}) \to C^\infty(\mathbb{R})$, $(Jf)(x) = \int_0^x f(t)\, dt$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $D(Jf)$ and $J(Df)$ for $f(x) = \cos x$ and for $f(x) = e^{2x}$.
+        \item Show that $J(Df) = f - f(0)$ for every $f$, and find all $f$ with $J(Df) = f$.
+        \item Show that $D^2 = D \circ D$ is a linear transformation, and that $\cos$ and $\sin$ lie in the kernel of $D^2 + \mathrm{id}$, i.e., that they satisfy $f'' + f = 0$.
+    \end{enumerate}
+\end{problem}
+
 \section{Subspaces}
 
 \begin{problem}[\mandatory]\label{pr:subspaces}
@@ -184,14 +227,22 @@
     Show that $\{p \in \mathbb{R}[x]_{\leq 3} : p(1) = 0\}$ is a subspace of $\mathbb{R}[x]_{\leq 3}$ by writing it as the kernel of a linear transformation. Find a basis of this subspace and its dimension.
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:fn-subspaces}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $U = \{f \in C^2(\mathbb{R}) : f'' + f = 0\}$ is a subspace of $C^2(\mathbb{R})$, by writing it as the kernel of a linear transformation. Show that $a\cos x + b\sin x \in U$ for all $a, b \in \mathbb{R}$.
+        \item Show that the even functions ($f(-x) = f(x)$ for all $x$) and the odd functions ($f(-x) = -f(x)$ for all $x$) form subspaces of $C(\mathbb{R})$, and that every $f \in C(\mathbb{R})$ is the sum of an even and an odd function. (Hint: $f(x) = \frac{f(x) + f(-x)}{2} + \frac{f(x) - f(-x)}{2}$.)
+        \item Is $\{f \in C^\infty(\mathbb{R}) : f(0) = f'(0)\}$ a subspace of $C^\infty(\mathbb{R})$? Is the set of polynomials of degree exactly $2$ a subspace of $\mathbb{R}[x]$?
+    \end{enumerate}
+\end{problem}
+
 \section{Matrices}
 
 \subsection{Matrix Operations}
 
 \begin{problem}[\mandatory]\label{pr:matvec}
-    Let $A = \begin{pmatrix} 1 & 0 & 2 \\ -1 & 3 & 1 \end{pmatrix}$ and $x = (2, 1, -1)^\top$.
+    Let $A = \begin{pmatrix} 1 & 0 & 2 \\ -1 & 3 & 1 \end{pmatrix}$ and $\mathbf{x} = (2, 1, -1)^\top$.
     \begin{enumerate}[label=(\alph*)]
-        \item Compute $Ax$ in two ways: entry by entry, and as a linear combination of the columns of $A$.
+        \item Compute $A\mathbf{x}$ in two ways: entry by entry, and as a linear combination of the columns of $A$.
         \item Compute $A^\top$, $AA^\top$ and $A^\top A$. Which of these matrices are symmetric?
     \end{enumerate}
 \end{problem}
@@ -253,18 +304,18 @@
 \subsection{The Inverse of a Matrix}
 
 \begin{problem}\label{pr:inverse2}
-    Find the inverse of $A = \begin{pmatrix} 3 & 1 \\ 5 & 2 \end{pmatrix}$ by solving the equation $Ax = y$ for $x$, as in the lecture. Check your answer by computing $AA^{-1}$.
+    Find the inverse of $A = \begin{pmatrix} 3 & 1 \\ 5 & 2 \end{pmatrix}$ by solving the equation $A\mathbf{x} = \mathbf{y}$ for $\mathbf{x}$, as in the lecture. Check your answer by computing $AA^{-1}$.
 \end{problem}
 
 \begin{problem}[\mandatory]\label{pr:inverse3}
     Use the Gauss--Jordan method to find the inverse of
     \[A = \begin{pmatrix} 1 & 2 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 1 \end{pmatrix},\]
-    and use it to solve the system $Ax = (1, 2, 3)^\top$.
+    and use it to solve the system $A\mathbf{x} = (1, 2, 3)^\top$.
 \end{problem}
 
 \begin{problem}\label{pr:arithmetic}
     \begin{enumerate}[label=(\alph*)]
-        \item Apply the Gauss--Jordan method to $A = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 3 & 4 \\ 3 & 4 & 5 \end{pmatrix}$ to show that $A$ is singular, and find a nonzero vector $x$ with $Ax = 0$.
+        \item Apply the Gauss--Jordan method to $A = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 3 & 4 \\ 3 & 4 & 5 \end{pmatrix}$ to show that $A$ is singular, and find a nonzero vector $\mathbf{x}$ with $A\mathbf{x} = \mathbf{0}$.
         \item Show more generally that every $3 \times 3$ matrix whose rows form an arithmetic progression (i.e., row $2$ $-$ row $1$ $=$ row $3$ $-$ row $2$) is singular.
     \end{enumerate}
 \end{problem}
@@ -279,7 +330,7 @@
         \item Show that the only invertible idempotent matrix is the identity.
         \item Show that $P = \begin{pmatrix} 1 & 1 \\ 0 & 0 \end{pmatrix}$ is idempotent, and find the kernel and the image of $T_P$. Describe $T_P$ geometrically.
         \item Show that if $A$ is idempotent, then so is $I - A$, and that $A(I - A) = 0$.
-        \item Let $A$ be an idempotent $n \times n$ matrix. Show that $\im(T_A) \cap \ker(T_A) = \{0\}$, and that every $v \in \mathbb{R}^n$ can be written as $v = Av + (v - Av)$, where $Av \in \im(T_A)$ and $v - Av \in \ker(T_A)$.
+        \item Let $A$ be an idempotent $n \times n$ matrix. Show that $\im(T_A) \cap \ker(T_A) = \{\mathbf{0}\}$, and that every $\mathbf{v} \in \mathbb{R}^n$ can be written as $\mathbf{v} = A\mathbf{v} + (\mathbf{v} - A\mathbf{v})$, where $A\mathbf{v} \in \im(T_A)$ and $\mathbf{v} - A\mathbf{v} \in \ker(T_A)$.
     \end{enumerate}
 \end{problem}
 
@@ -370,8 +421,8 @@
     Let $A = \begin{pmatrix} 3 & 5 & 3 \\ 1 & 7 & 3 \\ 1 & 2 & 8 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
         \item For which of the numbers $\lambda = 2, 3, 5$ is the matrix $A - \lambda I_3$ singular?
-        \item For each such $\lambda$, find a nonzero vector $x$ with $Ax = \lambda x$.
-        \item Without computing any determinant, find another number $\lambda$ and a nonzero vector $x$ with $Ax = \lambda x$. (Hint: add up the entries in each row of $A$.)
+        \item For each such $\lambda$, find a nonzero vector $\mathbf{x}$ with $A\mathbf{x} = \lambda \mathbf{x}$.
+        \item Without computing any determinant, find another number $\lambda$ and a nonzero vector $\mathbf{x}$ with $A\mathbf{x} = \lambda \mathbf{x}$. (Hint: add up the entries in each row of $A$.)
     \end{enumerate}
 \end{problem}
 
@@ -381,7 +432,7 @@
     \begin{enumerate}[label=(\alph*)]
         \item Compute $\det(A)$. Is $A$ invertible? Can $A$ be transformed into $I_5$ by elementary row operations?
         \item Find the last row of $A^2$ without computing all of $A^2$.
-        \item Explain why $A - I_5$ and $A - 2I_5$ are singular. Find nonzero vectors $x$ and $y$ with $Ax = x$ and $Ay = 2y$.
+        \item Explain why $A - I_5$ and $A - 2I_5$ are singular. Find nonzero vectors $\mathbf{x}$ and $\mathbf{y}$ with $A\mathbf{x} = \mathbf{x}$ and $A\mathbf{y} = 2\mathbf{y}$.
     \end{enumerate}
 \end{problem}
 
@@ -417,6 +468,49 @@
     \end{enumerate}
 \end{problem}
 
+\subsection{Block Matrices, the LU Decomposition and the Woodbury Identity}
+
+\begin{problem}[\mandatory]\label{pr:lu-compute}
+    Let $A = \begin{pmatrix} 1 & 2 & 1 \\ 3 & 8 & 1 \\ 0 & 4 & 1 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the LU decomposition $A = LU$ by Gaussian elimination, recording the multipliers in $L$.
+        \item Use it to compute $\det(A)$, and to solve $A\mathbf{x} = (2, 10, 3)^\top$ by forward and back substitution.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:lu-pivot}
+    Show that $A = \begin{pmatrix} 0 & 2 \\ 3 & 1 \end{pmatrix}$ has no factorization $A = LU$ with $L$ unit lower triangular and $U$ upper triangular. Find a permutation matrix $P$ such that $PA = LU$, and give $L$ and $U$.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:schur-practice}
+    Let $M = \begin{pmatrix} 2 & 1 & 1 \\ 1 & 2 & 1 \\ 1 & 1 & 2 \end{pmatrix}$, split into the blocks $A = (2)$, $B = (1, 1)$, $C = B^\top$, and the lower right $2 \times 2$ block $D$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the Schur complement $S$ of $A$ and $\det(M) = \det(A)\det(S)$.
+        \item Compute $S^{-1}$, which is the lower right $2 \times 2$ block of $M^{-1}$. Then find all of $M^{-1}$ with the formula of the lecture, and check that $MM^{-1} = I_3$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:sherman-morrison-practice}
+    Let $A = \diag(1, 2, 4)$ and $\mathbf{u} = \mathbf{v} = (1, 1, 1)^\top$. Use the Sherman--Morrison formula to compute $(A + \mathbf{u}\mathbf{v}^\top)^{-1}$, and the determinant lemma to compute $\det(A + \mathbf{u}\mathbf{v}^\top)$. Check your answer for the determinant by row reduction.
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:det-lemma-practice}
+    Let $J_n$ be the $n \times n$ matrix whose entries are all $1$, so that $J_n = \mathbf{1}\mathbf{1}^\top$ for the vector $\mathbf{1}$ of ones.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $\det(aI_n + bJ_n) = a^{n-1}(a + nb)$ for all numbers $a \neq 0$ and $b$.
+        \item For which numbers $x$ is the $n \times n$ matrix with all diagonal entries equal to $x$ and all other entries equal to $1$ singular?
+        \item For $a \neq 0$ and $a + nb \neq 0$, find $(aI_n + bJ_n)^{-1}$. (It is again of the form $\alpha I_n + \beta J_n$.)
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:push-through}
+    Let $X$ be an $N \times d$ matrix and $\lambda > 0$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $(X^\top X + \lambda I_d)^{-1}X^\top = X^\top(XX^\top + \lambda I_N)^{-1}$.
+        \item For a single data point, $X = \mathbf{x}^\top$ with $\mathbf{x} \in \mathbb{R}^d$, use (a) to show that $(\mathbf{x}\mathbf{x}^\top + \lambda I_d)^{-1}\mathbf{x} = \frac{1}{\mathbf{x}^\top \mathbf{x} + \lambda}\,\mathbf{x}$. Check this directly by multiplying both sides by $\mathbf{x}\mathbf{x}^\top + \lambda I_d$.
+    \end{enumerate}
+\end{problem}
+
 \section{Null Space, Column Space and Rank}
 
 \begin{problem}[\mandatory]\label{pr:bases-B}
@@ -427,8 +521,8 @@
     \begin{enumerate}[label=(\alph*)]
         \item Let $T: \mathbb{R}^5 \to \mathbb{R}^3$ be a surjective linear transformation. What is the dimension of $\ker(T)$?
         \item Can a linear transformation $\mathbb{R}^3 \to \mathbb{R}^5$ be surjective? Can it be injective?
-        \item Can a $4 \times 6$ matrix $A$ have $\Null(A) = \{0\}$?
-        \item Let $A$ be a $5 \times 3$ matrix such that $Ax = 0$ only for $x = 0$. What is the rank of $A$?
+        \item Can a $4 \times 6$ matrix $A$ have $\Null(A) = \{\mathbf{0}\}$?
+        \item Let $A$ be a $5 \times 3$ matrix such that $A\mathbf{x} = \mathbf{0}$ only for $\mathbf{x} = \mathbf{0}$. What is the rank of $A$?
     \end{enumerate}
 \end{problem}
 
@@ -450,19 +544,19 @@
 \begin{problem}\label{pr:ATA}
     Let $A$ be an $m \times n$ matrix.
     \begin{enumerate}[label=(\alph*)]
-        \item Show that $\Null(A^\top A) = \Null(A)$. (Hint: if $A^\top A x = 0$, then $x^\top A^\top A x = 0$; what is $x^\top A^\top A x$ in terms of the entries of $Ax$?)
+        \item Show that $\Null(A^\top A) = \Null(A)$. (Hint: if $A^\top A \mathbf{x} = \mathbf{0}$, then $\mathbf{x}^\top A^\top A \mathbf{x} = 0$; what is $\mathbf{x}^\top A^\top A \mathbf{x}$ in terms of the entries of $A\mathbf{x}$?)
         \item Conclude that $\rank(A^\top A) = \rank(A)$.
-        \item Show that if the columns of $A$ are linearly independent, then $A^\top A$ is invertible. (This is why the normal equations $(A^\top A)w = A^\top y$ of linear regression have a unique solution.)
+        \item Show that if the columns of $A$ are linearly independent, then $A^\top A$ is invertible. (This is why the normal equations $(A^\top A)\mathbf{w} = A^\top \mathbf{y}$ of linear regression have a unique solution.)
     \end{enumerate}
 \end{problem}
 
 \section{Dual Vector Spaces}
 
 \begin{problem}[\mandatory]\label{pr:functionals}
-    Which of the following maps are linear functionals? For those on $\mathbb{R}^n$, write them as $x \mapsto ax$ with a row vector $a$.
+    Which of the following maps are linear functionals? For those on $\mathbb{R}^n$, write them as $\mathbf{x} \mapsto \mathbf{a}\mathbf{x}$ with a row vector $\mathbf{a}$.
     \begin{enumerate}[label=(\alph*)]
-        \item $\mathbb{R}^3 \to \mathbb{R}$, $x \mapsto 2x_1 - x_3$;
-        \item $\mathbb{R}^3 \to \mathbb{R}$, $x \mapsto x_1 x_2$;
+        \item $\mathbb{R}^3 \to \mathbb{R}$, $\mathbf{x} \mapsto 2x_1 - x_3$;
+        \item $\mathbb{R}^3 \to \mathbb{R}$, $\mathbf{x} \mapsto x_1 x_2$;
         \item $\mathbb{R}^{2 \times 2} \to \mathbb{R}$, $A \mapsto \tr(A)$;
         \item $\mathbb{R}^{2 \times 2} \to \mathbb{R}$, $A \mapsto \det(A)$;
         \item $\mathbb{R}[x]_{\leq 3} \to \mathbb{R}$, $p \mapsto p(2) - p'(0)$;
@@ -472,8 +566,8 @@
 
 \begin{problem}[\mandatory]\label{pr:dual-basis-r2}
     \begin{enumerate}[label=(\alph*)]
-        \item Find the dual basis $b^1, b^2$ of the basis $b_1 = (2, 1)^\top$, $b_2 = (1, 1)^\top$ of $\mathbb{R}^2$, and check that $b^i(b_j) = \delta_{ij}$.
-        \item Write the functional $\varphi(x) = 3x_1 + x_2$ as a linear combination of $b^1$ and $b^2$, without solving a system of equations.
+        \item Find the dual basis $b^1, b^2$ of the basis $\mathbf{b}_1 = (2, 1)^\top$, $\mathbf{b}_2 = (1, 1)^\top$ of $\mathbb{R}^2$, and check that $b^i(\mathbf{b}_j) = \delta_{ij}$.
+        \item Write the functional $\varphi(\mathbf{x}) = 3x_1 + x_2$ as a linear combination of $b^1$ and $b^2$, without solving a system of equations.
     \end{enumerate}
 \end{problem}
 
@@ -490,7 +584,7 @@
     Let $T: \mathbb{R}^3 \to \mathbb{R}^2$, $T(x, y, z) = (x + y, \ y - z)$, with matrix $A$.
     \begin{enumerate}[label=(\alph*)]
         \item For the functional $\psi$ on $\mathbb{R}^2$ given by the row $(2, -1)$, compute $T^*(\psi)$ as a row vector.
-        \item Check that $T^*(\psi)(v) = \psi(T(v))$ for $v = (1, 2, 3)^\top$.
+        \item Check that $T^*(\psi)(\mathbf{v}) = \psi(T(\mathbf{v}))$ for $\mathbf{v} = (1, 2, 3)^\top$.
         \item Find the matrix of $T^*$ with respect to the duals of the standard bases, and compare it with $A$.
     \end{enumerate}
 \end{problem}
@@ -504,13 +598,13 @@
 
 \begin{problem}[$\star$]\label{pr:certificate}
     \begin{enumerate}[label=(\alph*)]
-        \item Show that the system $x_1 + 2x_2 = 1$, $2x_1 + 4x_2 = 3$ has no solution by finding a row $y$ with $yA = 0$ and $yb \neq 0$.
-        \item For which $b = (b_1, b_2, b_3)^\top$ does the system with the matrix $A = \begin{pmatrix} 1 & 2 \\ 2 & 4 \\ 3 & 6 \end{pmatrix}$ have a solution? Answer by finding all rows $y$ with $yA = 0$ and using the Fredholm alternative.
+        \item Show that the system $x_1 + 2x_2 = 1$, $2x_1 + 4x_2 = 3$ has no solution by finding a row $\mathbf{y}$ with $\mathbf{y}A = \mathbf{0}$ and $\mathbf{y}\mathbf{b} \neq 0$.
+        \item For which $\mathbf{b} = (b_1, b_2, b_3)^\top$ does the system with the matrix $A = \begin{pmatrix} 1 & 2 \\ 2 & 4 \\ 3 & 6 \end{pmatrix}$ have a solution? Answer by finding all rows $\mathbf{y}$ with $\mathbf{y}A = \mathbf{0}$ and using the Fredholm alternative.
     \end{enumerate}
 \end{problem}
 
 \begin{problem}\label{pr:double-dual}
-    Let $V = \mathbb{R}^2$, and identify $V^*$ with row vectors. Describe the element $\iota(e_1) \in V^{**}$, i.e., compute $\iota(e_1)(\varphi)$ for the functional $\varphi$ given by a row $(a_1, a_2)$. Then show directly that $\iota(v) = 0$ implies $v = 0$.
+    Let $V = \mathbb{R}^2$, and identify $V^*$ with row vectors. Describe the element $\iota(\mathbf{e}_1) \in V^{**}$, i.e., compute $\iota(\mathbf{e}_1)(\varphi)$ for the functional $\varphi$ given by a row $(a_1, a_2)$. Then show directly that $\iota(v) = 0$ implies $v = 0$.
 \end{problem}
 
 \section{Quotient Spaces and the Isomorphism Theorems}
@@ -545,25 +639,25 @@
 \begin{problem}[\mandatory, $\star$]\label{pr:grassmann}
     \begin{enumerate}[label=(\alph*)]
         \item Let $V$ and $W$ be $4$-dimensional subspaces of a $7$-dimensional vector space. Which values can $\dim(V \cap W)$ take? Give an example for the smallest possible value.
-        \item Let $U = \{x \in \mathbb{R}^4 : x_1 + x_2 + x_3 + x_4 = 0\}$ and $W = \{x \in \mathbb{R}^4 : x_1 - x_2 + x_3 - x_4 = 0\}$. Use the dimension formula to find $\dim(U \cap W)$, and then find a basis of $U \cap W$.
+        \item Let $U = \{\mathbf{x} \in \mathbb{R}^4 : x_1 + x_2 + x_3 + x_4 = 0\}$ and $W = \{\mathbf{x} \in \mathbb{R}^4 : x_1 - x_2 + x_3 - x_4 = 0\}$. Use the dimension formula to find $\dim(U \cap W)$, and then find a basis of $U \cap W$.
     \end{enumerate}
 \end{problem}
 
 \begin{problem}\label{pr:third-iso}
-    Let $V = \mathbb{R}^4$, $U = \Span\{e_4\}$ and $W = \Span\{e_3, e_4\}$. Describe $V/U$, $W/U$ and $V/W$, and check the third isomorphism theorem by comparing dimensions.
+    Let $V = \mathbb{R}^4$, $U = \Span\{\mathbf{e}_4\}$ and $W = \Span\{\mathbf{e}_3, \mathbf{e}_4\}$. Describe $V/U$, $W/U$ and $V/W$, and check the third isomorphism theorem by comparing dimensions.
 \end{problem}
 
 \begin{problem}[\mandatory, $\star$]\label{pr:softmax}
-    The softmax function is $\operatorname{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$ for $z \in \mathbb{R}^n$.
+    The softmax function is $\operatorname{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$ for $\mathbf{z} \in \mathbb{R}^n$.
     \begin{enumerate}[label=(\alph*)]
-        \item Show that $\operatorname{softmax}(z + c\mathbf{1}) = \operatorname{softmax}(z)$ for every $c \in \mathbb{R}$, so that softmax is a function on $\mathbb{R}^n/\Span\{\mathbf{1}\}$.
+        \item Show that $\operatorname{softmax}(\mathbf{z} + c\mathbf{1}) = \operatorname{softmax}(\mathbf{z})$ for every $c \in \mathbb{R}$, so that softmax is a function on $\mathbb{R}^n/\Span\{\mathbf{1}\}$.
         \item Compute $\operatorname{softmax}(1, 2, 3)$ and $\operatorname{softmax}(1001, 1002, 1003)$. Why can a computer evaluate the second one only after subtracting a constant from all entries?
-        \item Is softmax injective on $\mathbb{R}^n/\Span\{\mathbf{1}\}$? (Hint: if $\operatorname{softmax}(z) = \operatorname{softmax}(w)$, compare $z_i - z_j$ and $w_i - w_j$.)
+        \item Is softmax injective on $\mathbb{R}^n/\Span\{\mathbf{1}\}$? (Hint: if $\operatorname{softmax}(\mathbf{z}) = \operatorname{softmax}(\mathbf{w})$, compare $z_i - z_j$ and $w_i - w_j$.)
     \end{enumerate}
 \end{problem}
 
 \begin{problem}\label{pr:quotient-dual}
-    Let $U = \Span\{(1, 1, 1)^\top\} \subseteq \mathbb{R}^3$. Describe all linear functionals on $\mathbb{R}^3/U$ as rows $a = (a_1, a_2, a_3)$, and check that they form a $2$-dimensional space, in agreement with $(V/U)^* \cong U^\circ$.
+    Let $U = \Span\{(1, 1, 1)^\top\} \subseteq \mathbb{R}^3$. Describe all linear functionals on $\mathbb{R}^3/U$ as rows $\mathbf{a} = (a_1, a_2, a_3)$, and check that they form a $2$-dimensional space, in agreement with $(V/U)^* \cong U^\circ$.
 \end{problem}
 
 \section{Eigenvalues and Eigenvectors}
@@ -622,7 +716,7 @@
     \begin{enumerate}[label=(\alph*)]
         \item Show that $A$ and $A^\top$ have the same eigenvalues, and give an example where they have different eigenvectors.
         \item Show that if $A$ is invertible, then $AB$ and $BA$ are similar, and hence have the same eigenvalues. (Hint: $BA = A^{-1}(AB)A$.)
-        \item Show that every real eigenvalue of an orthogonal matrix $Q$ is $1$ or $-1$. Hint: if $Qv = \lambda v$, compute $(Qv)^\top (Qv)$ in two ways.
+        \item Show that every real eigenvalue of an orthogonal matrix $Q$ is $1$ or $-1$. Hint: if $Q\mathbf{v} = \lambda \mathbf{v}$, compute $(Q\mathbf{v})^\top (Q\mathbf{v})$ in two ways.
         \item Show that if $A^k = 0$ for some $k \geq 1$, then $0$ is the only eigenvalue of $A$.
         \item Show that $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ and $I_2$ have the same characteristic polynomial, but are not similar.
     \end{enumerate}
@@ -658,6 +752,89 @@
     \begin{enumerate}[label=(\alph*)]
         \item Show that the matrix $M(a + bi) = \begin{pmatrix} a & -b \\ b & a \end{pmatrix}$ of Problem~\ref{pr:complex-matrix} has the complex eigenvalues $a \pm bi$.
         \item Find the complex eigenvalues of $\begin{pmatrix} 3 & -4 \\ 4 & 3 \end{pmatrix}$, and write this matrix as $r R_\theta$ with $r > 0$ and a rotation $R_\theta$. How are $r$ and $\theta$ related to the eigenvalues?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:exp-eigen}
+    Let $D: C^\infty(\mathbb{R}) \to C^\infty(\mathbb{R})$, $Df = f'$. As for matrices, we call $f \neq 0$ an eigenvector of $D$ with the eigenvalue $\lambda$ if $Df = \lambda f$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that every real number $\lambda$ is an eigenvalue of $D$, with the eigenvector $e^{\lambda x}$, and that every eigenvector for $\lambda$ is a multiple of $e^{\lambda x}$. (Hint: differentiate $f(x)e^{-\lambda x}$.)
+        \item Show that $e^x$, $e^{2x}$ and $e^{3x}$ are linearly independent, without any computation. (Hint: the theorem that eigenvectors for different eigenvalues are linearly independent holds for every linear transformation $V \to V$, with the same proof.)
+        \item Conclude in a second way that $C^\infty(\mathbb{R})$ is infinite-dimensional.
+    \end{enumerate}
+\end{problem}
+
+\section{Tensors}
+
+\begin{problem}[\mandatory]\label{pr:tensor-rules}
+    \begin{enumerate}[label=(\alph*)]
+        \item Use the bilinearity of $(v, w) \mapsto v \otimes w$ to show that $(2v) \otimes w = v \otimes (2w)$ and $v \otimes w + v \otimes (-w) = 0$ in $V \otimes W$.
+        \item Expand $(\mathbf{e}_1 + 2\mathbf{e}_2) \otimes (3\mathbf{e}_1 - \mathbf{e}_2) \in \mathbb{R}^2 \otimes \mathbb{R}^2$ in the basis $\mathbf{e}_i \otimes \mathbf{e}_j$, and write it as a $2 \times 2$ matrix.
+        \item Which of the tensors $\mathbf{e}_1 \otimes \mathbf{e}_1 + \mathbf{e}_1 \otimes \mathbf{e}_2 + \mathbf{e}_2 \otimes \mathbf{e}_1 + \mathbf{e}_2 \otimes \mathbf{e}_2$ and $\mathbf{e}_1 \otimes \mathbf{e}_2 - \mathbf{e}_2 \otimes \mathbf{e}_1$ in $\mathbb{R}^2 \otimes \mathbb{R}^2$ are pure tensors?
+        \item What is the dimension of $\mathbb{R}^2 \otimes \mathbb{R}^3 \otimes \mathbb{R}^4$, and of $(\mathbb{R}^2 \otimes \mathbb{R}^3)^*$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:tensor-shapes}
+    \begin{enumerate}[label=(\alph*)]
+        \item A video has $30$ color frames per second, each of $64 \times 64$ pixels with $3$ color channels. What are the order and the shape of the array that stores a $10$-second video? Write the space of all such arrays as a tensor product $\mathbb{R}^{n_1} \otimes \cdots \otimes \mathbb{R}^{n_k}$, and find its dimension.
+        \item A tensor $T \in \mathbb{R}^{2 \times 3 \times 4}$ is flattened row by row (with the last index changing fastest) into a vector $\mathbf{v} \in \mathbb{R}^{24}$ with the entries $v_1, \ldots, v_{24}$. Which entry of $\mathbf{v}$ is $T_{213}$? Which entry of $T$ is $v_{17}$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:bilinear-practice}
+    Which of the following maps $\mathbb{R}^2 \times \mathbb{R}^2 \to \mathbb{R}$ are bilinear? For the bilinear ones, find the matrix $A$ with $\beta(\mathbf{x}, \mathbf{y}) = \mathbf{x}^\top A\mathbf{y}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item $\beta(\mathbf{x}, \mathbf{y}) = 2x_1y_1 - x_1y_2 - x_2y_1 + 4x_2y_2$;
+        \item $\beta(\mathbf{x}, \mathbf{y}) = x_1y_1 + 1$;
+        \item $\beta(\mathbf{x}, \mathbf{y}) = (x_1 - x_2)(y_1 + 2y_2)$;
+        \item $\beta(\mathbf{x}, \mathbf{y}) = x_1^2 y_2$.
+    \end{enumerate}
+    Which of the bilinear ones satisfy $\beta(\mathbf{x}, \mathbf{y}) = \beta(\mathbf{y}, \mathbf{x})$ for all $\mathbf{x}$ and $\mathbf{y}$?
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:outer-practice}
+    Let $\mathbf{u} = (1, -1)^\top$, $\mathbf{v} = (2, 0, 1)^\top$ and $\mathbf{w} = (1, 3)^\top$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write the pure tensor $\mathbf{u} \otimes \mathbf{v} \in \mathbb{R}^2 \otimes \mathbb{R}^3$ as a matrix, and find its rank.
+        \item Compute the coordinates of $T = \mathbf{u} \otimes \mathbf{v} \otimes \mathbf{w} \in \mathbb{R}^2 \otimes \mathbb{R}^3 \otimes \mathbb{R}^2$, and write down its two slices $(T_{ij1})_{i,j}$ and $(T_{ij2})_{i,j}$.
+        \item Is the matrix $\begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}$ an outer product $\mathbf{a} \otimes \mathbf{b}$? Write it as a sum of as few outer products as possible.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:einsum-practice}
+    For each of the following expressions, give the Einstein notation and the corresponding call of the NumPy function \texttt{np.einsum}, and state the shape of the result.
+    \begin{enumerate}[label=(\alph*)]
+        \item $A^\top \mathbf{x}$ for $A \in \mathbb{R}^{m \times n}$ and $\mathbf{x} \in \mathbb{R}^m$;
+        \item the sum of all entries of the entrywise product $A \odot B$, where $(A \odot B)_{ij} = A_{ij}B_{ij}$;
+        \item the diagonal of $AB$ for $n \times n$ matrices $A$ and $B$, without computing all of $AB$; how many multiplications does it need?
+        \item the outputs $XW^\top$ of a linear layer, for a batch $X$ of shape $N \times d$ and a weight matrix $W \in \mathbb{R}^{m \times d}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:linear-map-tensor}
+    Let $T: \mathbb{R}^2 \to \mathbb{R}^2$, $T(x, y) = (x + 2y, 3y)$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write the tensor in $\mathbb{R}^2 \otimes (\mathbb{R}^2)^*$ that corresponds to $T$ in the basis $\mathbf{e}_i \otimes e^j$, and as a sum of two pure tensors.
+        \item Compute its contraction, and compare it with the trace of the matrix of $T$.
+        \item Compute the matrix of $T$ in the basis $b_1 = (1, 1)$, $b_2 = (1, -1)$, and check that it has the same trace.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:change-of-basis-practice}
+    Let $A = \begin{pmatrix} 1 & 2 \\ 2 & 1 \end{pmatrix}$, and let $P = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$, whose columns form a basis of $\mathbb{R}^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the matrix $P^{-1}AP$ of the linear transformation $\mathbf{x} \mapsto A\mathbf{x}$ in this basis.
+        \item Compute the matrix $P^\top AP$ of the bilinear form $(\mathbf{x}, \mathbf{y}) \mapsto \mathbf{x}^\top A\mathbf{y}$ in this basis.
+        \item Compare the traces and the determinants of $A$, $P^{-1}AP$ and $P^\top AP$. Which of them depend on whether $A$ describes a linear transformation or a bilinear form?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:unfolding-rank}
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $T \in \mathbb{R}^{n_1 \times n_2 \times n_3}$ be a sum of $r$ rank-one tensors. Show that its unfolding, the $n_1 \times (n_2n_3)$ matrix whose $i$-th row lists the entries $T_{ijk}$, has rank at most $r$.
+        \item Use (a) to show again that the tensor $\mathbf{e}_1 \otimes \mathbf{e}_1 \otimes \mathbf{e}_1 + \mathbf{e}_2 \otimes \mathbf{e}_2 \otimes \mathbf{e}_2$ of the lecture has rank $2$.
+        \item Show that the tensor $T \in \mathbb{R}^{2 \times 2 \times 2}$ with $T_{ijk} = 1$ for all $i, j, k$ has rank one.
     \end{enumerate}
 \end{problem}
 

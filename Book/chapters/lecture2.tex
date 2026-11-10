@@ -7,15 +7,15 @@
 
 In Lecture~1, we studied vector spaces and linear transformations. Vector spaces let us add vectors and multiply them by scalars, but they do not tell us how long a vector is, how far apart two vectors are, or what the angle between two vectors is. These geometric notions are essential in machine learning:
 \begin{itemize}
-    \item data points are vectors, and many algorithms, such as $k$-nearest neighbors and clustering, rely on distances between them;
+    \item data points are vectors, and many algorithms, such as $k$-nearest neighbors and clustering, rely on distances between them; graphs of similar data points lead to spectral clustering;
     \item similarity between data points, such as text documents or word embeddings, is often measured by the angle between vectors;
     \item linear regression and principal component analysis find the orthogonal projection of data onto a subspace;
     \item regularization penalizes the size, i.e., the norm, of a weight vector.
 \end{itemize}
 In this lecture, we add geometry to vector spaces, using norms and inner products.
 
-Throughout this lecture, all vector spaces are real vector spaces, i.e., vector spaces over $\mathbb{R}$. As in Lecture~1, we write vectors of $\mathbb{R}^n$ as columns, and we identify a $1 \times 1$ matrix with its only entry. In particular, for $x, y \in \mathbb{R}^n$,
-\[x^\top y = x_1 y_1 + x_2 y_2 + \cdots + x_n y_n.\]
+Throughout this lecture, all vector spaces are real vector spaces, i.e., vector spaces over $\mathbb{R}$. As in Lecture~1, vectors of $\mathbb{R}^n$ are columns written in bold, $\mathbf{x} = (x_1, \ldots, x_n)^\top$, while elements of general vector spaces, such as functions, are written in normal font. We identify a $1 \times 1$ matrix with its only entry. In particular, for $\mathbf{x}, \mathbf{y} \in \mathbb{R}^n$,
+\[\mathbf{x}^\top \mathbf{y} = x_1 y_1 + x_2 y_2 + \cdots + x_n y_n.\]
 
 \section{Norms}
 
@@ -34,20 +34,20 @@ The length of a vector is measured by a norm. There are many reasonable ways to 
 The triangle inequality says that in a triangle with sides $u$, $v$ and $u + v$, the length of one side is at most the sum of the lengths of the other two sides.
 
 \begin{definition}[$\ell_1$, $\ell_2$ and $\ell_\infty$ norms]\label{L2-def:lp}
-    For $x = (x_1, \ldots, x_n)^\top \in \mathbb{R}^n$, we define
+    For $\mathbf{x} = (x_1, \ldots, x_n)^\top \in \mathbb{R}^n$, we define
     \begin{align*}
-        \norm{x}_1 &= |x_1| + |x_2| + \cdots + |x_n| && \text{(the $\ell_1$ norm, or Manhattan norm)}, \\
-        \norm{x}_2 &= \sqrt{x_1^2 + x_2^2 + \cdots + x_n^2} = \sqrt{x^\top x} && \text{(the $\ell_2$ norm, or Euclidean norm)}, \\
-        \norm{x}_\infty &= \max\{|x_1|, |x_2|, \ldots, |x_n|\} && \text{(the $\ell_\infty$ norm, or maximum norm)}.
+        \norm{\mathbf{x}}_1 &= |x_1| + |x_2| + \cdots + |x_n| && \text{(the $\ell_1$ norm, or Manhattan norm)}, \\
+        \norm{\mathbf{x}}_2 &= \sqrt{x_1^2 + x_2^2 + \cdots + x_n^2} = \sqrt{\mathbf{x}^\top \mathbf{x}} && \text{(the $\ell_2$ norm, or Euclidean norm)}, \\
+        \norm{\mathbf{x}}_\infty &= \max\{|x_1|, |x_2|, \ldots, |x_n|\} && \text{(the $\ell_\infty$ norm, or maximum norm)}.
     \end{align*}
-    More generally, for every real number $p \geq 1$, the $\ell_p$ norm is $\norm{x}_p = \big(|x_1|^p + \cdots + |x_n|^p\big)^{1/p}$.
+    More generally, for every real number $p \geq 1$, the $\ell_p$ norm is $\norm{\mathbf{x}}_p = \big(|x_1|^p + \cdots + |x_n|^p\big)^{1/p}$.
 \end{definition}
 
-The name ``Manhattan norm'' comes from the street grid of Manhattan: to get from $0$ to $x$ in $\mathbb{R}^2$ while only moving parallel to the axes, you have to walk the distance $|x_1| + |x_2|$. The Euclidean norm is the usual length of a vector, by the theorem of Pythagoras.
+The name ``Manhattan norm'' comes from the street grid of Manhattan: to get from $\mathbf{0}$ to $\mathbf{x}$ in $\mathbb{R}^2$ while only moving parallel to the axes, you have to walk the distance $|x_1| + |x_2|$. The Euclidean norm is the usual length of a vector, by the theorem of Pythagoras.
 
 \begin{example}
-    For $x = (3, -4, 1)^\top$, we have
-    \[\norm{x}_1 = 3 + 4 + 1 = 8, \qquad \norm{x}_2 = \sqrt{9 + 16 + 1} = \sqrt{26} \approx 5.10, \qquad \norm{x}_\infty = \max\{3, 4, 1\} = 4.\]
+    For $\mathbf{x} = (3, -4, 1)^\top$, we have
+    \[\norm{\mathbf{x}}_1 = 3 + 4 + 1 = 8, \qquad \norm{\mathbf{x}}_2 = \sqrt{9 + 16 + 1} = \sqrt{26} \approx 5.10, \qquad \norm{\mathbf{x}}_\infty = \max\{3, 4, 1\} = 4.\]
 \end{example}
 
 \begin{proposition}\label{L2-prop:l1-linf}
@@ -55,12 +55,12 @@ The name ``Manhattan norm'' comes from the street grid of Manhattan: to get from
 \end{proposition}
 
 \begin{proof}
-    Positive definiteness: both $\norm{x}_1$ and $\norm{x}_\infty$ are nonnegative, and they are $0$ if and only if all $|x_i|$ are $0$, i.e., $x = 0$. Absolute homogeneity: $|\lambda x_i| = |\lambda| |x_i|$, so $\norm{\lambda x}_1 = |\lambda| \norm{x}_1$ and $\norm{\lambda x}_\infty = |\lambda| \norm{x}_\infty$. Triangle inequality: for every $i$, $|x_i + y_i| \leq |x_i| + |y_i|$. Summing over $i$ gives $\norm{x + y}_1 \leq \norm{x}_1 + \norm{y}_1$, and since $|x_i| + |y_i| \leq \norm{x}_\infty + \norm{y}_\infty$ for every $i$, also $\norm{x + y}_\infty \leq \norm{x}_\infty + \norm{y}_\infty$.
+    Positive definiteness: both $\norm{\mathbf{x}}_1$ and $\norm{\mathbf{x}}_\infty$ are nonnegative, and they are $0$ if and only if all $|x_i|$ are $0$, i.e., $\mathbf{x} = \mathbf{0}$. Absolute homogeneity: $|\lambda x_i| = |\lambda| |x_i|$, so $\norm{\lambda \mathbf{x}}_1 = |\lambda| \norm{\mathbf{x}}_1$ and $\norm{\lambda \mathbf{x}}_\infty = |\lambda| \norm{\mathbf{x}}_\infty$. Triangle inequality: for every $i$, $|x_i + y_i| \leq |x_i| + |y_i|$. Summing over $i$ gives $\norm{\mathbf{x} + \mathbf{y}}_1 \leq \norm{\mathbf{x}}_1 + \norm{\mathbf{y}}_1$, and since $|x_i| + |y_i| \leq \norm{\mathbf{x}}_\infty + \norm{\mathbf{y}}_\infty$ for every $i$, also $\norm{\mathbf{x} + \mathbf{y}}_\infty \leq \norm{\mathbf{x}}_\infty + \norm{\mathbf{y}}_\infty$.
 \end{proof}
 
 The Euclidean norm is also a norm. Positive definiteness and absolute homogeneity are again easy to check, but the triangle inequality is harder; we prove it in Section~\ref{L2-sec:lengths} (Corollary~\ref{L2-cor:induced-norm}).
 
-A good way to visualize a norm is through its unit ball $\{x : \norm{x} \leq 1\}$. Figure~\ref{L2-fig:unit-balls} shows the unit balls of the three norms in $\mathbb{R}^2$.
+A good way to visualize a norm is through its unit ball $\{\mathbf{x} : \norm{\mathbf{x}} \leq 1\}$. Figure~\ref{L2-fig:unit-balls} shows the unit balls of the three norms in $\mathbb{R}^2$.
 
 \begin{figure}[ht]
     \centering
@@ -79,19 +79,19 @@ A good way to visualize a norm is through its unit ball $\{x : \norm{x} \leq 1\}
         \node[below right] at (1,0) {\small $1$};
         \node[above left] at (0,1) {\small $1$};
     \end{tikzpicture}
-    \caption[Unit balls of the $\ell_1$, $\ell_2$ and $\ell_\infty$ norms]{The unit balls $\{x \in \mathbb{R}^2 : \norm{x} \leq 1\}$ of the $\ell_1$ norm (red diamond), the $\ell_2$ norm (orange disk) and the $\ell_\infty$ norm (blue square). Each ball contains the previous one, in accordance with Proposition~\ref{L2-prop:norm-comparison}.}
+    \caption[Unit balls of the $\ell_1$, $\ell_2$ and $\ell_\infty$ norms]{The unit balls $\{\mathbf{x} \in \mathbb{R}^2 : \norm{\mathbf{x}} \leq 1\}$ of the $\ell_1$ norm (red diamond), the $\ell_2$ norm (orange disk) and the $\ell_\infty$ norm (blue square). Each ball contains the previous one, in accordance with Proposition~\ref{L2-prop:norm-comparison}.}
     \label{L2-fig:unit-balls}
 \end{figure}
 
 \begin{proposition}\label{L2-prop:norm-comparison}
-    For every $x \in \mathbb{R}^n$,
-    \[\norm{x}_\infty \leq \norm{x}_2 \leq \norm{x}_1 \leq n \norm{x}_\infty.\]
+    For every $\mathbf{x} \in \mathbb{R}^n$,
+    \[\norm{\mathbf{x}}_\infty \leq \norm{\mathbf{x}}_2 \leq \norm{\mathbf{x}}_1 \leq n \norm{\mathbf{x}}_\infty.\]
 \end{proposition}
 
 \begin{proof}
-    Let $|x_k| = \norm{x}_\infty$ be the largest absolute value of an entry of $x$. Then $\norm{x}_\infty^2 = x_k^2 \leq x_1^2 + \cdots + x_n^2 = \norm{x}_2^2$. Next,
-    \[\norm{x}_1^2 = \Big(\sum_i |x_i|\Big)^2 = \sum_i x_i^2 + \sum_{i \neq j} |x_i| |x_j| \geq \sum_i x_i^2 = \norm{x}_2^2.\]
-    Finally, $\norm{x}_1 = \sum_i |x_i| \leq \sum_i |x_k| = n \norm{x}_\infty$.
+    Let $|x_k| = \norm{\mathbf{x}}_\infty$ be the largest absolute value of an entry of $\mathbf{x}$. Then $\norm{\mathbf{x}}_\infty^2 = x_k^2 \leq x_1^2 + \cdots + x_n^2 = \norm{\mathbf{x}}_2^2$. Next,
+    \[\norm{\mathbf{x}}_1^2 = \Big(\sum_i |x_i|\Big)^2 = \sum_i x_i^2 + \sum_{i \neq j} |x_i| |x_j| \geq \sum_i x_i^2 = \norm{\mathbf{x}}_2^2.\]
+    Finally, $\norm{\mathbf{x}}_1 = \sum_i |x_i| \leq \sum_i |x_k| = n \norm{\mathbf{x}}_\infty$.
 \end{proof}
 
 So all three norms are ``comparable'': if a vector is small in one of them, it is also small in the others (up to a factor that depends on $n$). In Example~\ref{L2-ex:l1-l2} we improve the last inequality.
@@ -103,12 +103,12 @@ So all three norms are ``comparable'': if a vector is small in one of them, it i
 \end{example}
 
 \begin{remark}[Norms in machine learning]
-    Norms are used to measure the size of model parameters. In regularized linear regression, we minimize the error of a model plus a penalty $\lambda \norm{w}$ on its weight vector $w$. With the squared $\ell_2$ norm (ridge regression), all weights are shrunk towards $0$. With the $\ell_1$ norm (the lasso), many weights become exactly $0$, which gives sparse models; one reason is that the $\ell_1$ unit ball in Figure~\ref{L2-fig:unit-balls} has corners on the coordinate axes. The $\ell_\infty$ norm appears, for example, when we bound how much an adversary may change each pixel of an image.
+    Norms are used to measure the size of model parameters. In regularized linear regression, we minimize the error of a model plus a penalty $\lambda \norm{\mathbf{w}}$ on its weight vector $\mathbf{w}$. With the squared $\ell_2$ norm (ridge regression), all weights are shrunk towards $0$. With the $\ell_1$ norm (the lasso), many weights become exactly $0$, which gives sparse models; one reason is that the $\ell_1$ unit ball in Figure~\ref{L2-fig:unit-balls} has corners on the coordinate axes. The $\ell_\infty$ norm appears, for example, when we bound how much an adversary may change each pixel of an image.
 \end{remark}
 
 \section{Inner Products}
 
-Norms measure lengths. To also measure angles, we need more structure: an inner product. The prototype is the dot product $x^\top y$ on $\mathbb{R}^n$.
+Norms measure lengths. To also measure angles, we need more structure: an inner product. The prototype is the dot product $\mathbf{x}^\top \mathbf{y}$ on $\mathbb{R}^n$.
 
 \begin{definition}[Inner product]\label{L2-def:inner-product}
     Let $V$ be a vector space. A function $\ip{\cdot}{\cdot}: V \times V \to \mathbb{R}$ is called
@@ -124,21 +124,21 @@ Norms measure lengths. To also measure angles, we need more structure: an inner 
 Note that $\ip{0}{x} = \ip{0 \cdot 0}{x} = 0 \cdot \ip{0}{x} = 0$ by bilinearity, so in particular $\ip{0}{0} = 0$.
 
 \begin{example}[Dot product]\label{L2-ex:dot}
-    The dot product $\ip{x}{y} = x^\top y = \sum_i x_i y_i$ is an inner product on $\mathbb{R}^n$. It is bilinear and symmetric by the rules of matrix multiplication, and $x^\top x = x_1^2 + \cdots + x_n^2 > 0$ for $x \neq 0$. The space $\mathbb{R}^n$ with the dot product is called the Euclidean space. Unless we say otherwise, we always use the dot product on $\mathbb{R}^n$.
+    The dot product $\ip{\mathbf{x}}{\mathbf{y}} = \mathbf{x}^\top \mathbf{y} = \sum_i x_i y_i$ is an inner product on $\mathbb{R}^n$. It is bilinear and symmetric by the rules of matrix multiplication, and $\mathbf{x}^\top \mathbf{x} = x_1^2 + \cdots + x_n^2 > 0$ for $\mathbf{x} \neq \mathbf{0}$. The space $\mathbb{R}^n$ with the dot product is called the Euclidean space. Unless we say otherwise, we always use the dot product on $\mathbb{R}^n$.
 \end{example}
 
 \begin{example}\label{L2-ex:ip-A}
     On $\mathbb{R}^2$, define
-    \[\ip{x}{y} = x_1 y_1 - (x_1 y_2 + x_2 y_1) + 2 x_2 y_2.\]
+    \[\ip{\mathbf{x}}{\mathbf{y}} = x_1 y_1 - (x_1 y_2 + x_2 y_1) + 2 x_2 y_2.\]
     This function is bilinear and symmetric. It is also positive definite, since
-    \[\ip{x}{x} = x_1^2 - 2 x_1 x_2 + 2 x_2^2 = (x_1 - x_2)^2 + x_2^2 \geq 0,\]
-    with equality only if $x_2 = 0$ and $x_1 = x_2$, i.e., $x = 0$. So it is an inner product, different from the dot product: for example, for $x = (1, 1)^\top$, we get $\ip{x}{x} = 1$, while $x^\top x = 2$.
+    \[\ip{\mathbf{x}}{\mathbf{x}} = x_1^2 - 2 x_1 x_2 + 2 x_2^2 = (x_1 - x_2)^2 + x_2^2 \geq 0,\]
+    with equality only if $x_2 = 0$ and $x_1 = x_2$, i.e., $\mathbf{x} = \mathbf{0}$. So it is an inner product, different from the dot product: for example, for $\mathbf{x} = (1, 1)^\top$, we get $\ip{\mathbf{x}}{\mathbf{x}} = 1$, while $\mathbf{x}^\top \mathbf{x} = 2$.
 \end{example}
 
 \begin{example}
     \begin{itemize}
-        \item For positive weights $w_1, \ldots, w_n > 0$, the weighted dot product $\ip{x}{y} = w_1 x_1 y_1 + \cdots + w_n x_n y_n$ is an inner product on $\mathbb{R}^n$. In machine learning, such weights can be used to make some features more important than others.
-        \item The function $\ip{x}{y} = x_1 y_1 - x_2 y_2$ on $\mathbb{R}^2$ is bilinear and symmetric, but it is not an inner product, since $\ip{e_2}{e_2} = -1 < 0$.
+        \item For positive weights $w_1, \ldots, w_n > 0$, the weighted dot product $\ip{\mathbf{x}}{\mathbf{y}} = w_1 x_1 y_1 + \cdots + w_n x_n y_n$ is an inner product on $\mathbb{R}^n$. In machine learning, such weights can be used to make some features more important than others.
+        \item The function $\ip{\mathbf{x}}{\mathbf{y}} = x_1 y_1 - x_2 y_2$ on $\mathbb{R}^2$ is bilinear and symmetric, but it is not an inner product, since $\ip{\mathbf{e}_2}{\mathbf{e}_2} = -1 < 0$.
         \item On the space $\mathbb{R}^{m \times n}$ of matrices, $\ip{A}{B} = \tr(A^\top B) = \sum_{i, j} A_{ij} B_{ij}$ is an inner product, the Frobenius inner product. It is the dot product of the lists of entries of $A$ and $B$.
     \end{itemize}
 \end{example}
@@ -146,18 +146,18 @@ Note that $\ip{0}{x} = \ip{0 \cdot 0}{x} = 0 \cdot \ip{0}{x} = 0$ by bilinearity
 \subsection{Symmetric positive definite matrices}
 
 All the inner products on $\mathbb{R}^n$ in the examples above can be written using a matrix. For instance, the inner product of Example~\ref{L2-ex:ip-A} is
-\[\ip{x}{y} = \begin{pmatrix} x_1 & x_2 \end{pmatrix} \begin{pmatrix} 1 & -1 \\ -1 & 2 \end{pmatrix} \begin{pmatrix} y_1 \\ y_2 \end{pmatrix} = x^\top A y.\]
+\[\ip{\mathbf{x}}{\mathbf{y}} = \begin{pmatrix} x_1 & x_2 \end{pmatrix} \begin{pmatrix} 1 & -1 \\ -1 & 2 \end{pmatrix} \begin{pmatrix} y_1 \\ y_2 \end{pmatrix} = \mathbf{x}^\top A \mathbf{y}.\]
 The matrices that give inner products in this way are the following.
 
 \begin{definition}[Symmetric positive definite matrix]\label{L2-def:spd}
     A symmetric $n \times n$ matrix $A$ is called positive definite if
-    \[x^\top A x > 0 \qquad \text{for all } x \in \mathbb{R}^n \text{ with } x \neq 0,\]
-    and positive semidefinite if $x^\top A x \geq 0$ for all $x \in \mathbb{R}^n$. A symmetric positive definite matrix is also called an SPD matrix.
+    \[\mathbf{x}^\top A \mathbf{x} > 0 \qquad \text{for all } \mathbf{x} \in \mathbb{R}^n \text{ with } \mathbf{x} \neq \mathbf{0},\]
+    and positive semidefinite if $\mathbf{x}^\top A \mathbf{x} \geq 0$ for all $\mathbf{x} \in \mathbb{R}^n$. A symmetric positive definite matrix is also called an SPD matrix.
 \end{definition}
 
 \begin{theorem}\label{L2-thm:spd}
     \begin{enumerate}
-        \item If $A$ is a symmetric positive definite $n \times n$ matrix, then $\ip{x}{y}_A = x^\top A y$ is an inner product on $\mathbb{R}^n$.
+        \item If $A$ is a symmetric positive definite $n \times n$ matrix, then $\ip{\mathbf{x}}{\mathbf{y}}_A = \mathbf{x}^\top A \mathbf{y}$ is an inner product on $\mathbb{R}^n$.
         \item Conversely, let $\ip{\cdot}{\cdot}$ be an inner product on an $n$-dimensional vector space $V$, and let $\mathcal{B} = (b_1, \ldots, b_n)$ be an ordered basis of $V$. Let $A$ be the $n \times n$ matrix with entries $A_{ij} = \ip{b_i}{b_j}$. Then $A$ is symmetric positive definite, and
         \[\ip{x}{y} = [x]_{\mathcal{B}}^\top \, A \, [y]_{\mathcal{B}} \qquad \text{for all } x, y \in V,\]
         where $[x]_{\mathcal{B}}$ is the coordinate vector of $x$ with respect to $\mathcal{B}$, as in Lecture~1.
@@ -169,7 +169,7 @@ The matrices that give inner products in this way are the following.
 
     (2) Write $x = \sum_i \psi_i b_i$ and $y = \sum_j \lambda_j b_j$, so that $[x]_{\mathcal{B}} = (\psi_1, \ldots, \psi_n)^\top$ and $[y]_{\mathcal{B}} = (\lambda_1, \ldots, \lambda_n)^\top$. By bilinearity,
     \[\ip{x}{y} = \Big\langle \sum_i \psi_i b_i, \sum_j \lambda_j b_j \Big\rangle = \sum_{i, j} \psi_i \ip{b_i}{b_j} \lambda_j = [x]_{\mathcal{B}}^\top A [y]_{\mathcal{B}}.\]
-    The matrix $A$ is symmetric, since $\ip{b_i}{b_j} = \ip{b_j}{b_i}$. If $\psi \in \mathbb{R}^n$ is nonzero, then $x = \sum_i \psi_i b_i \neq 0$, since the $b_i$ are linearly independent, and hence $\psi^\top A \psi = \ip{x}{x} > 0$.
+    The matrix $A$ is symmetric, since $\ip{b_i}{b_j} = \ip{b_j}{b_i}$. If $\boldsymbol{\psi} \in \mathbb{R}^n$ is nonzero, then $x = \sum_i \psi_i b_i \neq 0$, since the $b_i$ are linearly independent, and hence $\boldsymbol{\psi}^\top A \boldsymbol{\psi} =\ip{x}{x} > 0$.
 \end{proof}
 
 The matrix $A$ in part 2 is called the Gram matrix of the basis $\mathcal{B}$. So, once we fix a basis, inner products on an $n$-dimensional space are the same thing as symmetric positive definite $n \times n$ matrices. The dot product on $\mathbb{R}^n$ corresponds to $A = I_n$ and the standard basis.
@@ -184,36 +184,36 @@ The matrix $A$ in part 2 is called the Gram matrix of the basis $\mathcal{B}$. S
 \end{proposition}
 
 \begin{proof}
-    (1) $A_{ii} = e_i^\top A e_i > 0$.
+    (1) $A_{ii} = \mathbf{e}_i^\top A \mathbf{e}_i > 0$.
 
-    (2) If $Ax = 0$, then $x^\top A x = 0$, so $x = 0$. Hence $\Null(A) = \{0\}$, and $A$ is invertible by Lecture~1.
+    (2) If $A\mathbf{x} = \mathbf{0}$, then $\mathbf{x}^\top A \mathbf{x} = 0$, so $\mathbf{x} = \mathbf{0}$. Hence $\Null(A) = \{\mathbf{0}\}$, and $A$ is invertible by Lecture~1.
 
     (3) If $A$ is positive definite, then $a > 0$ by part 1. If $a > 0$, completing the square gives
-    \[x^\top A x = a x_1^2 + 2b x_1 x_2 + c x_2^2 = a \Big(x_1 + \frac{b}{a} x_2\Big)^2 + \frac{ac - b^2}{a} x_2^2.\]
-    If $ac - b^2 > 0$, both terms are nonnegative, and they are both zero only if $x_2 = 0$ and $x_1 = 0$; so $A$ is positive definite. If $ac - b^2 \leq 0$, then $x = (-b, a)^\top \neq 0$ gives $x^\top A x = (ac - b^2) a \leq 0$, so $A$ is not positive definite.
+    \[\mathbf{x}^\top A \mathbf{x} = a x_1^2 + 2b x_1 x_2 + c x_2^2 = a \Big(x_1 + \frac{b}{a} x_2\Big)^2 + \frac{ac - b^2}{a} x_2^2.\]
+    If $ac - b^2 > 0$, both terms are nonnegative, and they are both zero only if $x_2 = 0$ and $x_1 = 0$; so $A$ is positive definite. If $ac - b^2 \leq 0$, then $\mathbf{x} = (-b, a)^\top \neq \mathbf{0}$ gives $\mathbf{x}^\top A \mathbf{x} = (ac - b^2) a \leq 0$, so $A$ is not positive definite.
 \end{proof}
 
-For larger matrices, there is a similar test, Sylvester's criterion: a symmetric matrix is positive definite if and only if the determinants of all its upper left $k \times k$ submatrices, for $k = 1, \ldots, n$, are positive. We state it without proof. In Section~\ref{L2-sec:spectral}, we will see another test, using eigenvalues (Corollary~\ref{L2-cor:spd-eigenvalues}).
+For larger matrices, there is a similar test, Sylvester's criterion: a symmetric matrix is positive definite if and only if the determinants of all its upper left $k \times k$ submatrices, for $k = 1, \ldots, n$, are positive. We prove it in Section~\ref{L2-sec:spectral} (Corollary~\ref{L2-cor:sylvester}), together with another test, using eigenvalues (Corollary~\ref{L2-cor:spd-eigenvalues}).
 
 \begin{example}
-    The matrix $A_1 = \begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$ is positive definite, since $9 > 0$ and $\det(A_1) = 45 - 36 = 9 > 0$. Indeed, $x^\top A_1 x = (3x_1 + 2x_2)^2 + x_2^2$. The matrix $A_2 = \begin{pmatrix} 9 & 6 \\ 6 & 3 \end{pmatrix}$ is not, since $\det(A_2) = 27 - 36 = -9 < 0$: for $x = (2, -3)^\top$, we get $x^\top A_2 x = -9$.
+    The matrix $A_1 = \begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$ is positive definite, since $9 > 0$ and $\det(A_1) = 45 - 36 = 9 > 0$. Indeed, $\mathbf{x}^\top A_1 \mathbf{x} = (3x_1 + 2x_2)^2 + x_2^2$. The matrix $A_2 = \begin{pmatrix} 9 & 6 \\ 6 & 3 \end{pmatrix}$ is not, since $\det(A_2) = 27 - 36 = -9 < 0$: for $\mathbf{x} = (2, -3)^\top$, we get $\mathbf{x}^\top A_2 \mathbf{x} = -9$.
 \end{example}
 
 \begin{example}\label{L2-ex:BTB}
-    Let $B$ be an $m \times n$ matrix with linearly independent columns. Then $B^\top B$ is symmetric positive definite: it is symmetric (Lecture~1), and for $x \neq 0$ we have $Bx \neq 0$, so
-    \[x^\top B^\top B x = (Bx)^\top (Bx) = \norm{Bx}_2^2 > 0.\]
+    Let $B$ be an $m \times n$ matrix with linearly independent columns. Then $B^\top B$ is symmetric positive definite: it is symmetric (Lecture~1), and for $\mathbf{x} \neq \mathbf{0}$ we have $B\mathbf{x} \neq \mathbf{0}$, so
+    \[\mathbf{x}^\top B^\top B \mathbf{x} = (B\mathbf{x})^\top (B\mathbf{x}) = \norm{B\mathbf{x}}_2^2 > 0.\]
     Matrices of the form $B^\top B$ appear everywhere in machine learning, for example in linear regression (Section~\ref{L2-sec:least-squares}) and as (scaled) covariance matrices of data.
 \end{example}
 
 \begin{remark}[Kernels]
-    Many machine learning methods, such as support vector machines, only use the data through inner products $\ip{x_i}{x_j}$ of data points. Kernel methods replace them by $k(x_i, x_j) = \ip{\phi(x_i)}{\phi(x_j)}$, the inner product of the data after a (possibly nonlinear) feature map $\phi$. The matrix $K$ with entries $K_{ij} = k(x_i, x_j)$ is then a Gram matrix, and it is symmetric positive semidefinite.
+    Many machine learning methods, such as support vector machines, only use the data through inner products $\ip{\mathbf{x}_i}{\mathbf{x}_j}$ of data points. Kernel methods replace them by $k(\mathbf{x}_i, \mathbf{x}_j) = \ip{\phi(\mathbf{x}_i)}{\phi(\mathbf{x}_j)}$, the inner product of the data after a (possibly nonlinear) feature map $\phi$. The matrix $K$ with entries $K_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)$ is then a Gram matrix, and it is symmetric positive semidefinite.
 \end{remark}
 
 \section{Lengths and Distances}\label{L2-sec:lengths}
 
 \subsection{The norm of an inner product}
 
-Every inner product gives a norm, in the same way that the dot product gives the Euclidean norm $\norm{x}_2 = \sqrt{x^\top x}$.
+Every inner product gives a norm, in the same way that the dot product gives the Euclidean norm $\norm{\mathbf{x}}_2 = \sqrt{\mathbf{x}^\top \mathbf{x}}$.
 
 \begin{definition}[Induced norm]
     Let $V$ be an inner product space. The length, or norm, of a vector $x \in V$ is
@@ -222,7 +222,7 @@ Every inner product gives a norm, in the same way that the dot product gives the
 \end{definition}
 
 \begin{example}
-    For $x = (1, 1)^\top$, the dot product gives $\norm{x} = \sqrt{2}$, while the inner product of Example~\ref{L2-ex:ip-A} gives $\norm{x} = \sqrt{1} = 1$. So the length of a vector depends on the choice of the inner product.
+    For $\mathbf{x} = (1, 1)^\top$, the dot product gives $\norm{\mathbf{x}} = \sqrt{2}$, while the inner product of Example~\ref{L2-ex:ip-A} gives $\norm{\mathbf{x}} = \sqrt{1} = 1$. So the length of a vector depends on the choice of the inner product.
 \end{example}
 
 To show that $\norm{x} = \sqrt{\ip{x}{x}}$ really is a norm, we need the most important inequality of linear algebra.
@@ -251,9 +251,9 @@ To show that $\norm{x} = \sqrt{\ip{x}{x}}$ really is a norm, we need the most im
 \end{proof}
 
 \begin{example}\label{L2-ex:l1-l2}
-    Let $a = (|x_1|, \ldots, |x_n|)^\top$ and $\mathbf{1} = (1, \ldots, 1)^\top$. Applying the Cauchy--Schwarz inequality for the dot product to $a$ and $\mathbf{1}$ gives
-    \[\norm{x}_1 = \sum_{i=1}^n |x_i| \cdot 1 \leq \sqrt{\sum_{i=1}^n x_i^2} \, \sqrt{\sum_{i=1}^n 1^2} = \sqrt{n} \, \norm{x}_2.\]
-    This improves the inequality $\norm{x}_1 \leq n \norm{x}_\infty$ of Proposition~\ref{L2-prop:norm-comparison}, since $\sqrt{n} \norm{x}_2 \leq n \norm{x}_\infty$.
+    Let $\mathbf{a} = (|x_1|, \ldots, |x_n|)^\top$ and $\mathbf{1} = (1, \ldots, 1)^\top$. Applying the Cauchy--Schwarz inequality for the dot product to $\mathbf{a}$ and $\mathbf{1}$ gives
+    \[\norm{\mathbf{x}}_1 = \sum_{i=1}^n |x_i| \cdot 1 \leq \sqrt{\sum_{i=1}^n x_i^2} \, \sqrt{\sum_{i=1}^n 1^2} = \sqrt{n} \, \norm{\mathbf{x}}_2.\]
+    This improves the inequality $\norm{\mathbf{x}}_1 \leq n \norm{\mathbf{x}}_\infty$ of Proposition~\ref{L2-prop:norm-comparison}, since $\sqrt{n} \norm{\mathbf{x}}_2 \leq n \norm{\mathbf{x}}_\infty$.
 \end{example}
 
 Not every norm comes from an inner product. Norms that do come from an inner product can be recognized by the following identities.
@@ -273,7 +273,7 @@ Not every norm comes from an inner product. Norms that do come from an inner pro
 The parallelogram law says that in a parallelogram, the sum of the squares of the two diagonals equals the sum of the squares of the four sides. The polarization identity shows that the inner product can be recovered from its norm.
 
 \begin{example}
-    The $\ell_1$ norm on $\mathbb{R}^2$ does not come from any inner product: for $x = e_1$ and $y = e_2$, we get $\norm{x + y}_1^2 + \norm{x - y}_1^2 = 4 + 4 = 8$, but $2\norm{x}_1^2 + 2\norm{y}_1^2 = 4$, so the parallelogram law fails. Hence normed spaces are more general than inner product spaces.
+    The $\ell_1$ norm on $\mathbb{R}^2$ does not come from any inner product: for $\mathbf{x} = \mathbf{e}_1$ and $\mathbf{y} = \mathbf{e}_2$, we get $\norm{\mathbf{x} + \mathbf{y}}_1^2 + \norm{\mathbf{x} - \mathbf{y}}_1^2 = 4 + 4 = 8$, but $2\norm{\mathbf{x}}_1^2 + 2\norm{\mathbf{y}}_1^2 = 4$, so the parallelogram law fails. Hence normed spaces are more general than inner product spaces.
 \end{example}
 
 \subsection{Distances}
@@ -281,7 +281,7 @@ The parallelogram law says that in a parallelogram, the sum of the squares of th
 \begin{definition}[Distance]
     Let $V$ be an inner product space (or, more generally, a normed space). The distance between $x, y \in V$ is
     \[d(x, y) = \norm{x - y}.\]
-    For the dot product on $\mathbb{R}^n$, this is the Euclidean distance $d(x, y) = \norm{x - y}_2 = \sqrt{\sum_i (x_i - y_i)^2}$.
+    For the dot product on $\mathbb{R}^n$, this is the Euclidean distance $d(\mathbf{x}, \mathbf{y}) = \norm{\mathbf{x} - \mathbf{y}}_2 = \sqrt{\sum_i (x_i - y_i)^2}$.
 \end{definition}
 
 \begin{proposition}\label{L2-prop:metric}
@@ -300,8 +300,8 @@ The parallelogram law says that in a parallelogram, the sum of the squares of th
 A function $d: X \times X \to \mathbb{R}$ on any set $X$ with these three properties is called a metric, and $(X, d)$ is called a metric space. So every normed space is a metric space.
 
 \begin{example}
-    For $x = (1, 2)^\top$ and $y = (4, 6)^\top$, we have $x - y = (-3, -4)^\top$, so the distance between $x$ and $y$ is
-    \[\norm{x - y}_2 = \sqrt{9 + 16} = 5, \qquad \norm{x - y}_1 = 3 + 4 = 7, \qquad \norm{x - y}_\infty = 4\]
+    For $\mathbf{x} = (1, 2)^\top$ and $\mathbf{y} = (4, 6)^\top$, we have $\mathbf{x} - \mathbf{y} = (-3, -4)^\top$, so the distance between $\mathbf{x}$ and $\mathbf{y}$ is
+    \[\norm{\mathbf{x} - \mathbf{y}}_2 = \sqrt{9 + 16} = 5, \qquad \norm{\mathbf{x} - \mathbf{y}}_1 = 3 + 4 = 7, \qquad \norm{\mathbf{x} - \mathbf{y}}_\infty = 4\]
     for the Euclidean, Manhattan and maximum norms, respectively.
 \end{example}
 
@@ -320,12 +320,12 @@ By the Cauchy--Schwarz inequality, $-1 \leq \frac{\ip{x}{y}}{\norm{x} \norm{y}} 
     \[\cos \omega = \frac{\ip{x}{y}}{\norm{x} \, \norm{y}}.\]
 \end{definition}
 
-For the dot product in $\mathbb{R}^2$ or $\mathbb{R}^3$, this is the usual angle between two arrows. Indeed, expanding $\norm{x - y}^2$ gives
-\[\norm{x - y}^2 = \norm{x}^2 + \norm{y}^2 - 2 \ip{x}{y} = \norm{x}^2 + \norm{y}^2 - 2 \norm{x} \norm{y} \cos\omega,\]
-which is the law of cosines for the triangle with sides $x$, $y$ and $x - y$ (see Figure~\ref{L2-fig:angle}).
+For the dot product in $\mathbb{R}^2$ or $\mathbb{R}^3$, this is the usual angle between two arrows. Indeed, expanding $\norm{\mathbf{x} - \mathbf{y}}^2$ gives
+\[\norm{\mathbf{x} - \mathbf{y}}^2 = \norm{\mathbf{x}}^2 + \norm{\mathbf{y}}^2 - 2 \ip{\mathbf{x}}{\mathbf{y}} = \norm{\mathbf{x}}^2 + \norm{\mathbf{y}}^2 - 2 \norm{\mathbf{x}} \norm{\mathbf{y}} \cos\omega,\]
+which is the law of cosines for the triangle with sides $\mathbf{x}$, $\mathbf{y}$ and $\mathbf{x} - \mathbf{y}$ (see Figure~\ref{L2-fig:angle}).
 
 \begin{example}\label{L2-ex:angle}
-    The angle $\omega$ between $x = (3, 1)^\top$ and $y = (1, 2)^\top$ satisfies
+    The angle $\omega$ between $\mathbf{x} = (3, 1)^\top$ and $\mathbf{y} = (1, 2)^\top$ satisfies
     \[\cos\omega = \frac{3 \cdot 1 + 1 \cdot 2}{\sqrt{10} \, \sqrt{5}} = \frac{5}{\sqrt{50}} = \frac{1}{\sqrt{2}},\]
     so $\omega = \frac{\pi}{4}$, i.e., $45^\circ$.
 \end{example}
@@ -335,13 +335,13 @@ which is the law of cosines for the triangle with sides $x$, $y$ and $x - y$ (se
     \begin{tikzpicture}[x=1.4cm, y=1.4cm, >=Stealth]
         \draw[->, gray] (-0.4,0) -- (3.6,0);
         \draw[->, gray] (0,-0.4) -- (0,2.4);
-        \draw[->, very thick, red!80!black] (0,0) -- (3,1) node[right] {$x = (3, 1)$};
-        \draw[->, very thick, blue!70!black] (0,0) -- (1,2) node[above] {$y = (1, 2)$};
-        \draw[dashed, gray!70!black] (1,2) -- node[above right] {$x - y$} (3,1);
+        \draw[->, very thick, red!80!black] (0,0) -- (3,1) node[right] {$\mathbf{x} = (3, 1)$};
+        \draw[->, very thick, blue!70!black] (0,0) -- (1,2) node[above] {$\mathbf{y} = (1, 2)$};
+        \draw[dashed, gray!70!black] (1,2) -- node[above right] {$\mathbf{x} - \mathbf{y}$} (3,1);
         \draw[thick] (18.43:0.8) arc[start angle=18.43, end angle=63.43, radius=0.8];
         \node at (40.93:1.05) {$\omega$};
     \end{tikzpicture}
-    \caption[The angle between two vectors]{The angle $\omega = 45^\circ$ between $x = (3, 1)$ and $y = (1, 2)$ (Example~\ref{L2-ex:angle}). The triangle with sides $x$, $y$ and $x - y$ satisfies the law of cosines.}
+    \caption[The angle between two vectors]{The angle $\omega = 45^\circ$ between $\mathbf{x} = (3, 1)$ and $\mathbf{y} = (1, 2)$ (Example~\ref{L2-ex:angle}). The triangle with sides $\mathbf{x}$, $\mathbf{y}$ and $\mathbf{x} - \mathbf{y}$ satisfies the law of cosines.}
     \label{L2-fig:angle}
 \end{figure}
 
@@ -354,8 +354,8 @@ which is the law of cosines for the triangle with sides $x$, $y$ and $x - y$ (se
 So two nonzero vectors are orthogonal if and only if the angle between them is $\frac{\pi}{2}$. The zero vector is orthogonal to every vector.
 
 \begin{example}\label{L2-ex:orth-depends}
-    The vectors $x = (1, 1)^\top$ and $y = (-1, 1)^\top$ are orthogonal for the dot product, since $x^\top y = -1 + 1 = 0$. Now consider the inner product $\ip{x}{y} = x^\top A y$ with $A = \diag(2, 1)$. Then
-    \[\ip{x}{y} = 2 \cdot 1 \cdot (-1) + 1 \cdot 1 = -1, \qquad \norm{x}^2 = 2 + 1 = 3, \qquad \norm{y}^2 = 2 + 1 = 3,\]
+    The vectors $\mathbf{x} = (1, 1)^\top$ and $\mathbf{y} = (-1, 1)^\top$ are orthogonal for the dot product, since $\mathbf{x}^\top \mathbf{y} = -1 + 1 = 0$. Now consider the inner product $\ip{\mathbf{x}}{\mathbf{y}} = \mathbf{x}^\top A \mathbf{y}$ with $A = \diag(2, 1)$. Then
+    \[\ip{\mathbf{x}}{\mathbf{y}} = 2 \cdot 1 \cdot (-1) + 1 \cdot 1 = -1, \qquad \norm{\mathbf{x}}^2 = 2 + 1 = 3, \qquad \norm{\mathbf{y}}^2 = 2 + 1 = 3,\]
     so $\cos\omega = -\frac{1}{3}$ and $\omega \approx 1.91 \approx 109.5^\circ$. So whether two vectors are orthogonal depends on the inner product.
 \end{example}
 
@@ -368,44 +368,44 @@ So two nonzero vectors are orthogonal if and only if the angle between them is $
 \end{proof}
 
 \begin{remark}[Cosine similarity]
-    In machine learning, the number $\cos\omega = \frac{\ip{x}{y}}{\norm{x} \norm{y}}$ is called the cosine similarity of $x$ and $y$. It is $1$ if $x$ and $y$ point in the same direction, $0$ if they are orthogonal, and $-1$ if they point in opposite directions. Unlike the distance, it does not change when $x$ or $y$ is multiplied by a positive scalar. This makes it useful for comparing text documents (represented by word counts, where long and short documents should be comparable) and embeddings, e.g., the vectors that language models assign to words and sentences.
+    In machine learning, the number $\cos\omega = \frac{\ip{\mathbf{x}}{\mathbf{y}}}{\norm{\mathbf{x}} \norm{\mathbf{y}}}$ is called the cosine similarity of $\mathbf{x}$ and $\mathbf{y}$. It is $1$ if $\mathbf{x}$ and $\mathbf{y}$ point in the same direction, $0$ if they are orthogonal, and $-1$ if they point in opposite directions. Unlike the distance, it does not change when $\mathbf{x}$ or $\mathbf{y}$ is multiplied by a positive scalar. This makes it useful for comparing text documents (represented by word counts, where long and short documents should be comparable) and embeddings, e.g., the vectors that language models assign to words and sentences.
 \end{remark}
 
 \subsection{Orthogonal matrices}
 
-In Lecture~1, we defined an $n \times n$ matrix $Q$ to be orthogonal if $Q^\top Q = I_n$, and we claimed, without proof, that orthogonal matrices preserve lengths and angles. We can now make this precise.
+In Lecture~1, we defined an $n \times n$ matrix $Q$ to be orthogonal if $Q^\top Q = I_n$, and we claimed that orthogonal matrices preserve lengths and angles. We can now make this precise and prove it.
 
 \begin{theorem}\label{L2-thm:orthogonal}
     For an $n \times n$ matrix $Q$, the following statements are equivalent:
     \begin{enumerate}
         \item $Q$ is orthogonal, i.e., $Q^\top Q = I_n$;
-        \item $Q$ preserves the dot product: $(Qx)^\top (Qy) = x^\top y$ for all $x, y \in \mathbb{R}^n$;
-        \item $Q$ preserves lengths: $\norm{Qx}_2 = \norm{x}_2$ for all $x \in \mathbb{R}^n$;
+        \item $Q$ preserves the dot product: $(Q\mathbf{x})^\top (Q\mathbf{y}) = \mathbf{x}^\top \mathbf{y}$ for all $\mathbf{x}, \mathbf{y} \in \mathbb{R}^n$;
+        \item $Q$ preserves lengths: $\norm{Q\mathbf{x}}_2 = \norm{\mathbf{x}}_2$ for all $\mathbf{x} \in \mathbb{R}^n$;
         \item the columns of $Q$ are orthonormal.
     \end{enumerate}
     In particular, orthogonal matrices preserve lengths, distances and angles.
 \end{theorem}
 
 \begin{proof}
-    ($1 \Rightarrow 2$) $(Qx)^\top (Qy) = x^\top Q^\top Q y = x^\top y$.
+    ($1 \Rightarrow 2$) $(Q\mathbf{x})^\top (Q\mathbf{y}) = \mathbf{x}^\top Q^\top Q \mathbf{y} = \mathbf{x}^\top \mathbf{y}$.
 
-    ($2 \Rightarrow 3$) Take $y = x$ and take square roots.
+    ($2 \Rightarrow 3$) Take $\mathbf{y} = \mathbf{x}$ and take square roots.
 
     ($3 \Rightarrow 2$) By the polarization identity (Proposition~\ref{L2-prop:parallelogram}) and linearity,
-    \[(Qx)^\top (Qy) = \tfrac{1}{4}\big(\norm{Qx + Qy}^2 - \norm{Qx - Qy}^2\big) = \tfrac{1}{4}\big(\norm{x + y}^2 - \norm{x - y}^2\big) = x^\top y.\]
+    \[(Q\mathbf{x})^\top (Q\mathbf{y}) = \tfrac{1}{4}\big(\norm{Q\mathbf{x} + Q\mathbf{y}}^2 - \norm{Q\mathbf{x} - Q\mathbf{y}}^2\big) = \tfrac{1}{4}\big(\norm{\mathbf{x} + \mathbf{y}}^2 - \norm{\mathbf{x} - \mathbf{y}}^2\big) = \mathbf{x}^\top \mathbf{y}.\]
 
-    ($2 \Rightarrow 1$) The $(i, j)$ entry of $Q^\top Q$ is $e_i^\top Q^\top Q e_j = (Qe_i)^\top (Qe_j) = e_i^\top e_j$, which is $1$ if $i = j$ and $0$ otherwise.
+    ($2 \Rightarrow 1$) The $(i, j)$ entry of $Q^\top Q$ is $\mathbf{e}_i^\top Q^\top Q \mathbf{e}_j = (Q\mathbf{e}_i)^\top (Q\mathbf{e}_j) = \mathbf{e}_i^\top \mathbf{e}_j$, which is $1$ if $i = j$ and $0$ otherwise.
 
-    ($1 \Leftrightarrow 4$) The $(i, j)$ entry of $Q^\top Q$ is $q_i^\top q_j$, where $q_1, \ldots, q_n$ are the columns of $Q$. So $Q^\top Q = I_n$ means exactly that $q_i^\top q_j$ is $1$ for $i = j$ and $0$ for $i \neq j$.
+    ($1 \Leftrightarrow 4$) The $(i, j)$ entry of $Q^\top Q$ is $\mathbf{q}_i^\top \mathbf{q}_j$, where $\mathbf{q}_1, \ldots, \mathbf{q}_n$ are the columns of $Q$. So $Q^\top Q = I_n$ means exactly that $\mathbf{q}_i^\top \mathbf{q}_j$ is $1$ for $i = j$ and $0$ for $i \neq j$.
 
-    Finally, distances are lengths of differences, $\norm{Qx - Qy}_2 = \norm{Q(x - y)}_2 = \norm{x - y}_2$, and angles are defined in terms of the dot product and lengths.
+    Finally, distances are lengths of differences, $\norm{Q\mathbf{x} - Q\mathbf{y}}_2 = \norm{Q(\mathbf{x} - \mathbf{y})}_2 = \norm{\mathbf{x} - \mathbf{y}}_2$, and angles are defined in terms of the dot product and lengths.
 \end{proof}
 
 A map that preserves distances is called an isometry. Rotations and reflections are the typical examples; we study rotations in Section~\ref{L2-sec:rotations}.
 
 \section{Orthonormal Bases}
 
-In $\mathbb{R}^n$, the standard basis $e_1, \ldots, e_n$ consists of vectors of length $1$ that are pairwise orthogonal. Bases with this property are especially convenient.
+In $\mathbb{R}^n$, the standard basis $\mathbf{e}_1, \ldots, \mathbf{e}_n$ consists of vectors of length $1$ that are pairwise orthogonal. Bases with this property are especially convenient.
 
 \begin{definition}[Orthonormal basis]
     Let $V$ be an inner product space. Vectors $b_1, \ldots, b_k \in V$ are called orthogonal if $\ip{b_i}{b_j} = 0$ for all $i \neq j$, and orthonormal if, in addition, $\norm{b_i} = 1$ for all $i$. In other words, $b_1, \ldots, b_k$ are orthonormal if
@@ -442,13 +442,13 @@ The main advantage of an orthonormal basis is that coordinates are computed by i
 In the language of Theorem~\ref{L2-thm:spd}: the Gram matrix of an orthonormal basis is the identity matrix, so in coordinates with respect to an orthonormal basis, every inner product becomes the dot product.
 
 \begin{example}\label{L2-ex:onb-r2}
-    The vectors $b_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $b_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$ form an orthonormal basis of $\mathbb{R}^2$. For $v = (3, 1)^\top$, we get
-    \[\ip{v}{b_1} = \frac{4}{\sqrt{2}} = 2\sqrt{2}, \qquad \ip{v}{b_2} = \frac{2}{\sqrt{2}} = \sqrt{2},\]
-    so $v = 2\sqrt{2}\, b_1 + \sqrt{2}\, b_2 = 2(1, 1)^\top + (1, -1)^\top$. Parseval's identity checks out: $(2\sqrt{2})^2 + (\sqrt{2})^2 = 10 = 3^2 + 1^2$.
+    The vectors $\mathbf{b}_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $\mathbf{b}_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$ form an orthonormal basis of $\mathbb{R}^2$. For $\mathbf{v} = (3, 1)^\top$, we get
+    \[\ip{\mathbf{v}}{\mathbf{b}_1} = \frac{4}{\sqrt{2}} = 2\sqrt{2}, \qquad \ip{\mathbf{v}}{\mathbf{b}_2} = \frac{2}{\sqrt{2}} = \sqrt{2},\]
+    so $\mathbf{v} = 2\sqrt{2}\, \mathbf{b}_1 + \sqrt{2}\, \mathbf{b}_2 = 2(1, 1)^\top + (1, -1)^\top$. Parseval's identity checks out: $(2\sqrt{2})^2 + (\sqrt{2})^2 = 10 = 3^2 + 1^2$.
 \end{example}
 
 \begin{remark}
-    If $b_1, \ldots, b_n$ is an orthonormal basis of $\mathbb{R}^n$ (with the dot product), then the matrix $Q$ with columns $b_1, \ldots, b_n$ is orthogonal (Theorem~\ref{L2-thm:orthogonal}). The coordinate vector of $v$ is then $Q^{-1} v = Q^\top v = (b_1^\top v, \ldots, b_n^\top v)^\top$, in agreement with Proposition~\ref{L2-prop:onb-coordinates}.
+    If $\mathbf{b}_1, \ldots, \mathbf{b}_n$ is an orthonormal basis of $\mathbb{R}^n$ (with the dot product), then the matrix $Q$ with columns $\mathbf{b}_1, \ldots, \mathbf{b}_n$ is orthogonal (Theorem~\ref{L2-thm:orthogonal}). The coordinate vector of $\mathbf{v}$ is then $Q^{-1} \mathbf{v} = Q^\top \mathbf{v} = (\mathbf{b}_1^\top \mathbf{v}, \ldots, \mathbf{b}_n^\top \mathbf{v})^\top$, in agreement with Proposition~\ref{L2-prop:onb-coordinates}.
 \end{remark}
 
 \subsection{The Gram--Schmidt process}
@@ -480,27 +480,27 @@ are orthogonal, and we normalize them at the end. Figure~\ref{L2-fig:gram-schmid
     \begin{tikzpicture}[x=1.4cm, y=1.4cm, >=Stealth]
         \draw[->, gray] (-1,0) -- (3.6,0);
         \draw[->, gray] (0,-0.4) -- (0,2.4);
-        \draw[->, very thick, red!80!black] (0,0) -- (3,1) node[right] {$v_1 = u_1$};
-        \draw[->, very thick, blue!70!black] (0,0) -- (1,2) node[above right] {$v_2$};
+        \draw[->, very thick, red!80!black] (0,0) -- (3,1) node[right] {$\mathbf{v}_1 = \mathbf{u}_1$};
+        \draw[->, very thick, blue!70!black] (0,0) -- (1,2) node[above right] {$\mathbf{v}_2$};
         \draw[->, thick, gray!70!black] (0,0) -- (1.5,0.5);
-        \node[below right, gray!70!black] at (1.5,0.5) {$\frac{\langle v_2, u_1 \rangle}{\langle u_1, u_1 \rangle} u_1$};
+        \node[below right, gray!70!black] at (1.5,0.5) {$\frac{\langle \mathbf{v}_2, \mathbf{u}_1 \rangle}{\langle \mathbf{u}_1, \mathbf{u}_1 \rangle} \mathbf{u}_1$};
         \draw[dashed, gray!70!black] (1.5,0.5) -- (1,2);
-        \draw[->, very thick, green!50!black] (0,0) -- (-0.5,1.5) node[above left] {$u_2$};
+        \draw[->, very thick, green!50!black] (0,0) -- (-0.5,1.5) node[above left] {$\mathbf{u}_2$};
         \draw[gray!70!black] (1.386,0.462) -- (1.348,0.576) -- (1.462,0.614);
     \end{tikzpicture}
-    \caption[The Gram--Schmidt process]{The Gram--Schmidt process for $v_1 = (3, 1)$ and $v_2 = (1, 2)$. The component of $v_2$ in the direction of $u_1 = v_1$ is $\frac{5}{10} u_1 = (1.5, 0.5)$; subtracting it gives $u_2 = (-0.5, 1.5)$, which is orthogonal to $u_1$. Normalizing $u_1$ and $u_2$ gives an orthonormal basis of $\mathbb{R}^2$.}
+    \caption[The Gram--Schmidt process]{The Gram--Schmidt process for $\mathbf{v}_1 = (3, 1)$ and $\mathbf{v}_2 = (1, 2)$. The component of $\mathbf{v}_2$ in the direction of $\mathbf{u}_1 = \mathbf{v}_1$ is $\frac{5}{10} \mathbf{u}_1 = (1.5, 0.5)$; subtracting it gives $\mathbf{u}_2 = (-0.5, 1.5)$, which is orthogonal to $\mathbf{u}_1$. Normalizing $\mathbf{u}_1$ and $\mathbf{u}_2$ gives an orthonormal basis of $\mathbb{R}^2$.}
     \label{L2-fig:gram-schmidt}
 \end{figure}
 
 \begin{example}\label{L2-ex:gram-schmidt}
-    Let us apply the Gram--Schmidt process to the basis $v_1 = (1, 1, 0)^\top$, $v_2 = (1, 0, 1)^\top$, $v_3 = (0, 1, 1)^\top$ of $\mathbb{R}^3$, using the unnormalized version:
+    Let us apply the Gram--Schmidt process to the basis $\mathbf{v}_1 = (1, 1, 0)^\top$, $\mathbf{v}_2 = (1, 0, 1)^\top$, $\mathbf{v}_3 = (0, 1, 1)^\top$ of $\mathbb{R}^3$, using the unnormalized version:
     \begin{align*}
-        u_1 &= v_1 = (1, 1, 0)^\top, \\
-        u_2 &= v_2 - \frac{v_2^\top u_1}{u_1^\top u_1} u_1 = (1, 0, 1)^\top - \frac{1}{2}(1, 1, 0)^\top = \big(\tfrac{1}{2}, -\tfrac{1}{2}, 1\big)^\top, \\
-        u_3 &= v_3 - \frac{v_3^\top u_1}{u_1^\top u_1} u_1 - \frac{v_3^\top u_2}{u_2^\top u_2} u_2 = (0, 1, 1)^\top - \frac{1}{2}(1, 1, 0)^\top - \frac{1/2}{3/2}\big(\tfrac{1}{2}, -\tfrac{1}{2}, 1\big)^\top = \big(-\tfrac{2}{3}, \tfrac{2}{3}, \tfrac{2}{3}\big)^\top.
+        \mathbf{u}_1 &= \mathbf{v}_1 = (1, 1, 0)^\top, \\
+        \mathbf{u}_2 &= \mathbf{v}_2 - \frac{\mathbf{v}_2^\top \mathbf{u}_1}{\mathbf{u}_1^\top \mathbf{u}_1} \mathbf{u}_1 = (1, 0, 1)^\top - \frac{1}{2}(1, 1, 0)^\top = \big(\tfrac{1}{2}, -\tfrac{1}{2}, 1\big)^\top, \\
+        \mathbf{u}_3 &= \mathbf{v}_3 - \frac{\mathbf{v}_3^\top \mathbf{u}_1}{\mathbf{u}_1^\top \mathbf{u}_1} \mathbf{u}_1 - \frac{\mathbf{v}_3^\top \mathbf{u}_2}{\mathbf{u}_2^\top \mathbf{u}_2} \mathbf{u}_2 = (0, 1, 1)^\top - \frac{1}{2}(1, 1, 0)^\top - \frac{1/2}{3/2}\big(\tfrac{1}{2}, -\tfrac{1}{2}, 1\big)^\top = \big(-\tfrac{2}{3}, \tfrac{2}{3}, \tfrac{2}{3}\big)^\top.
     \end{align*}
-    One checks that $u_1^\top u_2 = u_1^\top u_3 = u_2^\top u_3 = 0$. Normalizing gives the orthonormal basis
-    \[e_1 = \frac{1}{\sqrt{2}} \begin{pmatrix} 1 \\ 1 \\ 0 \end{pmatrix}, \qquad e_2 = \frac{1}{\sqrt{6}} \begin{pmatrix} 1 \\ -1 \\ 2 \end{pmatrix}, \qquad e_3 = \frac{1}{\sqrt{3}} \begin{pmatrix} -1 \\ 1 \\ 1 \end{pmatrix}.\]
+    One checks that $\mathbf{u}_1^\top \mathbf{u}_2 = \mathbf{u}_1^\top \mathbf{u}_3 = \mathbf{u}_2^\top \mathbf{u}_3 = 0$. Normalizing gives the orthonormal basis
+    \[\mathbf{e}_1 = \frac{1}{\sqrt{2}} \begin{pmatrix} 1 \\ 1 \\ 0 \end{pmatrix}, \qquad \mathbf{e}_2 = \frac{1}{\sqrt{6}} \begin{pmatrix} 1 \\ -1 \\ 2 \end{pmatrix}, \qquad \mathbf{e}_3 = \frac{1}{\sqrt{3}} \begin{pmatrix} -1 \\ 1 \\ 1 \end{pmatrix}.\]
 \end{example}
 
 \begin{corollary}\label{L2-cor:onb-exists}
@@ -514,20 +514,20 @@ are orthogonal, and we normalize them at the end. Figure~\ref{L2-fig:gram-schmid
 The Gram--Schmidt process can also be written as a factorization of matrices.
 
 \begin{proposition}[QR decomposition]\label{L2-prop:qr}
-    Let $A$ be an $m \times n$ matrix with linearly independent columns $a_1, \ldots, a_n$. Then $A = QR$, where $Q$ is an $m \times n$ matrix with orthonormal columns (i.e., $Q^\top Q = I_n$), and $R$ is an upper triangular $n \times n$ matrix with positive diagonal entries.
+    Let $A$ be an $m \times n$ matrix with linearly independent columns $\mathbf{a}_1, \ldots, \mathbf{a}_n$. Then $A = QR$, where $Q$ is an $m \times n$ matrix with orthonormal columns (i.e., $Q^\top Q = I_n$), and $R$ is an upper triangular $n \times n$ matrix with positive diagonal entries.
 \end{proposition}
 
 \begin{proof}
-    Apply the Gram--Schmidt process to $a_1, \ldots, a_n$ (with the dot product), and let $Q$ be the matrix with columns $e_1, \ldots, e_n$. Since $a_j \in \Span\{e_1, \ldots, e_j\}$ and $e_1, \ldots, e_j$ are orthonormal, the argument of Proposition~\ref{L2-prop:onb-coordinates} gives $a_j = \sum_{i=1}^{j} (e_i^\top a_j)\, e_i$. So $A = QR$, where $R_{ij} = e_i^\top a_j$ for $i \leq j$ and $R_{ij} = 0$ for $i > j$. The diagonal entries are $R_{jj} = e_j^\top a_j = e_j^\top u_j = \norm{u_j} > 0$, since $a_j - u_j$ is a linear combination of $e_1, \ldots, e_{j-1}$, which are orthogonal to $e_j$.
+    Apply the Gram--Schmidt process to $\mathbf{a}_1, \ldots, \mathbf{a}_n$ (with the dot product), and let $Q$ be the matrix with columns $\mathbf{e}_1, \ldots, \mathbf{e}_n$. Since $\mathbf{a}_j \in \Span\{\mathbf{e}_1, \ldots, \mathbf{e}_j\}$ and $\mathbf{e}_1, \ldots, \mathbf{e}_j$ are orthonormal, the argument of Proposition~\ref{L2-prop:onb-coordinates} gives $\mathbf{a}_j = \sum_{i=1}^{j} (\mathbf{e}_i^\top \mathbf{a}_j)\, \mathbf{e}_i$. So $A = QR$, where $R_{ij} = \mathbf{e}_i^\top \mathbf{a}_j$ for $i \leq j$ and $R_{ij} = 0$ for $i > j$. The diagonal entries are $R_{jj} = \mathbf{e}_j^\top \mathbf{a}_j = \mathbf{e}_j^\top \mathbf{u}_j = \norm{\mathbf{u}_j} > 0$, since $\mathbf{a}_j - \mathbf{u}_j$ is a linear combination of $\mathbf{e}_1, \ldots, \mathbf{e}_{j-1}$, which are orthogonal to $\mathbf{e}_j$.
 \end{proof}
 
 \begin{example}
-    For the matrix $A$ with columns $v_1, v_2, v_3$ of Example~\ref{L2-ex:gram-schmidt}, the matrix $Q$ has columns $e_1, e_2, e_3$, and
+    For the matrix $A$ with columns $v_1, v_2, v_3$ of Example~\ref{L2-ex:gram-schmidt}, the matrix $Q$ has columns $\mathbf{e}_1, \mathbf{e}_2, \mathbf{e}_3$, and
     \[R = Q^\top A = \begin{pmatrix} \sqrt{2} & \frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} \\ 0 & \frac{\sqrt{6}}{2} & \frac{1}{\sqrt{6}} \\ 0 & 0 & \frac{2}{\sqrt{3}} \end{pmatrix}.\]
 \end{example}
 
 \begin{remark}
-    In NumPy, \py{Q, R = np.linalg.qr(A)} computes a QR decomposition (the signs of some columns of $Q$ and rows of $R$ may differ from the ones above). It does not use the Gram--Schmidt process directly, since in floating-point arithmetic the vectors $e_j$ computed by the Gram--Schmidt process can be far from orthogonal; see Programming Exercise~P3. The QR decomposition is used, for example, to solve least squares problems in a numerically stable way.
+    In NumPy, \py{Q, R = np.linalg.qr(A)} computes a QR decomposition (the signs of some columns of $Q$ and rows of $R$ may differ from the ones above). It does not use the Gram--Schmidt process directly, since in floating-point arithmetic the vectors $\mathbf{e}_j$ computed by the Gram--Schmidt process can be far from orthogonal; see Programming Exercise~P3. The QR decomposition is used, for example, to solve least squares problems in a numerically stable way.
 \end{remark}
 
 \section{Orthogonal Complements}
@@ -566,7 +566,7 @@ To state the main theorem, we need the following notion.
     These vectors span $V$, since every $v = u + w$ is a linear combination of them. If $\sum_i a_i u_i + \sum_j b_j w_j = 0$, then $0 = \sum_i a_i u_i + \sum_j b_j w_j$ and $0 = 0 + 0$ are two ways to write $0$ as an element of $U$ plus an element of $W$. By uniqueness, $\sum_i a_i u_i = 0$ and $\sum_j b_j w_j = 0$, so all $a_i$ and $b_j$ are $0$.
 \end{proof}
 
-In the following theorem, we use the fact that every subspace of a finite-dimensional vector space is itself finite-dimensional; we state this without proof.
+In the following theorem, we use the fact that every subspace of a finite-dimensional vector space is itself finite-dimensional, which was proved in Lecture~1 with the exchange lemma.
 
 \begin{theorem}[Orthogonal decomposition]\label{L2-thm:orth-decomposition}
     Let $U$ be a subspace of a finite-dimensional inner product space $V$. Then:
@@ -588,8 +588,8 @@ In the following theorem, we use the fact that every subspace of a finite-dimens
 \end{proof}
 
 \begin{example}\label{L2-ex:complement-line}
-    Let $U = \Span\{(1, 1, 1)^\top\}$ in $\mathbb{R}^3$. By Lemma~\ref{L2-lem:complement}, $U^\perp = \{x : x_1 + x_2 + x_3 = 0\}$ is the plane that we met as an example of a subspace in Lecture~1, and indeed $\dim U + \dim U^\perp = 1 + 2 = 3$. For $v = (1, 2, 3)^\top$, the proof of Theorem~\ref{L2-thm:orth-decomposition} with $e_1 = \frac{1}{\sqrt{3}}(1, 1, 1)^\top$ gives the decomposition
-    \[v = \underbrace{\frac{6}{\sqrt{3}} e_1}_{(2, 2, 2)^\top \in U} + \underbrace{(-1, 0, 1)^\top}_{\in U^\perp}.\]
+    Let $U = \Span\{(1, 1, 1)^\top\}$ in $\mathbb{R}^3$. By Lemma~\ref{L2-lem:complement}, $U^\perp = \{\mathbf{x} : x_1 + x_2 + x_3 = 0\}$ is the plane that we met as an example of a subspace in Lecture~1, and indeed $\dim U + \dim U^\perp = 1 + 2 = 3$. For $\mathbf{v} = (1, 2, 3)^\top$, the proof of Theorem~\ref{L2-thm:orth-decomposition} with $\mathbf{e}_1 = \frac{1}{\sqrt{3}}(1, 1, 1)^\top$ gives the decomposition
+    \[\mathbf{v} = \underbrace{\frac{6}{\sqrt{3}} \mathbf{e}_1}_{(2, 2, 2)^\top \in U} + \underbrace{(-1, 0, 1)^\top}_{\in U^\perp}.\]
 \end{example}
 
 \subsection{The four fundamental subspaces}
@@ -602,7 +602,7 @@ Orthogonal complements explain how the null space, the row space and the column 
 \end{theorem}
 
 \begin{proof}
-    Let $r_1, \ldots, r_m$ be the rows of $A$, written as column vectors. The $i$-th entry of $Ax$ is $r_i^\top x$, so $Ax = 0$ if and only if $x$ is orthogonal to $r_1, \ldots, r_m$, which by Lemma~\ref{L2-lem:complement} means $x \in \row(A)^\perp$. The second statement follows by applying the first one to $A^\top$, since $\row(A^\top) = \col(A)$.
+    Let $\mathbf{r}_1, \ldots, \mathbf{r}_m$ be the rows of $A$, written as column vectors. The $i$-th entry of $A\mathbf{x}$ is $\mathbf{r}_i^\top \mathbf{x}$, so $A\mathbf{x} = \mathbf{0}$ if and only if $\mathbf{x}$ is orthogonal to $\mathbf{r}_1, \ldots, \mathbf{r}_m$, which by Lemma~\ref{L2-lem:complement} means $\mathbf{x} \in \row(A)^\perp$. The second statement follows by applying the first one to $A^\top$, since $\row(A^\top) = \col(A)$.
 \end{proof}
 
 Combined with Theorem~\ref{L2-thm:orth-decomposition}, this gives $\mathbb{R}^n = \row(A) \oplus \Null(A)$ and $\dim \row(A) + \dim \Null(A) = n$. Since $\dim \row(A) = \rank(A)$ (Lecture~1), this is another proof of the rank--nullity theorem.
@@ -612,29 +612,29 @@ Combined with Theorem~\ref{L2-thm:orth-decomposition}, this gives $\mathbb{R}^n 
 \end{example}
 
 \begin{remark}
-    By Theorem~\ref{L2-thm:orth-decomposition}(3), the second statement can also be written as $\col(A) = \Null(A^\top)^\perp$. So the system $Ax = b$ has a solution if and only if $b$ is orthogonal to every solution $y$ of $A^\top y = 0$.
+    By Theorem~\ref{L2-thm:orth-decomposition}(3), the second statement can also be written as $\col(A) = \Null(A^\top)^\perp$. So the system $A\mathbf{x} = \mathbf{b}$ has a solution if and only if $\mathbf{b}$ is orthogonal to every solution $\mathbf{y}$ of $A^\top \mathbf{y} = \mathbf{0}$.
 \end{remark}
 
 \subsection{Hyperplanes and linear classifiers}
 
 \begin{definition}[Hyperplane]
-    Let $w \in \mathbb{R}^n$ be nonzero and $c \in \mathbb{R}$. The set
-    \[H = \{x \in \mathbb{R}^n : w^\top x = c\}\]
-    is called a hyperplane, and $w$ is called a normal vector of $H$. If $c = 0$, then $H = \Span\{w\}^\perp$ is a subspace of dimension $n - 1$ (Theorem~\ref{L2-thm:orth-decomposition}).
+    Let $\mathbf{w} \in \mathbb{R}^n$ be nonzero and $c \in \mathbb{R}$. The set
+    \[H = \{\mathbf{x} \in \mathbb{R}^n : \mathbf{w}^\top \mathbf{x} = c\}\]
+    is called a hyperplane, and $\mathbf{w}$ is called a normal vector of $H$. If $c = 0$, then $H = \Span\{\mathbf{w}\}^\perp$ is a subspace of dimension $n - 1$ (Theorem~\ref{L2-thm:orth-decomposition}).
 \end{definition}
 
-If $c \neq 0$, the hyperplane $H$ does not contain $0$, so it is not a subspace. But if $x_0$ is any point of $H$, then $w^\top x = c$ if and only if $w^\top (x - x_0) = 0$. Hence
-\[H = x_0 + \Span\{w\}^\perp = \{x_0 + u : u \in \Span\{w\}^\perp\}\]
-is a shifted copy of the subspace $\Span\{w\}^\perp$. In general, a set of the form $x_0 + U$, where $U$ is a subspace, is called an affine subspace. In $\mathbb{R}^2$, hyperplanes are lines, and in $\mathbb{R}^3$, they are planes.
+If $c \neq 0$, the hyperplane $H$ does not contain $\mathbf{0}$, so it is not a subspace. But if $\mathbf{x}_0$ is any point of $H$, then $\mathbf{w}^\top \mathbf{x} = c$ if and only if $\mathbf{w}^\top (\mathbf{x} - \mathbf{x}_0) = 0$. Hence
+\[H = \mathbf{x}_0 + \Span\{\mathbf{w}\}^\perp = \{\mathbf{x}_0 + \mathbf{u} : \mathbf{u} \in \Span\{\mathbf{w}\}^\perp\}\]
+is a shifted copy of the subspace $\Span\{\mathbf{w}\}^\perp$. In general, a set of the form $\mathbf{x}_0 + U$, where $U$ is a subspace, is called an affine subspace. In $\mathbb{R}^2$, hyperplanes are lines, and in $\mathbb{R}^3$, they are planes.
 
 \begin{example}
-    The plane $x + 2y + 2z = 2$ in $\mathbb{R}^3$ has the normal vector $w = (1, 2, 2)^\top$ and contains the point $x_0 = (2, 0, 0)^\top$. It is the shifted copy $x_0 + \Span\{w\}^\perp$ of the plane $x + 2y + 2z = 0$ through the origin.
+    The plane $x + 2y + 2z = 2$ in $\mathbb{R}^3$ has the normal vector $\mathbf{w} = (1, 2, 2)^\top$ and contains the point $\mathbf{x}_0 = (2, 0, 0)^\top$. It is the shifted copy $\mathbf{x}_0 + \Span\{\mathbf{w}\}^\perp$ of the plane $x + 2y + 2z = 0$ through the origin.
 \end{example}
 
 \begin{remark}[Linear classifiers]\label{L2-rem:linear-classifier}
-    A linear classifier assigns to a data point $x \in \mathbb{R}^n$ the class
-    \[f(x) = \sign(w^\top x + b) \in \{+1, -1\},\]
-    for a weight vector $w$ and a bias $b \in \mathbb{R}$. The decision boundary $\{x : w^\top x + b = 0\}$ is a hyperplane with normal vector $w$, and the classifier predicts $+1$ on the side into which $w$ points (see Figure~\ref{L2-fig:classifier}). The perceptron, logistic regression and support vector machines all learn classifiers of this form. In Section~\ref{L2-sec:affine}, we compute the distance of a point to the decision boundary, which measures how confident the classification is.
+    A linear classifier assigns to a data point $\mathbf{x} \in \mathbb{R}^n$ the class
+    \[f(\mathbf{x}) = \sign(\mathbf{w}^\top \mathbf{x} + b) \in \{+1, -1\},\]
+    for a weight vector $\mathbf{w}$ and a bias $b \in \mathbb{R}$. The decision boundary $\{\mathbf{x} : \mathbf{w}^\top \mathbf{x} + b = 0\}$ is a hyperplane with normal vector $\mathbf{w}$, and the classifier predicts $+1$ on the side into which $\mathbf{w}$ points (see Figure~\ref{L2-fig:classifier}). The perceptron, logistic regression and support vector machines all learn classifiers of this form. In Section~\ref{L2-sec:affine}, we compute the distance of a point to the decision boundary, which measures how confident the classification is.
 \end{remark}
 
 \begin{figure}[ht]
@@ -645,8 +645,8 @@ is a shifted copy of the subspace $\Span\{w\}^\perp$. In general, a set of the f
         \draw[->, gray] (-0.2,0) -- (3.8,0) node[right] {$x_1$};
         \draw[->, gray] (0,-0.2) -- (0,3.2) node[above] {$x_2$};
         \draw[very thick, gray!30!black] (0,2) -- (2,0);
-        \node[gray!30!black, rotate=-45] at (0.5,1.85) {\small $w^\top x + b = 0$};
-        \draw[->, very thick, red!80!black] (1,1) -- (1.6,1.6) node[above left] {$w$};
+        \node[gray!30!black, rotate=-45] at (0.5,1.85) {\small $\mathbf{w}^\top \mathbf{x} + b = 0$};
+        \draw[->, very thick, red!80!black] (1,1) -- (1.6,1.6) node[above left] {$\mathbf{w}$};
         \foreach \p in {(2.5,1.5), (3,0.6), (1.8,2.4), (2.8,2.2)} {
             \fill[blue!70!black] \p circle (2.5pt);
         }
@@ -655,10 +655,10 @@ is a shifted copy of the subspace $\Span\{w\}^\perp$. In general, a set of the f
         }
         \draw[dashed, gray!50!black] (2.5,1.5) -- (1.5,0.5);
         \draw[gray!50!black] (1.6,0.6) -- (1.5,0.7) -- (1.4,0.6);
-        \node[blue!70!black] at (3.2,2.75) {$f(x) = +1$};
-        \node[orange!85!black, left] at (-0.1,0.6) {$f(x) = -1$};
+        \node[blue!70!black] at (3.2,2.75) {$f(\mathbf{x}) = +1$};
+        \node[orange!85!black, left] at (-0.1,0.6) {$f(\mathbf{x}) = -1$};
     \end{tikzpicture}
-    \caption[A linear classifier]{A linear classifier in $\mathbb{R}^2$ with $w = (1, 1)$ and $b = -2$. The decision boundary is the line $x_1 + x_2 = 2$ with normal vector $w$. Points on the side into which $w$ points (blue disks) are classified as $+1$, the others (orange squares) as $-1$. The dashed segment shows the distance of the point $(2.5, 1.5)$ to the boundary, which is $\sqrt{2}$ (Example~\ref{L2-ex:classifier-distance}).}
+    \caption[A linear classifier]{A linear classifier in $\mathbb{R}^2$ with $\mathbf{w} = (1, 1)$ and $b = -2$. The decision boundary is the line $x_1 + x_2 = 2$ with normal vector $\mathbf{w}$. Points on the side into which $\mathbf{w}$ points (blue disks) are classified as $+1$, the others (orange squares) as $-1$. The dashed segment shows the distance of the point $(2.5, 1.5)$ to the boundary, which is $\sqrt{2}$ (Example~\ref{L2-ex:classifier-distance}).}
     \label{L2-fig:classifier}
 \end{figure}
 
@@ -667,9 +667,9 @@ is a shifted copy of the subspace $\Span\{w\}^\perp$. In general, a set of the f
 Inner products are not limited to $\mathbb{R}^n$. Functions can be added and multiplied by scalars (Lecture~1), and an integral gives a natural inner product on them.
 
 \begin{proposition}\label{L2-prop:function-ip}
-    Let $C[a, b]$ be the vector space of continuous functions $f: [a, b] \to \mathbb{R}$, with pointwise addition and scalar multiplication. Then
+    On the vector space $C[a, b]$ of continuous functions $f: [a, b] \to \mathbb{R}$ (Lecture~1),
     \[\ip{f}{g} = \int_a^b f(x) g(x) \, dx\]
-    is an inner product on $C[a, b]$.
+    is an inner product.
 \end{proposition}
 
 \begin{proof}
@@ -744,65 +744,65 @@ A linear transformation $\pi$ with $\pi \circ \pi = \pi$ is called a projection;
 \subsection{Projection onto a line}
 
 \begin{proposition}\label{L2-prop:projection-line}
-    Let $b \neq 0$ and $U = \Span\{b\}$. Then
-    \[\pi_U(x) = \frac{\ip{x}{b}}{\ip{b}{b}} \, b.\]
-    For the dot product on $\mathbb{R}^n$, this is $\pi_U(x) = Px$ with the projection matrix
-    \[P = \frac{b b^\top}{b^\top b},\]
+    Let $\mathbf{b} \neq \mathbf{0}$ and $U = \Span\{\mathbf{b}\}$. Then
+    \[\pi_U(\mathbf{x}) = \frac{\ip{\mathbf{x}}{\mathbf{b}}}{\ip{\mathbf{b}}{\mathbf{b}}} \, \mathbf{b}.\]
+    For the dot product on $\mathbb{R}^n$, this is $\pi_U(\mathbf{x}) = P\mathbf{x}$ with the projection matrix
+    \[P = \frac{\mathbf{b} \mathbf{b}^\top}{\mathbf{b}^\top \mathbf{b}},\]
     which is symmetric and satisfies $P^2 = P$.
 \end{proposition}
 
 \begin{proof}
-    We look for $\pi_U(x) = \lambda b$ with $x - \lambda b \perp b$, i.e., $\ip{x}{b} - \lambda \ip{b}{b} = 0$. This gives $\lambda = \frac{\ip{x}{b}}{\ip{b}{b}}$. For the dot product, $\lambda b = b \lambda = \frac{b (b^\top x)}{b^\top b} = Px$. The matrix $b b^\top$ is symmetric, and $P^2 = \frac{b (b^\top b) b^\top}{(b^\top b)^2} = P$.
+    We look for $\pi_U(\mathbf{x}) = \lambda \mathbf{b}$ with $\mathbf{x} - \lambda \mathbf{b} \perp \mathbf{b}$, i.e., $\ip{\mathbf{x}}{\mathbf{b}} - \lambda \ip{\mathbf{b}}{\mathbf{b}} = 0$. This gives $\lambda = \frac{\ip{\mathbf{x}}{\mathbf{b}}}{\ip{\mathbf{b}}{\mathbf{b}}}$. For the dot product, $\lambda \mathbf{b} = \mathbf{b} \lambda = \frac{\mathbf{b} (\mathbf{b}^\top \mathbf{x})}{\mathbf{b}^\top \mathbf{b}} = P\mathbf{x}$. The matrix $\mathbf{b} \mathbf{b}^\top$ is symmetric, and $P^2 = \frac{\mathbf{b} (\mathbf{b}^\top \mathbf{b}) \mathbf{b}^\top}{(\mathbf{b}^\top \mathbf{b})^2} = P$.
 \end{proof}
 
-Note that $bb^\top$ is an $n \times n$ matrix, while $b^\top b$ is a number. The length of the projection is $\norm{\pi_U(x)} = \frac{|\ip{x}{b}|}{\norm{b}} = \norm{x} \, |\cos\omega|$, where $\omega$ is the angle between $x$ and $b$, as in elementary geometry (Figure~\ref{L2-fig:projection-line}).
+Note that $\mathbf{b}\mathbf{b}^\top$ is an $n \times n$ matrix, while $\mathbf{b}^\top \mathbf{b}$ is a number. The length of the projection is $\norm{\pi_U(\mathbf{x})} = \frac{|\ip{\mathbf{x}}{\mathbf{b}}|}{\norm{\mathbf{b}}} = \norm{\mathbf{x}} \, |\cos\omega|$, where $\omega$ is the angle between $\mathbf{x}$ and $\mathbf{b}$, as in elementary geometry (Figure~\ref{L2-fig:projection-line}).
 
 \begin{figure}[ht]
     \centering
     \begin{tikzpicture}[x=1.5cm, y=1.5cm, >=Stealth]
         \draw[->, gray] (-1,0) -- (3.4,0);
         \draw[->, gray] (0,-0.5) -- (0,2.3);
-        \draw[thick, gray!60] (-0.8,-0.4) -- (3.4,1.7) node[right, gray!40!black] {$U = \Span\{b\}$};
-        \draw[->, very thick, red!80!black] (0,0) -- (2,1) node[below right] {$b$};
-        \draw[->, very thick, blue!70!black] (0,0) -- (1,2) node[above] {$x$};
+        \draw[thick, gray!60] (-0.8,-0.4) -- (3.4,1.7) node[right, gray!40!black] {$U = \Span\{\mathbf{b}\}$};
+        \draw[->, very thick, red!80!black] (0,0) -- (2,1) node[below right] {$\mathbf{b}$};
+        \draw[->, very thick, blue!70!black] (0,0) -- (1,2) node[above] {$\mathbf{x}$};
         \draw[->, very thick, green!50!black] (0,0) -- (1.6,0.8);
-        \node[green!40!black] at (1.15,0.28) {$\pi_U(x)$};
-        \draw[dashed, gray!30!black] (1.6,0.8) -- node[right] {$x - \pi_U(x)$} (1,2);
+        \node[green!40!black] at (1.15,0.28) {$\pi_U(\mathbf{x})$};
+        \draw[dashed, gray!30!black] (1.6,0.8) -- node[right] {$\mathbf{x} - \pi_U(\mathbf{x})$} (1,2);
         \draw[gray!30!black] (1.484,0.742) -- (1.426,0.858) -- (1.542,0.916);
     \end{tikzpicture}
-    \caption[Projection onto a line]{The orthogonal projection of $x = (1, 2)$ onto the line spanned by $b = (2, 1)$ is $\pi_U(x) = \frac{4}{5} b = (1.6, 0.8)$. The difference $x - \pi_U(x) = (-0.6, 1.2)$ is orthogonal to $b$.}
+    \caption[Projection onto a line]{The orthogonal projection of $\mathbf{x} = (1, 2)$ onto the line spanned by $\mathbf{b} = (2, 1)$ is $\pi_U(\mathbf{x}) = \frac{4}{5} \mathbf{b} = (1.6, 0.8)$. The difference $\mathbf{x} - \pi_U(\mathbf{x}) = (-0.6, 1.2)$ is orthogonal to $\mathbf{b}$.}
     \label{L2-fig:projection-line}
 \end{figure}
 
 \begin{example}
-    Let $b = (1, 2, 2)^\top$ and $x = (1, 1, 1)^\top$. Then $b^\top b = 9$ and $b^\top x = 5$, so
-    \[P = \frac{1}{9} \begin{pmatrix} 1 & 2 & 2 \\ 2 & 4 & 4 \\ 2 & 4 & 4 \end{pmatrix}, \qquad \pi_U(x) = Px = \frac{5}{9} \begin{pmatrix} 1 \\ 2 \\ 2 \end{pmatrix}.\]
-    Indeed, $x - \pi_U(x) = \frac{1}{9}(4, -1, -1)^\top$ is orthogonal to $b$, since $4 - 2 - 2 = 0$.
+    Let $\mathbf{b} = (1, 2, 2)^\top$ and $\mathbf{x} = (1, 1, 1)^\top$. Then $\mathbf{b}^\top \mathbf{b} = 9$ and $\mathbf{b}^\top \mathbf{x} = 5$, so
+    \[P = \frac{1}{9} \begin{pmatrix} 1 & 2 & 2 \\ 2 & 4 & 4 \\ 2 & 4 & 4 \end{pmatrix}, \qquad \pi_U(\mathbf{x}) = P\mathbf{x} = \frac{5}{9} \begin{pmatrix} 1 \\ 2 \\ 2 \end{pmatrix}.\]
+    Indeed, $\mathbf{x} - \pi_U(\mathbf{x}) = \frac{1}{9}(4, -1, -1)^\top$ is orthogonal to $\mathbf{b}$, since $4 - 2 - 2 = 0$.
 \end{example}
 
 \subsection{Projection onto a subspace}
 
-Now let $U = \Span\{b_1, \ldots, b_m\}$ be an $m$-dimensional subspace of $\mathbb{R}^n$, with the dot product, and let $B$ be the $n \times m$ matrix with columns $b_1, \ldots, b_m$, so that $U = \col(B)$.
+Now let $U = \Span\{\mathbf{b}_1, \ldots, \mathbf{b}_m\}$ be an $m$-dimensional subspace of $\mathbb{R}^n$, with the dot product, and let $B$ be the $n \times m$ matrix with columns $\mathbf{b}_1, \ldots, \mathbf{b}_m$, so that $U = \col(B)$.
 
 \begin{theorem}[Normal equations]\label{L2-thm:projection-subspace}
-    Let $B$ be an $n \times m$ matrix with linearly independent columns, and $U = \col(B)$. Then for every $x \in \mathbb{R}^n$,
-    \[\pi_U(x) = B\lambda, \qquad \text{where } \lambda \in \mathbb{R}^m \text{ is the unique solution of } B^\top B \lambda = B^\top x.\]
-    In other words, $\lambda = (B^\top B)^{-1} B^\top x$, and $\pi_U(x) = Px$ with the projection matrix
+    Let $B$ be an $n \times m$ matrix with linearly independent columns, and $U = \col(B)$. Then for every $\mathbf{x} \in \mathbb{R}^n$,
+    \[\pi_U(\mathbf{x}) = B\boldsymbol{\lambda}, \qquad \text{where } \boldsymbol{\lambda} \in \mathbb{R}^m \text{ is the unique solution of } B^\top B \boldsymbol{\lambda} = B^\top \mathbf{x}.\]
+    In other words, $\boldsymbol{\lambda} = (B^\top B)^{-1} B^\top \mathbf{x}$, and $\pi_U(\mathbf{x}) = P\mathbf{x}$ with the projection matrix
     \[P = B (B^\top B)^{-1} B^\top.\]
 \end{theorem}
 
 \begin{proof}
-    Every vector of $U = \col(B)$ has the form $B\lambda$. By Theorem~\ref{L2-thm:fundamental-subspaces}, $U^\perp = \col(B)^\perp = \Null(B^\top)$. So $B\lambda = \pi_U(x)$ if and only if $x - B\lambda \in \Null(B^\top)$, i.e., $B^\top(x - B\lambda) = 0$, i.e., $B^\top B \lambda = B^\top x$. The matrix $B^\top B$ is symmetric positive definite by Example~\ref{L2-ex:BTB}, hence invertible by Proposition~\ref{L2-prop:spd-properties}, so this equation has exactly one solution $\lambda = (B^\top B)^{-1} B^\top x$.
+    Every vector of $U = \col(B)$ has the form $B\boldsymbol{\lambda}$. By Theorem~\ref{L2-thm:fundamental-subspaces}, $U^\perp = \col(B)^\perp = \Null(B^\top)$. So $B\boldsymbol{\lambda} = \pi_U(\mathbf{x})$ if and only if $\mathbf{x} - B\boldsymbol{\lambda} \in \Null(B^\top)$, i.e., $B^\top(\mathbf{x} - B\boldsymbol{\lambda}) = \mathbf{0}$, i.e., $B^\top B \boldsymbol{\lambda} = B^\top \mathbf{x}$. The matrix $B^\top B$ is symmetric positive definite by Example~\ref{L2-ex:BTB}, hence invertible by Proposition~\ref{L2-prop:spd-properties}, so this equation has exactly one solution $\boldsymbol{\lambda} = (B^\top B)^{-1} B^\top \mathbf{x}$.
 \end{proof}
 
-The equations $B^\top B \lambda = B^\top x$ are called the normal equations, since they say that $x - B\lambda$ is orthogonal (``normal'') to $U$. If the columns of $B$ are orthonormal, then $B^\top B = I_m$, and the formulas simplify to $\lambda = B^\top x$ and $P = BB^\top$, in agreement with Proposition~\ref{L2-prop:projection-properties}. For $m = 1$, we recover Proposition~\ref{L2-prop:projection-line}.
+The equations $B^\top B \boldsymbol{\lambda} = B^\top \mathbf{x}$ are called the normal equations, since they say that $\mathbf{x} - B\boldsymbol{\lambda}$ is orthogonal (``normal'') to $U$. If the columns of $B$ are orthonormal, then $B^\top B = I_m$, and the formulas simplify to $\boldsymbol{\lambda} = B^\top \mathbf{x}$ and $P = BB^\top$, in agreement with Proposition~\ref{L2-prop:projection-properties}. For $m = 1$, we recover Proposition~\ref{L2-prop:projection-line}.
 
 \begin{example}\label{L2-ex:projection-plane}
-    Let $U = \Span\{(1, 1, 1)^\top, (0, 1, 2)^\top\}$ and $x = (6, 0, 0)^\top$. With $B = \begin{pmatrix} 1 & 0 \\ 1 & 1 \\ 1 & 2 \end{pmatrix}$, we get
-    \[B^\top B = \begin{pmatrix} 3 & 3 \\ 3 & 5 \end{pmatrix}, \qquad B^\top x = \begin{pmatrix} 6 \\ 0 \end{pmatrix}, \qquad \lambda = \begin{pmatrix} 5 \\ -3 \end{pmatrix},\]
-    where $\lambda$ solves the normal equations. Hence
-    \[\pi_U(x) = 5 \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix} - 3 \begin{pmatrix} 0 \\ 1 \\ 2 \end{pmatrix} = \begin{pmatrix} 5 \\ 2 \\ -1 \end{pmatrix}, \qquad x - \pi_U(x) = \begin{pmatrix} 1 \\ -2 \\ 1 \end{pmatrix},\]
-    and indeed $x - \pi_U(x)$ is orthogonal to both columns of $B$. The projection matrix is
+    Let $U = \Span\{(1, 1, 1)^\top, (0, 1, 2)^\top\}$ and $\mathbf{x} = (6, 0, 0)^\top$. With $B = \begin{pmatrix} 1 & 0 \\ 1 & 1 \\ 1 & 2 \end{pmatrix}$, we get
+    \[B^\top B = \begin{pmatrix} 3 & 3 \\ 3 & 5 \end{pmatrix}, \qquad B^\top \mathbf{x} = \begin{pmatrix} 6 \\ 0 \end{pmatrix}, \qquad \boldsymbol{\lambda} = \begin{pmatrix} 5 \\ -3 \end{pmatrix},\]
+    where $\boldsymbol{\lambda}$ solves the normal equations. Hence
+    \[\pi_U(\mathbf{x}) = 5 \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix} - 3 \begin{pmatrix} 0 \\ 1 \\ 2 \end{pmatrix} = \begin{pmatrix} 5 \\ 2 \\ -1 \end{pmatrix}, \qquad \mathbf{x} - \pi_U(\mathbf{x}) = \begin{pmatrix} 1 \\ -2 \\ 1 \end{pmatrix},\]
+    and indeed $\mathbf{x} - \pi_U(\mathbf{x})$ is orthogonal to both columns of $B$. The projection matrix is
     \[P = B (B^\top B)^{-1} B^\top = \frac{1}{6} \begin{pmatrix} 5 & 2 & -1 \\ 2 & 2 & 2 \\ -1 & 2 & 5 \end{pmatrix}.\]
 \end{example}
 
@@ -827,7 +827,7 @@ The most important property of the orthogonal projection is that it gives the cl
     since $\pi_U(v) - u \neq 0$.
 \end{proof}
 
-The number $\norm{v - \pi_U(v)}$ is called the distance from $v$ to $U$. In Example~\ref{L2-ex:projection-plane}, the distance from $x$ to the plane $U$ is $\norm{(1, -2, 1)^\top} = \sqrt{6}$.
+The number $\norm{v - \pi_U(v)}$ is called the distance from $v$ to $U$. In Example~\ref{L2-ex:projection-plane}, the distance from $\mathbf{x}$ to the plane $U$ is $\norm{(1, -2, 1)^\top} = \sqrt{6}$.
 
 \begin{remark}
     The Gram--Schmidt process (Theorem~\ref{L2-thm:gram-schmidt}) can now be described in one line: $u_j = v_j - \pi_{U_{j-1}}(v_j)$, where $U_{j-1} = \Span\{v_1, \ldots, v_{j-1}\}$. That is, we subtract from $v_j$ its projection onto the span of the previous vectors.
@@ -836,23 +836,23 @@ The number $\norm{v - \pi_U(v)}$ is called the distance from $v$ to $U$. In Exam
 \subsection{Least squares and linear regression}\label{L2-sec:least-squares}
 
 Suppose we are given data points $(x_1, y_1), \ldots, (x_N, y_N)$ with $x_i, y_i \in \mathbb{R}$, and we want to find the line $y = w_0 + w_1 x$ that fits the data best. In general, no line passes through all points, so we look for the line that minimizes the sum of squared errors
-\[\sum_{i=1}^N \big(y_i - (w_0 + w_1 x_i)\big)^2 = \norm{y - Aw}^2, \qquad \text{where} \quad A = \begin{pmatrix} 1 & x_1 \\ \vdots & \vdots \\ 1 & x_N \end{pmatrix}, \quad y = \begin{pmatrix} y_1 \\ \vdots \\ y_N \end{pmatrix}, \quad w = \begin{pmatrix} w_0 \\ w_1 \end{pmatrix}.\]
+\[\sum_{i=1}^N \big(y_i - (w_0 + w_1 x_i)\big)^2 = \norm{\mathbf{y} - A\mathbf{w}}^2, \qquad \text{where} \quad A = \begin{pmatrix} 1 & x_1 \\ \vdots & \vdots \\ 1 & x_N \end{pmatrix}, \quad \mathbf{y} = \begin{pmatrix} y_1 \\ \vdots \\ y_N \end{pmatrix}, \quad \mathbf{w} = \begin{pmatrix} w_0 \\ w_1 \end{pmatrix}.\]
 The matrix $A$ is called the design matrix. This is a special case of the following problem.
 
 \begin{theorem}[Least squares]\label{L2-thm:least-squares}
-    Let $A$ be an $N \times n$ matrix with linearly independent columns, and let $y \in \mathbb{R}^N$. Then there is exactly one $w^* \in \mathbb{R}^n$ that minimizes $\norm{y - Aw}$, namely the solution of the normal equations
-    \[A^\top A \, w^* = A^\top y, \qquad \text{i.e.,} \qquad w^* = (A^\top A)^{-1} A^\top y.\]
-    Moreover, $Aw^* = \pi_{\col(A)}(y)$.
+    Let $A$ be an $N \times n$ matrix with linearly independent columns, and let $\mathbf{y} \in \mathbb{R}^N$. Then there is exactly one $\mathbf{w}^* \in \mathbb{R}^n$ that minimizes $\norm{\mathbf{y} - A\mathbf{w}}$, namely the solution of the normal equations
+    \[A^\top A \, \mathbf{w}^* = A^\top \mathbf{y}, \qquad \text{i.e.,} \qquad \mathbf{w}^* = (A^\top A)^{-1} A^\top \mathbf{y}.\]
+    Moreover, $A\mathbf{w}^* = \pi_{\col(A)}(\mathbf{y})$.
 \end{theorem}
 
 \begin{proof}
-    As $w$ ranges over $\mathbb{R}^n$, the vector $Aw$ ranges over $\col(A)$. By Theorem~\ref{L2-thm:best-approximation}, $\norm{y - Aw}$ is minimal exactly when $Aw = \pi_{\col(A)}(y)$, and by Theorem~\ref{L2-thm:projection-subspace} (with $B = A$ and $\lambda = w$), this happens exactly for $w = (A^\top A)^{-1} A^\top y$.
+    As $\mathbf{w}$ ranges over $\mathbb{R}^n$, the vector $A\mathbf{w}$ ranges over $\col(A)$. By Theorem~\ref{L2-thm:best-approximation}, $\norm{\mathbf{y} - A\mathbf{w}}$ is minimal exactly when $A\mathbf{w} = \pi_{\col(A)}(\mathbf{y})$, and by Theorem~\ref{L2-thm:projection-subspace} (with $B = A$ and $\boldsymbol{\lambda} = \mathbf{w}$), this happens exactly for $\mathbf{w} = (A^\top A)^{-1} A^\top \mathbf{y}$.
 \end{proof}
 
 \begin{example}\label{L2-ex:regression}
     Let us fit a line to the data points $(-1, 0)$, $(0, 1)$ and $(1, 3)$. The design matrix and the normal equations are
-    \[A = \begin{pmatrix} 1 & -1 \\ 1 & 0 \\ 1 & 1 \end{pmatrix}, \quad y = \begin{pmatrix} 0 \\ 1 \\ 3 \end{pmatrix}, \qquad A^\top A = \begin{pmatrix} 3 & 0 \\ 0 & 2 \end{pmatrix}, \quad A^\top y = \begin{pmatrix} 4 \\ 3 \end{pmatrix},\]
-    so $w^* = \big(\frac{4}{3}, \frac{3}{2}\big)^\top$, and the best line is $y = \frac{4}{3} + \frac{3}{2} x$ (Figure~\ref{L2-fig:regression}). The fitted values are $Aw^* = \big(-\frac{1}{6}, \frac{4}{3}, \frac{17}{6}\big)^\top$, the residuals are $y - Aw^* = \big(\frac{1}{6}, -\frac{1}{3}, \frac{1}{6}\big)^\top$, and the minimal sum of squared errors is $\frac{1}{36} + \frac{1}{9} + \frac{1}{36} = \frac{1}{6}$. As predicted by the theory, the residual vector is orthogonal to both columns of $A$: its entries sum to $0$, and $-\frac{1}{6} + 0 + \frac{1}{6} = 0$.
+    \[A = \begin{pmatrix} 1 & -1 \\ 1 & 0 \\ 1 & 1 \end{pmatrix}, \quad \mathbf{y} = \begin{pmatrix} 0 \\ 1 \\ 3 \end{pmatrix}, \qquad A^\top A = \begin{pmatrix} 3 & 0 \\ 0 & 2 \end{pmatrix}, \quad A^\top \mathbf{y} = \begin{pmatrix} 4 \\ 3 \end{pmatrix},\]
+    so $\mathbf{w}^* = \big(\frac{4}{3}, \frac{3}{2}\big)^\top$, and the best line is $y =\frac{4}{3} + \frac{3}{2} x$ (Figure~\ref{L2-fig:regression}). The fitted values are $A\mathbf{w}^* = \big(-\frac{1}{6}, \frac{4}{3}, \frac{17}{6}\big)^\top$, the residuals are $\mathbf{y} - A\mathbf{w}^* = \big(\frac{1}{6}, -\frac{1}{3}, \frac{1}{6}\big)^\top$, and the minimal sum of squared errors is $\frac{1}{36} + \frac{1}{9} + \frac{1}{36} = \frac{1}{6}$. As predicted by the theory, the residual vector is orthogonal to both columns of $A$: its entries sum to $0$, and $-\frac{1}{6} + 0 + \frac{1}{6} = 0$.
 \end{example}
 
 \begin{figure}[ht]
@@ -884,35 +884,35 @@ The matrix $A$ is called the design matrix. This is a special case of the follow
 
 \subsection{Projections onto affine subspaces and distances to hyperplanes}\label{L2-sec:affine}
 
-Let $L = x_0 + U$ be an affine subspace, i.e., a subspace $U$ shifted by a vector $x_0$. To project onto $L$, we shift everything by $-x_0$, project onto $U$, and shift back:
-\[\pi_L(x) = x_0 + \pi_U(x - x_0).\]
-Then $x - \pi_L(x) = (x - x_0) - \pi_U(x - x_0)$ lies in $U^\perp$, and by Theorem~\ref{L2-thm:best-approximation}, $\pi_L(x)$ is the point of $L$ closest to $x$.
+Let $L = \mathbf{x}_0 + U$ be an affine subspace, i.e., a subspace $U$ shifted by a vector $\mathbf{x}_0$. To project onto $L$, we shift everything by $-\mathbf{x}_0$, project onto $U$, and shift back:
+\[\pi_L(\mathbf{x}) = \mathbf{x}_0 + \pi_U(\mathbf{x} - \mathbf{x}_0).\]
+Then $\mathbf{x} - \pi_L(\mathbf{x}) = (\mathbf{x} - \mathbf{x}_0) - \pi_U(\mathbf{x} - \mathbf{x}_0)$ lies in $U^\perp$, and by Theorem~\ref{L2-thm:best-approximation}, $\pi_L(\mathbf{x})$ is the point of $L$ closest to $\mathbf{x}$.
 
 \begin{theorem}[Distance to a hyperplane]\label{L2-thm:distance-hyperplane}
-    Let $H = \{z \in \mathbb{R}^n : w^\top z = c\}$ be a hyperplane, where $w \neq 0$. For every $x \in \mathbb{R}^n$, the point of $H$ closest to $x$ is
-    \[\pi_H(x) = x - \frac{w^\top x - c}{\norm{w}^2}\, w, \qquad \text{and the distance from } x \text{ to } H \text{ is} \qquad \frac{|w^\top x - c|}{\norm{w}}.\]
+    Let $H = \{\mathbf{z} \in \mathbb{R}^n : \mathbf{w}^\top \mathbf{z} = c\}$ be a hyperplane, where $\mathbf{w} \neq \mathbf{0}$. For every $\mathbf{x} \in \mathbb{R}^n$, the point of $H$ closest to $\mathbf{x}$ is
+    \[\pi_H(\mathbf{x}) = \mathbf{x} - \frac{\mathbf{w}^\top \mathbf{x} - c}{\norm{\mathbf{w}}^2}\, \mathbf{w}, \qquad \text{and the distance from } \mathbf{x} \text{ to } H \text{ is} \qquad \frac{|\mathbf{w}^\top \mathbf{x} - c|}{\norm{\mathbf{w}}}.\]
 \end{theorem}
 
 \begin{proof}
-    Let $x_0 \in H$, so that $H = x_0 + W$ with $W = \Span\{w\}^\perp$, and $W^\perp = \Span\{w\}$ by Theorem~\ref{L2-thm:orth-decomposition}(3). Since $v = \pi_W(v) + \pi_{W^\perp}(v)$ for every $v$, we get
-    \[x - \pi_H(x) = (x - x_0) - \pi_W(x - x_0) = \pi_{\Span\{w\}}(x - x_0) = \frac{w^\top (x - x_0)}{w^\top w}\, w = \frac{w^\top x - c}{\norm{w}^2}\, w,\]
-    using Proposition~\ref{L2-prop:projection-line} and $w^\top x_0 = c$. Taking the norm gives the distance.
+    Let $\mathbf{x}_0 \in H$, so that $H = \mathbf{x}_0 + W$ with $W = \Span\{\mathbf{w}\}^\perp$, and $W^\perp = \Span\{\mathbf{w}\}$ by Theorem~\ref{L2-thm:orth-decomposition}(3). Since $\mathbf{v} = \pi_W(\mathbf{v}) + \pi_{W^\perp}(\mathbf{v})$ for every $\mathbf{v}$, we get
+    \[\mathbf{x} - \pi_H(\mathbf{x}) = (\mathbf{x} - \mathbf{x}_0) - \pi_W(\mathbf{x} - \mathbf{x}_0) = \pi_{\Span\{\mathbf{w}\}}(\mathbf{x} - \mathbf{x}_0) = \frac{\mathbf{w}^\top (\mathbf{x} - \mathbf{x}_0)}{\mathbf{w}^\top \mathbf{w}}\, \mathbf{w} = \frac{\mathbf{w}^\top \mathbf{x} - c}{\norm{\mathbf{w}}^2}\, \mathbf{w},\]
+    using Proposition~\ref{L2-prop:projection-line} and $\mathbf{w}^\top \mathbf{x}_0 = c$. Taking the norm gives the distance.
 \end{proof}
 
-The number $\frac{w^\top x - c}{\norm{w}}$, without the absolute value, is called the signed distance: it is positive on the side of $H$ into which $w$ points, and negative on the other side.
+The number $\frac{\mathbf{w}^\top \mathbf{x} - c}{\norm{\mathbf{w}}}$, without the absolute value, is called the signed distance: it is positive on the side of $H$ into which $\mathbf{w}$ points, and negative on the other side.
 
 \begin{example}
-    The distance from the point $x = (1, 2, 3)^\top$ to the plane $H$ given by $x + 2y + 2z = 2$ is
+    The distance from the point $\mathbf{x} = (1, 2, 3)^\top$ to the plane $H$ given by $x + 2y + 2z = 2$ is
     \[\frac{|1 + 4 + 6 - 2|}{\sqrt{1 + 4 + 4}} = \frac{9}{3} = 3,\]
-    and the closest point of $H$ is $\pi_H(x) = (1, 2, 3)^\top - \frac{9}{9}(1, 2, 2)^\top = (0, 0, 1)^\top$.
+    and the closest point of $H$ is $\pi_H(\mathbf{x}) = (1, 2, 3)^\top - \frac{9}{9}(1, 2, 2)^\top = (0, 0, 1)^\top$.
 \end{example}
 
 \begin{example}\label{L2-ex:classifier-distance}
-    For the linear classifier of Figure~\ref{L2-fig:classifier}, with $w = (1, 1)^\top$ and $b = -2$, the decision boundary is the hyperplane $w^\top x = 2$. The signed distance of the point $x = (2.5, 1.5)^\top$ to it is $\frac{w^\top x + b}{\norm{w}} = \frac{4 - 2}{\sqrt{2}} = \sqrt{2}$, and the closest point on the boundary is $(2.5, 1.5)^\top - \frac{2}{2}(1, 1)^\top = (1.5, 0.5)^\top$.
+    For the linear classifier of Figure~\ref{L2-fig:classifier}, with $\mathbf{w} = (1, 1)^\top$ and $b = -2$, the decision boundary is the hyperplane $\mathbf{w}^\top \mathbf{x} = 2$. The signed distance of the point $\mathbf{x} = (2.5, 1.5)^\top$ to it is $\frac{\mathbf{w}^\top \mathbf{x} + b}{\norm{\mathbf{w}}} = \frac{4 - 2}{\sqrt{2}} = \sqrt{2}$, and the closest point on the boundary is $(2.5, 1.5)^\top - \frac{2}{2}(1, 1)^\top = (1.5, 0.5)^\top$.
 \end{example}
 
 \begin{remark}[Margins]
-    For a linear classifier, the distance of a data point to the decision boundary is a measure of confidence: points far from the boundary are classified with a large margin. Support vector machines choose the hyperplane that maximizes the smallest distance from the training points to the boundary, which by Theorem~\ref{L2-thm:distance-hyperplane} means maximizing $\min_i \frac{|w^\top x_i + b|}{\norm{w}}$.
+    For a linear classifier, the distance of a data point to the decision boundary is a measure of confidence: points far from the boundary are classified with a large margin. Support vector machines choose the hyperplane that maximizes the smallest distance from the training points to the boundary, which by Theorem~\ref{L2-thm:distance-hyperplane} means maximizing $\min_i \frac{|\mathbf{w}^\top \mathbf{x}_i + b|}{\norm{\mathbf{w}}}$.
 \end{remark}
 
 \section{Rotations}\label{L2-sec:rotations}
@@ -927,18 +927,42 @@ By Theorem~\ref{L2-thm:orthogonal}, rotations preserve lengths, distances and an
 
 In Lecture~1, we met the rotation matrices
 \[R_\theta = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix},\]
-which rotate the plane counterclockwise by the angle $\theta$. One can show (see the practice problems of Lecture~1) that every rotation of $\mathbb{R}^2$ is of this form. Since $R_\alpha R_\beta = R_{\alpha + \beta} = R_\beta R_\alpha$, rotations of the plane commute with each other.
+which rotate the plane counterclockwise by the angle $\theta$. Every rotation $R$ of $\mathbb{R}^2$ is of this form: its first column $(a, b)^\top$ is a unit vector, so $(a, b) = (\cos\theta, \sin\theta)$ for some angle $\theta$; its second column is a unit vector orthogonal to the first, so it is $\pm(-\sin\theta, \cos\theta)^\top$; and $\det(R) = 1$ forces the sign $+$. Since $R_\alpha R_\beta = R_{\alpha + \beta} = R_\beta R_\alpha$, rotations of the plane commute with each other.
 
 \subsection{Rotations in three dimensions}
 
 The rotations of $\mathbb{R}^3$ by the angle $\theta$ about the three coordinate axes are
 \[R_1(\theta) = \begin{pmatrix} 1 & 0 & 0 \\ 0 & \cos\theta & -\sin\theta \\ 0 & \sin\theta & \cos\theta \end{pmatrix}, \quad R_2(\theta) = \begin{pmatrix} \cos\theta & 0 & \sin\theta \\ 0 & 1 & 0 \\ -\sin\theta & 0 & \cos\theta \end{pmatrix}, \quad R_3(\theta) = \begin{pmatrix} \cos\theta & -\sin\theta & 0 \\ \sin\theta & \cos\theta & 0 \\ 0 & 0 & 1 \end{pmatrix}.\]
-For example, $R_3(\theta)$ fixes the $x_3$-axis and rotates the $x_1 x_2$-plane by $\theta$. Each of them is orthogonal with determinant $1$. Every rotation of $\mathbb{R}^3$ can be written as a product of such rotations, and it fixes a line through the origin, its axis (we do not prove these facts here).
+For example, $R_3(\theta)$ fixes the $x_3$-axis and rotates the $x_1 x_2$-plane by $\theta$. Each of them is orthogonal with determinant $1$. Every rotation of $\mathbb{R}^3$ is a product of such rotations, and it is a rotation about a line through the origin, its axis.
+
+\begin{proposition}[Rotations of $\mathbb{R}^3$]\label{L2-prop:rotations-3d}
+    Let $R \in \mathrm{SO}(3)$.
+    \begin{enumerate}
+        \item (Euler angles.) There are angles $\alpha$, $\beta$ and $\gamma$ with $R = R_3(\alpha)R_1(\beta)R_3(\gamma)$.
+        \item (Axis.) There are an orthogonal matrix $Q$ with $\det(Q) = 1$ and an angle $\theta$ with $R = QR_3(\theta)Q^\top$. So $R$ fixes the line spanned by the third column $\mathbf{q}_3$ of $Q$, and it rotates the plane orthogonal to $\mathbf{q}_3$ by the angle $\theta$.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    We first show that a rotation $S$ with $S\mathbf{e}_3 = \mathbf{e}_3$ is of the form $R_3(\theta)$. Since $S^\top = S^{-1}$, also $S^\top \mathbf{e}_3 = \mathbf{e}_3$, so the third column and the third row of $S$ are $\mathbf{e}_3$ and $\mathbf{e}_3^\top$:
+    \[S = \begin{pmatrix} S' & 0 \\ 0 & 1 \end{pmatrix}\]
+    with a $2 \times 2$ matrix $S'$. The columns of $S'$ are orthonormal, since those of $S$ are, and $\det(S') = \det(S) = 1$ (expand along the last row). So $S'$ is a rotation of the plane, $S' = R_\theta$, and $S = R_3(\theta)$.
+
+    (1) The vector $\mathbf{w} = R\mathbf{e}_3$ is a unit vector. Choose $\beta \in [0, \pi]$ with $\cos\beta = w_3$. Then $w_1^2 + w_2^2 = 1 - w_3^2 = \sin^2\beta$, so we can choose $\alpha$ with $(w_1, w_2) = (\sin\alpha\sin\beta, -\cos\alpha\sin\beta)$ (any $\alpha$ if $\sin\beta = 0$). A direct computation gives
+    \[R_3(\alpha)R_1(\beta)\mathbf{e}_3 = R_3(\alpha)(0, -\sin\beta, \cos\beta)^\top = (\sin\alpha\sin\beta, -\cos\alpha\sin\beta, \cos\beta)^\top = \mathbf{w}.\]
+    Hence $S = \big(R_3(\alpha)R_1(\beta)\big)^{-1}R$ is a rotation with $S\mathbf{e}_3 = \mathbf{e}_3$, so $S = R_3(\gamma)$ for some $\gamma$, and $R = R_3(\alpha)R_1(\beta)R_3(\gamma)$.
+
+    (2) Since $\det(R) = 1$ and $R^\top R = I_3$,
+    \[\det(R - I_3) = \det\big(R(I_3 - R^\top)\big) = \det(R)\det\big((I_3 - R)^\top\big) = \det(I_3 - R) = (-1)^3\det(R - I_3).\]
+    So $\det(R - I_3) = 0$, and $1$ is an eigenvalue of $R$ (Lecture~1). Let $\mathbf{q}_3$ be a unit vector with $R\mathbf{q}_3 = \mathbf{q}_3$, and let $\mathbf{q}_1, \mathbf{q}_2$ be an orthonormal basis of $\Span\{\mathbf{q}_3\}^\perp$ (Theorem~\ref{L2-thm:orth-decomposition} and Corollary~\ref{L2-cor:onb-exists}). The matrix $Q$ with the columns $\mathbf{q}_1, \mathbf{q}_2, \mathbf{q}_3$ is orthogonal; if $\det(Q) = -1$, we replace $\mathbf{q}_1$ by $-\mathbf{q}_1$. Then $S = Q^\top RQ$ is a rotation with $S\mathbf{e}_3 = Q^\top R\mathbf{q}_3 = Q^\top \mathbf{q}_3 = \mathbf{e}_3$, so $S = R_3(\theta)$, and $R = QR_3(\theta)Q^\top$. The rotation $R_3(\theta)$ fixes $\mathbf{e}_3$ and rotates the plane spanned by $\mathbf{e}_1$ and $\mathbf{e}_2$, and $Q$ maps $\mathbf{e}_1, \mathbf{e}_2, \mathbf{e}_3$ to $\mathbf{q}_1, \mathbf{q}_2, \mathbf{q}_3$.
+\end{proof}
+
+In particular, a rotation of $\mathbb{R}^3$ is determined by its axis and its angle. The Euler angles are used, for example, to describe the orientation of a camera or of a robot arm.
 
 \begin{example}
     Unlike in the plane, rotations of $\mathbb{R}^3$ do not commute in general. For $\theta = \frac{\pi}{2}$,
     \[R_1\big(\tfrac{\pi}{2}\big) R_3\big(\tfrac{\pi}{2}\big) = \begin{pmatrix} 0 & -1 & 0 \\ 0 & 0 & -1 \\ 1 & 0 & 0 \end{pmatrix} \neq \begin{pmatrix} 0 & 0 & 1 \\ 1 & 0 & 0 \\ 0 & 1 & 0 \end{pmatrix} = R_3\big(\tfrac{\pi}{2}\big) R_1\big(\tfrac{\pi}{2}\big).\]
-    For instance, the first product maps $e_1$ to $e_3$, while the second maps $e_1$ to $e_2$. You can check this with a book: rotate it first about one axis and then about another, and compare with the opposite order.
+    For instance, the first product maps $\mathbf{e}_1$ to $\mathbf{e}_3$, while the second maps $\mathbf{e}_1$ to $\mathbf{e}_2$. You can check this with a book: rotate it first about one axis and then about another, and compare with the opposite order.
 \end{example}
 
 \subsection{\texorpdfstring{Rotations in $n$ dimensions}{Rotations in n dimensions}}
@@ -948,7 +972,7 @@ For example, $R_3(\theta)$ fixes the $x_3$-axis and rotates the $x_1 x_2$-plane 
     \[G_{ii} = \cos\theta, \qquad G_{ij} = -\sin\theta, \qquad G_{ji} = \sin\theta, \qquad G_{jj} = \cos\theta.\]
 \end{definition}
 
-The Givens rotation $G_{ij}(\theta)$ rotates the plane spanned by $e_i$ and $e_j$ by the angle $\theta$, and fixes all other standard basis vectors. Its columns are orthonormal, and its determinant is $\cos^2\theta + \sin^2\theta = 1$ (expand along the other rows), so it is a rotation. Givens rotations are used in numerical linear algebra: a well-chosen Givens rotation makes a chosen entry of a matrix zero, and a sequence of them computes a QR decomposition.
+The Givens rotation $G_{ij}(\theta)$ rotates the plane spanned by $\mathbf{e}_i$ and $\mathbf{e}_j$ by the angle $\theta$, and fixes all other standard basis vectors. Its columns are orthonormal, and its determinant is $\cos^2\theta + \sin^2\theta = 1$ (expand along the other rows), so it is a rotation. Givens rotations are used in numerical linear algebra: a well-chosen Givens rotation makes a chosen entry of a matrix zero, and a sequence of them computes a QR decomposition.
 
 \begin{remark}[Rotations in machine learning]
     Since rotations preserve dot products and distances, any method that only depends on distances or dot products between data points, such as $k$-nearest neighbors with the Euclidean distance, gives the same results after the data is rotated. In contrast, methods such as decision trees, which look at individual coordinates, may change. Rotated copies of images are also used for data augmentation, to make image classifiers robust to rotations.
@@ -958,36 +982,36 @@ The Givens rotation $G_{ij}(\theta)$ rotates the plane spanned by $e_i$ and $e_j
 
 In Lecture~1, we saw that a matrix is diagonalizable if it has a basis of eigenvectors, and that some matrices, such as the shear or a rotation, are not diagonalizable. Symmetric matrices are much better behaved: they always have an orthonormal basis of eigenvectors. Symmetric matrices are everywhere in machine learning: covariance matrices, Gram and kernel matrices, and the matrices $A^\top A$ of least squares problems are all symmetric.
 
-To state the theorem, we use complex eigenvalues (Lecture~1). For a vector $v \in \mathbb{C}^n$, we write $\bar{v}$ for the vector of complex conjugates of its entries. Then $\bar{v}^\top v = \sum_i \bar{v}_i v_i = \sum_i |v_i|^2 > 0$ for $v \neq 0$. A complex number $\lambda$ is a root of $p_A$ if and only if $Av = \lambda v$ for some nonzero $v \in \mathbb{C}^n$, by the same argument as for real eigenvalues.
+To state the theorem, we use complex eigenvalues (Lecture~1). For a vector $\mathbf{v} \in \mathbb{C}^n$, we write $\bar{\mathbf{v}}$ for the vector of complex conjugates of its entries. Then $\bar{\mathbf{v}}^\top \mathbf{v} = \sum_i \bar{\mathbf{v}}_i v_i = \sum_i |v_i|^2 > 0$ for $\mathbf{v} \neq \mathbf{0}$. A complex number $\lambda$ is a root of $p_A$ if and only if $A\mathbf{v} = \lambda \mathbf{v}$ for some nonzero $\mathbf{v} \in \mathbb{C}^n$, by the same argument as for real eigenvalues.
 
 \begin{theorem}[Spectral theorem]\label{L2-thm:spectral}
     Let $A$ be a symmetric real $n \times n$ matrix. Then:
     \begin{enumerate}
         \item all complex eigenvalues of $A$ are real;
         \item eigenvectors of $A$ for distinct eigenvalues are orthogonal;
-        \item there is an orthonormal basis $q_1, \ldots, q_n$ of $\mathbb{R}^n$ consisting of eigenvectors of $A$. Equivalently,
+        \item there is an orthonormal basis $\mathbf{q}_1, \ldots, \mathbf{q}_n$ of $\mathbb{R}^n$ consisting of eigenvectors of $A$. Equivalently,
         \[A = Q \Lambda Q^\top,\]
-        where $Q$ is the orthogonal matrix with columns $q_1, \ldots, q_n$, and $\Lambda = \diag(\lambda_1, \ldots, \lambda_n)$ contains the corresponding eigenvalues.
+        where $Q$ is the orthogonal matrix with columns $\mathbf{q}_1, \ldots, \mathbf{q}_n$, and $\Lambda = \diag(\lambda_1, \ldots, \lambda_n)$ contains the corresponding eigenvalues.
     \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-    (1) Let $Av = \lambda v$ with $\lambda \in \mathbb{C}$ and $v \in \mathbb{C}^n$, $v \neq 0$. The number $z = \bar{v}^\top A v$ is real: since $A$ is real and symmetric, its complex conjugate is $\bar{z} = v^\top A \bar{v} = (v^\top A \bar{v})^\top = \bar{v}^\top A^\top v = z$. Since $z = \bar{v}^\top (\lambda v) = \lambda\, \bar{v}^\top v$, we get $\lambda = z / (\bar{v}^\top v) \in \mathbb{R}$.
+    (1) Let $A\mathbf{v} = \lambda \mathbf{v}$ with $\lambda \in \mathbb{C}$ and $\mathbf{v} \in \mathbb{C}^n$, $\mathbf{v} \neq \mathbf{0}$. The number $z = \bar{\mathbf{v}}^\top A \mathbf{v}$ is real: since $A$ is real and symmetric, its complex conjugate is $\bar{z} = \mathbf{v}^\top A \bar{\mathbf{v}} = (\mathbf{v}^\top A \bar{\mathbf{v}})^\top = \bar{\mathbf{v}}^\top A^\top \mathbf{v} = z$. Since $z = \bar{\mathbf{v}}^\top (\lambda \mathbf{v}) = \lambda\, \bar{\mathbf{v}}^\top \mathbf{v}$, we get $\lambda = z / (\bar{\mathbf{v}}^\top \mathbf{v}) \in \mathbb{R}$.
 
-    (2) Let $Av = \lambda v$ and $Aw = \mu w$ with $\lambda \neq \mu$. Then
-    \[\lambda\, v^\top w = (Av)^\top w = v^\top A^\top w = v^\top A w = \mu\, v^\top w,\]
-    so $(\lambda - \mu) v^\top w = 0$, and hence $v^\top w = 0$.
+    (2) Let $A\mathbf{v} = \lambda \mathbf{v}$ and $A\mathbf{w} = \mu \mathbf{w}$ with $\lambda \neq \mu$. Then
+    \[\lambda\, \mathbf{v}^\top \mathbf{w} = (A\mathbf{v})^\top \mathbf{w} = \mathbf{v}^\top A^\top \mathbf{w} = \mathbf{v}^\top A \mathbf{w} = \mu\, \mathbf{v}^\top \mathbf{w},\]
+    so $(\lambda - \mu) \mathbf{v}^\top \mathbf{w} = 0$, and hence $\mathbf{v}^\top \mathbf{w} = 0$.
 
-    (3) We use induction on $n$; the case $n = 1$ is clear. By part 1 and the fundamental theorem of algebra, $p_A$ has a real root $\lambda_1$. Let $q_1$ be a unit eigenvector for $\lambda_1$ (it can be chosen real, since $A - \lambda_1 I_n$ is a real matrix with a nonzero null space). Let $W = \Span\{q_1\}^\perp$, and let $w_2, \ldots, w_n$ be an orthonormal basis of $W$ (Theorem~\ref{L2-thm:orth-decomposition} and Corollary~\ref{L2-cor:onb-exists}). The subspace $W$ is mapped into itself by $A$: if $x \in W$, then $q_1^\top (Ax) = (Aq_1)^\top x = \lambda_1 q_1^\top x = 0$.
+    (3) We use induction on $n$; the case $n = 1$ is clear. By part 1 and the fundamental theorem of algebra, $p_A$ has a real root $\lambda_1$. Let $\mathbf{q}_1$ be a unit eigenvector for $\lambda_1$ (it can be chosen real, since $A - \lambda_1 I_n$ is a real matrix with a nonzero null space). Let $W = \Span\{\mathbf{q}_1\}^\perp$, and let $\mathbf{w}_2, \ldots, \mathbf{w}_n$ be an orthonormal basis of $W$ (Theorem~\ref{L2-thm:orth-decomposition} and Corollary~\ref{L2-cor:onb-exists}). The subspace $W$ is mapped into itself by $A$: if $\mathbf{x} \in W$, then $\mathbf{q}_1^\top (A\mathbf{x}) = (A\mathbf{q}_1)^\top \mathbf{x} = \lambda_1 \mathbf{q}_1^\top \mathbf{x} = 0$.
 
-    Let $M$ be the $n \times (n-1)$ matrix with columns $w_2, \ldots, w_n$, so that $M^\top M = I_{n-1}$, and let $B = M^\top A M$, which is a symmetric $(n-1) \times (n-1)$ matrix. Since $Aw_i \in W$, Proposition~\ref{L2-prop:onb-coordinates} gives $Aw_i = \sum_k (w_k^\top A w_i) w_k$, i.e., $AM = MB$. By induction, $B$ has an orthonormal basis of eigenvectors $y_2, \ldots, y_n \in \mathbb{R}^{n-1}$, with $By_j = \lambda_j y_j$. Then the vectors $q_j = M y_j$ ($j = 2, \ldots, n$) are orthonormal, since $q_i^\top q_j = y_i^\top M^\top M y_j = y_i^\top y_j$; they lie in $W$, so they are orthogonal to $q_1$; and they are eigenvectors, since $Aq_j = AMy_j = MBy_j = \lambda_j q_j$. So $q_1, \ldots, q_n$ is an orthonormal basis of eigenvectors.
+    Let $M$ be the $n \times (n-1)$ matrix with columns $\mathbf{w}_2, \ldots, \mathbf{w}_n$, so that $M^\top M = I_{n-1}$, and let $B = M^\top A M$, which is a symmetric $(n-1) \times (n-1)$ matrix. Since $A\mathbf{w}_i \in W$, Proposition~\ref{L2-prop:onb-coordinates} gives $A\mathbf{w}_i = \sum_k (\mathbf{w}_k^\top A \mathbf{w}_i) \mathbf{w}_k$, i.e., $AM = MB$. By induction, $B$ has an orthonormal basis of eigenvectors $\mathbf{y}_2, \ldots, \mathbf{y}_n \in \mathbb{R}^{n-1}$, with $B\mathbf{y}_j = \lambda_j \mathbf{y}_j$. Then the vectors $\mathbf{q}_j = M \mathbf{y}_j$ ($j = 2, \ldots, n$) are orthonormal, since $\mathbf{q}_i^\top \mathbf{q}_j = \mathbf{y}_i^\top M^\top M \mathbf{y}_j = \mathbf{y}_i^\top \mathbf{y}_j$; they lie in $W$, so they are orthogonal to $\mathbf{q}_1$; and they are eigenvectors, since $A\mathbf{q}_j = AM\mathbf{y}_j = MB\mathbf{y}_j = \lambda_j \mathbf{q}_j$. So $\mathbf{q}_1, \ldots, \mathbf{q}_n$ is an orthonormal basis of eigenvectors.
 
     Finally, by Theorem~\ref{L2-thm:orthogonal}, $Q$ is orthogonal, so $Q^{-1} = Q^\top$, and by the diagonalization theorem of Lecture~1, $A = Q\Lambda Q^{-1} = Q\Lambda Q^\top$.
 \end{proof}
 
 The factorization $A = Q\Lambda Q^\top$ is called the eigendecomposition, or spectral decomposition, of $A$. Multiplying out, it says that
-\[A = \lambda_1 q_1 q_1^\top + \lambda_2 q_2 q_2^\top + \cdots + \lambda_n q_n q_n^\top,\]
-where each $q_i q_i^\top$ is the matrix of the orthogonal projection onto the line $\Span\{q_i\}$ (Proposition~\ref{L2-prop:projection-line}). So a symmetric matrix projects a vector onto $n$ orthogonal directions, scales the projections by the eigenvalues, and adds them up.
+\[A = \lambda_1 \mathbf{q}_1 \mathbf{q}_1^\top + \lambda_2 \mathbf{q}_2 \mathbf{q}_2^\top + \cdots + \lambda_n \mathbf{q}_n \mathbf{q}_n^\top,\]
+where each $\mathbf{q}_i \mathbf{q}_i^\top$ is the matrix of the orthogonal projection onto the line $\Span\{\mathbf{q}_i\}$ (Proposition~\ref{L2-prop:projection-line}). So a symmetric matrix projects a vector onto $n$ orthogonal directions, scales the projections by the eigenvalues, and adds them up.
 
 \begin{example}\label{L2-ex:spectral}
     Let $A = \begin{pmatrix} 2 & 1 & 1 \\ 1 & 2 & 1 \\ 1 & 1 & 2 \end{pmatrix} = J + 2I_3$, where $J = \begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix}$ is the matrix from the section on eigenvalues in Lecture~1. By the computations there, the eigenvalues of $A$ are $2 + 2 = 4$, with eigenspace $\Span\{(1, 1, 1)^\top\}$, and $-1 + 2 = 1$, with eigenspace the plane $x + y + z = 0$. As predicted by the spectral theorem, the two eigenspaces are orthogonal. To get an orthonormal basis of the plane, we apply the Gram--Schmidt process to its basis $(1, -1, 0)^\top$, $(1, 0, -1)^\top$, which gives $\frac{1}{\sqrt{2}}(1, -1, 0)^\top$ and $\frac{1}{\sqrt{6}}(1, 1, -2)^\top$. Hence $A = Q\Lambda Q^\top$ with
@@ -999,29 +1023,108 @@ where each $q_i q_i^\top$ is the matrix of the orthogonal projection onto the li
 \end{corollary}
 
 \begin{proof}
-    Write $A = Q\Lambda Q^\top$ and $y = Q^\top x$. Then
-    \[x^\top A x = y^\top \Lambda y = \lambda_1 y_1^2 + \cdots + \lambda_n y_n^2.\]
-    If all $\lambda_i > 0$, this is positive for $x \neq 0$ (then $y \neq 0$, since $Q^\top$ is invertible). Conversely, $q_i^\top A q_i = \lambda_i$, so if $A$ is positive definite, all $\lambda_i > 0$. The semidefinite case is the same, with $\geq$ instead of $>$.
+    Write $A = Q\Lambda Q^\top$ and $\mathbf{y} = Q^\top \mathbf{x}$. Then
+    \[\mathbf{x}^\top A \mathbf{x} = \mathbf{y}^\top \Lambda \mathbf{y} = \lambda_1 y_1^2 + \cdots + \lambda_n y_n^2.\]
+    If all $\lambda_i > 0$, this is positive for $\mathbf{x} \neq \mathbf{0}$ (then $\mathbf{y} \neq \mathbf{0}$, since $Q^\top$ is invertible). Conversely, $\mathbf{q}_i^\top A \mathbf{q}_i = \lambda_i$, so if $A$ is positive definite, all $\lambda_i > 0$. The semidefinite case is the same, with $\geq$ instead of $>$.
 \end{proof}
+
+\begin{corollary}[Sylvester's criterion]\label{L2-cor:sylvester}
+    Let $A$ be a symmetric $n \times n$ matrix, and let $A_k$ be its upper left $k \times k$ submatrix, with the entries $A_{ij}$ for $i, j \leq k$. Then $A$ is positive definite if and only if $\det(A_k) > 0$ for $k = 1, \ldots, n$.
+\end{corollary}
+
+\begin{proof}
+    For $\mathbf{x} \in \mathbb{R}^k$, let $\tilde{\mathbf{x}} \in \mathbb{R}^n$ be $\mathbf{x}$ followed by $n - k$ zeros. Then $\mathbf{x}^\top A_k \mathbf{x} = \tilde{\mathbf{x}}^\top A\tilde{\mathbf{x}}$. So if $A$ is positive definite, then so is every $A_k$. By Corollary~\ref{L2-cor:spd-eigenvalues}, the eigenvalues of $A_k$ are positive, and $\det(A_k)$, which is their product (Lecture~1), is positive.
+
+    For the converse, we use induction on $n$; for $n = 1$, $A = (A_{11})$ with $A_{11} > 0$. Let $n \geq 2$, and assume that all $\det(A_k) > 0$. By induction, $A_{n-1}$ is positive definite. The eigenvalues $\lambda_1, \ldots, \lambda_n$ of $A$ have the positive product $\det(A)$, so none of them is $0$, and the number of negative ones is even. Suppose that $A$ is not positive definite. Then at least two eigenvalues are negative, say $\lambda_i, \lambda_j < 0$ with $i \neq j$, with orthonormal eigenvectors $\mathbf{q}_i$ and $\mathbf{q}_j$. The equation $a(\mathbf{q}_i)_n + b(\mathbf{q}_j)_n = 0$ has a solution $(a, b) \neq (0, 0)$, and then $\mathbf{x} = a\mathbf{q}_i + b\mathbf{q}_j$ is nonzero (as $\mathbf{q}_i$ and $\mathbf{q}_j$ are linearly independent), and its last entry is $0$. On the one hand, $\mathbf{x}^\top A\mathbf{x} = \lambda_i a^2 + \lambda_j b^2 < 0$. On the other hand, $\mathbf{x} = \tilde{\mathbf{x}}'$ for some nonzero $\mathbf{x}' \in \mathbb{R}^{n-1}$, so $\mathbf{x}^\top A\mathbf{x} = \mathbf{x}'^\top A_{n-1}\mathbf{x}' > 0$. This is a contradiction.
+\end{proof}
+
+For example, the matrix $A = J + 2I_3$ of Example~\ref{L2-ex:spectral} has $\det(A_1) = 2$, $\det(A_2) = 3$ and $\det(A_3) = 4$, so it is positive definite, in agreement with its eigenvalues $4, 1, 1$.
 
 \begin{example}
     The matrix $\begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$ from the subsection on symmetric positive definite matrices has trace $14$ and determinant $9$, so its eigenvalues $7 \pm 2\sqrt{10}$ are both positive, and it is positive definite. The matrix $\begin{pmatrix} 9 & 6 \\ 6 & 3 \end{pmatrix}$ has determinant $-9 < 0$, so its eigenvalues have opposite signs (their product is negative), and it is not positive definite.
 \end{example}
 
 \begin{proposition}[Rayleigh quotient]\label{L2-prop:rayleigh}
-    Let $A$ be symmetric with eigenvalues $\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $q_1, \ldots, q_n$. Then for every $x \neq 0$,
-    \[\lambda_n \leq \frac{x^\top A x}{x^\top x} \leq \lambda_1,\]
-    with equality on the right for $x = q_1$, and on the left for $x = q_n$.
+    Let $A$ be symmetric with eigenvalues $\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $\mathbf{q}_1, \ldots, \mathbf{q}_n$. Then for every $\mathbf{x} \neq \mathbf{0}$,
+    \[\lambda_n \leq \frac{\mathbf{x}^\top A \mathbf{x}}{\mathbf{x}^\top \mathbf{x}} \leq \lambda_1,\]
+    with equality on the right for $\mathbf{x} = \mathbf{q}_1$, and on the left for $\mathbf{x} = \mathbf{q}_n$.
 \end{proposition}
 
 \begin{proof}
-    With $y = Q^\top x$, we have $x^\top x = y^\top y$ (Theorem~\ref{L2-thm:orthogonal}) and $x^\top A x = \sum_i \lambda_i y_i^2$, which lies between $\lambda_n \sum_i y_i^2$ and $\lambda_1 \sum_i y_i^2$. For $x = q_i$, the quotient is $q_i^\top A q_i = \lambda_i$.
+    With $\mathbf{y} = Q^\top \mathbf{x}$, we have $\mathbf{x}^\top \mathbf{x} = \mathbf{y}^\top \mathbf{y}$ (Theorem~\ref{L2-thm:orthogonal}) and $\mathbf{x}^\top A \mathbf{x} = \sum_i \lambda_i y_i^2$, which lies between $\lambda_n \sum_i y_i^2$ and $\lambda_1 \sum_i y_i^2$. For $\mathbf{x} = \mathbf{q}_i$, the quotient is $\mathbf{q}_i^\top A \mathbf{q}_i = \lambda_i$.
 \end{proof}
 
-So the largest eigenvalue of a symmetric matrix is the maximum of $x^\top A x$ over all unit vectors $x$, and it is attained at an eigenvector. This is the key to principal component analysis.
+So the largest eigenvalue of a symmetric matrix is the maximum of $\mathbf{x}^\top A \mathbf{x}$ over all unit vectors $\mathbf{x}$, and it is attained at an eigenvector. This is the key to principal component analysis. More generally, the sum of the $k$ largest eigenvalues is the maximum of $\sum_j \mathbf{b}_j^\top A\mathbf{b}_j$ over $k$ orthonormal vectors $\mathbf{b}_1, \ldots, \mathbf{b}_k$.
+
+\begin{proposition}[Ky Fan]\label{L2-prop:ky-fan}
+    Let $A$ be symmetric with eigenvalues $\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $\mathbf{q}_1, \ldots, \mathbf{q}_n$, and let $1 \leq k \leq n$. For every $n \times k$ matrix $B$ with orthonormal columns $\mathbf{b}_1, \ldots, \mathbf{b}_k$,
+    \[\tr(B^\top AB) = \sum_{j=1}^k \mathbf{b}_j^\top A\mathbf{b}_j \leq \lambda_1 + \cdots + \lambda_k,\]
+    with equality for $\mathbf{b}_j = \mathbf{q}_j$, $j = 1, \ldots, k$.
+\end{proposition}
+
+\begin{proof}
+    Writing $\mathbf{b}_j = \sum_i (\mathbf{q}_i^\top \mathbf{b}_j)\mathbf{q}_i$ (Proposition~\ref{L2-prop:onb-coordinates}) gives $\mathbf{b}_j^\top A\mathbf{b}_j = \sum_i \lambda_i (\mathbf{q}_i^\top \mathbf{b}_j)^2$, so
+    \[\tr(B^\top AB) = \sum_{i=1}^n \lambda_i c_i, \qquad \text{where } c_i = \sum_{j=1}^k (\mathbf{q}_i^\top \mathbf{b}_j)^2 = \norm{B^\top \mathbf{q}_i}^2.\]
+    The numbers $c_i$ satisfy $\sum_i c_i = \sum_j \sum_i (\mathbf{q}_i^\top \mathbf{b}_j)^2 = \sum_j \norm{\mathbf{b}_j}^2 = k$ and $0 \leq c_i \leq 1$: extending $\mathbf{b}_1, \ldots, \mathbf{b}_k$ to an orthonormal basis $\mathbf{b}_1, \ldots, \mathbf{b}_n$ of $\mathbb{R}^n$ gives $c_i \leq \sum_{j=1}^n (\mathbf{b}_j^\top \mathbf{q}_i)^2 = \norm{\mathbf{q}_i}^2 = 1$. Since $\lambda_i \geq \lambda_k$ and $c_i - 1 \leq 0$ for $i \leq k$, and $\lambda_i \leq \lambda_k$ and $c_i \geq 0$ for $i > k$,
+    \[\sum_{i=1}^n \lambda_i c_i - \sum_{i=1}^k \lambda_i = \sum_{i \leq k} \lambda_i(c_i - 1) + \sum_{i > k} \lambda_i c_i \leq \lambda_k\sum_{i \leq k}(c_i - 1) + \lambda_k\sum_{i > k} c_i = \lambda_k\Big(\sum_{i=1}^n c_i - k\Big) = 0.\]
+    For $\mathbf{b}_j = \mathbf{q}_j$, $\tr(B^\top AB) = \sum_{j \leq k} \mathbf{q}_j^\top A\mathbf{q}_j = \lambda_1 + \cdots + \lambda_k$.
+\end{proof}
 
 \begin{remark}[Geometry of symmetric positive definite matrices]
-    If $A$ is symmetric positive definite, the set $\{x : x^\top A x = 1\}$ is an ellipse (in $\mathbb{R}^2$) or an ellipsoid (in higher dimensions), whose axes point in the directions of the eigenvectors $q_i$ and have lengths $\frac{1}{\sqrt{\lambda_i}}$, since in the coordinates $y = Q^\top x$ the equation becomes $\lambda_1 y_1^2 + \cdots + \lambda_n y_n^2 = 1$. In machine learning, such ellipsoids describe the shape of Gaussian distributions (with $A$ the inverse covariance matrix) and the shape of the loss surface of least squares problems near a minimum; when the eigenvalues have very different sizes, gradient descent zig-zags and converges slowly.
+    If $A$ is symmetric positive definite, the set $\{\mathbf{x} : \mathbf{x}^\top A \mathbf{x} = 1\}$ is an ellipse (in $\mathbb{R}^2$) or an ellipsoid (in higher dimensions), whose axes point in the directions of the eigenvectors $\mathbf{q}_i$ and have lengths $\frac{1}{\sqrt{\lambda_i}}$, since in the coordinates $\mathbf{y} = Q^\top \mathbf{x}$ the equation becomes $\lambda_1 y_1^2 + \cdots + \lambda_n y_n^2 = 1$. In machine learning, such ellipsoids describe the shape of Gaussian distributions (with $A$ the inverse covariance matrix) and the shape of the loss surface of least squares problems near a minimum; when the eigenvalues have very different sizes, gradient descent zig-zags and converges slowly.
+\end{remark}
+
+\subsection{The graph Laplacian and spectral clustering}\label{L2-sec:laplacian}
+
+Many data sets are graphs: users connected by friendships, web pages by links, molecules by bonds, or data points connected to their nearest neighbors. A weighted graph on the vertices $1, \ldots, n$ is described by a symmetric $n \times n$ matrix $W$ of weights $w_{ij} = w_{ji} \geq 0$, with $w_{ii} = 0$; there is an edge between $i$ and $j$ if $w_{ij} > 0$. For example, $w_{ij} = 1$ for the pairs of friends, or $w_{ij} = e^{-\norm{\mathbf{x}_i - \mathbf{x}_j}^2/(2s^2)}$ for data points $\mathbf{x}_i$ that are close to each other. A symmetric matrix describes the graph, and the spectral theorem describes its shape.
+
+\begin{definition}[Graph Laplacian]\label{L2-def:laplacian}
+    The degree of the vertex $i$ is $d_i = \sum_j w_{ij}$. The Laplacian of the graph is the matrix $L = D - W$, where $D = \diag(d_1, \ldots, d_n)$.
+\end{definition}
+
+\begin{proposition}\label{L2-prop:laplacian}
+    For every $\mathbf{x} \in \mathbb{R}^n$,
+    \[\mathbf{x}^\top L\mathbf{x} = \sum_{i < j} w_{ij}(x_i - x_j)^2.\]
+    Hence $L$ is symmetric and positive semidefinite, and $L\mathbf{1} = \mathbf{0}$ for the vector $\mathbf{1} = (1, \ldots, 1)^\top$.
+\end{proposition}
+
+\begin{proof}
+    $\mathbf{x}^\top L\mathbf{x} = \sum_i d_ix_i^2 - \sum_{i, j} w_{ij}x_ix_j = \frac{1}{2}\sum_{i, j} w_{ij}(x_i^2 + x_j^2 - 2x_ix_j) = \frac{1}{2}\sum_{i, j} w_{ij}(x_i - x_j)^2$, using $\sum_i d_ix_i^2 = \sum_{i, j} w_{ij}x_i^2 = \sum_{i, j} w_{ij}x_j^2$; the terms with $i = j$ vanish, and those with $i > j$ repeat those with $i < j$. The rows of $L$ sum to $d_i - \sum_j w_{ij} = 0$.
+\end{proof}
+
+So $\mathbf{x}^\top L\mathbf{x}$ is small if $\mathbf{x}$ varies little along the edges with large weights: it measures how smooth a function $\mathbf{x}$ on the vertices is. The vertices $i$ and $j$ are in the same connected component of the graph if there is a path $i = i_0, i_1, \ldots, i_l = j$ with $w_{i_{s-1}i_s} > 0$ for every step.
+
+\begin{theorem}\label{L2-thm:laplacian-components}
+    Let $L$ be the Laplacian of a graph with the connected components $C_1, \ldots, C_k$. Then $\Null(L)$ is spanned by the indicator vectors $\mathbf{1}_{C_1}, \ldots, \mathbf{1}_{C_k}$ (with the entries $1$ on $C_l$ and $0$ elsewhere). So the multiplicity of the eigenvalue $0$ is the number of connected components; in particular, the graph is connected if and only if the second smallest eigenvalue $\lambda_2$ of $L$ is positive.
+\end{theorem}
+
+\begin{proof}
+    Write $L = Q\Lambda Q^\top$ with eigenvalues $\lambda_i \geq 0$ (Corollary~\ref{L2-cor:spd-eigenvalues}), and let $\mathbf{y} = Q^\top \mathbf{x}$. If $\mathbf{x}^\top L\mathbf{x} = \sum_i \lambda_iy_i^2 = 0$, then $y_i = 0$ whenever $\lambda_i > 0$, so $L\mathbf{x} = Q\Lambda \mathbf{y} = \mathbf{0}$; the converse is clear. So $L\mathbf{x} = \mathbf{0}$ if and only if $\mathbf{x}^\top L\mathbf{x} = 0$, i.e., by Proposition~\ref{L2-prop:laplacian}, if and only if $x_i = x_j$ whenever $w_{ij} > 0$. Following paths, this means that $\mathbf{x}$ is constant on each connected component, i.e., $\mathbf{x} = \sum_l c_l\mathbf{1}_{C_l}$. The vectors $\mathbf{1}_{C_l}$ are nonzero and orthogonal, hence linearly independent (Lemma~\ref{L2-lem:orth-indep}), so $\dim\Null(L) = k$, which is the multiplicity of the eigenvalue $0$ in the spectral decomposition.
+\end{proof}
+
+\paragraph{Spectral clustering.} Clustering means splitting the vertices into groups with many edges inside the groups and few edges between them. For a set $A$ of vertices and its complement $\bar{A}$, the weight of the edges between them is $\mathrm{cut}(A) = \sum_{i \in A, \, j \in \bar{A}} w_{ij}$. Minimizing the cut alone tends to split off single vertices, so one balances it by the sizes of the parts:
+\[\mathrm{RatioCut}(A) = \mathrm{cut}(A)\Big(\frac{1}{|A|} + \frac{1}{|\bar{A}|}\Big).\]
+Finding the best $A$ is a hard combinatorial problem, since there are $2^{n-1} - 1$ ways to split the vertices into two nonempty parts. The Laplacian turns it into an eigenvalue problem.
+
+\begin{theorem}\label{L2-thm:ratio-cut}
+    Let $0 = \lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_n$ be the eigenvalues of the Laplacian of a graph. For every set of vertices $A$ with $A \neq \emptyset$ and $\bar{A} \neq \emptyset$, define $\mathbf{f} \in \mathbb{R}^n$ by $f_i = \sqrt{|\bar{A}|/|A|}$ for $i \in A$ and $f_i = -\sqrt{|A|/|\bar{A}|}$ for $i \in \bar{A}$. Then
+    \[\mathbf{f}^\top\mathbf{1} = 0, \qquad \norm{\mathbf{f}}^2 = n, \qquad \mathbf{f}^\top L\mathbf{f} = n\,\mathrm{RatioCut}(A), \qquad \text{and hence} \qquad \mathrm{RatioCut}(A) \geq \lambda_2.\]
+\end{theorem}
+
+\begin{proof}
+    $\mathbf{f}^\top\mathbf{1} = |A|\sqrt{|\bar{A}|/|A|} - |\bar{A}|\sqrt{|A|/|\bar{A}|} = \sqrt{|A||\bar{A}|} - \sqrt{|A||\bar{A}|} = 0$, and $\norm{\mathbf{f}}^2 = |\bar{A}| + |A| = n$. In Proposition~\ref{L2-prop:laplacian}, only the edges between $A$ and $\bar{A}$ contribute, each with
+    \[(f_i - f_j)^2 = \frac{|\bar{A}|}{|A|} + \frac{|A|}{|\bar{A}|} + 2 = \frac{(|A| + |\bar{A}|)^2}{|A||\bar{A}|} = n\Big(\frac{1}{|A|} + \frac{1}{|\bar{A}|}\Big),\]
+    which gives $\mathbf{f}^\top L\mathbf{f} = n\,\mathrm{RatioCut}(A)$. Let $\mathbf{q}_1 = \frac{1}{\sqrt{n}}\mathbf{1}, \mathbf{q}_2, \ldots, \mathbf{q}_n$ be orthonormal eigenvectors of $L$. Since $\mathbf{f}$ is orthogonal to $\mathbf{q}_1$, it is $\mathbf{f} = \sum_{i \geq 2} c_i\mathbf{q}_i$, and $\mathbf{f}^\top L\mathbf{f} = \sum_{i \geq 2} \lambda_ic_i^2 \geq \lambda_2\norm{\mathbf{f}}^2 = n\lambda_2$.
+\end{proof}
+
+The proof also shows that $\lambda_2$ is the minimum of $\frac{\mathbf{x}^\top L\mathbf{x}}{\mathbf{x}^\top \mathbf{x}}$ over all $\mathbf{x} \neq \mathbf{0}$ with $\mathbf{x}^\top\mathbf{1} = 0$, attained at an eigenvector $\mathbf{q}_2$, which is called the Fiedler vector. Minimizing over the special vectors $\mathbf{f}$ of the theorem is hard, but minimizing over all vectors orthogonal to $\mathbf{1}$ is an eigenvalue problem. This suggests spectral clustering: compute the Fiedler vector $\mathbf{q}_2$, and put the vertices with $(\mathbf{q}_2)_i \geq 0$ into one cluster and the others into the second one. For $k$ clusters, one represents each vertex $i$ by the $i$-th row of the $n \times k$ matrix of the eigenvectors $\mathbf{q}_1, \ldots, \mathbf{q}_k$ and clusters these points with $k$-means (Section~\ref{L4-sec:latent}).
+
+\begin{example}\label{L2-ex:two-triangles}
+    Take two triangles on the vertices $\{1, 2, 3\}$ and $\{4, 5, 6\}$, joined by the edge between $3$ and $4$, all with weight $1$. One checks that $L\mathbf{x} = \lambda \mathbf{x}$ for $\mathbf{x} = (1, 1, t, -t, -1, -1)^\top$ if $1 - t = \lambda$ (the equation for vertex $1$) and $4t - 2 = \lambda t$ (vertex $3$), i.e., $\lambda^2 - 5\lambda + 2 = 0$. The smaller root $\lambda_2 = \frac{5 - \sqrt{17}}{2} \approx 0.44$ is the second smallest eigenvalue (the others are $0$, $3$, $3$, $3$ and $\frac{5 + \sqrt{17}}{2}$), with $t = \frac{\sqrt{17} - 3}{2} \approx 0.56$. The signs of the Fiedler vector separate the two triangles, and for $A = \{1, 2, 3\}$, $\mathrm{RatioCut}(A) = 1 \cdot (\frac{1}{3} + \frac{1}{3}) = \frac{2}{3} \geq \lambda_2$, as predicted.
+\end{example}
+
+\begin{remark}[Graphs in machine learning]
+    The quadratic form $\mathbf{x}^\top L\mathbf{x}$ is used as a smoothness penalty in semi-supervised learning: labels known on a few vertices are extended to the whole graph by minimizing $\mathbf{x}^\top L\mathbf{x}$ subject to the known values, so that neighbors get similar labels. Laplacian eigenmaps embed data points by the eigenvectors $\mathbf{q}_2, \mathbf{q}_3, \ldots$, and graph neural networks update the features of each vertex by averaging over its neighbors with matrices such as $D^{-1/2}WD^{-1/2}$, which are closely related to the Laplacian.
 \end{remark}
 
 \section{The Singular Value Decomposition}\label{L2-sec:svd}
@@ -1035,43 +1138,43 @@ The eigendecomposition only exists for square matrices, and in general only for 
     \[\Sigma_{11} = \sigma_1 \geq \Sigma_{22} = \sigma_2 \geq \cdots \geq \Sigma_{rr} = \sigma_r > 0\]
     and all other entries $0$, such that
     \[A = U \Sigma V^\top.\]
-    The number $r$ of nonzero diagonal entries is the rank of $A$. The numbers $\sigma_1, \ldots, \sigma_r$ are called the singular values of $A$; the columns $u_1, \ldots, u_m$ of $U$ and $v_1, \ldots, v_n$ of $V$ are called the left and right singular vectors of $A$.
+    The number $r$ of nonzero diagonal entries is the rank of $A$. The numbers $\sigma_1, \ldots, \sigma_r$ are called the singular values of $A$; the columns $\mathbf{u}_1, \ldots, \mathbf{u}_m$ of $U$ and $\mathbf{v}_1, \ldots, \mathbf{v}_n$ of $V$ are called the left and right singular vectors of $A$.
 \end{theorem}
 
 \begin{proof}
-    The $n \times n$ matrix $A^\top A$ is symmetric, and positive semidefinite, since $x^\top A^\top A x = \norm{Ax}^2 \geq 0$. By the spectral theorem and Corollary~\ref{L2-cor:spd-eigenvalues}, there is an orthonormal basis $v_1, \ldots, v_n$ of $\mathbb{R}^n$ of eigenvectors of $A^\top A$, with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n \geq 0$ (we order them by size). Note that
-    \[\norm{Av_i}^2 = v_i^\top A^\top A v_i = \lambda_i \, v_i^\top v_i = \lambda_i.\]
-    Let $r$ be the number of positive eigenvalues, and let $\sigma_i = \sqrt{\lambda_i}$ and $u_i = \frac{1}{\sigma_i} A v_i$ for $i = 1, \ldots, r$. These vectors are orthonormal:
-    \[u_i^\top u_j = \frac{v_i^\top A^\top A v_j}{\sigma_i \sigma_j} = \frac{\lambda_j\, v_i^\top v_j}{\sigma_i \sigma_j} = \begin{cases} 1 & \text{if } i = j, \\ 0 & \text{if } i \neq j. \end{cases}\]
-    Let $u_{r+1}, \ldots, u_m$ be an orthonormal basis of $\Span\{u_1, \ldots, u_r\}^\perp$ (Theorem~\ref{L2-thm:orth-decomposition} and Corollary~\ref{L2-cor:onb-exists}), so that $u_1, \ldots, u_m$ is an orthonormal basis of $\mathbb{R}^m$, and let $U$ and $V$ be the orthogonal matrices with these columns. For $i \leq r$, we have $Av_i = \sigma_i u_i$ by definition, and for $i > r$, we have $\norm{Av_i}^2 = \lambda_i = 0$, so $Av_i = 0$. Column by column, this says that $AV = U\Sigma$, and hence $A = U\Sigma V^{-1} = U\Sigma V^\top$.
+    The $n \times n$ matrix $A^\top A$ is symmetric, and positive semidefinite, since $\mathbf{x}^\top A^\top A \mathbf{x} = \norm{A\mathbf{x}}^2 \geq 0$. By the spectral theorem and Corollary~\ref{L2-cor:spd-eigenvalues}, there is an orthonormal basis $\mathbf{v}_1, \ldots, \mathbf{v}_n$ of $\mathbb{R}^n$ of eigenvectors of $A^\top A$, with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n \geq 0$ (we order them by size). Note that
+    \[\norm{A\mathbf{v}_i}^2 = \mathbf{v}_i^\top A^\top A \mathbf{v}_i = \lambda_i \, \mathbf{v}_i^\top \mathbf{v}_i = \lambda_i.\]
+    Let $r$ be the number of positive eigenvalues, and let $\sigma_i = \sqrt{\lambda_i}$ and $\mathbf{u}_i = \frac{1}{\sigma_i} A \mathbf{v}_i$ for $i = 1, \ldots, r$. These vectors are orthonormal:
+    \[\mathbf{u}_i^\top \mathbf{u}_j = \frac{\mathbf{v}_i^\top A^\top A \mathbf{v}_j}{\sigma_i \sigma_j} = \frac{\lambda_j\, \mathbf{v}_i^\top \mathbf{v}_j}{\sigma_i \sigma_j} = \begin{cases} 1 & \text{if } i = j, \\ 0 & \text{if } i \neq j. \end{cases}\]
+    Let $\mathbf{u}_{r+1}, \ldots, \mathbf{u}_m$ be an orthonormal basis of $\Span\{\mathbf{u}_1, \ldots, \mathbf{u}_r\}^\perp$ (Theorem~\ref{L2-thm:orth-decomposition} and Corollary~\ref{L2-cor:onb-exists}), so that $\mathbf{u}_1, \ldots, \mathbf{u}_m$ is an orthonormal basis of $\mathbb{R}^m$, and let $U$ and $V$ be the orthogonal matrices with these columns. For $i \leq r$, we have $A\mathbf{v}_i = \sigma_i \mathbf{u}_i$ by definition, and for $i > r$, we have $\norm{A\mathbf{v}_i}^2 = \lambda_i = 0$, so $A\mathbf{v}_i = \mathbf{0}$. Column by column, this says that $AV = U\Sigma$, and hence $A = U\Sigma V^{-1} = U\Sigma V^\top$.
 
-    Finally, every vector $Ax = \sum_i (v_i^\top x) Av_i = \sum_{i \leq r} \sigma_i (v_i^\top x) u_i$ lies in $\Span\{u_1, \ldots, u_r\}$, and conversely $u_i = A\big(\frac{1}{\sigma_i} v_i\big) \in \col(A)$. So $\col(A) = \Span\{u_1, \ldots, u_r\}$, and since $u_1, \ldots, u_r$ are linearly independent (Lemma~\ref{L2-lem:orth-indep}), $\rank(A) = r$.
+    Finally, every vector $A\mathbf{x} = \sum_i (\mathbf{v}_i^\top \mathbf{x}) A\mathbf{v}_i = \sum_{i \leq r} \sigma_i (\mathbf{v}_i^\top \mathbf{x}) \mathbf{u}_i$ lies in $\Span\{\mathbf{u}_1, \ldots, \mathbf{u}_r\}$, and conversely $\mathbf{u}_i = A\big(\frac{1}{\sigma_i} \mathbf{v}_i\big) \in \col(A)$. So $\col(A) = \Span\{\mathbf{u}_1, \ldots, \mathbf{u}_r\}$, and since $\mathbf{u}_1, \ldots, \mathbf{u}_r$ are linearly independent (Lemma~\ref{L2-lem:orth-indep}), $\rank(A) = r$.
 \end{proof}
 
 The proof shows how to compute the SVD by hand:
 \begin{enumerate}
-    \item compute the eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $v_1, \ldots, v_n$ of $A^\top A$;
-    \item set $\sigma_i = \sqrt{\lambda_i}$ and $u_i = \frac{1}{\sigma_i} A v_i$ for the positive eigenvalues;
-    \item complete $u_1, \ldots, u_r$ to an orthonormal basis of $\mathbb{R}^m$.
+    \item compute the eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $\mathbf{v}_1, \ldots, \mathbf{v}_n$ of $A^\top A$;
+    \item set $\sigma_i = \sqrt{\lambda_i}$ and $\mathbf{u}_i = \frac{1}{\sigma_i} A \mathbf{v}_i$ for the positive eigenvalues;
+    \item complete $\mathbf{u}_1, \ldots, \mathbf{u}_r$ to an orthonormal basis of $\mathbb{R}^m$.
 \end{enumerate}
 Similarly, $AA^\top = U \Sigma\Sigma^\top U^\top$, so the left singular vectors are eigenvectors of $AA^\top$, with the same nonzero eigenvalues $\sigma_i^2$.
 
 \begin{example}\label{L2-ex:svd-3x2}
-    Let $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 0 \end{pmatrix}$. Then $A^\top A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, which we diagonalized in Lecture~1: its eigenvalues are $3$ and $1$, with orthonormal eigenvectors $v_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $v_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. So $\sigma_1 = \sqrt{3}$ and $\sigma_2 = 1$, and
-    \[u_1 = \frac{1}{\sqrt{3}} A v_1 = \frac{1}{\sqrt{6}} \begin{pmatrix} 2 \\ 1 \\ 1 \end{pmatrix}, \qquad u_2 = \frac{1}{1} A v_2 = \frac{1}{\sqrt{2}} \begin{pmatrix} 0 \\ -1 \\ 1 \end{pmatrix}.\]
-    A unit vector orthogonal to both is $u_3 = \frac{1}{\sqrt{3}}(1, -1, -1)^\top$. Hence
+    Let $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 0 \end{pmatrix}$. Then $A^\top A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, which we diagonalized in Lecture~1: its eigenvalues are $3$ and $1$, with orthonormal eigenvectors $\mathbf{v}_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $\mathbf{v}_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. So $\sigma_1 = \sqrt{3}$ and $\sigma_2 = 1$, and
+    \[\mathbf{u}_1 = \frac{1}{\sqrt{3}} A \mathbf{v}_1 = \frac{1}{\sqrt{6}} \begin{pmatrix} 2 \\ 1 \\ 1 \end{pmatrix}, \qquad \mathbf{u}_2 = \frac{1}{1} A \mathbf{v}_2 = \frac{1}{\sqrt{2}} \begin{pmatrix} 0 \\ -1 \\ 1 \end{pmatrix}.\]
+    A unit vector orthogonal to both is $\mathbf{u}_3 = \frac{1}{\sqrt{3}}(1, -1, -1)^\top$. Hence
     \[\begin{pmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 0 \end{pmatrix} = \underbrace{\begin{pmatrix} \frac{2}{\sqrt{6}} & 0 & \frac{1}{\sqrt{3}} \\ \frac{1}{\sqrt{6}} & -\frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{3}} \\ \frac{1}{\sqrt{6}} & \frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{3}} \end{pmatrix}}_{U} \underbrace{\begin{pmatrix} \sqrt{3} & 0 \\ 0 & 1 \\ 0 & 0 \end{pmatrix}}_{\Sigma} \underbrace{\frac{1}{\sqrt{2}}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}}_{V^\top}.\]
 \end{example}
 
 \subsection{The geometry of the SVD}
 
-Since $U$ and $V$ are orthogonal, the SVD says that every linear transformation $x \mapsto Ax$ is a composition of three simple steps: an orthogonal transformation $V^\top$ (a rotation, possibly combined with a reflection), a scaling $\Sigma$ of the coordinate axes by the singular values (which may also change the dimension), and another orthogonal transformation $U$. In particular, $A$ maps the unit sphere of $\mathbb{R}^n$ to an ellipsoid (possibly flattened) in $\mathbb{R}^m$, whose semi-axes are $\sigma_1 u_1, \ldots, \sigma_r u_r$: the right singular vector $v_i$ is mapped to $\sigma_i u_i$.
+Since $U$ and $V$ are orthogonal, the SVD says that every linear transformation $\mathbf{x} \mapsto A\mathbf{x}$ is a composition of three simple steps: an orthogonal transformation $V^\top$ (a rotation, possibly combined with a reflection), a scaling $\Sigma$ of the coordinate axes by the singular values (which may also change the dimension), and another orthogonal transformation $U$. In particular, $A$ maps the unit sphere of $\mathbb{R}^n$ to an ellipsoid (possibly flattened) in $\mathbb{R}^m$, whose semi-axes are $\sigma_1 \mathbf{u}_1, \ldots, \sigma_r \mathbf{u}_r$: the right singular vector $v_i$ is mapped to $\sigma_i \mathbf{u}_i$.
 
 \begin{example}[The SVD of a shear]\label{L2-ex:svd-shear}
     Let $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ be the shear from the gallery of linear transformations in Lecture~1. Then $A^\top A = \begin{pmatrix} 1 & 1 \\ 1 & 2 \end{pmatrix}$ has trace $3$ and determinant $1$, so its eigenvalues are $\frac{3 \pm \sqrt{5}}{2} = \varphi^2$ and $\varphi^{-2}$, where $\varphi = \frac{1 + \sqrt{5}}{2}$ is the golden ratio, which we met in Lecture~1 in Binet's formula for the Fibonacci numbers. So the singular values of the shear are
     \[\sigma_1 = \varphi \approx 1.618 \qquad \text{and} \qquad \sigma_2 = \frac{1}{\varphi} \approx 0.618.\]
     Using $\varphi^2 = \varphi + 1$, one checks that, with $c = \sqrt{1 + \varphi^2}$,
-    \[v_1 = \frac{1}{c}\begin{pmatrix} 1 \\ \varphi \end{pmatrix}, \quad v_2 = \frac{1}{c}\begin{pmatrix} -\varphi \\ 1 \end{pmatrix}, \quad u_1 = \frac{1}{c}\begin{pmatrix} \varphi \\ 1 \end{pmatrix}, \quad u_2 = \frac{1}{c}\begin{pmatrix} -1 \\ \varphi \end{pmatrix}.\]
+    \[\mathbf{v}_1 = \frac{1}{c}\begin{pmatrix} 1 \\ \varphi \end{pmatrix}, \quad \mathbf{v}_2 = \frac{1}{c}\begin{pmatrix} -\varphi \\ 1 \end{pmatrix}, \quad \mathbf{u}_1 = \frac{1}{c}\begin{pmatrix} \varphi \\ 1 \end{pmatrix}, \quad \mathbf{u}_2 = \frac{1}{c}\begin{pmatrix} -1 \\ \varphi \end{pmatrix}.\]
     Both $U$ and $V$ are rotations, by the angles $31.7^\circ$ and $58.3^\circ$. So the shear is the same as: rotate by $-58.3^\circ$, stretch the $x$-axis by $\varphi$ and shrink the $y$-axis by $\frac{1}{\varphi}$, and rotate by $31.7^\circ$ (Figure~\ref{L2-fig:svd}).
 \end{example}
 
@@ -1091,8 +1194,8 @@ Since $U$ and $V$ are orthogonal, the SVD says that every linear transformation 
         \draw[->, gray] (0,-1.9) -- (0,1.9);
         \fill[blue!10] (0,0) circle (1);
         \draw[blue!70!black, thick] (0,0) circle (1);
-        \draw[->, very thick, red!80!black] (0,0) -- (1,0) node[below right] {$e_1$};
-        \draw[->, very thick, green!50!black] (0,0) -- (0,1) node[above left] {$e_2$};
+        \draw[->, very thick, red!80!black] (0,0) -- (1,0) node[below right] {$\mathbf{e}_1$};
+        \draw[->, very thick, green!50!black] (0,0) -- (0,1) node[above left] {$\mathbf{e}_2$};
     \end{tikzpicture}
     $\xrightarrow{\ \Sigma\ }$
     \begin{tikzpicture}[x=0.75cm, y=0.75cm, >=Stealth, baseline=(current bounding box.center)]
@@ -1100,8 +1203,8 @@ Since $U$ and $V$ are orthogonal, the SVD says that every linear transformation 
         \draw[->, gray] (0,-1.9) -- (0,1.9);
         \fill[blue!10] (0,0) ellipse [x radius=1.618, y radius=0.618];
         \draw[blue!70!black, thick] (0,0) ellipse [x radius=1.618, y radius=0.618];
-        \draw[->, very thick, red!80!black] (0,0) -- (1.618,0) node[below] {$\sigma_1 e_1$};
-        \draw[->, very thick, green!50!black] (0,0) -- (0,0.618) node[above left] {$\sigma_2 e_2$};
+        \draw[->, very thick, red!80!black] (0,0) -- (1.618,0) node[below] {$\sigma_1 \mathbf{e}_1$};
+        \draw[->, very thick, green!50!black] (0,0) -- (0,0.618) node[above left] {$\sigma_2 \mathbf{e}_2$};
     \end{tikzpicture}
     $\xrightarrow{\ U\ }$
     \begin{tikzpicture}[x=0.75cm, y=0.75cm, >=Stealth, baseline=(current bounding box.center)]
@@ -1112,22 +1215,22 @@ Since $U$ and $V$ are orthogonal, the SVD says that every linear transformation 
         \draw[->, very thick, red!80!black] (0,0) -- (1.376,0.851) node[above] {$\sigma_1 u_1$};
         \draw[->, very thick, green!50!black] (0,0) -- (-0.325,0.526) node[above left] {$\sigma_2 u_2$};
     \end{tikzpicture}
-    \caption[The geometry of the SVD]{The SVD of the shear $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ (Example~\ref{L2-ex:svd-shear}). The rotation $V^\top$ moves the right singular vectors $v_1, v_2$ to $e_1, e_2$; the scaling $\Sigma$ stretches the axes by $\sigma_1 = \varphi$ and $\sigma_2 = 1/\varphi$; and the rotation $U$ moves the axes to the left singular vectors. Altogether, the unit circle is mapped to an ellipse with semi-axes $\sigma_1 u_1 = Av_1$ and $\sigma_2 u_2 = Av_2$.}
+    \caption[The geometry of the SVD]{The SVD of the shear $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ (Example~\ref{L2-ex:svd-shear}). The rotation $V^\top$ moves the right singular vectors $\mathbf{v}_1, \mathbf{v}_2$ to $\mathbf{e}_1, \mathbf{e}_2$; the scaling $\Sigma$ stretches the axes by $\sigma_1 = \varphi$ and $\sigma_2 = 1/\varphi$; and the rotation $U$ moves the axes to the left singular vectors. Altogether, the unit circle is mapped to an ellipse with semi-axes $\sigma_1 \mathbf{u}_1 = A\mathbf{v}_1$ and $\sigma_2 \mathbf{u}_2 = A\mathbf{v}_2$.}
     \label{L2-fig:svd}
 \end{figure}
 
 \begin{proposition}\label{L2-prop:svd-subspaces}
     Let $A = U\Sigma V^\top$ be an SVD of a matrix $A$ of rank $r$. Then
-    \[A = \sigma_1 u_1 v_1^\top + \sigma_2 u_2 v_2^\top + \cdots + \sigma_r u_r v_r^\top,\]
+    \[A = \sigma_1 \mathbf{u}_1 \mathbf{v}_1^\top + \sigma_2 \mathbf{u}_2 \mathbf{v}_2^\top + \cdots + \sigma_r \mathbf{u}_r \mathbf{v}_r^\top,\]
     and the four fundamental subspaces of $A$ are
     \begin{align*}
-        \col(A) &= \Span\{u_1, \ldots, u_r\}, & \Null(A^\top) &= \Span\{u_{r+1}, \ldots, u_m\}, \\
-        \row(A) &= \Span\{v_1, \ldots, v_r\}, & \Null(A) &= \Span\{v_{r+1}, \ldots, v_n\}.
+        \col(A) &= \Span\{\mathbf{u}_1, \ldots, \mathbf{u}_r\}, & \Null(A^\top) &= \Span\{\mathbf{u}_{r+1}, \ldots, \mathbf{u}_m\}, \\
+        \row(A) &= \Span\{\mathbf{v}_1, \ldots, \mathbf{v}_r\}, & \Null(A) &= \Span\{\mathbf{v}_{r+1}, \ldots, \mathbf{v}_n\}.
     \end{align*}
 \end{proposition}
 
 \begin{proof}
-    For every $x$, we saw in the proof of Theorem~\ref{L2-thm:svd} that $Ax = \sum_{i \leq r} \sigma_i u_i (v_i^\top x)$, which is the first formula applied to $x$. The formula for $\col(A)$ was also shown there. If $x = \sum_i c_i v_i$, then $Ax = \sum_{i \leq r} \sigma_i c_i u_i$, which is $0$ if and only if $c_1 = \cdots = c_r = 0$; this gives $\Null(A)$. In an orthonormal basis, the orthogonal complement of the span of some basis vectors is the span of the other ones, so the remaining two formulas follow from Theorem~\ref{L2-thm:fundamental-subspaces} and Theorem~\ref{L2-thm:orth-decomposition}(3).
+    For every $\mathbf{x}$, we saw in the proof of Theorem~\ref{L2-thm:svd} that $A\mathbf{x} = \sum_{i \leq r} \sigma_i \mathbf{u}_i (\mathbf{v}_i^\top \mathbf{x})$, which is the first formula applied to $\mathbf{x}$. The formula for $\col(A)$ was also shown there. If $\mathbf{x} = \sum_i c_i \mathbf{v}_i$, then $A\mathbf{x} = \sum_{i \leq r} \sigma_i c_i \mathbf{u}_i$, which is $\mathbf{0}$ if and only if $c_1 = \cdots = c_r = 0$; this gives $\Null(A)$. In an orthonormal basis, the orthogonal complement of the span of some basis vectors is the span of the other ones, so the remaining two formulas follow from Theorem~\ref{L2-thm:fundamental-subspaces} and Theorem~\ref{L2-thm:orth-decomposition}(3).
 \end{proof}
 
 The first formula writes $A$ as a sum of $r$ matrices of rank $1$. It also gives the reduced SVD $A = U_r \Sigma_r V_r^\top$, where $U_r$ and $V_r$ consist of the first $r$ columns of $U$ and $V$, and $\Sigma_r = \diag(\sigma_1, \ldots, \sigma_r)$; NumPy computes it with \py{np.linalg.svd(A, full_matrices=False)}.
@@ -1136,7 +1239,7 @@ The first formula writes $A$ as a sum of $r$ matrices of rank $1$. It also gives
 
 \begin{definition}[Spectral norm]
     The spectral norm (or operator norm) of an $m \times n$ matrix $A$ is
-    \[\norm{A}_2 = \max_{x \neq 0} \frac{\norm{Ax}}{\norm{x}},\]
+    \[\norm{A}_2 = \max_{\mathbf{x} \neq \mathbf{0}} \frac{\norm{A\mathbf{x}}}{\norm{\mathbf{x}}},\]
     the largest factor by which $A$ stretches a vector.
 \end{definition}
 
@@ -1146,30 +1249,39 @@ The first formula writes $A$ as a sum of $r$ matrices of rank $1$. It also gives
 \end{proposition}
 
 \begin{proof}
-    $\frac{\norm{Ax}^2}{\norm{x}^2} = \frac{x^\top A^\top A x}{x^\top x}$ is the Rayleigh quotient of $A^\top A$, whose largest eigenvalue is $\sigma_1^2$; so the maximum is $\sigma_1$ by Proposition~\ref{L2-prop:rayleigh}. For the Frobenius norm, $\norm{A}_F^2 = \tr(A^\top A)$ is the sum of the eigenvalues of $A^\top A$ (by Lecture~1, the trace is the sum of the eigenvalues), which is $\sigma_1^2 + \cdots + \sigma_r^2$.
+    $\frac{\norm{A\mathbf{x}}^2}{\norm{\mathbf{x}}^2} = \frac{\mathbf{x}^\top A^\top A \mathbf{x}}{\mathbf{x}^\top \mathbf{x}}$ is the Rayleigh quotient of $A^\top A$, whose largest eigenvalue is $\sigma_1^2$; so the maximum is $\sigma_1$ by Proposition~\ref{L2-prop:rayleigh}. For the Frobenius norm, $\norm{A}_F^2 = \tr(A^\top A)$ is the sum of the eigenvalues of $A^\top A$ (by Lecture~1, the trace is the sum of the eigenvalues), which is $\sigma_1^2 + \cdots + \sigma_r^2$.
 \end{proof}
 
 The rank-$1$ expansion suggests approximating $A$ by keeping only the terms with the largest singular values. This is the best possible approximation of a given rank.
 
 \begin{theorem}[Eckart--Young]\label{L2-thm:eckart-young}
-    Let $A$ have the SVD $A = \sum_{i=1}^r \sigma_i u_i v_i^\top$, and for $k < r$ let
-    \[A_k = \sigma_1 u_1 v_1^\top + \cdots + \sigma_k u_k v_k^\top.\]
+    Let $A$ have the SVD $A = \sum_{i=1}^r \sigma_i \mathbf{u}_i \mathbf{v}_i^\top$, and for $k < r$ let
+    \[A_k = \sigma_1 \mathbf{u}_1 \mathbf{v}_1^\top + \cdots + \sigma_k \mathbf{u}_k \mathbf{v}_k^\top.\]
     Then $\rank(A_k) = k$, and for every matrix $B$ of rank at most $k$,
     \[\norm{A - A_k}_2 = \sigma_{k+1} \leq \norm{A - B}_2 \qquad \text{and} \qquad \norm{A - A_k}_F = \sqrt{\sigma_{k+1}^2 + \cdots + \sigma_r^2} \leq \norm{A - B}_F.\]
 \end{theorem}
 
-The formulas for $\norm{A - A_k}_2$ and $\norm{A - A_k}_F$ follow from Proposition~\ref{L2-prop:matrix-norms}, since $A - A_k = \sum_{i > k} \sigma_i u_i v_i^\top$ is an SVD of $A - A_k$. We do not prove the optimality.
+\begin{proof}
+    Since $A_k\mathbf{x} = \sum_{i \leq k} \sigma_i (\mathbf{v}_i^\top \mathbf{x}) \mathbf{u}_i$ for every $\mathbf{x}$, and $A_k\mathbf{v}_i = \sigma_i \mathbf{u}_i$ for $i \leq k$, the column space of $A_k$ is $\Span\{\mathbf{u}_1, \ldots, \mathbf{u}_k\}$, so $\rank(A_k) = k$. Moreover, $A - A_k = \sum_{i > k} \sigma_i \mathbf{u}_i \mathbf{v}_i^\top$ is an SVD of $A - A_k$, with the singular values $\sigma_{k+1}, \ldots, \sigma_r$, so the formulas for $\norm{A - A_k}_2$ and $\norm{A - A_k}_F$ follow from Proposition~\ref{L2-prop:matrix-norms}. Now let $\rank(B) \leq k$, and let $A$ be $m \times n$.
+
+    \emph{Spectral norm.} By the rank--nullity theorem, $\dim\Null(B) \geq n - k$. The subspaces $\Null(B)$ and $\Span\{\mathbf{v}_1, \ldots, \mathbf{v}_{k+1}\}$ of $\mathbb{R}^n$ have dimensions adding up to more than $n$, so they have a nonzero vector in common: together, a basis of the first and a basis of the second contain more than $n$ vectors, so some nontrivial linear combination of them is $0$, and moving the terms of the second basis to the other side gives a vector $\mathbf{x}$ that lies in both subspaces; it is nonzero, since each basis is linearly independent. We may assume $\norm{\mathbf{x}} = 1$. Write $\mathbf{x} = \sum_{i \leq k+1} c_i \mathbf{v}_i$ with $\sum_i c_i^2 = 1$. Then $B\mathbf{x} = \mathbf{0}$ and $A\mathbf{x} = \sum_{i \leq k+1} \sigma_i c_i \mathbf{u}_i$, so
+    \[\norm{A - B}_2^2 \geq \norm{(A - B)\mathbf{x}}^2 = \norm{A\mathbf{x}}^2 = \sum_{i=1}^{k+1} \sigma_i^2 c_i^2 \geq \sigma_{k+1}^2 \sum_{i=1}^{k+1} c_i^2 = \sigma_{k+1}^2.\]
+
+    \emph{Frobenius norm.} Choose an orthonormal basis of $\col(B)$, which has at most $k$ vectors, and add vectors of an orthonormal basis of $\col(B)^\perp$ (Theorem~\ref{L2-thm:orth-decomposition}) until there are $k$ vectors; this is possible since $k < r \leq m$. Let $W$ be their span, and $C$ the $m \times k$ matrix with these columns, so that $C^\top C = I_k$, and $P = CC^\top$ is the matrix of the orthogonal projection onto $W \supseteq \col(B)$ (Proposition~\ref{L2-prop:projection-matrix}). For each column $\mathbf{a}_j$ of $A$ and $\mathbf{b}_j$ of $B$, we have $\mathbf{a}_j - \mathbf{b}_j = (P\mathbf{a}_j - \mathbf{b}_j) + (\mathbf{a}_j - P\mathbf{a}_j)$ with $P\mathbf{a}_j - \mathbf{b}_j \in W$ and $\mathbf{a}_j - P\mathbf{a}_j \in W^\perp$, so by Pythagoras,
+    \[\norm{\mathbf{a}_j - \mathbf{b}_j}^2 \geq \norm{\mathbf{a}_j - P\mathbf{a}_j}^2 = \norm{\mathbf{a}_j}^2 - \norm{P\mathbf{a}_j}^2 = \norm{\mathbf{a}_j}^2 - \norm{C^\top \mathbf{a}_j}^2.\]
+    Adding over $j$ gives $\norm{A - B}_F^2 \geq \norm{A}_F^2 - \norm{C^\top A}_F^2 = \norm{A}_F^2 - \tr(C^\top AA^\top C)$. The symmetric matrix $AA^\top = U\Sigma\Sigma^\top U^\top$ has the eigenvalues $\sigma_1^2 \geq \cdots \geq \sigma_r^2$, followed by zeros, so by Proposition~\ref{L2-prop:ky-fan}, $\tr(C^\top AA^\top C) \leq \sigma_1^2 + \cdots + \sigma_k^2$. Since $\norm{A}_F^2 = \sigma_1^2 + \cdots + \sigma_r^2$, we get $\norm{A - B}_F^2 \geq \sigma_{k+1}^2 + \cdots + \sigma_r^2$.
+\end{proof}
 
 \begin{example}\label{L2-ex:low-rank}
-    Let $A = \begin{pmatrix} 3 & 0 \\ 4 & 5 \end{pmatrix}$. Then $A^\top A = \begin{pmatrix} 25 & 20 \\ 20 & 25 \end{pmatrix}$ has the eigenvalues $45$ and $5$, with eigenvectors $v_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $v_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. So $\sigma_1 = 3\sqrt{5}$, $\sigma_2 = \sqrt{5}$, and
-    \[u_1 = \frac{1}{3\sqrt{5}} A v_1 = \frac{1}{\sqrt{10}} \begin{pmatrix} 1 \\ 3 \end{pmatrix}, \qquad u_2 = \frac{1}{\sqrt{5}} A v_2 = \frac{1}{\sqrt{10}} \begin{pmatrix} 3 \\ -1 \end{pmatrix}.\]
+    Let $A = \begin{pmatrix} 3 & 0 \\ 4 & 5 \end{pmatrix}$. Then $A^\top A = \begin{pmatrix} 25 & 20 \\ 20 & 25 \end{pmatrix}$ has the eigenvalues $45$ and $5$, with eigenvectors $\mathbf{v}_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $\mathbf{v}_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. So $\sigma_1 = 3\sqrt{5}$, $\sigma_2 = \sqrt{5}$, and
+    \[\mathbf{u}_1 = \frac{1}{3\sqrt{5}} A \mathbf{v}_1 = \frac{1}{\sqrt{10}} \begin{pmatrix} 1 \\ 3 \end{pmatrix}, \qquad \mathbf{u}_2 = \frac{1}{\sqrt{5}} A \mathbf{v}_2 = \frac{1}{\sqrt{10}} \begin{pmatrix} 3 \\ -1 \end{pmatrix}.\]
     The best rank-$1$ approximation of $A$ is
-    \[A_1 = \sigma_1 u_1 v_1^\top = 3\sqrt{5} \cdot \frac{1}{\sqrt{20}} \begin{pmatrix} 1 \\ 3 \end{pmatrix} \begin{pmatrix} 1 & 1 \end{pmatrix} = \begin{pmatrix} 1.5 & 1.5 \\ 4.5 & 4.5 \end{pmatrix},\]
+    \[A_1 = \sigma_1 \mathbf{u}_1 \mathbf{v}_1^\top = 3\sqrt{5} \cdot \frac{1}{\sqrt{20}} \begin{pmatrix} 1 \\ 3 \end{pmatrix} \begin{pmatrix} 1 & 1 \end{pmatrix} = \begin{pmatrix} 1.5 & 1.5 \\ 4.5 & 4.5 \end{pmatrix},\]
     with error $\norm{A - A_1}_F = \norm{A - A_1}_2 = \sigma_2 = \sqrt{5}$. Also, $\norm{A}_2 = 3\sqrt{5} \approx 6.71$.
 \end{example}
 
 \begin{remark}[Low-rank approximation in machine learning]
-    A grayscale image with $m \times n$ pixels is an $m \times n$ matrix. Storing its rank-$k$ approximation $A_k$ requires only the $k(m + n + 1)$ numbers $\sigma_i$, $u_i$, $v_i$, instead of $mn$; for natural images, the singular values decay quickly, and a small $k$ already gives a good approximation (Programming Exercise~P10). The same idea is behind recommender systems, which approximate the matrix of user ratings by a low-rank matrix, latent semantic analysis of text, and the compression of large neural networks.
+    A grayscale image with $m \times n$ pixels is an $m \times n$ matrix. Storing its rank-$k$ approximation $A_k$ requires only the $k(m + n + 1)$ numbers $\sigma_i$, $\mathbf{u}_i$, $\mathbf{v}_i$, instead of $mn$; for natural images, the singular values decay quickly, and a small $k$ already gives a good approximation (Programming Exercise~P10). The same idea is behind recommender systems, which approximate the matrix of user ratings by a low-rank matrix, latent semantic analysis of text, and the compression of large neural networks.
 \end{remark}
 
 \subsection{The pseudo-inverse}
@@ -1183,7 +1295,7 @@ The formulas for $\norm{A - A_k}_2$ and $\norm{A - A_k}_F$ follow from Propositi
 If $A$ is invertible, then $A^+ = A^{-1}$, since $A^{-1} = (U\Sigma V^\top)^{-1} = V\Sigma^{-1}U^\top$.
 
 \begin{proposition}\label{L2-prop:pinv}
-    If $A$ has linearly independent columns, then $A^+ = (A^\top A)^{-1} A^\top$, and $A^+ y$ is the least squares solution of $Aw \approx y$ (Theorem~\ref{L2-thm:least-squares}).
+    If $A$ has linearly independent columns, then $A^+ = (A^\top A)^{-1} A^\top$, and $A^+ \mathbf{y}$ is the least squares solution of $A\mathbf{w} \approx \mathbf{y}$ (Theorem~\ref{L2-thm:least-squares}).
 \end{proposition}
 
 \begin{proof}
@@ -1192,82 +1304,100 @@ If $A$ is invertible, then $A^+ = A^{-1}$, since $A^{-1} = (U\Sigma V^\top)^{-1}
     The second statement is Theorem~\ref{L2-thm:least-squares}.
 \end{proof}
 
-In general, when the columns of $A$ are dependent, the least squares problem has infinitely many solutions, and $A^+y$ is the one with the smallest norm (we state this without proof). NumPy's \py{np.linalg.pinv} and \py{np.linalg.lstsq} use the SVD in this way.
+In general, when the columns of $A$ are dependent, the least squares problem has infinitely many solutions, and $A^+\mathbf{y}$ is the one with the smallest norm.
+
+\begin{proposition}\label{L2-prop:pinv-min-norm}
+    Let $A$ be an $m \times n$ matrix and $\mathbf{y} \in \mathbb{R}^m$. The vectors $\mathbf{w}$ that minimize $\norm{A\mathbf{w} - \mathbf{y}}$ are exactly the vectors $\mathbf{w} = A^+\mathbf{y} + \mathbf{v}$ with $\mathbf{v} \in \Null(A)$, and among them, $A^+\mathbf{y}$ is the only one with the smallest norm.
+\end{proposition}
+
+\begin{proof}
+    Let $A = U\Sigma V^\top$, and write $\mathbf{z} = V^\top \mathbf{w}$ and $\mathbf{c} = U^\top \mathbf{y}$. Since $U^\top$ preserves lengths (Theorem~\ref{L2-thm:orthogonal}) and $U^\top A = \Sigma V^\top$,
+    \[\norm{A\mathbf{w} - \mathbf{y}}^2 = \norm{U^\top(A\mathbf{w} - \mathbf{y})}^2 = \norm{\Sigma \mathbf{z} - \mathbf{c}}^2 = \sum_{i=1}^r (\sigma_i z_i - c_i)^2 + \sum_{i=r+1}^m c_i^2.\]
+    This is smallest if and only if $z_i = c_i/\sigma_i$ for $i \leq r$, with $z_{r+1}, \ldots, z_n$ arbitrary. For $z_{r+1} = \cdots = z_n = 0$, this is $\mathbf{z} = \Sigma^+\mathbf{c}$, i.e., $\mathbf{w} = V\Sigma^+U^\top \mathbf{y} = A^+\mathbf{y}$. In general, $\mathbf{w} = V\mathbf{z} = A^+\mathbf{y} + \sum_{i > r} z_i\mathbf{v}_i$, and the vectors $\sum_{i > r} z_i\mathbf{v}_i$ are exactly the elements of $\Null(A)$ (Proposition~\ref{L2-prop:svd-subspaces}). Finally, $\norm{\mathbf{w}}^2 = \norm{\mathbf{z}}^2 = \sum_{i \leq r}(c_i/\sigma_i)^2 + \sum_{i > r} z_i^2$ is smallest exactly when $z_{r+1} = \cdots = z_n = 0$.
+\end{proof}
+
+NumPy's \py{np.linalg.pinv} and \py{np.linalg.lstsq} use the SVD in this way.
 
 \subsection{Principal component analysis}\label{L2-sec:pca}
 
-Principal component analysis (PCA) is the most widely used method to reduce the dimension of data. Let $x_1, \ldots, x_N \in \mathbb{R}^d$ be data points, which we assume to be centered, i.e., $\sum_i x_i = 0$ (otherwise, subtract the mean from every data point first). Let $X$ be the $N \times d$ data matrix whose rows are $x_1^\top, \ldots, x_N^\top$, and let
-\[S = \frac{1}{N} X^\top X = \frac{1}{N} \sum_{i=1}^N x_i x_i^\top\]
+Principal component analysis (PCA) is the most widely used method to reduce the dimension of data. Let $\mathbf{x}_1, \ldots, \mathbf{x}_N \in \mathbb{R}^d$ be data points, which we assume to be centered, i.e., $\sum_i \mathbf{x}_i = \mathbf{0}$ (otherwise, subtract the mean from every data point first). Let $X$ be the $N \times d$ data matrix whose rows are $\mathbf{x}_1^\top, \ldots, \mathbf{x}_N^\top$, and let
+\[S = \frac{1}{N} X^\top X = \frac{1}{N} \sum_{i=1}^N \mathbf{x}_i \mathbf{x}_i^\top\]
 be the (sample) covariance matrix, which is symmetric positive semidefinite.
 
-We look for a $k$-dimensional subspace $U$ such that the projected data points $\pi_U(x_i)$ are as close as possible to the original ones, i.e., such that the reconstruction error $\sum_i \norm{x_i - \pi_U(x_i)}^2$ is as small as possible. By Pythagoras, $\norm{x_i}^2 = \norm{\pi_U(x_i)}^2 + \norm{x_i - \pi_U(x_i)}^2$, so equivalently, we look for the subspace for which the projected data has the largest spread $\sum_i \norm{\pi_U(x_i)}^2$.
+We look for a $k$-dimensional subspace $U$ such that the projected data points $\pi_U(\mathbf{x}_i)$ are as close as possible to the original ones, i.e., such that the reconstruction error $\sum_i \norm{\mathbf{x}_i - \pi_U(\mathbf{x}_i)}^2$ is as small as possible. By Pythagoras, $\norm{\mathbf{x}_i}^2 = \norm{\pi_U(\mathbf{x}_i)}^2 + \norm{\mathbf{x}_i - \pi_U(\mathbf{x}_i)}^2$, so equivalently, we look for the subspace for which the projected data has the largest spread $\sum_i \norm{\pi_U(\mathbf{x}_i)}^2$.
 
 \begin{theorem}[PCA]\label{L2-thm:pca}
-    Let $q_1, \ldots, q_d$ be orthonormal eigenvectors of $S$ with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_d \geq 0$. Among all $k$-dimensional subspaces $U$ of $\mathbb{R}^d$, the reconstruction error is smallest for $U = \Span\{q_1, \ldots, q_k\}$, and then
-    \[\frac{1}{N}\sum_{i=1}^N \norm{x_i - \pi_U(x_i)}^2 = \lambda_{k+1} + \cdots + \lambda_d.\]
+    Let $\mathbf{q}_1, \ldots, \mathbf{q}_d$ be orthonormal eigenvectors of $S$ with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_d \geq 0$. Among all $k$-dimensional subspaces $U$ of $\mathbb{R}^d$, the reconstruction error is smallest for $U = \Span\{\mathbf{q}_1, \ldots, \mathbf{q}_k\}$, and then
+    \[\frac{1}{N}\sum_{i=1}^N \norm{\mathbf{x}_i - \pi_U(\mathbf{x}_i)}^2 = \lambda_{k+1} + \cdots + \lambda_d.\]
 \end{theorem}
 
-\begin{proof}[Proof for $k = 1$]
-    Let $U = \Span\{b\}$ with $\norm{b} = 1$. Then $\pi_U(x_i) = (b^\top x_i) b$, and
-    \[\frac{1}{N}\sum_{i=1}^N \norm{\pi_U(x_i)}^2 = \frac{1}{N}\sum_{i=1}^N (b^\top x_i)^2 = \frac{1}{N}\norm{Xb}^2 = b^\top S b,\]
-    which by Proposition~\ref{L2-prop:rayleigh} is at most $\lambda_1$, with equality for $b = q_1$. The error formula follows from Pythagoras, since $\frac{1}{N}\sum_i \norm{x_i}^2 = \frac{1}{N}\tr(X^\top X) = \tr(S) = \lambda_1 + \cdots + \lambda_d$. The general case can be proved similarly; we omit it.
+\begin{proof}
+    Let $\mathbf{b}_1, \ldots, \mathbf{b}_k$ be an orthonormal basis of $U$. Then $\pi_U(\mathbf{x}_i) = \sum_j (\mathbf{b}_j^\top \mathbf{x}_i) \mathbf{b}_j$, so $\norm{\pi_U(\mathbf{x}_i)}^2 = \sum_j (\mathbf{b}_j^\top \mathbf{x}_i)^2$ by Pythagoras, and
+    \[\frac{1}{N}\sum_{i=1}^N \norm{\pi_U(\mathbf{x}_i)}^2 = \sum_{j=1}^k \frac{1}{N}\sum_{i=1}^N (\mathbf{b}_j^\top \mathbf{x}_i)^2 = \sum_{j=1}^k \frac{1}{N}\norm{X\mathbf{b}_j}^2 = \sum_{j=1}^k \mathbf{b}_j^\top S \mathbf{b}_j,\]
+    which by Proposition~\ref{L2-prop:ky-fan} is at most $\lambda_1 + \cdots + \lambda_k$, with equality for $\mathbf{b}_j = \mathbf{q}_j$. For $k = 1$, this is just Proposition~\ref{L2-prop:rayleigh}. The error formula follows from Pythagoras, since $\frac{1}{N}\sum_i \norm{\mathbf{x}_i}^2 = \frac{1}{N}\tr(X^\top X) = \tr(S) = \lambda_1 + \cdots + \lambda_d$.
 \end{proof}
 
-The vectors $q_1, q_2, \ldots$ are called the principal components, or principal directions, of the data, and $\lambda_i = q_i^\top S q_i$ is the variance of the data in the direction $q_i$. The fraction $\frac{\lambda_1 + \cdots + \lambda_k}{\lambda_1 + \cdots + \lambda_d}$ is the proportion of the variance explained by the first $k$ principal components. In practice, PCA is computed with the SVD of the data matrix: if $X = \tilde{U} \tilde{\Sigma} \tilde{V}^\top$, then
+The vectors $\mathbf{q}_1, \mathbf{q}_2, \ldots$ are called the principal components, or principal directions, of the data, and $\lambda_i = \mathbf{q}_i^\top S \mathbf{q}_i$ is the variance of the data in the direction $\mathbf{q}_i$. The fraction $\frac{\lambda_1 + \cdots + \lambda_k}{\lambda_1 + \cdots + \lambda_d}$ is the proportion of the variance explained by the first $k$ principal components. In practice, PCA is computed with the SVD of the data matrix: if $X = \tilde{U} \tilde{\Sigma} \tilde{V}^\top$, then
 \[S = \frac{1}{N} X^\top X = \tilde{V}\, \frac{\tilde{\Sigma}^\top \tilde{\Sigma}}{N}\, \tilde{V}^\top,\]
 so the principal components are the right singular vectors of $X$, and $\lambda_i = \sigma_i^2 / N$. The coordinates of the data in the principal directions are the entries of $X\tilde{V}$.
 
 \begin{example}\label{L2-ex:pca}
     Consider the four centered data points $(2, 2)$, $(-2, -2)$, $(1, -1)$ and $(-1, 1)$ in $\mathbb{R}^2$. Then
     \[X^\top X = \begin{pmatrix} 10 & 6 \\ 6 & 10 \end{pmatrix}, \qquad S = \frac{1}{4} X^\top X = \begin{pmatrix} 2.5 & 1.5 \\ 1.5 & 2.5 \end{pmatrix},\]
-    with eigenvalues $4$ and $1$ and eigenvectors $q_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $q_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. The first principal component explains $\frac{4}{4 + 1} = 80\%$ of the variance. Projecting onto $\Span\{q_1\}$ keeps the first two points, and maps the last two to $0$; the average reconstruction error is $\frac{1}{4}(0 + 0 + 2 + 2) = 1 = \lambda_2$, as predicted by Theorem~\ref{L2-thm:pca}.
+    with eigenvalues $4$ and $1$ and eigenvectors $\mathbf{q}_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$ and $\mathbf{q}_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$. The first principal component explains $\frac{4}{4 + 1} = 80\%$ of the variance. Projecting onto $\Span\{\mathbf{q}_1\}$ keeps the first two points, and maps the last two to $\mathbf{0}$; the average reconstruction error is $\frac{1}{4}(0 + 0 + 2 + 2) = 1 = \lambda_2$, as predicted by Theorem~\ref{L2-thm:pca}.
 \end{example}
 
 \section{Key Takeaways}
 \begin{itemize}[leftmargin=*]
     \item A norm measures length: it is positive definite, absolutely homogeneous, and satisfies the triangle inequality. Important examples on $\mathbb{R}^n$ are the $\ell_1$, $\ell_2$ and $\ell_\infty$ norms, whose unit balls are a diamond, a ball and a cube.
-    \item An inner product is a symmetric, positive definite, bilinear function. On an $n$-dimensional space with a fixed basis, inner products correspond to symmetric positive definite matrices: $\ip{x}{y} = x^\top A y$.
+    \item An inner product is a symmetric, positive definite, bilinear function. On an $n$-dimensional space with a fixed basis, inner products correspond to symmetric positive definite matrices: $\ip{\mathbf{x}}{\mathbf{y}} = \mathbf{x}^\top A \mathbf{y}$.
     \item Every inner product induces a norm $\norm{x} = \sqrt{\ip{x}{x}}$ and a distance $d(x, y) = \norm{x - y}$. The Cauchy--Schwarz inequality $|\ip{x}{y}| \leq \norm{x}\norm{y}$ gives the triangle inequality and allows us to define angles by $\cos\omega = \frac{\ip{x}{y}}{\norm{x}\norm{y}}$.
     \item Vectors are orthogonal if their inner product is $0$. Orthogonal matrices ($Q^\top Q = I$) are exactly the matrices that preserve dot products, lengths and angles.
     \item In an orthonormal basis, coordinates are inner products: $v = \sum_i \ip{v}{b_i} b_i$. The Gram--Schmidt process turns any basis into an orthonormal basis, and gives the QR decomposition.
     \item Every subspace $U$ of a finite-dimensional inner product space has an orthogonal complement with $V = U \oplus U^\perp$. For a matrix, $\Null(A) = \row(A)^\perp$ and $\Null(A^\top) = \col(A)^\perp$.
-    \item A hyperplane $\{x : w^\top x = c\}$ has normal vector $w$; linear classifiers use hyperplanes as decision boundaries, and the distance of $x$ to the hyperplane is $\frac{|w^\top x - c|}{\norm{w}}$.
-    \item The orthogonal projection onto $U = \col(B)$ is $\pi_U(x) = B(B^\top B)^{-1}B^\top x$; it is the point of $U$ closest to $x$. Least squares regression projects the target vector onto the column space of the design matrix, which leads to the normal equations $A^\top A w = A^\top y$.
+    \item A hyperplane $\{\mathbf{x} : \mathbf{w}^\top \mathbf{x} = c\}$ has normal vector $\mathbf{w}$; linear classifiers use hyperplanes as decision boundaries, and the distance of $\mathbf{x}$ to the hyperplane is $\frac{|\mathbf{w}^\top \mathbf{x} - c|}{\norm{\mathbf{w}}}$.
+    \item The orthogonal projection onto $U = \col(B)$ is $\pi_U(\mathbf{x}) = B(B^\top B)^{-1}B^\top \mathbf{x}$; it is the point of $U$ closest to $\mathbf{x}$. Least squares regression projects the target vector onto the column space of the design matrix, which leads to the normal equations $A^\top A \mathbf{w} = A^\top \mathbf{y}$.
     \item Rotations are orthogonal matrices with determinant $1$. They preserve lengths, angles and orientation; rotations of the plane commute, but rotations of $\mathbb{R}^3$ do not.
-    \item Spectral theorem: a symmetric matrix has real eigenvalues and an orthonormal basis of eigenvectors, $A = Q\Lambda Q^\top = \sum_i \lambda_i q_i q_i^\top$. It is positive definite if and only if all eigenvalues are positive, and $\max_{\norm{x} = 1} x^\top A x = \lambda_{\max}$.
-    \item Every matrix has a singular value decomposition $A = U\Sigma V^\top = \sum_{i=1}^r \sigma_i u_i v_i^\top$: rotate, scale the axes by the singular values, rotate. The $\sigma_i^2$ are the eigenvalues of $A^\top A$, $r = \rank(A)$, $\norm{A}_2 = \sigma_1$ and $\norm{A}_F^2 = \sum_i \sigma_i^2$.
+    \item Spectral theorem: a symmetric matrix has real eigenvalues and an orthonormal basis of eigenvectors, $A = Q\Lambda Q^\top = \sum_i \lambda_i \mathbf{q}_i \mathbf{q}_i^\top$. It is positive definite if and only if all eigenvalues are positive, and $\max_{\norm{\mathbf{x}} = 1} \mathbf{x}^\top A \mathbf{x} = \lambda_{\max}$.
+    \item The Laplacian $L = D - W$ of a weighted graph satisfies $\mathbf{x}^\top L\mathbf{x} = \sum_{i < j} w_{ij}(x_i - x_j)^2$, so it is positive semidefinite. The multiplicity of its eigenvalue $0$ is the number of connected components, and its second smallest eigenvalue $\lambda_2$ is a lower bound for the ratio cut of every split of the vertices. Spectral clustering splits the vertices by the signs of the Fiedler vector $\mathbf{q}_2$.
+    \item Every matrix has a singular value decomposition $A = U\Sigma V^\top = \sum_{i=1}^r \sigma_i \mathbf{u}_i \mathbf{v}_i^\top$: rotate, scale the axes by the singular values, rotate. The $\sigma_i^2$ are the eigenvalues of $A^\top A$, $r = \rank(A)$, $\norm{A}_2 = \sigma_1$ and $\norm{A}_F^2 = \sum_i \sigma_i^2$.
     \item Keeping the $k$ largest singular values gives the best rank-$k$ approximation (Eckart--Young), with applications to compression and recommender systems. PCA projects centered data onto the eigenvectors of the covariance matrix with the largest eigenvalues, i.e., onto the top right singular vectors of the data matrix.
 \end{itemize}
 
 \section{Exercises}\label{L2-sec:exercises}
 \begin{enumerate}[leftmargin=*]
-    \item Let $x = (1, -2, 2)^\top$ and $y = (3, 0, 1)^\top$. Compute $\norm{x}_1$, $\norm{x}_2$ and $\norm{x}_\infty$, and the distance between $x$ and $y$ in each of the three norms.
-    \item Show that $\norm{x}_2 \leq \sqrt{n}\, \norm{x}_\infty$ for all $x \in \mathbb{R}^n$. For which vectors $x$ does equality hold in $\norm{x}_1 \leq \sqrt{n}\, \norm{x}_2$?
+    \item Let $\mathbf{x} = (1, -2, 2)^\top$ and $\mathbf{y} = (3, 0, 1)^\top$. Compute $\norm{\mathbf{x}}_1$, $\norm{\mathbf{x}}_2$ and $\norm{\mathbf{x}}_\infty$, and the distance between $\mathbf{x}$ and $\mathbf{y}$ in each of the three norms.
+    \item Show that $\norm{\mathbf{x}}_2 \leq \sqrt{n}\, \norm{\mathbf{x}}_\infty$ for all $\mathbf{x} \in \mathbb{R}^n$. For which vectors $\mathbf{x}$ does equality hold in $\norm{\mathbf{x}}_1 \leq \sqrt{n}\, \norm{\mathbf{x}}_2$?
     \item Show that the $\ell_\infty$ norm on $\mathbb{R}^2$ does not satisfy the parallelogram law, and conclude that it does not come from an inner product.
-    \item Which of the following matrices are symmetric positive definite? For each one that is, write down the corresponding inner product $\ip{x}{y} = x^\top A y$ on $\mathbb{R}^2$ explicitly.
+    \item Which of the following matrices are symmetric positive definite? For each one that is, write down the corresponding inner product $\ip{\mathbf{x}}{\mathbf{y}} = \mathbf{x}^\top A \mathbf{y}$ on $\mathbb{R}^2$ explicitly.
     \[\begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}, \qquad \begin{pmatrix} 1 & 2 \\ 2 & 1 \end{pmatrix}, \qquad \begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix}, \qquad \begin{pmatrix} 4 & -2 \\ -2 & 1 \end{pmatrix}, \qquad \begin{pmatrix} 3 & 1 \\ 1 & 1 \end{pmatrix}.\]
     \item Find the angle between the vectors: (a) $(1, 1, 0)^\top$ and $(1, 0, 1)^\top$; (b) $(1, 2, 3)^\top$ and $(-3, 0, 1)^\top$; (c) $(1, 0)^\top$ and $(-1, \sqrt{3})^\top$.
     \item \begin{enumerate}[label=(\alph*)]
         \item Find all vectors in $\mathbb{R}^3$ that are orthogonal to both $(1, 1, 1)^\top$ and $(1, -1, 1)^\top$. (Hint: this is the null space of a matrix.)
         \item The planes $x + y + z = 3$ and $x - y + z = 5$ intersect in a line $\ell$. Find an equation of the plane through the origin that is perpendicular to $\ell$.
     \end{enumerate}
-    \item Apply the Gram--Schmidt process to $v_1 = (1, 2, 2)^\top$ and $v_2 = (1, 0, 1)^\top$. Then find a third vector that extends the result to an orthonormal basis of $\mathbb{R}^3$, and write $(1, 1, 1)^\top$ in this basis. Check Parseval's identity.
+    \item Apply the Gram--Schmidt process to $\mathbf{v}_1 = (1, 2, 2)^\top$ and $\mathbf{v}_2 = (1, 0, 1)^\top$. Then find a third vector that extends the result to an orthonormal basis of $\mathbb{R}^3$, and write $(1, 1, 1)^\top$ in this basis. Check Parseval's identity.
     \item Find a basis of the orthogonal complement of $U = \Span\{(1, 0, 1, 0)^\top, (0, 1, 0, 1)^\top\}$ in $\mathbb{R}^4$.
-    \item Let $x = (1, 0, 2)^\top$. Compute the orthogonal projection of $x$ onto (a) the line spanned by $(1, 1, 0)^\top$, and (b) the plane $x_1 + x_2 + x_3 = 0$. Write down the projection matrices of both projections.
+    \item Let $\mathbf{x} = (1, 0, 2)^\top$. Compute the orthogonal projection of $\mathbf{x}$ onto (a) the line spanned by $(1, 1, 0)^\top$, and (b) the plane $x_1 + x_2 + x_3 = 0$. Write down the projection matrices of both projections.
     \item Find the point of the plane $2x + y + 3z = 3$ that is closest to the origin, and the distance from the origin to this plane.
-    \item Let $P$ be a symmetric $n \times n$ matrix with $P^2 = P$. Show that $P$ is the matrix of the orthogonal projection onto $\col(P)$. (Hint: show that $x - Px \in \col(P)^\perp = \Null(P^\top)$.)
-    \item Let $u \in \mathbb{R}^n$ be a unit vector, and let $H = I_n - 2uu^\top$.
+    \item Let $P$ be a symmetric $n \times n$ matrix with $P^2 = P$. Show that $P$ is the matrix of the orthogonal projection onto $\col(P)$. (Hint: show that $\mathbf{x} - P\mathbf{x} \in \col(P)^\perp = \Null(P^\top)$.)
+    \item Let $\mathbf{u} \in \mathbb{R}^n$ be a unit vector, and let $H = I_n - 2\mathbf{u}\mathbf{u}^\top$.
     \begin{enumerate}[label=(\alph*)]
         \item Show that $H$ is symmetric and orthogonal, and that $H^2 = I_n$.
-        \item Show that $Hu = -u$, and that $Hx = x$ for every $x \perp u$. Describe $H$ geometrically. (Such matrices are called Householder reflections; \py{np.linalg.qr} uses them.)
+        \item Show that $H\mathbf{u} = -\mathbf{u}$, and that $H\mathbf{x} = \mathbf{x}$ for every $\mathbf{x} \perp \mathbf{u}$. Describe $H$ geometrically. (Such matrices are called Householder reflections; \py{np.linalg.qr} uses them.)
     \end{enumerate}
     \item\label{L2-ex2:best-poly} Find the polynomial $p$ of degree at most $1$ that minimizes $\int_{-1}^1 \big(x^3 - p(x)\big)^2 \, dx$, by projecting $x^3$ onto $\Span\{1, x\}$ in $C[-1, 1]$. Compare with Example~\ref{L2-ex:legendre}.
     \item Find the least squares line for the data points $(0, 1)$, $(1, 1)$ and $(2, 3)$, and check that the residual vector is orthogonal to the columns of the design matrix.
     \item Show that the product of two orthogonal $2 \times 2$ matrices with determinant $-1$ (for example, two reflections) is a rotation. Compute $R_1(\theta)^\top R_1(\theta)$ and $\det R_1(\theta)$.
     \item Use the Cauchy--Schwarz inequality to show that $(x_1 + \cdots + x_n)^2 \leq n(x_1^2 + \cdots + x_n^2)$. Conclude that if $a, b, c \geq 0$ and $a + b + c = 1$, then $a^2 + b^2 + c^2 \geq \frac{1}{3}$. When does equality hold?
-    \item Find the spectral decomposition $A = Q\Lambda Q^\top$ of $A = \begin{pmatrix} 5 & 2 \\ 2 & 2 \end{pmatrix}$, and write $A$ as $\lambda_1 q_1 q_1^\top + \lambda_2 q_2 q_2^\top$. Is $A$ positive definite? Conversely, show that every matrix of the form $Q\Lambda Q^\top$, with $Q$ orthogonal and $\Lambda$ diagonal, is symmetric.
-    \item Find the largest and the smallest value of $x^\top A x$ over all unit vectors $x \in \mathbb{R}^2$, for $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, and the unit vectors where they are attained.
-    \item Compute an SVD of (a) $\begin{pmatrix} 0 & 2 \\ 1 & 0 \end{pmatrix}$ and (b) $\begin{pmatrix} 2 & 2 \\ 1 & 1 \end{pmatrix}$. For (b), write $A$ as $\sigma_1 u_1 v_1^\top$, and compute the pseudo-inverse $A^+$.
+    \item Find the spectral decomposition $A = Q\Lambda Q^\top$ of $A = \begin{pmatrix} 5 & 2 \\ 2 & 2 \end{pmatrix}$, and write $A$ as $\lambda_1 \mathbf{q}_1 \mathbf{q}_1^\top + \lambda_2 \mathbf{q}_2 \mathbf{q}_2^\top$. Is $A$ positive definite? Conversely, show that every matrix of the form $Q\Lambda Q^\top$, with $Q$ orthogonal and $\Lambda$ diagonal, is symmetric.
+    \item Find the largest and the smallest value of $\mathbf{x}^\top A \mathbf{x}$ over all unit vectors $\mathbf{x} \in \mathbb{R}^2$, for $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, and the unit vectors where they are attained.
+    \item Let $L$ be the Laplacian of a graph with weights $w_{ij}$.
+    \begin{enumerate}
+        \item Show that $L = \sum_{i < j} w_{ij}(\mathbf{e}_i - \mathbf{e}_j)(\mathbf{e}_i - \mathbf{e}_j)^\top$, and use this to give another proof of Proposition~\ref{L2-prop:laplacian}.
+        \item Find the Laplacian and its eigenvalues for the star graph with the center $1$ and the leaves $2, \ldots, n$, where $n \geq 3$ and all weights are $1$. (Hint: consider the vectors with $x_1 = 0$ whose entries add up to $0$, and the vector $(n - 1, -1, \ldots, -1)^\top$.) Why is the Fiedler vector not unique, and what does this say about clusters in a star?
+    \end{enumerate}
+    \item Compute an SVD of (a) $\begin{pmatrix} 0 & 2 \\ 1 & 0 \end{pmatrix}$ and (b) $\begin{pmatrix} 2 & 2 \\ 1 & 1 \end{pmatrix}$. For (b), write $A$ as $\sigma_1 \mathbf{u}_1 \mathbf{v}_1^\top$, and compute the pseudo-inverse $A^+$.
     \item Show that:
     \begin{enumerate}[label=(\alph*)]
         \item all singular values of an orthogonal matrix are equal to $1$;
@@ -1292,11 +1422,11 @@ rng = np.random.default_rng(0)  # random number generator for test data
 \begin{enumerate}[label=\textbf{P\arabic*.}, leftmargin=*]
     \item \textbf{Norms and unit balls.} Write a function \py{p_norm(x, p)} for $p \geq 1$ and $p = \infty$ (use \py{np.inf}), and compare it with \py{np.linalg.norm(x, ord=p)}.
     \begin{itemize}
-        \item For $10\,000$ random vectors in $\mathbb{R}^5$, check the inequalities $\norm{x}_\infty \leq \norm{x}_2 \leq \norm{x}_1 \leq \sqrt{5}\, \norm{x}_2$.
-        \item Plot the unit circles $\{x \in \mathbb{R}^2 : \norm{x}_p = 1\}$ for $p = 1, 1.5, 2, 4, \infty$ in one picture, as in Figure~\ref{L2-fig:unit-balls}. (Hint: for each angle $t$, rescale the vector $(\cos t, \sin t)$ to have $p$-norm $1$.)
+        \item For $10\,000$ random vectors in $\mathbb{R}^5$, check the inequalities $\norm{\mathbf{x}}_\infty \leq \norm{\mathbf{x}}_2 \leq \norm{\mathbf{x}}_1 \leq \sqrt{5}\, \norm{\mathbf{x}}_2$.
+        \item Plot the unit circles $\{\mathbf{x} \in \mathbb{R}^2 : \norm{\mathbf{x}}_p = 1\}$ for $p = 1, 1.5, 2, 4, \infty$ in one picture, as in Figure~\ref{L2-fig:unit-balls}. (Hint: for each angle $t$, rescale the vector $(\cos t, \sin t)$ to have $p$-norm $1$.)
     \end{itemize}
 
-    \item \textbf{Inner products and angles.} Write a function \py{inner(x, y, A)} that computes $x^\top A y$, and functions \py{norm_A(x, A)} and \py{angle_A(x, y, A)} for the induced norm and angle.
+    \item \textbf{Inner products and angles.} Write a function \py{inner(x, y, A)} that computes $\mathbf{x}^\top A \mathbf{y}$, and functions \py{norm_A(x, A)} and \py{angle_A(x, y, A)} for the induced norm and angle.
     \begin{itemize}
         \item Check Example~\ref{L2-ex:orth-depends}: the angle between $(1, 1)$ and $(-1, 1)$ is $90^\circ$ for $A = I_2$, but about $109.5^\circ$ for $A = \diag(2, 1)$.
         \item Write a function \py{is_spd(A)} that tests whether a symmetric $2 \times 2$ matrix is positive definite, using Proposition~\ref{L2-prop:spd-properties}. For larger matrices, NumPy's \py{np.linalg.cholesky(A)} succeeds exactly for symmetric positive definite matrices and raises \py{np.linalg.LinAlgError} otherwise; use it to test the matrices of Exercise~4.
@@ -1306,15 +1436,15 @@ rng = np.random.default_rng(0)  # random number generator for test data
     \item \textbf{Gram--Schmidt, and how it can fail.} Implement the classical Gram--Schmidt process \py{gram_schmidt(V)}, which returns a matrix $Q$ whose columns are the orthonormal vectors obtained from the columns of \py{V}, exactly as in Theorem~\ref{L2-thm:gram-schmidt}.
     \begin{itemize}
         \item Check your function on Example~\ref{L2-ex:gram-schmidt}, and compute $R = Q^\top V$; it should be upper triangular, with $V = QR$.
-        \item The modified Gram--Schmidt process subtracts the components one at a time, from the updated vector: for each $i < j$, replace $u_j$ by $u_j - \ip{u_j}{e_i} e_i$. In exact arithmetic, both versions give the same result. Implement it as well.
+        \item The modified Gram--Schmidt process subtracts the components one at a time, from the updated vector: for each $i < j$, replace $\mathbf{u}_j$ by $\mathbf{u}_j - \ip{\mathbf{u}_j}{\mathbf{e}_i} \mathbf{e}_i$. In exact arithmetic, both versions give the same result. Implement it as well.
         \item For the Hilbert matrices $H_n$ with entries $\frac{1}{i + j - 1}$ (whose columns are nearly linearly dependent) and $n = 6, 8, 10, 12$, compute the loss of orthogonality \py{np.linalg.norm(Q.T @ Q - np.eye(n))} for the classical version, the modified version, and \py{np.linalg.qr}. What do you observe?
     \end{itemize}
 
-    \item \textbf{Projections.} Write a function \py{project(x, B)} that returns the orthogonal projection of $x$ onto the column space of \py{B}, by solving the normal equations, and a function \py{projection_matrix(B)}.
+    \item \textbf{Projections.} Write a function \py{project(x, B)} that returns the orthogonal projection of $\mathbf{x}$ onto the column space of \py{B}, by solving the normal equations, and a function \py{projection_matrix(B)}.
     \begin{itemize}
         \item Check your functions on Example~\ref{L2-ex:projection-plane}.
-        \item For a random $6 \times 3$ matrix $B$ and a random $x \in \mathbb{R}^6$, check that $P^2 = P$, $P^\top = P$, and that $x - Px$ is orthogonal to every column of $B$.
-        \item Check Theorem~\ref{L2-thm:best-approximation} numerically: compare $\norm{x - Px}$ with $\norm{x - B\lambda}$ for $1000$ random vectors $\lambda \in \mathbb{R}^3$.
+        \item For a random $6 \times 3$ matrix $B$ and a random $\mathbf{x} \in \mathbb{R}^6$, check that $P^2 = P$, $P^\top = P$, and that $\mathbf{x} - P\mathbf{x}$ is orthogonal to every column of $B$.
+        \item Check Theorem~\ref{L2-thm:best-approximation} numerically: compare $\norm{\mathbf{x} - P\mathbf{x}}$ with $\norm{\mathbf{x} - B\boldsymbol{\lambda}}$ for $1000$ random vectors $\boldsymbol{\lambda} \in \mathbb{R}^3$.
         \item Orthonormalize the columns of $B$ with your function from P3, and check that $QQ^\top$ is the same projection matrix.
     \end{itemize}
 
@@ -1345,21 +1475,21 @@ X1 = rng.normal([1.5, 1.0], [1.0, 0.3], size=(100, 2))  # class 1
     \begin{itemize}
         \item Check that all of them are orthogonal with determinant $1$, and that they preserve the lengths of random vectors.
         \item Check that \py{R1(t) @ R3(s)} and \py{R3(s) @ R1(t)} differ for most angles, while \py{R3(t) @ R3(s)} equals \py{R3(t + s)}.
-        \item Let \py{Q, R = np.linalg.qr(rng.normal(size=(3, 3)))}. Then \py{Q} is orthogonal, but its determinant may be $-1$. How can you turn it into a rotation by changing the sign of one column? Generate many random rotations this way, apply them to $e_3$, and plot the resulting points on the sphere (Matplotlib can make 3D scatter plots).
+        \item Let \py{Q, R = np.linalg.qr(rng.normal(size=(3, 3)))}. Then \py{Q} is orthogonal, but its determinant may be $-1$. How can you turn it into a rotation by changing the sign of one column? Generate many random rotations this way, apply them to $\mathbf{e}_3$, and plot the resulting points on the sphere (Matplotlib can make 3D scatter plots).
     \end{itemize}
 
-    \item \textbf{The perceptron and its margin.} The perceptron algorithm learns a linear classifier $f(x) = \sign(w^\top x + b)$ from labeled data $(x_i, y_i)$ with $y_i \in \{+1, -1\}$: start with $w = 0$ and $b = 0$, and repeatedly go through the data; whenever a point is misclassified, i.e., $y_i (w^\top x_i + b) \leq 0$, update $w \leftarrow w + y_i x_i$ and $b \leftarrow b + y_i$. Stop when all points are classified correctly.
+    \item \textbf{The perceptron and its margin.} The perceptron algorithm learns a linear classifier $f(\mathbf{x}) = \sign(\mathbf{w}^\top \mathbf{x} + b)$ from labeled data $(\mathbf{x}_i, y_i)$ with $y_i \in \{+1, -1\}$: start with $\mathbf{w} = \mathbf{0}$ and $b = 0$, and repeatedly go through the data; whenever a point is misclassified, i.e., $y_i (\mathbf{w}^\top \mathbf{x}_i + b) \leq 0$, update $\mathbf{w} \leftarrow \mathbf{w} + y_i \mathbf{x}_i$ and $b \leftarrow b + y_i$. Stop when all points are classified correctly.
     \begin{itemize}
-        \item Generate linearly separable data, e.g., $50$ points on each side of the line $x_1 + x_2 = 2$ (discard points that are closer than $0.2$ to the line), and run the perceptron.
-        \item Using Theorem~\ref{L2-thm:distance-hyperplane}, compute the margin of the learned classifier, i.e., the smallest distance of a training point to the decision boundary. Compare it with the margin of the classifier $w = (1, 1)$, $b = -2$.
+        \item Generate linearly separable data, e.g., $50$ points on each side of the line $\mathbf{x}_1 + \mathbf{x}_2 = 2$ (discard points that are closer than $0.2$ to the line), and run the perceptron.
+        \item Using Theorem~\ref{L2-thm:distance-hyperplane}, compute the margin of the learned classifier, i.e., the smallest distance of a training point to the decision boundary. Compare it with the margin of the classifier $\mathbf{w} = (1, 1)$, $b = -2$.
         \item Count the number of updates the perceptron needs. How does it change when you discard points closer than $0.5$ (instead of $0.2$) to the line?
     \end{itemize}
 
     \item \textbf{The spectral theorem in practice.} For symmetric matrices, use \py{np.linalg.eigh}, which returns real eigenvalues in increasing order and orthonormal eigenvectors.
     \begin{itemize}
-        \item For a random symmetric matrix \py{A = B + B.T} (with \py{B = rng.normal(size=(5, 5))}), check that \py{Q.T @ Q} is close to $I_5$ and that \py{Q @ np.diag(lam) @ Q.T} is close to $A$. Check the spectral decomposition $A = \sum_i \lambda_i q_i q_i^\top$ as well.
+        \item For a random symmetric matrix \py{A = B + B.T} (with \py{B = rng.normal(size=(5, 5))}), check that \py{Q.T @ Q} is close to $I_5$ and that \py{Q @ np.diag(lam) @ Q.T} is close to $A$. Check the spectral decomposition $A = \sum_i \lambda_i \mathbf{q}_i \mathbf{q}_i^\top$ as well.
         \item Write a function \py{is_spd(A)} based on Corollary~\ref{L2-cor:spd-eigenvalues}, and compare it with your test from P2.
-        \item Check Proposition~\ref{L2-prop:rayleigh} numerically: evaluate the Rayleigh quotient $\frac{x^\top A x}{x^\top x}$ at $10\,000$ random vectors, and compare the largest and smallest values you find with the largest and smallest eigenvalues.
+        \item Check Proposition~\ref{L2-prop:rayleigh} numerically: evaluate the Rayleigh quotient $\frac{\mathbf{x}^\top A \mathbf{x}}{\mathbf{x}^\top \mathbf{x}}$ at $10\,000$ random vectors, and compare the largest and smallest values you find with the largest and smallest eigenvalues.
     \end{itemize}
 
     \item \textbf{Image compression with the SVD.} Load a grayscale image as a 2D array \py{A}, for example with \py{A = plt.imread("photo.png").mean(axis=2)} for a color image (with \py{import matplotlib.pyplot as plt}), or create one, e.g., from the function $\sin(x)\cos(y) + \frac{x}{10}$ on a $200 \times 300$ grid plus some noise.
@@ -1384,6 +1514,18 @@ X = rng.normal(size=(500, 2)) @ rng.normal(size=(2, 10))
 X = X + 0.05 * rng.normal(size=(500, 10))  # small noise
 \end{lstlisting}
         Plot the $10$ eigenvalues of the covariance matrix. How can you see from this plot that the data is essentially $2$-dimensional?
+    \end{itemize}
+
+    \item \textbf{Spectral clustering.} Generate $100$ points on each of two concentric circles with the radii $1$ and $3$:
+\begin{lstlisting}
+t = rng.uniform(0, 2 * np.pi, 200)
+r = np.repeat([1.0, 3.0], 100)
+X = np.c_[r * np.cos(t), r * np.sin(t)] + 0.1 * rng.normal(size=(200, 2))
+\end{lstlisting}
+    \begin{itemize}
+        \item Build the weights $w_{ij} = e^{-\norm{\mathbf{x}_i - \mathbf{x}_j}^2/(2s^2)}$ with $s = 0.5$ (and $w_{ii} = 0$), the Laplacian $L$ (Definition~\ref{L2-def:laplacian}), and its eigenvalues and eigenvectors with \py{np.linalg.eigh}. Check that the smallest eigenvalue is $0$, with the eigenvector $\frac{1}{\sqrt{n}}\mathbf{1}$ (up to sign).
+        \item Cluster the points by the signs of the Fiedler vector, and plot them in two colors. Does spectral clustering find the two circles? Why would a method that only splits the plane by a line fail here?
+        \item Repeat with $s = 2$ and $s = 0.2$. How do the second and third smallest eigenvalues change, and how does the clustering change? Relate your observations to Theorem~\ref{L2-thm:laplacian-components}.
     \end{itemize}
 \end{enumerate}
 \endgroup

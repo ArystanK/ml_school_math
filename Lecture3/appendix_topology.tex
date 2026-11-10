@@ -9,10 +9,12 @@
 \usepackage{enumitem}
 \usepackage{xr-hyper}
 \usepackage{hyperref}
-% Theorem numbers of Lectures 3 and 4 are read from lecture3.aux and lecture4.aux,
-% so compile lecture3.tex and lecture4.tex first.
+% Theorem numbers of Lectures 1, 3 and 4 and of the appendix to Lecture 4 are read from lecture1.aux, lecture3.aux,
+% lecture4.aux and appendix_measure.aux, so compile lecture1.tex, lecture3.tex, lecture4.tex and appendix_measure.tex first.
+\externaldocument[L1-]{../Lecture1/lecture1}[../Lecture1/lecture1.pdf]
 \externaldocument[L3-]{lecture3}[lecture3.pdf]
 \externaldocument[L4-]{../Lecture4/lecture4}[../Lecture4/lecture4.pdf]
+\externaldocument[B-]{../Lecture4/appendix_measure}[../Lecture4/appendix_measure.pdf]
 \usepackage{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, calc}
@@ -74,6 +76,8 @@
 \DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator{\grad}{grad}
+\DeclareMathOperator{\Div}{div}
+\DeclareMathOperator{\curl}{curl}
 \DeclareMathOperator{\interior}{int}
 
 \begin{document}
@@ -84,12 +88,12 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-In Lecture~3, we used several facts without proof: that a continuous function on a closed and bounded set attains its maximum, that a function with continuous partial derivatives is differentiable (Theorem~\ref{L3-thm:C1}), the implicit function theorem in the proof of the Lagrange multiplier theorem (Theorem~\ref{L3-thm:lagrange}), and the existence and uniqueness of solutions of differential equations (Theorem~\ref{L3-thm:picard}). We also met sets that are not open subsets of $\mathbb{R}^n$, but curved objects: spheres, the set of orthogonal matrices, and level sets of functions. And in Lectures~2 and~4, we worked with vector spaces of functions and of random variables, which are infinite-dimensional. This appendix provides the mathematical background.
+In Lecture~3, we used several facts without proof: that a continuous function on a closed and bounded set attains its maximum, that a function with continuous partial derivatives is differentiable (Theorem~\ref{L3-thm:C1}), that integrals depending on a parameter are continuous (in the proof of Proposition~\ref{L3-prop:leibniz}), the implicit function theorem in the proof of the Lagrange multiplier theorem (Theorem~\ref{L3-thm:lagrange}), the necessity of the KKT conditions (Theorem~\ref{L3-thm:kkt}), and the existence and uniqueness of solutions of differential equations (Theorem~\ref{L3-thm:picard}). We also met sets that are not open subsets of $\mathbb{R}^n$, but curved objects: spheres, the set of orthogonal matrices, and level sets of functions. And in Lectures~2 and~4, we worked with vector spaces of functions and of random variables, which are infinite-dimensional. This appendix provides the mathematical background.
 \begin{itemize}
     \item Sections~\ref{sec:metric}--\ref{sec:connected} are about topology, the mathematics of nearness and continuity. Its central notions are open sets, compactness and connectedness. Topology studies the properties of sets that do not change under continuous deformations.
-    \item Sections~\ref{sec:inverse}--\ref{sec:morse} are about differential topology, which studies manifolds, i.e., sets that look like $\mathbb{R}^k$ near each of their points, and differentiable maps between them. Its main tools are the inverse and implicit function theorems. At the end, Morse theory connects the critical points of a function, classified by the eigenvalues of its Hessian as in Lecture~3, with the shape of the space on which it is defined.
+    \item Sections~\ref{sec:inverse}--\ref{sec:forms} are about differential topology, which studies manifolds, i.e., sets that look like $\mathbb{R}^k$ near each of their points, and differentiable maps between them. Its main tools are the inverse and implicit function theorems. Morse theory connects the critical points of a function, classified by the eigenvalues of its Hessian as in Lecture~3, with the shape of the space on which it is defined. Finally, differential forms, which are built from the tensors of Lecture~1, unify the integral theorems of Lecture~3 in one theorem of Stokes, and they detect holes in a space.
     \item Section~\ref{sec:ml} collects some places where these ideas appear in machine learning.
-    \item Sections~\ref{sec:banach}--\ref{sec:rkhs} are about functional analysis, i.e., linear algebra and analysis in infinite-dimensional vector spaces, such as spaces of functions. Its central notions are completeness, orthogonal projections and the spectral theorem for compact operators. They prove the existence theorem for differential equations of Lecture~3 and the Radon--Nikodym theorem of Lecture~4, and they lead to Fourier series, to expansions of random functions, and to the theory of kernel methods. Section~\ref{sec:fa-ml} returns to machine learning.
+    \item Sections~\ref{sec:banach}--\ref{sec:rkhs} are about functional analysis, i.e., linear algebra and analysis in infinite-dimensional vector spaces, such as spaces of functions. Its central notions are completeness, orthogonal projections and the spectral theorem for compact operators. They prove the existence theorem for differential equations of Lecture~3 and the Radon--Nikodym theorem of the appendix to Lecture~4, and they lead to Fourier series, to expansions of random functions, and to the theory of kernel methods. Section~\ref{sec:fa-ml} returns to machine learning.
 \end{itemize}
 We use the notation of Lecture~3: vectors in $\mathbb{R}^n$ are bold, and $\norm{\cdot}$ is the Euclidean norm unless we say otherwise. Elements of general vector spaces, such as functions, are written in normal font.
 
@@ -250,6 +254,29 @@ This justifies the claims in Lecture~3 that $f(x, y) = x + y$ and the Rayleigh q
 \begin{example}\label{ex:existence-ml}
     A loss $L(\mathbf{w}) \geq 0$ plus a ridge penalty, $L(\mathbf{w}) + \lambda\norm{\mathbf{w}}^2$ with $\lambda > 0$, is coercive, so it has a global minimum whenever $L$ is continuous. Without regularization, a minimum need not exist: for logistic regression with the single training example $x = 1$, $y = 1$, the loss $\log(1 + e^{-w})$ decreases towards $0$ as $w \to \infty$, but never reaches it. The same happens for every linearly separable data set, where scaling up a separating weight vector always decreases the loss.
 \end{example}
+
+On a compact set, continuity is automatically uniform.
+
+\begin{proposition}[Uniform continuity]\label{prop:uniform-continuity}
+    Let $K \subseteq \mathbb{R}^n$ be compact, and let $f: K \to \mathbb{R}$ be continuous. Then $f$ is uniformly continuous: for every $\varepsilon > 0$, there is a $\delta > 0$ such that $|f(\mathbf{x}) - f(\mathbf{y})| < \varepsilon$ for all $\mathbf{x}, \mathbf{y} \in K$ with $\norm{\mathbf{x} - \mathbf{y}} < \delta$.
+\end{proposition}
+
+\begin{proof}
+    Otherwise, there are an $\varepsilon > 0$ and points $\mathbf{x}_k, \mathbf{y}_k \in K$ with $\norm{\mathbf{x}_k - \mathbf{y}_k} < \frac{1}{k}$ and $|f(\mathbf{x}_k) - f(\mathbf{y}_k)| \geq \varepsilon$ for every $k$. A subsequence $(\mathbf{x}_{k_l})$ converges to some $\mathbf{x} \in K$, and then $\mathbf{y}_{k_l} \to \mathbf{x}$ as well. By continuity, $f(\mathbf{x}_{k_l}) - f(\mathbf{y}_{k_l}) \to f(\mathbf{x}) - f(\mathbf{x}) = 0$, which contradicts $|f(\mathbf{x}_{k_l}) - f(\mathbf{y}_{k_l})| \geq \varepsilon$.
+\end{proof}
+
+The point is that $\delta$ depends only on $\varepsilon$, not on the points. On a set that is not compact, this can fail: $f(x) = x^2$ is continuous on $\mathbb{R}$, but $f(x + \delta) - f(x) = 2x\delta + \delta^2$ is large for large $x$, however small $\delta > 0$ is.
+
+\begin{corollary}[Integrals depending on a parameter]\label{cor:parameter-integrals}
+    Let $h(x, \theta)$ be continuous for $x \in [a, b]$ and $\theta$ in an open interval $I$. Then $H(\theta) = \int_a^b h(x, \theta)\, dx$ is continuous on $I$.
+\end{corollary}
+
+\begin{proof}
+    Fix $\theta_0 \in I$, and choose $r > 0$ with $[\theta_0 - r, \theta_0 + r] \subseteq I$. The set $K = [a, b] \times [\theta_0 - r, \theta_0 + r]$ is closed and bounded, hence compact, so $h$ is uniformly continuous on $K$. For $\varepsilon > 0$, choose $\delta \leq r$ as in Proposition~\ref{prop:uniform-continuity}. If $|\theta - \theta_0| < \delta$, then $(x, \theta)$ and $(x, \theta_0)$ have the distance $|\theta - \theta_0| < \delta$ for every $x$, so
+    \[|H(\theta) - H(\theta_0)| \leq \int_a^b |h(x, \theta) - h(x, \theta_0)|\, dx \leq (b - a)\varepsilon. \qedhere\]
+\end{proof}
+
+Applied to $h = \frac{\partial f}{\partial\theta}$, this fills the gap in the proof of the Leibniz rule (Proposition~\ref{L3-prop:leibniz} of Lecture~3).
 
 Compactness also explains why all norms on $\mathbb{R}^n$ lead to the same notions of convergence and continuity, as claimed in Lecture~3.
 
@@ -478,6 +505,21 @@ We can now complete the proof of the Lagrange multiplier theorem (Theorem~\ref{L
     The linear independence says that $DG(\mathbf{x}^*)$ has rank $m$ for $G = (g_1, \ldots, g_m)$, so near $\mathbf{x}^*$, $M$ is an $(n - m)$-dimensional submanifold (the rank stays $m$ near $\mathbf{x}^*$, since a nonzero $m \times m$ minor stays nonzero by continuity). For every $\mathbf{v} \in T_{\mathbf{x}^*}M$, choose a curve $\boldsymbol{\gamma}$ in $M$ with $\boldsymbol{\gamma}(0) = \mathbf{x}^*$ and $\boldsymbol{\gamma}'(0) = \mathbf{v}$. The function $t \mapsto f(\boldsymbol{\gamma}(t))$ has a local minimum at $t = 0$, so its derivative $\nabla f(\mathbf{x}^*)^\top\mathbf{v}$ is $0$. Hence $\nabla f(\mathbf{x}^*) \in (T_{\mathbf{x}^*}M)^\perp = N_{\mathbf{x}^*}M = \Span\{\nabla g_i(\mathbf{x}^*)\}$ by Theorem~\ref{thm:tangent-space}.
 \end{proof}
 
+The same method proves the necessity of the KKT conditions for inequality constraints (Theorem~\ref{L3-thm:kkt} of Lecture~3). The new point is the sign of the multipliers: we move from $\mathbf{x}^*$ into the feasible region along a curve on which one active constraint becomes negative and the other active constraints stay $0$.
+
+\begin{theorem}[KKT conditions]\label{thm:kkt-proof}
+    Let $f, g_1, \ldots, g_m$ be smooth on an open set $U \subseteq \mathbb{R}^n$, and let $\mathbf{x}^*$ be a local minimum of $f$ on the feasible set $\{\mathbf{x} \in U : g_1(\mathbf{x}) \leq 0, \ldots, g_m(\mathbf{x}) \leq 0\}$, such that the gradients $\nabla g_i(\mathbf{x}^*)$ of the active constraints, i.e., of those with $g_i(\mathbf{x}^*) = 0$, are linearly independent. Then there are numbers $\mu_1, \ldots, \mu_m \geq 0$ such that $\nabla f(\mathbf{x}^*) + \sum_i \mu_i\nabla g_i(\mathbf{x}^*) = \mathbf{0}$, and $\mu_i = 0$ for every inactive constraint.
+\end{theorem}
+
+\begin{proof}
+    Let $A$ be the set of the indices of the active constraints. The inactive constraints satisfy $g_i(\mathbf{x}^*) < 0$, so by continuity, there is a ball $W \subseteq U$ around $\mathbf{x}^*$ on which $g_i < 0$ for all $i \notin A$, and we may choose it so small that $f(\mathbf{x}) \geq f(\mathbf{x}^*)$ for all feasible $\mathbf{x} \in W$. We set $\mu_i = 0$ for $i \notin A$. If $A$ is empty, then all points of $W$ are feasible, so $\mathbf{x}^*$ is a local minimum of $f$ on an open set, and $\nabla f(\mathbf{x}^*) = \mathbf{0}$. Otherwise, all points of $M = \{\mathbf{x} \in W : g_i(\mathbf{x}) = 0 \text{ for all } i \in A\}$ are feasible, so $\mathbf{x}^*$ is a local minimum of $f$ on $M$, and Theorem~\ref{thm:lagrange-proof} gives numbers $\mu_i$, $i \in A$, with $\nabla f(\mathbf{x}^*) + \sum_{i \in A} \mu_i\nabla g_i(\mathbf{x}^*) = \mathbf{0}$.
+
+    It remains to show that $\mu_j \geq 0$ for every $j \in A$. The matrix with the rows $\nabla g_i(\mathbf{x}^*)^\top$, $i \in A$, has linearly independent rows, so its column space is all of $\mathbb{R}^{|A|}$ (Lecture~1), and there is a vector $\mathbf{v}$ with
+    \[\nabla g_j(\mathbf{x}^*)^\top\mathbf{v} = -1 \qquad \text{and} \qquad \nabla g_i(\mathbf{x}^*)^\top\mathbf{v} = 0 \quad \text{for } i \in A, \ i \neq j.\]
+    If $A = \{j\}$, let $\boldsymbol{\gamma}(t) = \mathbf{x}^* + t\mathbf{v}$. Otherwise, the gradients of the constraints $g_i$, $i \in A \setminus \{j\}$, are linearly independent, so after shrinking $W$, $M_j = \{\mathbf{x} \in W : g_i(\mathbf{x}) = 0 \text{ for } i \in A \setminus \{j\}\}$ is a submanifold, as in the proof of Theorem~\ref{thm:lagrange-proof}. By Theorem~\ref{thm:tangent-space}, $\mathbf{v} \in T_{\mathbf{x}^*}M_j$, so there is a smooth curve $\boldsymbol{\gamma}$ in $M_j$ with $\boldsymbol{\gamma}(0) = \mathbf{x}^*$ and $\boldsymbol{\gamma}'(0) = \mathbf{v}$. In both cases, the constraints $g_i$ with $i \in A \setminus \{j\}$ are $0$ along $\boldsymbol{\gamma}$, and the derivative of $g_j(\boldsymbol{\gamma}(t))$ at $t = 0$ is $\nabla g_j(\mathbf{x}^*)^\top\mathbf{v} = -1 < 0$, so $g_j(\boldsymbol{\gamma}(t)) < g_j(\mathbf{x}^*) = 0$ for small $t > 0$. Hence $\boldsymbol{\gamma}(t)$ is feasible for small $t > 0$, and $f(\boldsymbol{\gamma}(t)) \geq f(\mathbf{x}^*)$. So the difference quotients of $f(\boldsymbol{\gamma}(t))$ at $t = 0$ are nonnegative for $t > 0$, and so is its derivative:
+    \[0 \leq \nabla f(\mathbf{x}^*)^\top\mathbf{v} = -\sum_{i \in A} \mu_i\nabla g_i(\mathbf{x}^*)^\top\mathbf{v} = \mu_j. \qedhere\]
+\end{proof}
+
 The proof suggests how to do calculus on a manifold: only the component of $\nabla f$ in the tangent space matters.
 
 \begin{definition}[Riemannian gradient]\label{def:riemannian-gradient}
@@ -601,7 +643,7 @@ We do not prove this theorem; it follows from the fact that attaching a $k$-cell
 \begin{example}\label{ex:morse-relation}
     \begin{enumerate}
         \item The height function on the sphere $S^2$ has a minimum and a maximum: $\chi(S^2) = 1 - 0 + 1 = 2$.
-        \item The height function on an upright torus has a minimum, two saddle points and a maximum (Figure~\ref{fig:torus}): $\chi = 1 - 2 + 1 = 0$. In fact, every Morse function on the torus has at least four critical points, at least two of which are saddle points (this follows from the Morse inequalities, which we do not discuss).
+        \item The height function on an upright torus has a minimum, two saddle points and a maximum (Figure~\ref{fig:torus}): $\chi = 1 - 2 + 1 = 0$. In fact, every Morse function on the torus has at least four critical points, at least two of which are saddle points (this follows from the Morse inequalities of Section~\ref{sec:forms}).
         \item For the Rayleigh quotient on $S^{n-1}$ (Example~\ref{ex:rayleigh-sphere}), the two critical points $\pm\mathbf{q}_i$ have index $n - i$, so $\sum_k (-1)^k c_k = 2\sum_{i=1}^n (-1)^{n-i}$, which is $2$ for odd $n$ and $0$ for even $n$. This agrees with the Euler characteristic of the sphere $S^{n-1}$, which is $2$ if $n - 1$ is even and $0$ if $n - 1$ is odd. For $n = 3$ and $A = \diag(3, 2, 1)$: two maxima $\pm\mathbf{e}_1$, two saddle points $\pm\mathbf{e}_2$, two minima $\pm\mathbf{e}_3$, and $2 - 2 + 2 = 2$.
     \end{enumerate}
 \end{example}
@@ -628,6 +670,308 @@ We do not prove this theorem; it follows from the fact that attaching a $k$-cell
     \label{fig:torus}
 \end{figure}
 
+\section{Differential Forms and Stokes' Theorem}\label{sec:forms}
+
+Lecture~3 contains several theorems of the same shape: the fundamental theorem for line integrals, Green's theorem and the divergence theorem (Theorems~\ref{L3-thm:gradient-theorem}, \ref{L3-thm:green} and~\ref{L3-thm:divergence} of Lecture~3) all say that the integral of a derivative over a region equals an integral over its boundary. The derivatives involved, the gradient, the curl and the divergence, look different, and the curl was only defined in two and three dimensions. Differential forms unify all of this: they are the natural integrands of $k$-dimensional integrals in $\mathbb{R}^n$, they have one derivative $d$, and they satisfy one theorem of Stokes. They are built from alternating tensors, the linear algebra of oriented areas and volumes. We use the tensors of Lecture~1 (Section~\ref{L1-sec:tensors} of Lecture~1), and we write $\mathbf{e}_1, \ldots, \mathbf{e}_n$ for the standard basis of $\mathbb{R}^n$. As in Lecture~1, elements of a general vector space $V$ are written in normal font.
+
+\subsection{Alternating forms}
+
+\begin{definition}[Alternating form]\label{def:alternating}
+    Let $V$ be a finite-dimensional vector space and $k \geq 1$. A $k$-linear form $\omega$ on $V \times \cdots \times V$ ($k$ factors) is alternating if $\omega(v_1, \ldots, v_k) = 0$ whenever $v_i = v_j$ for some $i \neq j$. The alternating $k$-forms form a subspace $\Lambda^k V^*$ of the space of all $k$-linear forms on $V$, which is $V^* \otimes \cdots \otimes V^*$ by Theorem~\ref{L1-thm:multilinear-tensor} of Lecture~1. We also set $\Lambda^0 V^* = \mathbb{R}$. Note that $\Lambda^1 V^* = V^*$.
+\end{definition}
+
+\begin{lemma}\label{lem:alternating}
+    Let $\omega$ be an alternating $k$-form on $V$.
+    \begin{enumerate}
+        \item Swapping two arguments changes the sign of $\omega(v_1, \ldots, v_k)$.
+        \item If $v_1, \ldots, v_k$ are linearly dependent, then $\omega(v_1, \ldots, v_k) = 0$. In particular, $\Lambda^k V^* = \{0\}$ for $k > \dim V$.
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+    (1) Put $v + w$ into both positions $i$ and $j$, and expand by multilinearity:
+    \[0 = \omega(\ldots, v + w, \ldots, v + w, \ldots) = \omega(\ldots, v, \ldots, w, \ldots) + \omega(\ldots, w, \ldots, v, \ldots),\]
+    since the terms with $v$ in both positions and with $w$ in both positions vanish. (2) Some $v_j$ is a linear combination of the others; by (1), we may assume that $j = k$, so $v_k = \sum_{i < k} a_iv_i$. Then $\omega(v_1, \ldots, v_k) = \sum_{i < k} a_i\,\omega(v_1, \ldots, v_{k-1}, v_i) = 0$, since each term contains the vector $v_i$ twice. More than $\dim V$ vectors are always linearly dependent.
+\end{proof}
+
+The determinant of an $n \times n$ matrix, as a function of its columns, is an alternating $n$-form on $\mathbb{R}^n$: it is multilinear (Example~\ref{L1-ex:multilinear} of Lecture~1), and it vanishes when two columns are equal, since swapping them changes its sign (Theorem~\ref{L1-thm:det-props} of Lecture~1). More generally, determinants produce alternating forms from covectors.
+
+\begin{definition}[Wedge product of covectors]\label{def:wedge}
+    For $\varphi_1, \ldots, \varphi_k \in V^*$, the wedge product $\varphi_1 \wedge \cdots \wedge \varphi_k \in \Lambda^k V^*$ is
+    \[(\varphi_1 \wedge \cdots \wedge \varphi_k)(v_1, \ldots, v_k) = \det\big(\varphi_i(v_j)\big)_{i,j = 1, \ldots, k}.\]
+\end{definition}
+
+This form is multilinear, since the $j$-th column of the matrix depends linearly on $v_j$ and the determinant is linear in each column, and it is alternating, since two equal arguments give two equal columns. Swapping two covectors swaps two rows, so $\varphi \wedge \psi = -\psi \wedge \varphi$, and in particular $\varphi \wedge \varphi = 0$. For $k = 2$,
+\[(\varphi \wedge \psi)(v, w) = \varphi(v)\psi(w) - \varphi(w)\psi(v), \qquad \text{i.e.,} \qquad \varphi \wedge \psi = \varphi \otimes \psi - \psi \otimes \varphi.\]
+
+On $\mathbb{R}^n$, we write $dx_i$ for the coordinate functional $\mathbf{x} \mapsto x_i$, i.e., for the dual basis vector $e^i$; the reason for this notation will appear soon. For an increasing sequence of indices $I = (i_1 < i_2 < \cdots < i_k)$, we write $dx_I = dx_{i_1} \wedge \cdots \wedge dx_{i_k}$. For example, $(dx_1 \wedge dx_2)(\mathbf{v}, \mathbf{w}) = v_1w_2 - v_2w_1$ is the signed area of the parallelogram spanned by the projections of $\mathbf{v}$ and $\mathbf{w}$ to the $x_1x_2$-plane, and $(dx_1 \wedge \cdots \wedge dx_n)(\mathbf{v}_1, \ldots, \mathbf{v}_n) = \det(\mathbf{v}_1, \ldots, \mathbf{v}_n)$ is the signed volume of the parallelepiped spanned by $\mathbf{v}_1, \ldots, \mathbf{v}_n$.
+
+\begin{theorem}\label{thm:wedge-basis}
+    The forms $dx_I$, for all increasing sequences $I = (i_1 < \cdots < i_k)$ in $\{1, \ldots, n\}$, form a basis of $\Lambda^k(\mathbb{R}^n)^*$. In particular, $\dim \Lambda^k(\mathbb{R}^n)^* = \binom{n}{k}$, and every alternating $k$-form on $\mathbb{R}^n$ is
+    \[\omega = \sum_I \omega(\mathbf{e}_{i_1}, \ldots, \mathbf{e}_{i_k})\, dx_I.\]
+\end{theorem}
+
+\begin{proof}
+    For increasing sequences $I$ and $J$, $dx_I(\mathbf{e}_{j_1}, \ldots, \mathbf{e}_{j_k}) = \det(\delta_{i_aj_b})_{a,b}$, which is $1$ if $I = J$, and $0$ otherwise: if $I \neq J$, some $i_a$ is not among the $j_b$, and the $a$-th row of the matrix is zero. So applying a relation $\sum_I c_I\, dx_I = 0$ to $(\mathbf{e}_{j_1}, \ldots, \mathbf{e}_{j_k})$ gives $c_J = 0$, and the forms $dx_I$ are linearly independent. Now let $\omega$ be alternating, and let $\eta = \sum_I \omega(\mathbf{e}_{i_1}, \ldots, \mathbf{e}_{i_k})\, dx_I$. The alternating forms $\omega$ and $\eta$ agree on $(\mathbf{e}_{j_1}, \ldots, \mathbf{e}_{j_k})$ for every increasing $J$. By Lemma~\ref{lem:alternating}, they also agree on all sequences of standard basis vectors with distinct indices, which are obtained from the increasing ones by swaps that change both values by the same sign, and both vanish on sequences with a repeated vector. A multilinear form is determined by its values on all sequences of basis vectors (Theorem~\ref{L1-thm:multilinear-tensor} of Lecture~1), so $\omega = \eta$.
+\end{proof}
+
+For $k = n$, the theorem says that every alternating $n$-form on $\mathbb{R}^n$ is a multiple of the determinant $dx_1 \wedge \cdots \wedge dx_n$. The wedge product extends to forms of all degrees: for $\omega = \sum_I a_I\, dx_I \in \Lambda^k(\mathbb{R}^n)^*$ and $\eta = \sum_J b_J\, dx_J \in \Lambda^l(\mathbb{R}^n)^*$, let
+\[\omega \wedge \eta = \sum_{I, J} a_I b_J\, dx_{i_1} \wedge \cdots \wedge dx_{i_k} \wedge dx_{j_1} \wedge \cdots \wedge dx_{j_l},\]
+where each term is a wedge product of $k + l$ covectors, which is $0$ if $I$ and $J$ have a common index, and $\pm dx_{I \cup J}$ otherwise. The wedge product is bilinear and associative, and since swapping two covectors changes the sign, moving each of the $l$ covectors of $dx_J$ past the $k$ covectors of $dx_I$ gives
+\[\omega \wedge \eta = (-1)^{kl}\, \eta \wedge \omega.\]
+For a number $a \in \Lambda^0$, we set $a \wedge \omega = a\omega$. So $dx_1 \wedge dx_2 = -dx_2 \wedge dx_1$ and $dx_1 \wedge dx_1 = 0$, but a $2$-form can have a nonzero wedge product with itself (Exercise~\ref{exer:wedge}).
+
+\subsection{Differential forms and the exterior derivative}
+
+\begin{definition}[Differential form]\label{def:differential-form}
+    Let $U \subseteq \mathbb{R}^n$ be open. A differential $k$-form on $U$ is a map $\omega$ that assigns to every point $\mathbf{x} \in U$ an alternating $k$-form $\omega_{\mathbf{x}} \in \Lambda^k(\mathbb{R}^n)^*$, such that the coefficients in
+    \[\omega = \sum_I f_I\, dx_I, \qquad \text{i.e.,} \qquad \omega_{\mathbf{x}} = \sum_I f_I(\mathbf{x})\, dx_I,\]
+    are smooth functions $f_I: U \to \mathbb{R}$. A $0$-form is a smooth function. Forms are added, multiplied by functions and wedged pointwise.
+\end{definition}
+
+\begin{example}\label{ex:forms}
+    \begin{enumerate}
+        \item A $1$-form $\omega = F_1\, dx_1 + \cdots + F_n\, dx_n$ satisfies $\omega_{\mathbf{x}}(\mathbf{v}) = F(\mathbf{x})^\top\mathbf{v}$, the work done by the vector field $F$ along a small displacement $\mathbf{v}$ at $\mathbf{x}$. So $1$-forms correspond to vector fields (Definition~\ref{L3-def:vector-field} of Lecture~3).
+        \item In $\mathbb{R}^3$, the $2$-form $\omega = G_1\, dx_2 \wedge dx_3 + G_2\, dx_3 \wedge dx_1 + G_3\, dx_1 \wedge dx_2$ satisfies $\omega_{\mathbf{x}}(\mathbf{v}, \mathbf{w}) = G(\mathbf{x})^\top(\mathbf{v} \times \mathbf{w})$, since $(dx_2 \wedge dx_3)(\mathbf{v}, \mathbf{w}) = v_2w_3 - v_3w_2$ is the first entry of $\mathbf{v} \times \mathbf{w}$, and similarly for the others. This is the flux of $G$ through the small parallelogram spanned by $\mathbf{v}$ and $\mathbf{w}$, so in $\mathbb{R}^3$, $2$-forms also correspond to vector fields.
+        \item An $n$-form $f\, dx_1 \wedge \cdots \wedge dx_n$ is a function times the volume form $dx_1 \wedge \cdots \wedge dx_n$, like a density.
+    \end{enumerate}
+\end{example}
+
+\begin{definition}[Exterior derivative]\label{def:exterior-derivative}
+    The exterior derivative of a $0$-form $f$ is the $1$-form
+    \[df = \frac{\partial f}{\partial x_1}\, dx_1 + \cdots + \frac{\partial f}{\partial x_n}\, dx_n,\]
+    so that $df_{\mathbf{x}}(\mathbf{v}) = Df(\mathbf{x})\mathbf{v}$ is the derivative of $f$ in the direction $\mathbf{v}$. The exterior derivative of a $k$-form $\omega = \sum_I f_I\, dx_I$ is the $(k + 1)$-form $d\omega = \sum_I df_I \wedge dx_I$.
+\end{definition}
+
+For the coordinate function $f(\mathbf{x}) = x_i$, we get $df = dx_i$, which explains the notation. Since $dx_{i_1} \wedge \cdots \wedge dx_{i_k}$ is $\pm dx_I$ or $0$ for any (not necessarily increasing) indices, the formula $d(f\, dx_{i_1} \wedge \cdots \wedge dx_{i_k}) = df \wedge dx_{i_1} \wedge \cdots \wedge dx_{i_k}$ holds for all indices, by linearity.
+
+\begin{proposition}\label{prop:d-properties}
+    \begin{enumerate}
+        \item $d$ is linear.
+        \item (Product rule.) $d(\omega \wedge \eta) = d\omega \wedge \eta + (-1)^k\, \omega \wedge d\eta$ for a $k$-form $\omega$ and any form $\eta$.
+        \item $d(d\omega) = 0$ for every form $\omega$.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    (1) is clear from the definition. (2) By linearity, it suffices to consider $\omega = f\, dx_I$ and $\eta = g\, dx_J$. Then $\omega \wedge \eta = fg\, dx_I \wedge dx_J$, and the product rule $d(fg) = g\, df + f\, dg$ gives
+    \[d(\omega \wedge \eta) = g\, df \wedge dx_I \wedge dx_J + f\, dg \wedge dx_I \wedge dx_J = d\omega \wedge \eta + (-1)^k\, \omega \wedge d\eta,\]
+    since moving the $1$-form $dg$ past the $k$ covectors of $dx_I$ gives the sign $(-1)^k$. (3) For $\omega = f\, dx_I$,
+    \[d(d\omega) = d\Big(\sum_j \frac{\partial f}{\partial x_j}\, dx_j \wedge dx_I\Big) = \sum_{i,j} \frac{\partial^2 f}{\partial x_i \partial x_j}\, dx_i \wedge dx_j \wedge dx_I = 0,\]
+    since the second derivatives are symmetric in $i$ and $j$ (Theorem~\ref{L3-thm:schwarz} of Lecture~3), while $dx_i \wedge dx_j = -dx_j \wedge dx_i$: the terms for $(i, j)$ and $(j, i)$ cancel, and the terms with $i = j$ vanish.
+\end{proof}
+
+\begin{example}[Vector calculus]\label{ex:vector-calculus-forms}
+    In $\mathbb{R}^3$, let $\omega_F = F_1\, dx_1 + F_2\, dx_2 + F_3\, dx_3$ and $\eta_G = G_1\, dx_2 \wedge dx_3 + G_2\, dx_3 \wedge dx_1 + G_3\, dx_1 \wedge dx_2$ be the $1$-form and the $2$-form of vector fields $F$ and $G$, as in Example~\ref{ex:forms}. A short computation gives
+    \begin{align*}
+        df &= \tfrac{\partial f}{\partial x_1}\, dx_1 + \tfrac{\partial f}{\partial x_2}\, dx_2 + \tfrac{\partial f}{\partial x_3}\, dx_3, \\
+        d\omega_F &= \Big(\tfrac{\partial F_3}{\partial x_2} - \tfrac{\partial F_2}{\partial x_3}\Big) dx_2 \wedge dx_3 + \Big(\tfrac{\partial F_1}{\partial x_3} - \tfrac{\partial F_3}{\partial x_1}\Big) dx_3 \wedge dx_1 \\
+        &\qquad + \Big(\tfrac{\partial F_2}{\partial x_1} - \tfrac{\partial F_1}{\partial x_2}\Big) dx_1 \wedge dx_2, \\
+        d\eta_G &= \Big(\tfrac{\partial G_1}{\partial x_1} + \tfrac{\partial G_2}{\partial x_2} + \tfrac{\partial G_3}{\partial x_3}\Big)\, dx_1 \wedge dx_2 \wedge dx_3.
+    \end{align*}
+    With the correspondences of Example~\ref{ex:forms}, $d$ is the gradient on $0$-forms, the curl on $1$-forms, and the divergence on $2$-forms, and $d \circ d = 0$ contains the identities $\curl \nabla f = 0$ and $\Div \curl F = 0$ (Proposition~\ref{L3-prop:curl-grad} of Lecture~3). In the plane, $d(F_1\, dx_1 + F_2\, dx_2) = \curl F\, dx_1 \wedge dx_2$, and in $\mathbb{R}^n$, $d(\sum_j F_j\, dx_j) = \sum_{i < j} \big(\frac{\partial F_j}{\partial x_i} - \frac{\partial F_i}{\partial x_j}\big)\, dx_i \wedge dx_j$, whose coefficients are those of the skew-symmetric part of the Jacobian of $F$: this is the curl in every dimension.
+\end{example}
+
+\subsection{Pullback and integration}
+
+\begin{definition}[Pullback]\label{def:pullback}
+    Let $U \subseteq \mathbb{R}^m$ and $U' \subseteq \mathbb{R}^n$ be open, let $\boldsymbol{\phi}: U \to U'$ be smooth, and let $\omega$ be a $k$-form on $U'$. The pullback of $\omega$ is the $k$-form $\boldsymbol{\phi}^*\omega$ on $U$ with
+    \[(\boldsymbol{\phi}^*\omega)_{\mathbf{x}}(\mathbf{v}_1, \ldots, \mathbf{v}_k) = \omega_{\boldsymbol{\phi}(\mathbf{x})}\big(D\boldsymbol{\phi}(\mathbf{x})\mathbf{v}_1, \ldots, D\boldsymbol{\phi}(\mathbf{x})\mathbf{v}_k\big),\]
+    and $\boldsymbol{\phi}^*f = f \circ \boldsymbol{\phi}$ for a $0$-form $f$.
+\end{definition}
+
+In words: to evaluate $\boldsymbol{\phi}^*\omega$ on vectors at $\mathbf{x}$, push the vectors forward with the derivative of $\boldsymbol{\phi}$, and evaluate $\omega$ on them at $\boldsymbol{\phi}(\mathbf{x})$. Writing $y_1, \ldots, y_n$ for the coordinates on $U'$, we get
+\[\boldsymbol{\phi}^*(dy_i) = d\phi_i = \sum_{j=1}^m \frac{\partial \phi_i}{\partial x_j}\, dx_j,\]
+since $dy_i\big(D\boldsymbol{\phi}(\mathbf{x})\mathbf{v}\big) = D\phi_i(\mathbf{x})\mathbf{v}$. One checks that the pullback respects the wedge product, $\boldsymbol{\phi}^*(\omega \wedge \eta) = \boldsymbol{\phi}^*\omega \wedge \boldsymbol{\phi}^*\eta$, that $(\boldsymbol{\psi} \circ \boldsymbol{\phi})^* = \boldsymbol{\phi}^* \circ \boldsymbol{\psi}^*$ by the chain rule, and that the pullback commutes with the exterior derivative,
+\[\boldsymbol{\phi}^*(d\omega) = d(\boldsymbol{\phi}^*\omega).\]
+For $0$-forms, this is the chain rule, $d(f \circ \boldsymbol{\phi}) = \boldsymbol{\phi}^*(df)$; for $\omega = f\, dy_I$, it follows with Proposition~\ref{prop:d-properties}, since $\boldsymbol{\phi}^*\omega = (f \circ \boldsymbol{\phi})\, d\phi_{i_1} \wedge \cdots \wedge d\phi_{i_k}$ and $d(d\phi_i) = 0$. So pullbacks are computed by substituting $y_i = \phi_i(\mathbf{x})$ and $dy_i = d\phi_i$. For forms of top degree, the Jacobian determinant appears.
+
+\begin{proposition}\label{prop:pullback-top}
+    If $m = n$, then $\boldsymbol{\phi}^*(f\, dy_1 \wedge \cdots \wedge dy_n) = (f \circ \boldsymbol{\phi})\, \det D\boldsymbol{\phi}\; dx_1 \wedge \cdots \wedge dx_n$.
+\end{proposition}
+
+\begin{proof}
+    At each point, $\boldsymbol{\phi}^*(dy_1 \wedge \cdots \wedge dy_n)$ is an alternating $n$-form, so it is a multiple of $dx_1 \wedge \cdots \wedge dx_n$ (Theorem~\ref{thm:wedge-basis}), and the factor is its value on $(\mathbf{e}_1, \ldots, \mathbf{e}_n)$:
+    \[(dy_1 \wedge \cdots \wedge dy_n)\big(D\boldsymbol{\phi}(\mathbf{x})\mathbf{e}_1, \ldots, D\boldsymbol{\phi}(\mathbf{x})\mathbf{e}_n\big) = \det\Big(\frac{\partial \phi_i}{\partial x_j}(\mathbf{x})\Big)_{i,j} = \det D\boldsymbol{\phi}(\mathbf{x}),\]
+    since $dy_i\big(D\boldsymbol{\phi}(\mathbf{x})\mathbf{e}_j\big)$ is the $(i, j)$ entry of $D\boldsymbol{\phi}(\mathbf{x})$.
+\end{proof}
+
+For example, for polar coordinates $\boldsymbol{\phi}(r, \theta) = (r\cos\theta, r\sin\theta)$, we get $\boldsymbol{\phi}^*(dx_1 \wedge dx_2) = r\, dr \wedge d\theta$, the factor $r$ of Example~\ref{L3-ex:polar} of Lecture~3.
+
+\begin{definition}[Integral of a differential form]\label{def:form-integral}
+    \begin{enumerate}
+        \item Let $\omega = f\, dx_1 \wedge \cdots \wedge dx_k$ be a $k$-form on an open set that contains a box $Q \subseteq \mathbb{R}^k$. Then $\int_Q \omega = \int_Q f(\mathbf{x})\, d\mathbf{x}$, the multiple integral of Lecture~3.
+        \item A $k$-cube in an open set $U \subseteq \mathbb{R}^n$ is a smooth map $\mathbf{c}: [0, 1]^k \to U$ (more precisely, the restriction of a smooth map on an open set that contains $[0, 1]^k$). For a $k$-form $\omega$ on $U$, we define $\int_{\mathbf{c}} \omega = \int_{[0,1]^k} \mathbf{c}^*\omega$. A $0$-cube is a point $\mathbf{c} \in U$, and $\int_{\mathbf{c}} f = f(\mathbf{c})$.
+    \end{enumerate}
+\end{definition}
+
+A $k$-cube is a parametrized $k$-dimensional piece of $U$: a curve for $k = 1$, a surface patch for $k = 2$. Integrals of $k$-forms do not depend on the parametrization, except for the orientation.
+
+\begin{proposition}\label{prop:reparametrization}
+    Let $\boldsymbol{\psi}$ be a smooth bijection of $[0, 1]^k$ onto itself with a smooth inverse. If $\det D\boldsymbol{\psi} > 0$ everywhere, then $\int_{\mathbf{c} \circ \boldsymbol{\psi}} \omega = \int_{\mathbf{c}} \omega$. If $\det D\boldsymbol{\psi} < 0$ everywhere, then $\int_{\mathbf{c} \circ \boldsymbol{\psi}} \omega = -\int_{\mathbf{c}} \omega$.
+\end{proposition}
+
+\begin{proof}
+    Write $\mathbf{c}^*\omega = g\, dx_1 \wedge \cdots \wedge dx_k$. By Proposition~\ref{prop:pullback-top}, $(\mathbf{c} \circ \boldsymbol{\psi})^*\omega = \boldsymbol{\psi}^*(\mathbf{c}^*\omega) = (g \circ \boldsymbol{\psi})\det D\boldsymbol{\psi}\; dx_1 \wedge \cdots \wedge dx_k$. Now the claim is the change of variables formula (Theorem~\ref{L3-thm:change-of-variables} of Lecture~3), applied to the interior of the cube, in which $|\det D\boldsymbol{\psi}| = \pm\det D\boldsymbol{\psi}$.
+\end{proof}
+
+\begin{example}\label{ex:form-integrals}
+    \begin{enumerate}
+        \item (Line integrals.) For a curve $\mathbf{c}: [0, 1] \to U$ and the $1$-form $\omega = \sum_i F_i\, dx_i$, we get $\mathbf{c}^*\omega = \sum_i F_i(\mathbf{c}(t))\, c_i'(t)\, dt$, so
+        \[\int_{\mathbf{c}} \omega = \int_0^1 F(\mathbf{c}(t))^\top\mathbf{c}'(t)\, dt,\]
+        the line integral of the vector field $F$ along $\mathbf{c}$ (Definition~\ref{L3-def:line-integral} of Lecture~3).
+        \item (Flux integrals.) For a surface patch $\mathbf{c}: [0, 1]^2 \to \mathbb{R}^3$ and the $2$-form $\omega$ of a vector field $G$ as in Example~\ref{ex:forms}, the pullback is $\mathbf{c}^*\omega = G(\mathbf{c})^\top(\partial_1\mathbf{c} \times \partial_2\mathbf{c})\, du_1 \wedge du_2$, so $\int_{\mathbf{c}} \omega$ is the flux of $G$ through the surface.
+    \end{enumerate}
+\end{example}
+
+\subsection{Manifolds with boundary and orientations}
+
+Stokes' theorem relates an integral over a $k$-dimensional region to an integral over its boundary, as for a ball and its boundary sphere, or for a surface and the curve around it. Such regions are manifolds with boundary: near their boundary points, they look like a half-space. Let
+\[\mathbb{H}^k = \{\mathbf{u} \in \mathbb{R}^k : u_k \geq 0\}, \qquad \partial\mathbb{H}^k = \{\mathbf{u} \in \mathbb{R}^k : u_k = 0\}.\]
+A set $V \subseteq \mathbb{H}^k$ is open in $\mathbb{H}^k$ if $V = V' \cap \mathbb{H}^k$ for an open set $V' \subseteq \mathbb{R}^k$, and a map on $V$ is smooth if it is the restriction of a smooth map on such a set $V'$.
+
+\begin{definition}[Submanifold with boundary]\label{def:manifold-boundary}
+    Let $1 \leq k \leq n$. A set $M \subseteq \mathbb{R}^n$ is a $k$-dimensional submanifold with boundary if every $\mathbf{p} \in M$ has a local parametrization: a set $V$ that is open in $\mathbb{R}^k$ or in $\mathbb{H}^k$, an open set $W \ni \mathbf{p}$, and a smooth map $\boldsymbol{\phi}: V \to \mathbb{R}^n$ that maps $V$ homeomorphically onto $M \cap W$, with $\rank D\boldsymbol{\phi}(\mathbf{u}) = k$ for all $\mathbf{u} \in V$. The boundary $\partial M$ is the set of the points $\boldsymbol{\phi}(\mathbf{u})$ with $\mathbf{u} \in \partial\mathbb{H}^k$, for the local parametrizations $\boldsymbol{\phi}$ on open subsets of $\mathbb{H}^k$.
+\end{definition}
+
+With the inverse function theorem (Theorem~\ref{thm:inverse-function}), one shows that the transition map $\boldsymbol{\phi}_2^{-1} \circ \boldsymbol{\phi}_1$ between two local parametrizations is smooth, with invertible derivatives, and that whether a point lies in $\partial M$ does not depend on the parametrization. The maps $\mathbf{u}' \mapsto \boldsymbol{\phi}(\mathbf{u}', 0)$ are local parametrizations of $\partial M$ by open subsets of $\mathbb{R}^{k-1}$, so $\partial M$ is a $(k - 1)$-dimensional submanifold with empty boundary. By Proposition~\ref{prop:local-graph}, the submanifolds of Definition~\ref{def:submanifold} are submanifolds with empty boundary.
+
+\begin{example}\label{ex:manifolds-boundary}
+    \begin{enumerate}
+        \item Let $g: \mathbb{R}^n \to \mathbb{R}$ be smooth, with $\nabla g(\mathbf{x}) \neq \mathbf{0}$ whenever $g(\mathbf{x}) = 0$. Then $M = \{\mathbf{x} : g(\mathbf{x}) \leq 0\}$ is an $n$-dimensional submanifold with boundary $\partial M = \{\mathbf{x} : g(\mathbf{x}) = 0\}$. Near a point $\mathbf{p}$ with $g(\mathbf{p}) < 0$, $M$ contains an open set, on which the identity is a local parametrization. Near a point with $g(\mathbf{p}) = 0$, renumber the coordinates so that $\frac{\partial g}{\partial x_n}(\mathbf{p}) \neq 0$. Then $\boldsymbol{\Phi}(\mathbf{x}) = (x_1, \ldots, x_{n-1}, -g(\mathbf{x}))$ has an invertible derivative at $\mathbf{p}$, so it maps an open set $W \ni \mathbf{p}$ bijectively onto an open set $V'$, with a smooth inverse. It maps $M \cap W$ onto $V' \cap \mathbb{H}^n$ and $\partial M \cap W$ onto $V' \cap \partial\mathbb{H}^n$, so the restriction of $\boldsymbol{\Phi}^{-1}$ to $V' \cap \mathbb{H}^n$ is a local parametrization. For $g(\mathbf{x}) = \norm{\mathbf{x}}^2 - 1$, $M$ is the closed unit ball $B$, with $\partial B = S^{n-1}$.
+        \item The closed upper hemisphere $S^2_+ = \{\mathbf{x} \in S^2 : x_3 \geq 0\}$ is a $2$-dimensional submanifold with boundary, whose boundary is the equator $\{\mathbf{x} \in S^2 : x_3 = 0\}$. Near the equator, the longitude $\theta$ (in an open interval of length less than $2\pi$) and the latitude $s \in [0, \frac{\pi}{2})$ give the local parametrization $\boldsymbol{\phi}(\theta, s) = (\cos s\cos\theta, \, \cos s\sin\theta, \, \sin s)$.
+        \item A compact interval $[a, b]$ is a $1$-dimensional submanifold of $\mathbb{R}$ with boundary $\{a, b\}$, and the sphere $S^{n-1}$ and the orthogonal group $\mathrm{O}(n)$ have empty boundary. The square $[0, 1]^2$ is not a submanifold with boundary, because of its corners; Stokes' theorem for cubes below covers it.
+    \end{enumerate}
+\end{example}
+
+By Proposition~\ref{prop:reparametrization}, integrals of $k$-forms change their sign under reparametrizations with negative Jacobian determinants. So to integrate over $M$, we must choose its parametrizations consistently.
+
+\begin{definition}[Orientation]\label{def:orientation}
+    An orientation of a $k$-dimensional submanifold $M$ with boundary is a collection of local parametrizations whose images cover $M$, such that the transition map between any two of them has a positive Jacobian determinant everywhere. These parametrizations, and all others whose transition maps with them have positive Jacobian determinants, are called positively oriented; those whose transition maps with them have negative Jacobian determinants are negatively oriented. $M$ is orientable if it has an orientation, and oriented if one has been chosen.
+\end{definition}
+
+\begin{example}\label{ex:orientations}
+    \begin{enumerate}
+        \item An $n$-dimensional submanifold $M \subseteq \mathbb{R}^n$ with boundary has the standard orientation, for which the positively oriented parametrizations are those with $\det D\boldsymbol{\phi} > 0$.
+        \item A $2$-dimensional submanifold $S \subseteq \mathbb{R}^3$ with boundary (a surface) is oriented by a continuous unit normal field $\mathbf{n}$: the positively oriented parametrizations are those for which $\partial_1\boldsymbol{\phi} \times \partial_2\boldsymbol{\phi}$ is a positive multiple of $\mathbf{n}$. Conversely, every orientation of $S$ comes from such a normal field. For example, $S^2$ and $S^2_+$ are oriented by the outward normal $\mathbf{n}(\mathbf{x}) = \mathbf{x}$, and the parametrization $\boldsymbol{\phi}(\theta, s)$ of Example~\ref{ex:manifolds-boundary} is positively oriented, since $\partial_\theta\boldsymbol{\phi} \times \partial_s\boldsymbol{\phi} = \cos s\; \boldsymbol{\phi}(\theta, s)$. The M\"obius strip is not orientable: a normal vector that is moved continuously once around the strip comes back as its negative.
+    \end{enumerate}
+\end{example}
+
+\begin{definition}[Induced orientation]\label{def:boundary-orientation}
+    Let $M$ be an oriented $k$-dimensional submanifold with boundary, where $k \geq 2$. The induced orientation of $\partial M$ is the one for which, for every positively oriented local parametrization $\boldsymbol{\phi}$ of $M$ on an open subset of $\mathbb{H}^k$, the parametrization $\boldsymbol{\phi}_\partial(\mathbf{u}') = \boldsymbol{\phi}(\mathbf{u}', 0)$ of $\partial M$ is positively oriented if $k$ is even, and negatively oriented if $k$ is odd. For $k = 1$ and a compact $M$, $\partial M$ is a finite set of points, and the induced orientation gives a point $\boldsymbol{\phi}(0)$ the sign $-1$ if $\boldsymbol{\phi}$ is positively oriented, and $+1$ if it is negatively oriented; the integral of a function $f$ over $\partial M$ is the sum of the values $\pm f(\mathbf{p})$ over $\mathbf{p} \in \partial M$, with these signs.
+\end{definition}
+
+(This is consistent: a transition map $\boldsymbol{\psi}$ between two parametrizations on open subsets of $\mathbb{H}^k$ maps points of $\mathbb{H}^k$ to $\mathbb{H}^k$ and points of $\partial\mathbb{H}^k$ to $\partial\mathbb{H}^k$, so at a point of $\partial\mathbb{H}^k$, the last row of $D\boldsymbol{\psi}$ is $(0, \ldots, 0, \frac{\partial\psi_k}{\partial u_k})$ with $\frac{\partial\psi_k}{\partial u_k} > 0$, and the restriction of $\boldsymbol{\psi}$ to $\partial\mathbb{H}^k$ also has a positive Jacobian determinant.) In words, a basis $\mathbf{v}_1, \ldots, \mathbf{v}_{k-1}$ of the boundary is positively oriented if $\mathbf{n}, \mathbf{v}_1, \ldots, \mathbf{v}_{k-1}$ is positively oriented for an outward vector $\mathbf{n}$: ``outward normal first''. For $\mathbb{H}^k$, the vector $-\mathbf{e}_k$ points outward, and $\det(-\mathbf{e}_k, \mathbf{e}_1, \ldots, \mathbf{e}_{k-1}) = (-1)^k$. For a region $M \subseteq \mathbb{R}^2$ with the standard orientation, $\partial M$ is traversed with $M$ on its left, i.e., counterclockwise for a disk, as in Green's theorem. For a region $M \subseteq \mathbb{R}^3$, the positively oriented parametrizations $\boldsymbol{\psi}$ of $\partial M$ are those for which $\partial_1\boldsymbol{\psi} \times \partial_2\boldsymbol{\psi}$ points outward, as in the divergence theorem. For a surface $S$ oriented by a normal field $\mathbf{n}$, $\partial S$ is traversed with $S$ on the left of a walker whose head points in the direction of $\mathbf{n}$. For example, the equator of $S^2_+$ with the outward normal is traversed counterclockwise, as seen from above: $\boldsymbol{\phi}_\partial(\theta) = (\cos\theta, \sin\theta, 0)$.
+
+\begin{definition}[Integrals over manifolds]\label{def:manifold-integral}
+    Let $M$ be a compact oriented $k$-dimensional submanifold with boundary, and let $\omega$ be a $k$-form on an open set that contains $M$.
+    \begin{enumerate}
+        \item Suppose that $\omega$ vanishes at all points of $M$ outside $\boldsymbol{\phi}(K)$, for a positively oriented local parametrization $\boldsymbol{\phi}: V \to M \cap W$ and a compact set $K \subseteq V$. Then $\boldsymbol{\phi}^*\omega = g\, du_1 \wedge \cdots \wedge du_k$, where $g$ vanishes on $V$ outside $K$, and we define $\int_M \omega = \int_V g(\mathbf{u})\, d\mathbf{u}$, the integral of $g$, extended by $0$, over a box that contains $K$.
+        \item In general, let $\rho_1, \ldots, \rho_m \geq 0$ be smooth functions on $\mathbb{R}^n$ with $\sum_i \rho_i = 1$ on an open set that contains $M$, such that each $\rho_i$ vanishes at all points of $M$ outside $\boldsymbol{\phi}_i(K_i)$, for some $\boldsymbol{\phi}_i$ and $K_i$ as in 1 (a partition of unity). We define $\int_M \omega = \sum_{i=1}^m \int_M \rho_i\omega$.
+    \end{enumerate}
+\end{definition}
+
+In 1, the integral does not depend on $\boldsymbol{\phi}$: for a second positively oriented parametrization, the two integrals agree by Proposition~\ref{prop:pullback-top} and the change of variables formula, applied to the transition map, as in the proof of Proposition~\ref{prop:reparametrization}. For a negatively oriented $\boldsymbol{\phi}$, the same argument gives $\int_M \omega = -\int_V \boldsymbol{\phi}^*\omega$. Partitions of unity exist because $M$ is compact: $M$ is covered by finitely many open balls whose closures lie in sets $W$ with positively oriented parametrizations, and dividing smooth bump functions that are positive exactly on these balls (such as $e^{-1/(1 - \norm{\mathbf{x}}^2)}$ on the unit ball) by their sum gives the functions $\rho_i$; we omit the details. The definition in 2 does not depend on the partition of unity: for a second one, $\sigma_1, \ldots, \sigma_l$, both sums are equal to $\sum_{i, j} \int_M \rho_i\sigma_j\omega$. Integrals over $\partial M$ are defined in the same way, with the induced orientation.
+
+For $k = n$ and the standard orientation, Proposition~\ref{prop:pullback-top} and the change of variables formula give $\int_M f\, dx_1 \wedge \cdots \wedge dx_n = \int_M f(\mathbf{x})\, d\mathbf{x}$, the multiple integral of Lecture~3. For a surface $S \subseteq \mathbb{R}^3$ oriented by $\mathbf{n}$ and the $2$-form $\omega$ of a vector field $G$, $\int_S \omega$ is the flux of $G$ through $S$ in the direction of $\mathbf{n}$, by Example~\ref{ex:form-integrals}.
+
+\subsection{Stokes' theorem}
+
+\begin{theorem}[Stokes]\label{thm:stokes}
+    Let $M \subseteq \mathbb{R}^n$ be a compact oriented $k$-dimensional submanifold with boundary, where $k \geq 1$, let $\partial M$ have the induced orientation, and let $\omega$ be a $(k - 1)$-form on an open set that contains $M$. Then
+    \[\int_M d\omega = \int_{\partial M} \omega.\]
+    In particular, $\int_M d\omega = 0$ if $\partial M$ is empty.
+\end{theorem}
+
+We prove the theorem for cubes, which contains all the analysis, and then explain how the general case reduces to cubes. The boundary of the square $[0, 1]^2$ consists of four edges, which we traverse counterclockwise. In general, the boundary of a $k$-cube $\mathbf{c}$ consists of its $2k$ faces, with signs. For $j = 1, \ldots, k$ and $\alpha \in \{0, 1\}$, the face $\mathbf{c}_{(j, \alpha)}$ is the $(k - 1)$-cube obtained by fixing the $j$-th coordinate to $\alpha$:
+\[\mathbf{c}_{(j, \alpha)}(u_1, \ldots, u_{k-1}) = \mathbf{c}(u_1, \ldots, u_{j-1}, \alpha, u_j, \ldots, u_{k-1}).\]
+The boundary of $\mathbf{c}$ is the formal sum $\partial\mathbf{c} = \sum_{j=1}^k \sum_{\alpha = 0, 1} (-1)^{j+\alpha}\, \mathbf{c}_{(j, \alpha)}$, and for a $(k - 1)$-form $\omega$, we define
+\[\int_{\partial\mathbf{c}} \omega = \sum_{j=1}^k \sum_{\alpha = 0, 1} (-1)^{j+\alpha} \int_{\mathbf{c}_{(j, \alpha)}} \omega.\]
+For a curve ($k = 1$), $\int_{\partial\mathbf{c}} f = f(\mathbf{c}(1)) - f(\mathbf{c}(0))$: the boundary is the end point minus the starting point. For the square, the edges $(u, 0)$, $(1, u)$, $(u, 1)$ and $(0, u)$ get the signs $+$, $+$, $-$ and $-$, so they are traversed counterclockwise, as in Green's theorem.
+
+\begin{theorem}[Stokes' theorem for cubes]\label{thm:stokes-cube}
+    Let $\omega$ be a $(k - 1)$-form on an open set $U \subseteq \mathbb{R}^n$, and let $\mathbf{c}$ be a $k$-cube in $U$. Then
+    \[\int_{\mathbf{c}} d\omega = \int_{\partial\mathbf{c}} \omega.\]
+\end{theorem}
+
+\begin{proof}
+    First, let $\mathbf{c}$ be the identity map of $[0, 1]^k$, so that $\omega$ is a $(k - 1)$-form on an open set containing $[0, 1]^k \subseteq \mathbb{R}^k$. By linearity, we may assume that $\omega = f\, du_1 \wedge \cdots \wedge \widehat{du_j} \wedge \cdots \wedge du_k$, where the hat means that $du_j$ is left out. Then
+    \[d\omega = \frac{\partial f}{\partial u_j}\, du_j \wedge du_1 \wedge \cdots \wedge \widehat{du_j} \wedge \cdots \wedge du_k = (-1)^{j-1}\frac{\partial f}{\partial u_j}\, du_1 \wedge \cdots \wedge du_k,\]
+    since the other terms of $df$ contain some $du_i$ twice, and moving $du_j$ to its place takes $j - 1$ swaps. By Fubini's theorem and the fundamental theorem of calculus, integrating over $u_j$ first,
+    \[\int_{[0,1]^k} d\omega = (-1)^{j-1} \int_{[0,1]^{k-1}} \Big(f\big(\ldots, \underset{j}{1}, \ldots\big) - f\big(\ldots, \underset{j}{0}, \ldots\big)\Big)\, d\mathbf{u}',\]
+    where the $j$-th argument is $1$ or $0$, and $\mathbf{u}'$ denotes the other $k - 1$ variables. On the other side, the $i$-th coordinate is constant on the face $\mathbf{c}_{(i, \alpha)}$, so the pullback of $du_i$ to this face is $0$. Hence only the two faces with $i = j$ contribute, and the pullback of $\omega$ to them is $f(\ldots, \alpha, \ldots)\, du_1 \wedge \cdots \wedge du_{k-1}$. So
+    \[\int_{\partial\mathbf{c}} \omega = (-1)^{j+1} \int_{[0,1]^{k-1}} f\big(\ldots, \underset{j}{1}, \ldots\big)\, d\mathbf{u}' + (-1)^j \int_{[0,1]^{k-1}} f\big(\ldots, \underset{j}{0}, \ldots\big)\, d\mathbf{u}',\]
+    which is the same. For a general $k$-cube $\mathbf{c}$, the faces of $\mathbf{c}$ are $\mathbf{c} \circ \mathbf{i}_{(j, \alpha)}$, where the $\mathbf{i}_{(j, \alpha)}$ are the faces of the identity cube $\mathbf{i}$ of $[0, 1]^k$. Since the pullback commutes with $d$, the first case gives
+    \[\int_{\mathbf{c}} d\omega = \int_{[0,1]^k} \mathbf{c}^*(d\omega) = \int_{[0,1]^k} d(\mathbf{c}^*\omega) = \int_{\partial\mathbf{i}} \mathbf{c}^*\omega = \int_{\partial\mathbf{c}} \omega. \qedhere\]
+\end{proof}
+
+A $k$-cube need not be injective, so Theorem~\ref{thm:stokes-cube} is not a special case of Theorem~\ref{thm:stokes}; conversely, $[0, 1]^k$ is not a submanifold with boundary for $k \geq 2$. But the analysis is the same, and Theorem~\ref{thm:stokes} reduces to Theorem~\ref{thm:stokes-cube}.
+
+\begin{proof}[Idea of the proof of Theorem~\ref{thm:stokes}]
+    For $k = 1$, $M$ consists of finitely many closed curves and arcs. Each of them can be parametrized, in the direction of its orientation, by a $1$-cube $\mathbf{c}$ that is injective, except that $\mathbf{c}(0) = \mathbf{c}(1)$ for a closed curve, and Theorem~\ref{thm:stokes-cube} gives $\int_{\mathbf{c}} df = f(\mathbf{c}(1)) - f(\mathbf{c}(0))$, the signed sum of $f$ over the end points. Now let $k \geq 2$.
+    \begin{enumerate}
+        \item (Localization.) For a partition of unity $\rho_1, \ldots, \rho_m$ as in Definition~\ref{def:manifold-integral}, we have $\omega = \sum_i \rho_i\omega$ and $d\omega = \sum_i d(\rho_i\omega)$ near $M$, and both sides of Stokes' formula are linear in $\omega$. So we may assume that $\omega$ and $d\omega$ vanish at all points of $M$ outside $\boldsymbol{\phi}(K)$, for a positively oriented local parametrization $\boldsymbol{\phi}: V \to M \cap W$ and a compact set $K \subseteq V$. Shrinking and translating $V$ if necessary, we may assume that $V$ is open in $\mathbb{H}^k$.
+        \item (Pullback.) Since the pullback commutes with $d$, $\int_M d\omega = \int_V \boldsymbol{\phi}^*(d\omega) = \int_V d\eta$ for the $(k - 1)$-form $\eta = \boldsymbol{\phi}^*\omega$, which vanishes outside $K$. On the boundary, the pullback of $\eta$ to $\partial\mathbb{H}^k$ is $\boldsymbol{\phi}_\partial^*\omega$, so $\int_{\partial M} \omega$ is also an integral of $\eta$.
+        \item (A box.) Choose $a > 0$ such that $K$ lies in the box $Q = [-a, a]^{k-1} \times [0, a]$, away from all its faces except the bottom face $u_k = 0$. The box $Q$ is the image of the $k$-cube $\mathbf{A}(\mathbf{t}) = (2at_1 - a, \ldots, 2at_{k-1} - a, \, at_k)$, an affine map with a positive Jacobian determinant. Extending $\eta$ by $0$, Proposition~\ref{prop:pullback-top}, the change of variables formula and Theorem~\ref{thm:stokes-cube} give
+        \[\int_M d\omega = \int_Q d\eta = \int_{\mathbf{A}} d\eta = \int_{\partial\mathbf{A}} \eta = (-1)^{k + 0}\int_{\mathbf{A}_{(k, 0)}} \eta,\]
+        since $\eta$ vanishes on the other $2k - 1$ faces of $\mathbf{A}$. The bottom face $\mathbf{A}_{(k, 0)}(\mathbf{t}') = (2at_1 - a, \ldots, 2at_{k-1} - a, \, 0)$ maps $[0, 1]^{k-1}$ onto $[-a, a]^{k-1} \times \{0\}$ with a positive Jacobian determinant, so the right side is $(-1)^k \int_{[-a, a]^{k-1}} \boldsymbol{\phi}_\partial^*\omega$. This is $\int_{\partial M} \omega$, since $\boldsymbol{\phi}_\partial$ is positively oriented if $k$ is even, and negatively oriented if $k$ is odd (Definition~\ref{def:boundary-orientation}). If $K$ does not meet $\partial\mathbb{H}^k$, both sides are $0$.
+    \end{enumerate}
+    This is where the sign $(-1)^k$ in the induced orientation comes from: it is the sign of the bottom face of a cube. Instead of a partition of unity, one can also cut $M$ into pieces parametrized by cubes, as for the divergence theorem in Lecture~3. The integrals over the faces shared by two neighboring pieces cancel, since the two pieces induce opposite orientations on them, and only the integral over $\partial M$ remains.
+\end{proof}
+
+All the integral theorems of Lecture~3 are special cases of Theorem~\ref{thm:stokes}.
+\begin{itemize}
+    \item For $k = 1$ and a $0$-form $f$: if $M$ is an arc from $\mathbf{p}$ to $\mathbf{q}$, then $\int_M df = f(\mathbf{q}) - f(\mathbf{p})$, the fundamental theorem for line integrals. For $M = [a, b] \subseteq \mathbb{R}$, it is the fundamental theorem of calculus.
+    \item For a compact region $M \subseteq \mathbb{R}^2$ with smooth boundary (a compact $2$-dimensional submanifold with boundary, such as the sets $\{g \leq 0\}$ of Example~\ref{ex:manifolds-boundary}), with the standard orientation, and for $\omega = F_1\, dx_1 + F_2\, dx_2$: $d\omega = \curl F\, dx_1 \wedge dx_2$, and Stokes' theorem is Green's theorem, with $\partial M$ traversed counterclockwise, i.e., with $M$ on its left.
+    \item For a compact region $M \subseteq \mathbb{R}^3$ with smooth boundary and the $2$-form $\omega$ of a vector field $G$: $d\omega = \Div G\, dx_1 \wedge dx_2 \wedge dx_3$, the integral $\int_{\partial M} \omega$ is the flux of $G$ through $\partial M$ with the outward normal, and Stokes' theorem is the divergence theorem.
+    \item For a compact surface $S \subseteq \mathbb{R}^3$ with boundary, oriented by a unit normal field $\mathbf{n}$, and for $\omega = F_1\, dx_1 + F_2\, dx_2 + F_3\, dx_3$: $d\omega$ is the $2$-form of the vector field $\curl F$, and Stokes' theorem is the classical Stokes theorem: the circulation of $F$ around $\partial S$ equals the flux of $\curl F$ through $S$ in the direction of $\mathbf{n}$.
+\end{itemize}
+
+\begin{example}\label{ex:stokes-manifolds}
+    \begin{enumerate}
+        \item The $2$-form $\omega = x_1\, dx_2 \wedge dx_3 + x_2\, dx_3 \wedge dx_1 + x_3\, dx_1 \wedge dx_2$ of the vector field $G(\mathbf{x}) = \mathbf{x}$ has $d\omega = 3\, dx_1 \wedge dx_2 \wedge dx_3$. For the closed unit ball $B \subseteq \mathbb{R}^3$, whose boundary $S^2$ gets the outward normal, Stokes' theorem gives $\int_{S^2} \omega = 3 \cdot \frac{4}{3}\pi = 4\pi$, as in Example~\ref{L3-ex:divergence-theorem} of Lecture~3.
+        \item Let $S^2_+$ be the closed upper hemisphere with the outward normal, and let $\omega = -x_2\, dx_1 + x_1\, dx_2$ be the $1$-form of $F(\mathbf{x}) = (-x_2, x_1, 0)$. Then $d\omega = 2\, dx_1 \wedge dx_2$, the $2$-form of $\curl F = (0, 0, 2)$. The equator is traversed counterclockwise by $\boldsymbol{\phi}_\partial(\theta) = (\cos\theta, \sin\theta, 0)$, with $\boldsymbol{\phi}_\partial^*\omega = (\sin^2\theta + \cos^2\theta)\, d\theta$, so $\int_{S^2_+} d\omega = \int_0^{2\pi} d\theta = 2\pi$. The closed unit disk $D$ in the plane $x_3 = 0$, oriented by the upward normal $\mathbf{e}_3$, has the same oriented boundary, so $\int_D d\omega = 2\pi$ as well, which is twice the area of $D$. In general, the flux of $\curl F$ through an oriented surface only depends on its oriented boundary.
+    \end{enumerate}
+\end{example}
+
+\subsection{Closed and exact forms}
+
+\begin{definition}\label{def:closed-exact}
+    A $k$-form $\omega$ is closed if $d\omega = 0$, and exact if $\omega = d\eta$ for a $(k - 1)$-form $\eta$.
+\end{definition}
+
+Every exact form is closed, since $d(d\eta) = 0$. For a $1$-form $\omega = \sum_i F_i\, dx_i$, exact means that $F = \nabla f$ is a gradient field, and closed means that $\frac{\partial F_j}{\partial x_i} = \frac{\partial F_i}{\partial x_j}$ for all $i$ and $j$, i.e., that the Jacobian of $F$ is symmetric. The Poincar\'e lemma of Lecture~3 (Theorem~\ref{L3-thm:poincare}) says that on $\mathbb{R}^n$, every closed $1$-form is exact. More generally, on a star-shaped open set, every closed $k$-form with $k \geq 1$ is exact. On other sets, this can fail, and the failure detects holes.
+
+\begin{example}[The angle form]\label{ex:angle-form}
+    On $U = \mathbb{R}^2 \setminus \{\mathbf{0}\}$, the $1$-form
+    \[\omega = \frac{-x_2\, dx_1 + x_1\, dx_2}{x_1^2 + x_2^2}\]
+    is closed: it belongs to the vortex field of Example~\ref{L3-ex:vortex} of Lecture~3, whose curl is $0$. It is not exact: for the circle $\mathbf{c}(t) = (\cos 2\pi t, \sin 2\pi t)$, the pullback is $\mathbf{c}^*\omega = 2\pi\, dt$, so $\int_{\mathbf{c}} \omega = 2\pi$, while $\int_{\mathbf{c}} df = f(\mathbf{c}(1)) - f(\mathbf{c}(0)) = 0$ for every function $f$, by Theorem~\ref{thm:stokes-cube}, since $\mathbf{c}(1) = \mathbf{c}(0)$. Near every point of $U$, $\omega = d\theta$ for the polar angle $\theta$, which explains its name; but the angle cannot be defined as a smooth function on all of $U$. For every closed curve $\mathbf{c}$ in $U$, the number $\frac{1}{2\pi}\int_{\mathbf{c}} \omega$ is an integer, the winding number of $\mathbf{c}$ around the origin.
+\end{example}
+
+\begin{example}[The solid angle form]\label{ex:solid-angle}
+    On $U = \mathbb{R}^3 \setminus \{\mathbf{0}\}$, let $\tau = \omega/\norm{\mathbf{x}}^3$, where $\omega$ is the $2$-form of Example~\ref{ex:stokes-manifolds}. It is the $2$-form of the vector field $G(\mathbf{x}) = \mathbf{x}/\norm{\mathbf{x}}^3$, the electric field of a point charge (up to a constant), and it is closed, since $\Div G = \sum_i \big(\norm{\mathbf{x}}^{-3} - 3x_i^2\norm{\mathbf{x}}^{-5}\big) = 0$. For a small parallelogram spanned by $\mathbf{v}$ and $\mathbf{w}$ at $\mathbf{x}$, $\tau_{\mathbf{x}}(\mathbf{v}, \mathbf{w})$ is approximately the solid angle under which it is seen from the origin, hence the name. Since $\norm{\mathbf{x}} = 1$ on $S^2$, the pullbacks of $\tau$ and $\omega$ to $S^2$ agree, so $\int_{S^2} \tau = 4\pi$. But if $\tau = d\eta$ for a $1$-form $\eta$ on $U$, then Theorem~\ref{thm:stokes} for $S^2 \subseteq U$, which has empty boundary, would give $\int_{S^2} \tau = 0$. So $\tau$ is closed but not exact: it detects the hole of $U$ with a sphere, as the angle form detects the hole of $\mathbb{R}^2 \setminus \{\mathbf{0}\}$ with a circle.
+\end{example}
+
+The closed $k$-forms on $U$ form a vector space, the kernel of $d$, and the exact $k$-forms form a subspace of it, the image of $d$. The quotient space (Section~\ref{L1-sec:quotient} of Lecture~1)
+\[H^k(U) = \{\text{closed } k\text{-forms on } U\} / \{\text{exact } k\text{-forms on } U\}\]
+is the $k$-th de Rham cohomology space of $U$. It measures how far closed forms are from being exact:
+\begin{itemize}
+    \item $H^0(U)$ consists of the functions with $df = 0$, i.e., of the functions that are constant on each connected component of $U$ (Section~\ref{sec:connected}). So $\dim H^0(U)$ is the number of connected components of $U$.
+    \item By the Poincar\'e lemma, $H^k(\mathbb{R}^n) = \{0\}$ for $k \geq 1$.
+    \item $H^1(\mathbb{R}^2 \setminus \{\mathbf{0}\})$ is one-dimensional, spanned by the class of the angle form: every closed $1$-form $\eta$ on $\mathbb{R}^2 \setminus \{\mathbf{0}\}$ is $c\,\omega + df$ for some function $f$, with $c = \frac{1}{2\pi}\int_{\mathbf{c}} \eta$ for the unit circle $\mathbf{c}$.
+    \item $H^2(\mathbb{R}^3 \setminus \{\mathbf{0}\}) \neq \{0\}$, by Example~\ref{ex:solid-angle}. In fact, it is one-dimensional, spanned by the class of the solid angle form, while $H^1(\mathbb{R}^3 \setminus \{\mathbf{0}\}) = \{0\}$: closed curves cannot detect a point removed from $\mathbb{R}^3$.
+\end{itemize}
+De Rham's theorem says that these spaces only depend on the topology of $U$ (more precisely, on its homotopy type), although they are defined with derivatives. They can also be defined for manifolds. For a compact manifold $M$, their dimensions $b_k = \dim H^k(M)$, the Betti numbers, refine the Euler characteristic: $\chi(M) = \sum_k (-1)^k b_k$. Together with the Morse relation (Theorem~\ref{thm:morse-relation}), this leads to the Morse inequalities $c_k \geq b_k$: a Morse function on $M$ has at least $b_k$ critical points of index $k$. For example, the torus has $b_0 = 1$, $b_1 = 2$ and $b_2 = 1$, so every Morse function on it has at least four critical points, at least two of which are saddle points.
+
+\begin{remark}[Differential forms in machine learning]
+    Differential forms appear in machine learning in several places.
+    \begin{enumerate}
+        \item Probability densities transform like $n$-forms. If $\mathbf{y} = \boldsymbol{\phi}(\mathbf{x})$ for a diffeomorphism $\boldsymbol{\phi}$ with $\det D\boldsymbol{\phi} > 0$, Proposition~\ref{prop:pullback-top} gives $\boldsymbol{\phi}^*(p_Y\, dy_1 \wedge \cdots \wedge dy_n) = (p_Y \circ \boldsymbol{\phi}) \det D\boldsymbol{\phi}\; dx_1 \wedge \cdots \wedge dx_n$, which is the change of variables formula $p_X = (p_Y \circ \boldsymbol{\phi}) \det D\boldsymbol{\phi}$ behind normalizing flows (Remark~\ref{L3-rem:change-of-variables} of Lecture~3).
+        \item Hamiltonian Monte Carlo samples from a density proportional to $e^{-U(\mathbf{q})}$ by simulating the motion of a particle with position $\mathbf{q}$ and momentum $\mathbf{p}$ in the potential $U$. The flow of these equations preserves the $2$-form $\sum_i dq_i \wedge dp_i$ (it is symplectic), and hence volume (compare Liouville's formula, Proposition~\ref{L3-prop:liouville} of Lecture~3). The leapfrog integrator used in practice is symplectic as well, which keeps the error in the energy small over long trajectories, and the acceptance rate of the method high.
+        \item On a graph, functions on the nodes, on the edges and on the triangles are discrete analogues of $0$-, $1$- and $2$-forms, the incidence matrices play the role of $d$, and $d \circ d = 0$ still holds. The resulting decomposition of flows on the edges into a gradient part, a curl part and a harmonic part (Hodge theory) is used, for example, to rank items from pairwise comparisons, and in neural networks on simplicial complexes.
+    \end{enumerate}
+\end{remark}
+
 \section{Topology in Machine Learning}\label{sec:ml}
 
 We end with a few places where the ideas of this appendix appear in machine learning. Some of them are theorems, others are well-supported heuristics and active research topics.
@@ -653,7 +997,7 @@ By Corollary~\ref{cor:complete} and Theorem~\ref{thm:norms-equivalent}, every fi
     \begin{enumerate}
         \item The space $C[a, b]$ of continuous functions $f: [a, b] \to \mathbb{R}$ with the maximum norm $\norm{f}_\infty = \max_{a \leq x \leq b}|f(x)|$ is a Banach space (Proposition~\ref{prop:c-complete} below). Convergence in this norm is uniform convergence: $\norm{f_k - f}_\infty \to 0$ means that $f_k(x) \to f(x)$ at the same speed for all $x$.
         \item For $1 \leq p < \infty$, the sequences $x = (x_1, x_2, \ldots)$ with $\norm{x}_p = (\sum_k |x_k|^p)^{1/p} < \infty$ form a Banach space $\ell^p$, and the bounded sequences with $\norm{x}_\infty = \sup_k |x_k|$ form a Banach space $\ell^\infty$.
-        \item Let $(\Omega, \mathcal{F}, \mu)$ be a measure space and $1 \leq p < \infty$. The measurable functions with $\norm{f}_p = (\int |f|^p\, d\mu)^{1/p} < \infty$, where functions that agree almost everywhere are identified, form a Banach space $L^p(\mu)$ (the Riesz--Fischer theorem, which we do not prove). The integral is the Lebesgue integral of Lecture~4 (Definition~\ref{L4-def:lebesgue}). For a probability measure, these are the spaces $L^p$ of random variables of Lecture~4; for the Lebesgue measure on $[a, b]$, we write $L^p[a, b]$; and for the counting measure on $\{1, 2, \ldots\}$, $L^p(\mu)$ is $\ell^p$.
+        \item Let $(\Omega, \mathcal{F}, \mu)$ be a measure space and $1 \leq p < \infty$. The measurable functions with $\norm{f}_p = (\int |f|^p\, d\mu)^{1/p} < \infty$, where functions that agree almost everywhere are identified, form a Banach space $L^p(\mu)$ (the Riesz--Fischer theorem, which we do not prove). The integral is the Lebesgue integral (Definition~\ref{B-def:lebesgue} of the appendix to Lecture~4). For a probability measure, these are the spaces $L^p$ of random variables of the appendix to Lecture~4; for the Lebesgue measure on $[a, b]$, we write $L^p[a, b]$; and for the counting measure on $\{1, 2, \ldots\}$, $L^p(\mu)$ is $\ell^p$.
         \item Not every normed space is complete. On $C[0, 1]$, $\norm{f}_1 = \int_0^1 |f(x)|\, dx$ is also a norm. The ramps $f_k$ that are $0$ on $[0, \frac{1}{2}]$, $1$ on $[\frac{1}{2} + \frac{1}{k}, 1]$ and linear in between satisfy $\norm{f_k - f_l}_1 \leq \frac{1}{2\min(k, l)}$, so they form a Cauchy sequence for this norm. But they converge in this norm to the step function $\mathbf{1}_{(1/2, 1]}$, and no continuous function is their limit. So $(C[0, 1], \norm{\cdot}_1)$ is not complete. Adding the limits of all Cauchy sequences, as the real numbers complete the rational numbers, gives $L^1[0, 1]$.
     \end{enumerate}
 \end{example}
@@ -726,7 +1070,7 @@ The most important property of Hilbert spaces is that we can project onto closed
     since $\frac{c_k + c_l}{2} \in C$ by convexity. The right side tends to $0$ as $k, l \to \infty$, so $(c_k)$ is a Cauchy sequence. Its limit $c$ lies in $C$, since $C$ is closed, and $\norm{x - c} = d$ by the continuity of the norm. If $c'$ is another closest point, the same inequality for $c$ and $c'$ gives $\norm{c - c'}^2 \leq 0$. Now let $C = U$ be a closed subspace, and $p = P_Ux$. For $u \in U$, the function $t \mapsto \norm{x - p - tu}^2 = \norm{x - p}^2 - 2t\ip{x - p}{u} + t^2\norm{u}^2$ is minimal at $t = 0$, so $\ip{x - p}{u} = 0$. Conversely, if $p' \in U$ and $x - p' \perp U$, then $\norm{x - u}^2 = \norm{x - p'}^2 + \norm{p' - u}^2$ for all $u \in U$ by Pythagoras, so $p'$ is the closest point. Finally, $x = P_Ux + (x - P_Ux)$, and this decomposition is unique since $U \cap U^\perp = \{0\}$.
 \end{proof}
 
-For a subspace $U$ of $\mathbb{R}^n$, this is the least squares projection of Lecture~2. The subspace must be closed: the polynomials form a subspace of $L^2[0, 1]$ that is not closed, and the function $e^x$ has the distance $0$ from it (by the Weierstrass approximation theorem, Section~\ref{sec:fa-ml}), but no closest polynomial. One can show that the random variables in $L^2$ that are measurable with respect to a $\sigma$-algebra $\mathcal{G}$ form a closed subspace, and the projection onto it is the conditional expectation $\E[Y \mid \mathcal{G}]$ (Theorem~\ref{L4-thm:conditional-expectation-general} of Lecture~4).
+For a subspace $U$ of $\mathbb{R}^n$, this is the least squares projection of Lecture~2. The subspace must be closed: the polynomials form a subspace of $L^2[0, 1]$ that is not closed, and the function $e^x$ has the distance $0$ from it (by the Weierstrass approximation theorem, Section~\ref{sec:fa-ml}), but no closest polynomial. One can show that the random variables in $L^2$ that are measurable with respect to a $\sigma$-algebra $\mathcal{G}$ form a closed subspace, and the projection onto it is the conditional expectation $\E[Y \mid \mathcal{G}]$ (Theorem~\ref{B-thm:conditional-expectation-general} of the appendix to Lecture~4).
 
 \begin{theorem}[Riesz representation]\label{thm:riesz}
     For every bounded linear functional $\varphi$ on a Hilbert space $H$, there is exactly one $y \in H$ with $\varphi(x) = \ip{x}{y}$ for all $x \in H$, and $\norm{\varphi} = \norm{y}$.
@@ -736,7 +1080,7 @@ For a subspace $U$ of $\mathbb{R}^n$, this is the least squares projection of Le
     If $\varphi = 0$, take $y = 0$. Otherwise, the kernel $U = \{x : \varphi(x) = 0\}$ is a closed subspace (the preimage of $\{0\}$ under a continuous map), and $U \neq H$. By the projection theorem, there is a $z \neq 0$ with $z \perp U$ (take $z = v - P_Uv$ for some $v \notin U$), and we may scale it so that $\varphi(z) = 1$. For every $x$, the vector $x - \varphi(x)z$ lies in $U$, so it is orthogonal to $z$, i.e., $\ip{x}{z} = \varphi(x)\norm{z}^2$. So $y = \frac{z}{\norm{z}^2}$ has the required property. If $y'$ has it too, then $\ip{x}{y - y'} = 0$ for all $x$, in particular for $x = y - y'$, so $y = y'$. Finally, $|\varphi(x)| \leq \norm{x}\norm{y}$ by the Cauchy--Schwarz inequality, with equality for $x = y$.
 \end{proof}
 
-The representing vector depends on the inner product. This is why the gradient depends on the inner product (Remark~\ref{L3-rem:riesz} of Lecture~3): the derivative $Df(\mathbf{x})$ is a linear functional, and the gradient is its Riesz representer. The Riesz representation theorem also proves the Radon--Nikodym theorem of Lecture~4, by an argument of von Neumann.
+The representing vector depends on the inner product. This is why the gradient depends on the inner product (Remark~\ref{L3-rem:riesz} of Lecture~3): the derivative $Df(\mathbf{x})$ is a linear functional, and the gradient is its Riesz representer. The Riesz representation theorem also proves the Radon--Nikodym theorem of the appendix to Lecture~4, by an argument of von Neumann.
 
 \begin{theorem}[Radon--Nikodym]\label{thm:radon-nikodym-proof}
     Let $\mu$ and $\nu$ be finite measures on a measurable space $(\Omega, \mathcal{F})$ such that $\mu(A) = 0$ implies $\nu(A) = 0$. Then there is a measurable $p \geq 0$ with $\nu(A) = \int_A p\, d\mu$ for all $A \in \mathcal{F}$.
@@ -747,10 +1091,10 @@ The representing vector depends on the inner product. This is why the gradient d
     \[\int f\, d\nu = \int fg\, d\rho = \int fg\, d\mu + \int fg\, d\nu \qquad \text{for all } f \in L^2(\rho).\]
     For $f = \mathbf{1}_A$, this gives $\nu(A) = \int_A g\, d\rho$, and since $0 \leq \nu(A) \leq \rho(A)$ for all $A$, one shows that $0 \leq g \leq 1$ almost everywhere. Rearranging, $\int f(1 - g)\, d\nu = \int fg\, d\mu$. For $f = \mathbf{1}_N$ with $N = \{g = 1\}$, the left side is $0$, so $\mu(N) = 0$, and hence also $\nu(N) = 0$. Now let $A \in \mathcal{F}$, and take $f = \mathbf{1}_A(1 + g + \cdots + g^k)$, so that $f(1 - g) = \mathbf{1}_A(1 - g^{k+1})$:
     \[\int_A (1 - g^{k+1})\, d\nu = \int_A (g + g^2 + \cdots + g^{k+1})\, d\mu.\]
-    Outside the null set $N$, $g^{k+1} \to 0$ as $k \to \infty$, and the monotone convergence theorem (Theorem~\ref{L4-thm:monotone} of Lecture~4) on both sides gives $\nu(A) = \int_A \frac{g}{1 - g}\, d\mu$. So $p = \frac{g}{1 - g}$ is the density.
+    Outside the null set $N$, $g^{k+1} \to 0$ as $k \to \infty$, and the monotone convergence theorem (Theorem~\ref{B-thm:monotone} of the appendix to Lecture~4) on both sides gives $\nu(A) = \int_A \frac{g}{1 - g}\, d\mu$. So $p = \frac{g}{1 - g}$ is the density.
 \end{proof}
 
-This is Theorem~\ref{L4-thm:radon-nikodym} of Lecture~4 for finite measures; the $\sigma$-finite case follows by splitting $\Omega$ into countably many pieces of finite measure.
+This is Theorem~\ref{B-thm:radon-nikodym} of the appendix to Lecture~4 for finite measures; the $\sigma$-finite case follows by splitting $\Omega$ into countably many pieces of finite measure.
 
 \paragraph{Orthonormal bases.} In infinite dimensions, a basis in the sense of Lecture~1, in which every vector is a finite linear combination of basis vectors, is not useful. Instead, we allow infinite sums.
 
@@ -868,7 +1212,7 @@ So an optimization problem over an infinite-dimensional space of functions reduc
 \begin{itemize}
     \item \textbf{Universal approximation.} By the Weierstrass approximation theorem, which we do not prove, the polynomials are dense in $C[a, b]$: every continuous function is a uniform limit of polynomials. Since $\norm{f}_{L^2} \leq \sqrt{b - a}\,\norm{f}_\infty$, and one can show that the continuous functions are dense in $L^2[a, b]$, the polynomials are also dense in $L^2[a, b]$. Neural networks have the same property. Cybenko's theorem (1989) says that for a continuous function $\sigma$ with $\sigma(t) \to 0$ as $t \to -\infty$ and $\sigma(t) \to 1$ as $t \to \infty$, such as the logistic sigmoid, the networks $\sum_{i=1}^m c_i\sigma(\mathbf{w}_i^\top\mathbf{x} + b_i)$ with one hidden layer are dense in $C(Q)$, the continuous functions on a box $Q \subseteq \mathbb{R}^n$ with the maximum norm. The proof is functional analysis. If the closure $U$ of the subspace of these networks were not all of $C(Q)$, the Hahn--Banach theorem would give a nonzero bounded linear functional that vanishes on $U$, and by the Riesz--Markov theorem, it would be a signed measure $\mu \neq 0$ with $\int \sigma(\mathbf{w}^\top\mathbf{x} + b)\, d\mu(\mathbf{x}) = 0$ for all $\mathbf{w}$ and $b$. One then shows that this forces $\mu = 0$. The theorem says nothing about how many neurons are needed, or whether training finds good weights.
     \item \textbf{Kernel methods.} Support vector machines, kernel ridge regression and Gaussian processes work in the RKHS of a kernel, which is often infinite-dimensional. By the representer theorem, all computations only involve the $N \times N$ kernel matrix: this is the kernel trick of Lecture~2. The RKHS norm is the regularizer, and for kernels such as the squared exponential kernel, it penalizes functions that are not smooth.
-    \item \textbf{Gaussian processes and their RKHS.} The posterior mean of a Gaussian process lies in the RKHS of its kernel, but the paths of the process are rougher than the functions in the RKHS. For Brownian motion, the RKHS consists of the functions with square-integrable derivatives (Example~\ref{ex:rkhs}), while the paths are nowhere differentiable (Section~\ref{L4-sec:sde} of Lecture~4). In terms of the Karhunen--Lo\`eve expansion $B = \sum_k \sqrt{\lambda_k}Z_ke_k$, the RKHS norm of a path would be $\sum_k Z_k^2$, which is infinite almost surely, by the strong law of large numbers (Theorem~\ref{L4-thm:slln} of Lecture~4).
+    \item \textbf{Gaussian processes and their RKHS.} The posterior mean of a Gaussian process lies in the RKHS of its kernel, but the paths of the process are rougher than the functions in the RKHS. For Brownian motion, the RKHS consists of the functions with square-integrable derivatives (Example~\ref{ex:rkhs}), while the paths are nowhere differentiable (Section~\ref{L4-sec:sde} of Lecture~4). In terms of the Karhunen--Lo\`eve expansion $B = \sum_k \sqrt{\lambda_k}Z_ke_k$, the RKHS norm of a path would be $\sum_k Z_k^2$, which is infinite almost surely, by the strong law of large numbers (Theorem~\ref{B-thm:slln} of the appendix to Lecture~4).
     \item \textbf{The neural tangent kernel.} For a network $f(\mathbf{x}; \boldsymbol{\theta})$, the kernel
     \[\Theta(\mathbf{x}, \mathbf{x}') = \nabla_{\boldsymbol{\theta}}f(\mathbf{x}; \boldsymbol{\theta})^\top\nabla_{\boldsymbol{\theta}}f(\mathbf{x}'; \boldsymbol{\theta})\]
     describes how a gradient step on one example changes the prediction at another input. One can show that for infinitely wide networks with a suitably scaled random initialization, this kernel stays constant during training, and that training by gradient descent on the squared loss then amounts to kernel regression with this kernel. This connects deep learning with the kernel methods of this appendix, at least in this limit.
@@ -888,6 +1232,7 @@ So an optimization problem over an infinite-dimensional space of functions reduc
     \item Lagrange multipliers say that $\nabla f$ is normal to the constraint manifold at a constrained extremum. The Riemannian gradient is the projection of $\nabla f$ onto the tangent space; Riemannian gradient descent alternates such steps with retractions.
     \item By Sard's theorem, almost all values of a smooth map are regular. A critical point is nondegenerate if its Hessian is invertible, and its index is the number of negative eigenvalues. Nondegenerate critical points are isolated, and by the Morse lemma $f$ is exactly a sum of $\pm y_i^2$ near them. Almost every linear perturbation of a function is a Morse function.
     \item Sublevel sets change their topology only at critical values: a critical point of index $k$ attaches a $k$-cell. On a compact manifold, $\chi(M) = \sum_k (-1)^k c_k$.
+    \item Alternating $k$-forms on $\mathbb{R}^n$ have the basis $dx_I = dx_{i_1} \wedge \cdots \wedge dx_{i_k}$ with $i_1 < \cdots < i_k$, so $\dim \Lambda^k(\mathbb{R}^n)^* = \binom{n}{k}$, and $(\varphi_1 \wedge \cdots \wedge \varphi_k)(v_1, \ldots, v_k) = \det(\varphi_i(v_j))$. The exterior derivative of $\sum_I f_I\, dx_I$ is $\sum_I df_I \wedge dx_I$, with $d \circ d = 0$; in $\mathbb{R}^3$, it is the gradient, the curl and the divergence. Pullbacks of top-degree forms produce Jacobian determinants, and integrals of forms over $k$-cubes do not depend on the parametrization (up to orientation). Forms are integrated over compact oriented manifolds with boundary with local parametrizations and partitions of unity. Stokes' theorem $\int_M d\omega = \int_{\partial M} \omega$, with the orientation ``outward normal first'' on $\partial M$, contains all the integral theorems of Lecture~3; it is proved for cubes with Fubini's theorem and the fundamental theorem of calculus, and the general case reduces to cubes by pullbacks. Closed forms that are not exact, such as the angle form on $\mathbb{R}^2 \setminus \{\mathbf{0}\}$ and the solid angle form on $\mathbb{R}^3 \setminus \{\mathbf{0}\}$, detect holes; the de Rham cohomology spaces $H^k$ count them.
     \item A Banach space is a complete normed space, such as $C[a, b]$ with the maximum norm, $\ell^p$ and $L^p$. The Banach fixed-point theorem holds in it; with a weighted maximum norm, it proves the existence and uniqueness of solutions of ODEs (Picard--Lindel\"of). A linear map is continuous if and only if it is bounded; integration is bounded, differentiation is not.
     \item In a Hilbert space, every closed convex set has a unique closest point (projection theorem), every bounded linear functional is an inner product with a fixed vector (Riesz), and an orthonormal basis gives the expansion $x = \sum_k \ip{x}{e_k}e_k$ with Parseval's identity, such as Fourier series. Conditional expectations are projections in $L^2$, and the Riesz representation theorem proves the Radon--Nikodym theorem.
     \item A compact self-adjoint operator has orthonormal eigenvectors with eigenvalues that tend to $0$, and it is diagonal in them. For a continuous positive semidefinite kernel, Mercer's theorem gives $k(x, y) = \sum_k \lambda_ke_k(x)e_k(y)$, and the Karhunen--Lo\`eve expansion of a random function, such as Brownian motion, is its principal component analysis.
@@ -919,13 +1264,37 @@ So an optimization problem over an infinite-dimensional space of functions reduc
         \item Find the tangent space of the sphere $x^2 + y^2 + z^2 = 9$ at $(1, 2, 2)$ as $\Null DF$, and the tangent plane $(1, 2, 2) + T_{(1, 2, 2)}M$ as an equation.
         \item Show that $T_Q \mathrm{O}(n) = \{QK : K^\top = -K\}$ and $T_I \mathrm{SL}(n, \mathbb{R}) = \{H : \tr H = 0\}$ have the dimensions predicted by Example~\ref{ex:submanifolds}.
     \end{enumerate}
-    \item (Orthogonal Procrustes problem.) Given $A \in \mathbb{R}^{n \times n}$ with SVD $A = U\Sigma V^\top$, show that $\tr(Q^\top A)$ is maximal over $Q \in \mathrm{O}(n)$ for $Q = UV^\top$. (Hint: $\tr(Q^\top A) = \tr(\Sigma Z)$ with the orthogonal matrix $Z = V^\top Q^\top U$, whose entries are at most $1$ in absolute value.) This is how one aligns two point clouds by a rotation or reflection.
+    \item\label{exer:procrustes} (Orthogonal Procrustes problem.) Given $A \in \mathbb{R}^{n \times n}$ with SVD $A = U\Sigma V^\top$, show that $\tr(Q^\top A)$ is maximal over $Q \in \mathrm{O}(n)$ for $Q = UV^\top$. (Hint: $\tr(Q^\top A) = \tr(\Sigma Z)$ with the orthogonal matrix $Z = V^\top Q^\top U$, whose entries are at most $1$ in absolute value.) This is how one aligns two point clouds by a rotation or reflection.
     \item \begin{enumerate}[label=(\alph*)]
         \item Find all critical points of the monkey saddle $f(x, y) = x^3 - 3xy^2$. Show that the origin is a degenerate critical point. In polar coordinates, $f = r^3\cos 3\varphi$; describe the regions where $f > 0$ and $f < 0$.
         \item For which $a \in \mathbb{R}$ is $x^3 - ax$ a Morse function? Find its critical points and their indices.
         \item Find the critical points and their indices of $f(x, y) = x^4 - 2x^2 + y^2 + \varepsilon x$ for a small $\varepsilon > 0$, and describe how the sublevel sets change as $c$ increases.
     \end{enumerate}
     \item Let $A = \diag(3, 2, 1)$ and $f(\mathbf{x}) = \mathbf{x}^\top A\mathbf{x}$ on the sphere $S^2$. Find all critical points of $f$ and their indices, and check the Morse relation $\chi(S^2) = 2$. Repeat for $A = \diag(4, 3, 2, 1)$ on $S^3$, whose Euler characteristic is $0$.
+    \item\label{exer:wedge} (Alternating forms.)
+    \begin{enumerate}[label=(\alph*)]
+        \item For $\mathbf{u} = (1, 0, 0)$, $\mathbf{v} = (1, 2, 3)$ and $\mathbf{w} = (0, 1, 4)$, compute $(dx_1 \wedge dx_2)(\mathbf{v}, \mathbf{w})$, $(dx_1 \wedge dx_3)(\mathbf{v}, \mathbf{w})$ and $(dx_1 \wedge dx_2 \wedge dx_3)(\mathbf{u}, \mathbf{v}, \mathbf{w})$, and interpret the results as areas and a volume.
+        \item Write down a basis of $\Lambda^2(\mathbb{R}^4)^*$.
+        \item Show that $\varphi \wedge \varphi = 0$ for every $1$-form $\varphi$, but that $\omega = dx_1 \wedge dx_2 + dx_3 \wedge dx_4$ satisfies $\omega \wedge \omega = 2\, dx_1 \wedge dx_2 \wedge dx_3 \wedge dx_4 \neq 0$.
+    \end{enumerate}
+    \item Compute $d\omega$ for (a) $\omega = x_1x_2\, dx_1 + x_1^2\, dx_2$ on $\mathbb{R}^2$; (b) $\omega = x_2x_3\, dx_1 + x_1x_3\, dx_2 + x_1x_2\, dx_3$ on $\mathbb{R}^3$; (c) $\omega = x_1\, dx_2 \wedge dx_3 + x_2\, dx_3 \wedge dx_1 + x_3\, dx_1 \wedge dx_2$ on $\mathbb{R}^3$. Which of these forms are closed, and which are exact? Relate the result of (c) to the divergence of the vector field $F(\mathbf{x}) = \mathbf{x}$.
+    \item (Pullbacks.)
+    \begin{enumerate}[label=(\alph*)]
+        \item For the spherical coordinates $\boldsymbol{\phi}(r, \theta, \varphi) = (r\sin\theta\cos\varphi, \, r\sin\theta\sin\varphi, \, r\cos\theta)$, show that $\boldsymbol{\phi}^*(dx_1 \wedge dx_2 \wedge dx_3) = r^2\sin\theta\, dr \wedge d\theta \wedge d\varphi$.
+        \item For the curve $\mathbf{c}(t) = (a\cos 2\pi t, \, b\sin 2\pi t)$ with $a, b > 0$, compute $\mathbf{c}^*(x_1\, dx_2 - x_2\, dx_1)$. Use Stokes' theorem for the $2$-cube $(r, t) \mapsto (ar\cos 2\pi t, \, br\sin 2\pi t)$ to explain why $\frac{1}{2}\int_{\mathbf{c}} (x_1\, dx_2 - x_2\, dx_1)$ is the area $\pi ab$ of the ellipse. (Which faces of the $2$-cube contribute to the boundary integral?)
+    \end{enumerate}
+    \item Let $\omega$ be the angle form of Example~\ref{ex:angle-form}.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $d\omega = 0$, and that $\eta = \frac{x_1\, dx_1 + x_2\, dx_2}{x_1^2 + x_2^2}$ is exact on $\mathbb{R}^2 \setminus \{\mathbf{0}\}$.
+        \item Compute $\int_{\mathbf{c}} \omega$ for the circle $\mathbf{c}(t) = (3 + \cos 2\pi t, \, \sin 2\pi t)$, which does not go around the origin. (Hint: on the half-plane $x_1 > 0$, $\omega = d\arctan(x_2/x_1)$.)
+        \item Show that the integral of $\omega$ over the boundary of every $2$-cube in $\mathbb{R}^2 \setminus \{\mathbf{0}\}$ is $0$. Why does this not contradict $\int_{\mathbf{c}} \omega = 2\pi$ for the unit circle?
+    \end{enumerate}
+    \item Verify Stokes' theorem for the $1$-form $\omega = -x_2^2\, dx_1 + x_1^2\, dx_2$ and the identity $2$-cube of $[0, 1]^2$ by computing both sides.
+    \item (Stokes' theorem on manifolds.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $M = \{\mathbf{x} \in \mathbb{R}^2 : 1 \leq \norm{\mathbf{x}} \leq 2\}$ be the closed annulus, with the standard orientation. Show that $M$ is a submanifold with boundary, describe $\partial M$ with the induced orientation, and verify Theorem~\ref{thm:stokes} for $\omega = x_1\, dx_2$ by computing both sides.
+        \item Let $\omega$ be a $1$-form on $\mathbb{R}^3$. Show in two ways that $\int_{S^2} d\omega = 0$: with Theorem~\ref{thm:stokes} for $S^2$, and with Theorem~\ref{thm:stokes} for the closed upper and lower hemispheres, whose induced orientations traverse the equator in opposite directions.
+    \end{enumerate}
     \item \begin{enumerate}[label=(\alph*)]
         \item Show that $f_n(x) = \sqrt{x^2 + \frac{1}{n}}$ converges to $|x|$ uniformly on $[-1, 1]$. Conclude that the continuously differentiable functions do not form a closed subset of $C[-1, 1]$.
         \item Show that $f_n(x) = x^n$ is a Cauchy sequence in $L^2[0, 1]$, but not in $C[0, 1]$ with the maximum norm.
@@ -971,9 +1340,16 @@ rng = np.random.default_rng(0)
         \item Start exactly at an eigenvector $\mathbf{q}_i$ with $i > 1$. What happens? Now add a perturbation of size $10^{-8}$. How many steps does it take to escape from the saddle point, and how does this depend on $\lambda_1 - \lambda_i$?
     \end{itemize}
 
-    \item \textbf{Orthogonal Procrustes.} Generate a point cloud \py{X = rng.normal(size=(50, 3))}, a random orthogonal matrix $Q_0$ (from \py{np.linalg.qr}), and $Y = XQ_0^\top + 0.01\cdot$noise. Recover $Q_0$ by maximizing $\tr(Q^\top Y^\top X)$ over $\mathrm{O}(3)$ with the SVD formula of Exercise~13. Then solve the same problem with Riemannian gradient ascent on $\mathrm{O}(3)$: project $G = \nabla_Q$ onto $T_Q \mathrm{O}(3)$ by $Q\,\frac{1}{2}(Q^\top G - G^\top Q)$, take a step, and retract with the $Q$ factor of a QR decomposition (fixing the signs so that the diagonal of $R$ is positive). Compare the results.
+    \item \textbf{Orthogonal Procrustes.} Generate a point cloud \py{X = rng.normal(size=(50, 3))}, a random orthogonal matrix $Q_0$ (from \py{np.linalg.qr}), and $Y = XQ_0^\top + 0.01\cdot$noise. Recover $Q_0$ by maximizing $\tr(Q^\top Y^\top X)$ over $\mathrm{O}(3)$ with the SVD formula of Exercise~\ref{exer:procrustes}. Then solve the same problem with Riemannian gradient ascent on $\mathrm{O}(3)$: project $G = \nabla_Q$ onto $T_Q \mathrm{O}(3)$ by $Q\,\frac{1}{2}(Q^\top G - G^\top Q)$, take a step, and retract with the $Q$ factor of a QR decomposition (fixing the signs so that the diagonal of $R$ is positive). Compare the results.
 
     \item \textbf{Counting components of sublevel sets.} For $f(x, y) = x^4 - 2x^2 + y^2 + 0.3x$, evaluate $f$ on a fine grid over $[-2, 2]^2$, and for $50$ values of $c$, count the connected components of the grid points with $f \leq c$ (write a breadth-first search over neighboring grid points). Plot the number of components against $c$, and compare the values of $c$ where it changes with the critical values of $f$, which you can find with Newton's method applied to $\nabla f = \mathbf{0}$.
+
+    \item \textbf{Integrating differential forms.}
+    \begin{itemize}
+        \item Write a function that computes $\int_{\mathbf{c}} \omega$ for a $1$-form $\omega = \sum_i F_i\, dx_i$ on $\mathbb{R}^n$ and a curve $\mathbf{c}: [0, 1] \to \mathbb{R}^n$, using the pullback $\int_0^1 F(\mathbf{c}(t))^\top\mathbf{c}'(t)\, dt$ and the midpoint rule with $N$ points. Pass $F$, $\mathbf{c}$ and $\mathbf{c}'$ as Python functions.
+        \item For the angle form of Example~\ref{ex:angle-form}, compute $\frac{1}{2\pi}\int_{\mathbf{c}} \omega$ for the unit circle, for the circle of radius $1$ around $(3, 0)$, for the unit circle traversed twice, $\mathbf{c}(t) = (\cos 4\pi t, \sin 4\pi t)$, and for the curve $\mathbf{c}(t) = \big((2 + \cos 10\pi t)\cos 2\pi t, \, (2 + \cos 10\pi t)\sin 2\pi t\big)$. Check that the results are close to integers, and explain them.
+        \item Verify Stokes' theorem numerically for the $2$-cube $\mathbf{c}(u, v) = (u, v, u^2 - v^2)$ in $\mathbb{R}^3$ and the $1$-form $\omega = x_3\, dx_1 + x_1\, dx_2$: compute $\int_{\mathbf{c}} d\omega$ from the pullback of $d\omega = dx_3 \wedge dx_1 + dx_1 \wedge dx_2$, and $\int_{\partial\mathbf{c}} \omega$ as the signed sum of four line integrals. Both should be $2$.
+    \end{itemize}
 
     \item \textbf{Picard iteration.} Consider the logistic equation $x' = x(1 - x)$ with $x(0) = 0.2$, whose solution is $x(t) = \frac{1}{1 + 4e^{-t}}$.
     \begin{itemize}

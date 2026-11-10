@@ -469,6 +469,33 @@
     \end{enumerate}
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:strong-convexity}
+    Let $f(\mathbf{x}) = x_1^2 + x_1x_2 + x_2^2$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the largest $\mu$ and the smallest $L$ such that $f$ is $\mu$-strongly convex and $L$-smooth.
+        \item Gradient descent with $\eta = \frac{1}{L}$ starts at some $\mathbf{x}_0$. After how many steps does the theorem on convergence rates guarantee that $f(\mathbf{x}_k) - f^*$ is at most $10^{-6}$ times its initial value?
+        \item Check the inequality $f(\mathbf{x}) - f^* \leq \frac{1}{2\mu}\norm{\nabla f(\mathbf{x})}^2$ at $\mathbf{x} = (1, 0)^\top$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:subgradient-practice}
+    Let $f(x) = |x - 1| + 2|x + 1|$. Compute $\partial f(x)$ for every $x \in \mathbb{R}$, and use the condition $0 \in \partial f(x^*)$ to find the minimum of $f$.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:soft-threshold-practice}
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\operatorname{prox}_{\lambda\norm{\cdot}_1}(\mathbf{v})$ for $\mathbf{v} = (2.5, -0.3, -1.7, 1)^\top$ and $\lambda = 1$.
+        \item Minimize $\frac{1}{2}(w - 3)^2 + 2|w|$ over $w \in \mathbb{R}$, and check the optimality condition $0 \in \partial F(w^*)$. For which values of $a$ is the minimum of $\frac{1}{2}(w - a)^2 + 2|w|$ attained at $w = 0$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:group-lasso}
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the subdifferential of the Euclidean norm $\norm{\cdot}$ on $\mathbb{R}^n$ is $\{\mathbf{x}/\norm{\mathbf{x}}\}$ at $\mathbf{x} \neq \mathbf{0}$, and the unit ball $\{\mathbf{g} : \norm{\mathbf{g}} \leq 1\}$ at $\mathbf{0}$.
+        \item Show that $\operatorname{prox}_{\tau\norm{\cdot}}(\mathbf{v}) = \max\big(0, 1 - \frac{\tau}{\norm{\mathbf{v}}}\big)\mathbf{v}$ for $\mathbf{v} \neq \mathbf{0}$. (This ``block soft thresholding'' is used in the group lasso, which sets whole groups of weights to $0$.)
+    \end{enumerate}
+\end{problem}
+
 \section{Constrained Optimization}
 
 \begin{problem}[\mandatory]\label{pr:lagrange-ellipse}
@@ -499,6 +526,31 @@
 
 \begin{problem}[$\star$]\label{pr:box-sphere}
     Find the rectangular box with sides parallel to the coordinate axes and the largest volume that fits into the unit ball $x^2 + y^2 + z^2 \leq 1$. Which fraction of the volume of the ball does it fill?
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:dual-practice}
+    Consider the problem: minimize $x_1^2 + x_2^2$ subject to $x_1 + x_2 \geq 1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write the constraint as $g(\mathbf{x}) \leq 0$, and compute the dual function $d(\mu)$ for $\mu \geq 0$.
+        \item Solve the dual problem, and solve the primal problem with the KKT conditions. Check that $d^* = p^*$, and that the dual solution is the KKT multiplier.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:duality-gap}
+    The problems (A) minimize $-x^2$ subject to $x^2 - 1 \leq 0$, and (B) minimize $-x^2$ subject to $x - 1 \leq 0$ and $-x - 1 \leq 0$, have the same feasible set $[-1, 1]$ and the same optimal value $p^* = -1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the dual functions of both problems, and the optimal dual values.
+        \item For which problem is $d^* = p^*$? Why does strong duality not follow from the theorem of the lecture for either problem?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:svm-dual-practice}
+    The data points $\mathbf{x}_1 = (1, 1)^\top$, $\mathbf{x}_3 = (2, 2)^\top$ have the label $+1$, and $\mathbf{x}_2 = (-1, -1)^\top$ has the label $-1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write down the dual problem of the support vector machine for these data.
+        \item Show that $\boldsymbol{\mu} = (\frac{1}{4}, \frac{1}{4}, 0)$ satisfies the constraints of the dual problem, and compute its dual value, $\mathbf{w} = \sum_i \mu_iy_i\mathbf{x}_i$ and $b$.
+        \item Check that $(\mathbf{w}, b)$ is feasible for the primal problem with the same value. Conclude that both are optimal. What is the margin, and which points are support vectors?
+    \end{enumerate}
 \end{problem}
 
 \section{Vector Fields: Divergence and Curl}
