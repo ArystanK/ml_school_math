@@ -21,6 +21,7 @@
 
 \newcommand{\norm}[1]{\lVert #1 \rVert}
 \newcommand{\E}{\mathbb{E}}
+\newcommand{\indep}{\perp\!\!\!\perp}
 \DeclareMathOperator{\Var}{Var}
 \DeclareMathOperator{\Cov}{Cov}
 \DeclareMathOperator{\Corr}{Corr}
@@ -203,6 +204,15 @@
     Let $(X, Y)$ be uniformly distributed on the four points $(1, 0)$, $(-1, 0)$, $(0, 1)$, $(0, -1)$. Show that $X$ and $Y$ are uncorrelated, but not independent.
 \end{problem}
 
+\begin{problem}\label{pr:init-layer}
+    A fully connected layer computes $z_i = \sum_{j=1}^{400} W_{ij}x_j$ from $400$ inputs with $\E[x_j^2] = 1$, with independent weights $W_{ij} \sim \mathcal{N}(0, v)$ that are independent of the inputs.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find $\Var(z_i)$. For which $v$ is it equal to $1$?
+        \item The outputs pass through a ReLU. Find $\E[\mathrm{ReLU}(z_i)^2]$ for $v = \frac{1}{400}$ and for $v = \frac{2}{400}$, and the second moment of the outputs after $20$ such layers (of width $400$) in both cases.
+        \item For weights that are uniform on $[-b, b]$, which $b$ gives the same variance as $v = \frac{2}{400}$?
+    \end{enumerate}
+\end{problem}
+
 \begin{problem}\label{pr:best-predictor}
     For the random variables of Problem~\ref{pr:joint-table}, find the best predictor $m(X)$ of $Y$ in the sense of the mean squared error, and its mean squared error $\E[(Y - m(X))^2]$. Compare with the mean squared error of the best constant prediction.
 \end{problem}
@@ -219,6 +229,32 @@
     Let $X \sim$ Poisson$(\lambda)$ and $a > \lambda$. Show that the optimized Chernoff bound is
     \[P(X \geq a) \leq \exp\Big(-\Big(a\log\frac{a}{\lambda} - a + \lambda\Big)\Big).\]
     Evaluate it for $\lambda = 10$ and $a = 20$, and compare with Chebyshev's inequality and with the exact value $P(X \geq 20) \approx 0.0035$.
+\end{problem}
+
+\begin{problem}\label{pr:poisson-process}
+    Emails arrive as a Poisson process with the rate $3$ per hour.
+    \begin{enumerate}[label=(\alph*)]
+        \item What is the probability that no email arrives in $20$ minutes?
+        \item What is the probability of at least $2$ emails in one hour?
+        \item What is the expected time until the $5$th email, and what is the density of the arrival time of the $2$nd email?
+        \item No email has arrived in the first $30$ minutes. What is the probability that none arrives in the next $20$ minutes?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:cond-indep}
+    \begin{enumerate}[label=(\alph*)]
+        \item One of two coins is chosen with probability $\frac{1}{2}$ each; their head probabilities are $0.3$ and $0.9$. The chosen coin is flipped twice, with the results $X$ and $Y$ ($1$ for heads). Show that $X \indep Y \mid Z$, where $Z$ is the chosen coin, and compute $P(X = 1)$, $P(X = 1, Y = 1)$ and $P(Y = 1 \mid X = 1)$. Are $X$ and $Y$ independent?
+        \item A burglary ($B = 1$, probability $0.01$) and an earthquake ($E = 1$, probability $0.02$) occur independently, and the alarm goes off ($A = 1$) exactly when at least one of them occurs. Compute $P(B = 1 \mid A = 1)$ and $P(B = 1 \mid A = 1, E = 1)$, and explain the difference.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:naive-bayes}
+    A naive Bayes spam filter uses $P(\text{spam}) = 0.3$ and two words: ``winner'' appears in $20\%$ of spam and $1\%$ of other emails, and ``report'' in $5\%$ of spam and $25\%$ of other emails.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $P(\text{spam} \mid \mathbf{x})$ for an email that contains both words, and for one that contains ``winner'' but not ``report''.
+        \item Write the log-odds $\log\frac{P(\text{spam} \mid \mathbf{x})}{P(\text{other} \mid \mathbf{x})}$ as an affine function $w_0 + w_1x_1 + w_2x_2$ of the indicators $x_1$ (``winner'') and $x_2$ (``report'').
+        \item Which assumption makes the classifier ``naive''? Give a reason why it may fail for words in emails.
+    \end{enumerate}
 \end{problem}
 
 \section{Random Vectors and Covariance Matrices}
@@ -367,6 +403,34 @@
     \end{enumerate}
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:bellman-practice}
+    Give the chain of Problem~\ref{pr:lazy-chain} the rewards $\mathbf{r} = (0, 0, 1)^\top$ (only state $3$ pays) and the discount factor $\gamma = \frac{1}{2}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write down the Bellman equation, and solve it for the value vector $\mathbf{V}$.
+        \item Carry out two steps of iterative policy evaluation, starting from $\mathbf{V}_0 = \mathbf{0}$. Compare the error $\norm{\mathbf{V}_2 - \mathbf{V}}_\infty$ with the bound $\gamma^2\norm{\mathbf{V}_0 - \mathbf{V}}_\infty$.
+        \item Why is $V_1 < V_2 < V_3$?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:mdp-practice}
+    A Markov decision process has the states $1$ and $2$, the actions ``stay'' and ``move'', and the discount factor $\gamma = 0.9$. In state $1$, ``stay'' gives the reward $0$ and stays in state $1$, and ``move'' costs $1$ (reward $-1$) and leads to state $2$. In state $2$, ``stay'' gives the reward $1$ and stays in state $2$ with probability $0.8$ (otherwise it leads to state $1$), and ``move'' gives the reward $0$ and leads to state $1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Carry out three steps of value iteration, starting from $\mathbf{V}_0 = \mathbf{0}$.
+        \item Compute the values of the policy that always stays, and of the policy that moves in state $1$ and stays in state $2$, by solving their Bellman equations.
+        \item Check that the second policy is greedy with respect to its own value vector, i.e., that its value satisfies the Bellman optimality equation. What is the optimal policy, and why is it worth paying for the move?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:ar1-practice}
+    Let $X_t = 0.5X_{t-1} + \varepsilon_t$ with white noise $\varepsilon_t$ of variance $\sigma^2 = 3$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the variance and the autocovariances $c(h)$ of the stationary process, and $\rho(2)$.
+        \item Let the noise be Gaussian. Given $X_t = 2$, find the best prediction of $X_{t+2}$ and the variance of its error.
+        \item Is $X_t = 1.1X_{t-1} + \varepsilon_t$ stationary? Why not?
+        \item Estimate $\phi$ by least squares from the observed series $1, 2, 0, -1, 1$.
+    \end{enumerate}
+\end{problem}
+
 \section{Parameter Estimation}
 
 \begin{problem}[\mandatory]\label{pr:mle-data}
@@ -460,6 +524,39 @@
     Use the factorization criterion to find a sufficient statistic for i.i.d.\ data from (a) Exponential$(\lambda)$, (b) Uniform$(0, \theta)$, and (c) Geometric$(p)$.
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:exp-family}
+    \begin{enumerate}[label=(\alph*)]
+        \item Write the Exponential$(\lambda)$ density $\lambda e^{-\lambda x}$ ($x \geq 0$) in the form $h(x)\exp(\eta T(x) - A(\eta))$, and find $\eta$, $T$ and $A$. Check that $A'(\eta)$ and $A''(\eta)$ are the mean and the variance, and find the MLE of $\lambda$ from $A'(\hat\eta) = \bar x$.
+        \item A Poisson regression model with the features $(1, x)$ predicts counts $y$ with $\E[y \mid x] = e^{w_0 + w_1x}$. For the data $(x, y) = (0, 1)$, $(1, 2)$, $(2, 4)$, compute the gradient of the negative log-likelihood at $\mathbf{w} = \mathbf{0}$, and show that $\mathbf{w} = (0, \log 2)$ is the MLE.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:ecdf-kde}
+    Consider the data $1, 2, 2, 4, 6$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Draw the empirical CDF $\hat F_5$, and give $\hat F_5(2)$ and $\hat F_5(5)$.
+        \item Compute the kernel density estimate with the Gaussian kernel and $h = 1$ at $x = 2$.
+        \item How many samples does the theorem on the uniform convergence of the empirical CDF need to guarantee $\sup_t |\hat F_N(t) - F(t)| \leq 0.05$ with probability at least $0.95$ (for a continuous $F$)? How many does the Dvoretzky--Kiefer--Wolfowitz bound $2e^{-2N\varepsilon^2}$ need?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:hazard-practice}
+    The lifetime $T$ of a component (in years) has the Weibull distribution with the shape $k = 2$ and the scale $s = 10$, i.e., $S(t) = e^{-(t/10)^2}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the hazard rate $h(t)$. Is the component subject to wear-out?
+        \item Find $P(T > 10)$, and the median lifetime.
+        \item Find $P(T > 15 \mid T > 10)$, and compare with $P(T > 5)$. Which value would an exponential lifetime give?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:censored-practice}
+    Five machines are observed until they fail or until the study ends. The times (in years) are $1, 2^+, 3, 4^+, 5$, where $^+$ marks a censored time.
+    \begin{enumerate}[label=(\alph*)]
+        \item Assuming exponential lifetimes, find the maximum likelihood estimate of the failure rate $\lambda$ and of the mean lifetime. What would you get if you dropped the censored machines?
+        \item Compute the Kaplan--Meier estimate $\hat S(t)$ for $0 \leq t \leq 5$.
+    \end{enumerate}
+\end{problem}
+
 \section{Hypothesis Testing}
 
 \begin{problem}[\mandatory]\label{pr:coin-test}
@@ -528,6 +625,23 @@
     A coin is flipped $10$ times. Find the most powerful test of $H_0$: $p = 0.5$ against $H_1$: $p = 0.7$ whose level is at most $0.05$ among the likelihood ratio tests, its exact level and its power. Why is the level smaller than $0.05$?
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:regression-t}
+    Consider the data of Problem~\ref{pr:regression-mle} and the model $y = w_0 + w_1x + \varepsilon$ with i.i.d.\ $\mathcal{N}(0, \sigma^2)$ noise.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the unbiased estimate $s^2$ of $\sigma^2$ and the standard error of $\hat w_1$. (Use $\Var(\hat w_1) = \frac{\sigma^2}{\sum_i (x_i - \bar x)^2}$.)
+        \item Test $H_0$: $w_1 = 0$ at the level $0.05$, using $t_{2, 0.975} = 4.30$.
+        \item Give a $95\%$ confidence interval for $w_1$. Why is it so wide, although the slope is clearly positive?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:hetero-practice}
+    In the model $y_i = wx_i + \varepsilon_i$ with $x = 1, 2, 3, 4$, the noise has the standard deviations $\sigma_i = \sigma x_i$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the variance of the least squares estimate $\hat w = \frac{\sum_i x_iy_i}{\sum_i x_i^2}$, and compare it with the variance $\frac{\sigma^2}{N}$ that the usual formula gives with the average noise variance $\bar\sigma^2 = \frac{\sigma^2}{N}\sum_i x_i^2$. By which factor is the usual standard error too small?
+        \item Show that the weighted least squares estimate $\tilde w = \frac{1}{4}\sum_i \frac{y_i}{x_i}$ is unbiased, and compare its variance with that of $\hat w$.
+    \end{enumerate}
+\end{problem}
+
 \section{Evaluating Models and Experiments}
 
 \begin{problem}[\mandatory]\label{pr:cv-stats}
@@ -573,6 +687,15 @@
 
 \begin{problem}\label{pr:generalization-practice}
     How large must a test set be to estimate the error rate of one classifier within $\pm 0.01$ with probability at least $0.95$, by Hoeffding's inequality? How large must it be for $1000$ classifiers simultaneously? What happens if the same test set is used to select the best of the $1000$ classifiers and to report its error?
+\end{problem}
+
+\begin{problem}\label{pr:simpson}
+    Two models are evaluated on easy and hard queries. Model A answers $95$ of $100$ easy and $120$ of $300$ hard queries correctly, and model B $280$ of $300$ easy and $35$ of $100$ hard queries.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the accuracies of both models on the easy queries, on the hard queries, and overall. Which model looks better?
+        \item Explain the paradox, and compute the accuracies of both models for a query mix with $50\%$ easy and $50\%$ hard queries.
+        \item How should the evaluation have been designed to avoid the problem?
+    \end{enumerate}
 \end{problem}
 
 \section{Bayesian Inference}
@@ -683,6 +806,23 @@
 
 \begin{problem}[$\star$]\label{pr:em-coins}
     In each of $5$ experiments, one of two coins with the unknown head probabilities $\theta_A$ and $\theta_B$ is chosen with probability $\frac{1}{2}$ and flipped $10$ times. The numbers of heads are $5, 9, 8, 4, 7$. Starting from $\theta_A = 0.6$ and $\theta_B = 0.5$, carry out one EM step: compute the posterior probability that coin A was used in each experiment, and the new estimates $\theta_A = \frac{\sum_i r_i h_i}{10\sum_i r_i}$ and $\theta_B$, where $h_i$ is the number of heads and $r_i$ the posterior probability of coin A. Derive this M-step from the expected complete-data log-likelihood.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:elbo}
+    \begin{enumerate}[label=(\alph*)]
+        \item A binary latent variable has $P(z = 1) = \frac{1}{2}$, and a binary observation has $P(x = 1 \mid z = 0) = 0.2$ and $P(x = 1 \mid z = 1) = 0.8$. We observe $x = 1$. Compute $\log p(x)$, the posterior $p(z \mid x)$, and the ELBO for $q(z = 1) = q(z = 0) = \frac{1}{2}$. Check that the gap is $\KL(q \,\|\, p(\cdot \mid x))$. Which $q$ maximizes the ELBO?
+        \item In a variational autoencoder with the prior $\mathcal{N}(0, 1)$, the encoder outputs $q = \mathcal{N}(1, 0.5^2)$ for a data point. Compute the KL term $\KL(q \,\|\, \mathcal{N}(0, 1))$ of the ELBO.
+        \item With the reparameterization $z = m + s\varepsilon$, $\varepsilon \sim \mathcal{N}(0, 1)$, compute $\frac{\partial}{\partial m}\E[z^2]$ and $\frac{\partial}{\partial s}\E[z^2]$ by differentiating inside the expectation, and check the results with $\E[z^2] = m^2 + s^2$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:ppca}
+    Data in $\mathbb{R}^3$ have the sample covariance matrix $S = \begin{pmatrix} 5 & 4 & 0 \\ 4 & 5 & 0 \\ 0 & 0 & 2 \end{pmatrix}$, and we fit probabilistic PCA with $k = 1$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the eigenvalues and eigenvectors of $S$, and the maximum likelihood estimates $\hat\sigma^2$ and $\hat W$.
+        \item Compute the fitted covariance matrix $\hat C = \hat W\hat W^\top + \hat\sigma^2I_3$ and its eigenvalues. Which variances does the model reproduce, and which does it average?
+        \item Compute the posterior mean $\E[z \mid \mathbf{x}]$ for a data point with $\mathbf{x} - \hat{\boldsymbol{\mu}} = (1, 1, 0)^\top$.
+    \end{enumerate}
 \end{problem}
 
 \section{Stochastic Differential Equations}

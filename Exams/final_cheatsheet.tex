@@ -1,0 +1,163 @@
+\documentclass[10pt]{article}
+
+% Cheatsheet handed out with the final exam (Lectures 3--4 as taught): definitions and theorems that are easy to forget
+\usepackage[margin=0.5in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\prox}{prox}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\newcommand{\topic}[1]{\par\smallskip\noindent{\color{blue!50!black}\textbf{#1}}\par}
+\newcommand{\head}[1]{\begin{center}\colorbox{blue!10}{\parbox{0.96\linewidth}{\centering\textbf{#1}}}\end{center}}
+\setlist{nosep, leftmargin=1em, label=\textbullet}
+\setlength{\parindent}{0pt}
+\setlength{\columnsep}{1.5em}
+\pagestyle{empty}
+
+\begin{document}
+\footnotesize
+
+\begin{center}
+    {\large\textbf{Final Cheatsheet --- Lectures 3--4}}\\
+    Definitions and theorems that are easy to forget. Vectors are columns; $\log$ is the natural logarithm.
+\end{center}
+
+\head{Definitions people forget}
+
+\raggedcolumns
+\begin{multicols}{2}
+
+\topic{Derivatives}
+\begin{itemize}
+    \item \textbf{Jacobian} of $f: \mathbb{R}^n \to \mathbb{R}^m$: $m \times n$, $(Df)_{ij} = \frac{\partial f_i}{\partial x_j}$; rows are $\nabla f_i^\top$. $Df = \nabla f^\top$ for scalar $f$.
+    \item \textbf{Differentiable}: $f(\mathbf{x} + \mathbf{h}) = f(\mathbf{x}) + Df(\mathbf{x})\mathbf{h} + o(\norm{\mathbf{h}})$. Directional derivative $D_{\mathbf{v}}f = \nabla f^\top\mathbf{v}$.
+    \item \textbf{Gradient w.r.t.\ a matrix}: same shape as $X$, $(\nabla f(X))_{ij} = \frac{\partial f}{\partial X_{ij}}$. The derivative of $F: \mathbb{R}^{m \times n} \to \mathbb{R}^{p \times q}$ is the order-4 tensor $\frac{\partial F_{ij}}{\partial X_{kl}}$.
+    \item \textbf{Hessian} $(\nabla^2 f)_{ij} = \frac{\partial^2 f}{\partial x_i\partial x_j}$, symmetric for $C^2$ functions (Schwarz).
+\end{itemize}
+
+\topic{Optimization}
+\begin{itemize}
+    \item \textbf{$L$-smooth}: $\norm{\nabla f(\mathbf{x}) - \nabla f(\mathbf{y})} \leq L\norm{\mathbf{x} - \mathbf{y}}$. For $C^2$: $\iff \norm{\nabla^2 f(\mathbf{x})}_2 \leq L$ for all $\mathbf{x}$.
+    \item \textbf{Convex}: $f(\theta\mathbf{x} + (1 - \theta)\mathbf{y}) \leq \theta f(\mathbf{x}) + (1 - \theta)f(\mathbf{y})$.
+    \item \textbf{$\mu$-strongly convex}: $f(\mathbf{y}) \geq f(\mathbf{x}) + \nabla f(\mathbf{x})^\top(\mathbf{y} - \mathbf{x}) + \frac{\mu}{2}\norm{\mathbf{y} - \mathbf{x}}^2$. For $C^2$: $\iff$ all eigenvalues of all Hessians $\geq \mu$. Then there is exactly one minimizer.
+    \item \textbf{Subgradient} $\mathbf{g} \in \partial f(\mathbf{x})$: $f(\mathbf{y}) \geq f(\mathbf{x}) + \mathbf{g}^\top(\mathbf{y} - \mathbf{x})$ for all $\mathbf{y}$. $\partial|x|(0) = [-1, 1]$.
+    \item \textbf{Prox}: $\prox_{\eta h}(\mathbf{v}) = \argmin_{\mathbf{u}}\big(h(\mathbf{u}) + \frac{1}{2\eta}\norm{\mathbf{u} - \mathbf{v}}^2\big)$; for $h = \lambda\norm{\cdot}_1$: soft thresholding $S_{\eta\lambda}(v) = \sign(v)\max(|v| - \eta\lambda, 0)$.
+    \item \textbf{Lagrangian} $\mathcal{L}(\mathbf{x}, \boldsymbol{\mu}) = f + \sum_i\mu_ig_i$ for constraints $g_i \leq 0$; \textbf{dual function} $d(\boldsymbol{\mu}) = \inf_{\mathbf{x}}\mathcal{L}(\mathbf{x}, \boldsymbol{\mu})$, $\boldsymbol{\mu} \geq \mathbf{0}$.
+    \item \textbf{Convex conjugate} $f^*(\mathbf{y}) = \sup_{\mathbf{x}}(\mathbf{y}^\top\mathbf{x} - f(\mathbf{x}))$.
+\end{itemize}
+
+\topic{Probability}
+\begin{itemize}
+    \item \textbf{Quantile function} $F^{-1}(u) = \min\{x : F(x) \geq u\}$.
+    \item $\Cov(X, Y) = \E[XY] - \E X\,\E Y$; $\Corr = \frac{\Cov}{\sigma_X\sigma_Y}$. Uncorrelated $\not\Rightarrow$ independent (except jointly Gaussian).
+    \item \textbf{Conditional independence} $X \indep Y \mid Z$: $p(x, y \mid z) = p(x \mid z)p(y \mid z)$. Chain $X \to Z \to Y$ and fork: $X \indep Y \mid Z$. Collider $X \to Z \leftarrow Y$: $X \indep Y$, but in general not given $Z$.
+    \item \textbf{MGF} $M_X(t) = \E[e^{tX}]$, $K_X = \log M_X$; $K_X'(0) = \E X$, $K_X''(0) = \Var X$.
+    \item $\Sigma = \Cov(\mathbf{X}) = \E[(\mathbf{X} - \boldsymbol{\mu})(\mathbf{X} - \boldsymbol{\mu})^\top]$. \textbf{Mahalanobis}: $\sqrt{(\mathbf{x} - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{x} - \boldsymbol{\mu})}$; whitening $\Sigma^{-1/2}(\mathbf{X} - \boldsymbol{\mu})$.
+    \item \textbf{In probability}: $P(|Y_n - Y| > \varepsilon) \to 0$ for all $\varepsilon > 0$. \textbf{In distribution}: $P(Y_n \leq y) \to P(Y \leq y)$ where the CDF of $Y$ is continuous.
+\end{itemize}
+
+\topic{Statistics}
+\begin{itemize}
+    \item \textbf{Bias} $\E\hat\theta - \theta$; \textbf{MSE} $\E[(\hat\theta - \theta)^2]$; \textbf{consistent}: $\hat\theta_N \to \theta$ in probability.
+    \item \textbf{Score} $s = \frac{\partial}{\partial\theta}\log p(x \mid \theta)$, $\E_\theta s = 0$. \textbf{Fisher information} $I(\theta) = \E[s^2] = -\E\big[\frac{\partial^2}{\partial\theta^2}\log p(X \mid \theta)\big]$ (one observation).
+    \item \textbf{Sufficient} $T$: $p(\mathbf{x} \mid \theta) = g(T(\mathbf{x}), \theta)h(\mathbf{x})$.
+    \item \textbf{Exponential family} $p_{\boldsymbol\eta}(x) = h(x)\exp(\boldsymbol\eta^\top T(x) - A(\boldsymbol\eta))$.
+    \item \textbf{Beta}$(a, b)$: $\propto \theta^{a-1}(1 - \theta)^{b-1}$, mean $\frac{a}{a + b}$, mode $\frac{a - 1}{a + b - 2}$.
+    \item \textbf{GP} $f \sim \mathcal{GP}(m, k)$: every $(f(\mathbf{x}_1), \ldots, f(\mathbf{x}_n))$ is Gaussian with $K_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)$.
+    \item $H(p) = -\sum p_k\log p_k$, $H(p, q) = -\sum p_k\log q_k$, $\KL(p \,\|\, q) = \sum p_k\log\frac{p_k}{q_k} = H(p, q) - H(p)$.
+\end{itemize}
+
+\topic{Distributions}
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lll}
+    \hline
+    & $\E X$ & $\Var X$ \\
+    \hline
+    Bernoulli$(p)$ & $p$ & $p(1 - p)$ \\
+    Binomial$(n, p)$ & $np$ & $np(1 - p)$ \\
+    Geometric$(p)$ on $\{1, 2, \ldots\}$ & $\frac{1}{p}$ & $\frac{1 - p}{p^2}$ \\
+    Poisson$(\lambda)$, $e^{-\lambda}\frac{\lambda^k}{k!}$ & $\lambda$ & $\lambda$ \\
+    Uniform$(a, b)$ & $\frac{a + b}{2}$ & $\frac{(b - a)^2}{12}$ \\
+    Exponential$(\lambda)$, $\lambda e^{-\lambda x}$ & $\frac{1}{\lambda}$ & $\frac{1}{\lambda^2}$ \\
+    \hline
+\end{tabular}
+\end{center}
+$\mathcal{N}(\boldsymbol{\mu}, \Sigma)$: $p(\mathbf{x}) = \frac{1}{(2\pi)^{d/2}\det(\Sigma)^{1/2}}\exp\big(-\frac{1}{2}(\mathbf{x} - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{x} - \boldsymbol{\mu})\big)$.
+
+\end{multicols}
+
+\head{Theorems people forget}
+
+\begin{multicols}{2}
+
+\topic{Derivatives}
+\begin{itemize}
+    \item \textbf{Chain rule} $D(f \circ g)(\mathbf{x}) = Df(g(\mathbf{x}))\,Dg(\mathbf{x})$; scalar $f$: $\nabla(f \circ g) = Dg^\top\,\nabla f(g)$. Linear layer $\mathbf{y} = W\mathbf{x} + \mathbf{b}$: $\nabla_W L = \boldsymbol\delta\mathbf{x}^\top$, $\nabla_{\mathbf{x}}L = W^\top\boldsymbol\delta$.
+    \item $\nabla(\mathbf{a}^\top\mathbf{x}) = \mathbf{a}$; $\nabla(\mathbf{x}^\top A\mathbf{x}) = (A + A^\top)\mathbf{x}$; $\nabla\norm{\mathbf{x}} = \frac{\mathbf{x}}{\norm{\mathbf{x}}}$; $\nabla\norm{A\mathbf{x} - \mathbf{b}}^2 = 2A^\top(A\mathbf{x} - \mathbf{b})$.
+    \item $\nabla_X\tr(AX) = A^\top$; $\nabla_X(\mathbf{a}^\top X\mathbf{b}) = \mathbf{a}\mathbf{b}^\top$; $\nabla_X\norm{AX - B}_F^2 = 2A^\top(AX - B)$; $\nabla_X\tr(X^\top AX) = (A + A^\top)X$.
+    \item \textbf{Jacobi}: $\nabla_X\det X = \det(X)X^{-\top}$, $\nabla_X\log|\det X| = X^{-\top}$. Inverse: $(X + H)^{-1} = X^{-1} - X^{-1}HX^{-1} + o(\norm{H})$, so $\nabla_X\tr(AX^{-1}) = -X^{-\top}A^\top X^{-\top}$.
+    \item Softmax/sigmoid: $\sigma' = \sigma(1 - \sigma)$; $\nabla\log\sum_j e^{z_j} = \mathrm{softmax}(\mathbf{z})$, Hessian $\diag(\mathbf{p}) - \mathbf{p}\mathbf{p}^\top$.
+    \item \textbf{Taylor}: $f(\mathbf{x} + \mathbf{h}) = f(\mathbf{x}) + \nabla f(\mathbf{x})^\top\mathbf{h} + \frac{1}{2}\mathbf{h}^\top\nabla^2 f(\mathbf{x} + \tau\mathbf{h})\mathbf{h}$, $\tau \in (0, 1)$.
+\end{itemize}
+
+\topic{Optimization}
+\begin{itemize}
+    \item \textbf{Second-order test} at $\nabla f = \mathbf{0}$: Hessian eigenvalues all $> 0$: strict local min; all $< 0$: max; both signs: saddle.
+    \item \textbf{Descent lemma} ($L$-smooth): $f(\mathbf{y}) \leq f(\mathbf{x}) + \nabla f(\mathbf{x})^\top(\mathbf{y} - \mathbf{x}) + \frac{L}{2}\norm{\mathbf{y} - \mathbf{x}}^2$. GD with $\eta \leq \frac{1}{L}$: $\min_{k < K}\norm{\nabla f(\mathbf{x}_k)}^2 \leq \frac{2(f(\mathbf{x}_0) - f^*)}{\eta K}$. Armijo: $f(\mathbf{x} - \eta\nabla f) \leq f(\mathbf{x}) - \frac{\eta}{2}\norm{\nabla f}^2$.
+    \item \textbf{Quadratics} ($A$ SPD): GD converges $\iff 0 < \eta < \frac{2}{\lambda_{\max}}$; best $\eta = \frac{2}{\lambda_{\max} + \lambda_{\min}}$, rate $\frac{\kappa - 1}{\kappa + 1}$.
+    \item \textbf{Rates}, convex $L$-smooth, $\eta = \frac{1}{L}$: $f(\mathbf{x}_k) - f^* \leq \frac{L\norm{\mathbf{x}_0 - \mathbf{x}^*}^2}{2k}$; if also $\mu$-strongly convex: $\leq (1 - \frac{\mu}{L})^k(f(\mathbf{x}_0) - f^*)$. PL: $f - f^* \leq \frac{1}{2\mu}\norm{\nabla f}^2$.
+    \item \textbf{Newton} $\mathbf{x}_{k+1} = \mathbf{x}_k - \nabla^2 f(\mathbf{x}_k)^{-1}\nabla f(\mathbf{x}_k)$: quadratic convergence near a minimum with a PD, Lipschitz Hessian.
+    \item Convex: $f(\mathbf{y}) \geq f(\mathbf{x}) + \nabla f(\mathbf{x})^\top(\mathbf{y} - \mathbf{x})$ $\iff$ $\nabla^2 f \succeq 0$; local min = global min. $\mathbf{x}^*$ minimizes $f + h$ $\iff -\nabla f(\mathbf{x}^*) \in \partial h(\mathbf{x}^*)$.
+    \item \textbf{KKT} ($g_i \leq 0$, LICQ): $\nabla f + \sum\mu_i\nabla g_i = \mathbf{0}$; $g_i \leq 0$; $\mu_i \geq 0$; $\mu_ig_i = 0$. Convex $f$, $g_i$: KKT $\Rightarrow$ global min. Equality constraints: $\lambda_i$ of any sign.
+    \item \textbf{Weak duality} $d(\boldsymbol\mu) \leq f(\mathbf{x})$ for feasible $\mathbf{x}$; convex + KKT point: $d^* = p^*$. \textbf{Fenchel--Young}: $f(\mathbf{x}) + f^*(\mathbf{y}) \geq \mathbf{x}^\top\mathbf{y}$.
+\end{itemize}
+
+\topic{Probability}
+\begin{itemize}
+    \item \textbf{Bayes}: $P(B_j \mid A) = \frac{P(A \mid B_j)P(B_j)}{\sum_iP(A \mid B_i)P(B_i)}$.
+    \item \textbf{Change of variables}: $p_Y(y) = p_X(x)/|g'(x)|$, $x = g^{-1}(y)$. $F^{-1}(U) \sim F$ for $U \sim$ Unif$(0, 1)$.
+    \item \textbf{Tail sums}: $\E X = \sum_{k \geq 0}P(X > k)$ on $\{0, 1, \ldots\}$; $\E X = \int_0^\infty P(X > t)\,dt$ for $X \geq 0$.
+    \item \textbf{Markov} $P(X \geq a) \leq \frac{\E X}{a}$; \textbf{Chebyshev} $P(|X - \mu| \geq k) \leq \frac{\sigma^2}{k^2}$; \textbf{Chernoff} $P(X \geq a) \leq \inf_{t > 0}e^{-ta}M_X(t)$; \textbf{Hoeffding} (i.i.d., values in $[a, b]$) $P(|\bar X_N - \mu| \geq \varepsilon) \leq 2e^{-2N\varepsilon^2/(b - a)^2}$; \textbf{Jensen} $f(\E X) \leq \E f(X)$ for convex $f$.
+    \item $\Var(X + Y) = \Var X + \Var Y + 2\Cov(X, Y)$; $\Cov(A\mathbf{X} + \mathbf{b}) = A\Sigma A^\top$; $\Var(\mathbf{u}^\top\mathbf{X}) = \mathbf{u}^\top\Sigma\mathbf{u}$. Covariance is a tensor: $\Cov(A\mathbf{X})_{ab} = A_{ai}A_{bj}\Sigma_{ij}$.
+    \item \textbf{Tower} $\E[\E[Y \mid X]] = \E Y$; $\E[Y \mid X]$ is the best predictor in mean square. \textbf{Total variance}: $\Var Y = \E[\Var(Y \mid X)] + \Var(\E[Y \mid X])$.
+    \item MGF: $M_{aX + b}(t) = e^{bt}M_X(at)$; independent: $M_{X+Y} = M_XM_Y$.
+    \item \textbf{Gaussians}: $A\mathbf{Z} + \boldsymbol\mu \sim \mathcal{N}(\boldsymbol\mu, AA^\top)$. Conditional: $\mathbf{X}_a \mid \mathbf{x}_b \sim \mathcal{N}\big(\boldsymbol\mu_a + \Sigma_{ab}\Sigma_{bb}^{-1}(\mathbf{x}_b - \boldsymbol\mu_b), \ \Sigma_{aa} - \Sigma_{ab}\Sigma_{bb}^{-1}\Sigma_{ba}\big)$. Block-diagonal $\Sigma$ $\Rightarrow$ independent blocks.
+    \item $\Var\bar X_N = \frac{\sigma^2}{N}$. \textbf{WLLN}: $P(|\bar X_N - \mu| \geq \varepsilon) \leq \frac{\sigma^2}{N\varepsilon^2}$. \textbf{CLT}: $\frac{\sqrt N(\bar X_N - \mu)}{\sigma} \to \mathcal{N}(0, 1)$ in distribution.
+    \item \textbf{Slutsky}: $X_n \to X$ in dist., $Y_n \to c$ in prob.\ $\Rightarrow$ $X_n + Y_n \to X + c$, $X_nY_n \to cX$. \textbf{Delta method}: $\sqrt N(T_N - \theta) \to \mathcal{N}(0, \tau^2)$ $\Rightarrow$ $\sqrt N(g(T_N) - g(\theta)) \to \mathcal{N}(0, g'(\theta)^2\tau^2)$.
+    \item \textbf{Rejection sampling}: accept w.p.\ $\frac{p(X)}{Mq(X)}$, overall rate $\frac{1}{M}$. \textbf{Importance sampling}: $\E_p f = \E_q[f\frac{p}{q}]$.
+\end{itemize}
+
+\topic{Statistics and information}
+\begin{itemize}
+    \item $\mathrm{MSE} = \text{bias}^2 + \Var$. $s^2 = \frac{1}{N - 1}\sum(X_i - \bar X)^2$ is unbiased; the Gaussian MLE uses $\frac{1}{N}$.
+    \item \textbf{Cram\'er--Rao}: unbiased $\Rightarrow \Var\hat\theta \geq \frac{1}{NI(\theta)}$. MLE: $\sqrt N(\hat\theta - \theta) \to \mathcal{N}(0, \frac{1}{I(\theta)})$; $\mathrm{SE} \approx (-\ell''(\hat\theta))^{-1/2}$.
+    \item \textbf{Rao--Blackwell}: $\E[\hat\theta \mid T]$, $T$ sufficient, has the same bias and no larger MSE.
+    \item Exp.\ family: $\nabla A(\boldsymbol\eta) = \E[T(X)]$, $\nabla^2 A = \Cov(T(X)) \succeq 0$; MLE solves $\nabla A(\hat{\boldsymbol\eta}) = \frac{1}{N}\sum_iT(x_i)$.
+    \item Least squares = Gaussian MLE; ridge = MAP with $\mathbf{w} \sim \mathcal{N}(\mathbf{0}, \alpha^{-1}I)$, $\lambda = \alpha\sigma^2$.
+    \item \textbf{Beta--Bernoulli}: Beta$(a, b)$ + $k$ ones in $N$ $\to$ Beta$(a + k, b + N - k)$.
+    \item \textbf{Bayesian linear regression}: $S = (\alpha I + \sigma^{-2}X^\top X)^{-1}$, $\mathbf{m} = \sigma^{-2}SX^\top\mathbf{y}$; predictive $\mathcal{N}(\mathbf{m}^\top\mathbf{x}_*, \mathbf{x}_*^\top S\mathbf{x}_* + \sigma^2)$.
+    \item \textbf{GP regression}: mean $\mathbf{k}_*^\top(K + \sigma^2I)^{-1}\mathbf{y}$, variance $k(\mathbf{x}_*, \mathbf{x}_*) - \mathbf{k}_*^\top(K + \sigma^2I)^{-1}\mathbf{k}_*$.
+    \item \textbf{Gibbs}: $\KL(p \,\|\, q) \geq 0$, $= 0 \iff p = q$. MLE minimizes $\KL(\hat p \,\|\, q_\theta)$ = cross-entropy. $\KL(\mathcal{N}(\mu_1, \sigma_1^2) \,\|\, \mathcal{N}(\mu_2, \sigma_2^2)) = \log\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1 - \mu_2)^2}{2\sigma_2^2} - \frac{1}{2}$.
+    \item \textbf{ELBO}: $\log p(\mathbf{x} \mid \theta) = \sum_z q(z)\log\frac{p(\mathbf{x}, z \mid \theta)}{q(z)} + \KL(q \,\|\, p(\cdot \mid \mathbf{x}, \theta))$. EM: E-step $q = $ posterior, M-step maximizes $\sum_i\sum_z q_i(z)\log p(\mathbf{x}_i, z \mid \theta)$; never decreases $\ell$. GMM: $\pi_k = \frac{N_k}{N}$, $\boldsymbol\mu_k = \frac{1}{N_k}\sum_ir_{ik}\mathbf{x}_i$.
+\end{itemize}
+
+\end{multicols}
+
+\end{document}

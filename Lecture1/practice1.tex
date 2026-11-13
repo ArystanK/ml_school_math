@@ -47,7 +47,8 @@
         \item $\mathbb{N} = \{0, 1, 2, \ldots\}$;
         \item the set $\mathbb{R}_{>0}$ of positive real numbers;
         \item the set $\{0, 1\}$;
-        \item the set $2\mathbb{Z} = \{\ldots, -4, -2, 0, 2, 4, \ldots\}$ of even integers.
+        \item the set $2\mathbb{Z} = \{\ldots, -4, -2, 0, 2, 4, \ldots\}$ of even integers;
+        \item the set $\{0\}$.
     \end{enumerate}
 \end{problem}
 
@@ -363,6 +364,14 @@
         \item $\mathrm{Sym}_4$;
         \item $\mathrm{Skew}_4$;
         \item the space of upper triangular $3 \times 3$ matrices with trace $0$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:abstract-groups}
+    \begin{enumerate}[label=(\alph*)]
+        \item Which of the following are groups, and which of the groups are abelian? $(\mathbb{Z}, +)$; $(\mathbb{N}, +)$ with $\mathbb{N} = \{0, 1, 2, \ldots\}$; $(\mathbb{Q} \setminus \{0\}, \cdot)$; $(\mathbb{Z} \setminus \{0\}, \cdot)$; the positive real numbers under multiplication; the four complex numbers $\{1, i, -1, -i\}$ under multiplication.
+        \item On $\mathbb{R}$, define $a \ast b = a + b + ab$. Show that $\ast$ is associative and commutative and has an identity element, but that $(\mathbb{R}, \ast)$ is not a group. Is $(\mathbb{R} \setminus \{-1\}, \ast)$ a group? (Hint: $a \ast b = (1 + a)(1 + b) - 1$.)
+        \item Show that in every group, $(ab)^{-1} = b^{-1}a^{-1}$. Check this for invertible matrices.
     \end{enumerate}
 \end{problem}
 
@@ -762,6 +771,34 @@
         \item Show that $e^x$, $e^{2x}$ and $e^{3x}$ are linearly independent, without any computation. (Hint: the theorem that eigenvectors for different eigenvalues are linearly independent holds for every linear transformation $V \to V$, with the same proof.)
         \item Conclude in a second way that $C^\infty(\mathbb{R})$ is infinite-dimensional.
     \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:cayley-hamilton}
+    Let $B = \begin{pmatrix} 1 & 1 \\ -2 & 4 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $p_B$, and verify the Cayley--Hamilton theorem by computing $p_B(B)$.
+        \item Write $B^{-1}$ and $B^3$ in the form $aB + bI_2$.
+        \item Show that $B^k = a_kB + b_kI_2$ for every $k \geq 1$, with $a_{k+1} = 5a_k + b_k$ and $b_{k+1} = -6a_k$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}\label{pr:minimal-poly}
+    Find the minimal polynomials of the following matrices, and decide which of them are diagonalizable:
+    \[N = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}, \qquad D = \begin{pmatrix} 2 & 0 & 0 \\ 0 & 3 & 0 \\ 0 & 0 & 2 \end{pmatrix}, \qquad R = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}.\]
+    Without computing any eigenvectors, show that a matrix $A$ with $A^2 = 3A - 2I_n$ is diagonalizable, and find its possible eigenvalues.
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:circulant}
+    Let $n = 4$, $\mathbf{c} = (1, 1, 0, 0)^\top$ and $\mathbf{x} = (1, 0, 2, 0)^\top$, with entries numbered from $0$, so that $(\mathbf{c} \ast \mathbf{x})_j = x_j + x_{j-1}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Write down $\mathrm{circ}(\mathbf{c})$, and compute $\mathbf{c} \ast \mathbf{x}$.
+        \item Compute the DFTs $\hat{\mathbf{c}}$, $\hat{\mathbf{x}}$ and $\widehat{\mathbf{c} \ast \mathbf{x}}$ (here $\omega = i$), and check the convolution theorem.
+        \item Which eigenvalue of $\mathrm{circ}(\mathbf{c})$ is $0$, and for which eigenvector? Explain the answer without computation.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:shift-commute}
+    Let $S$ be the $3 \times 3$ cyclic shift, $S(x_0, x_1, x_2)^\top = (x_2, x_0, x_1)^\top$. Find all $3 \times 3$ matrices $A$ with $AS = SA$ by solving the linear equations for the entries of $A$, and check that they are exactly the circulant matrices.
 \end{problem}
 
 \section{Tensors}

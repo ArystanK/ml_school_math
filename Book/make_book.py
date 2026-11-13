@@ -36,9 +36,11 @@ PREFIXES = tuple(prefix for _, prefix, _ in CHAPTERS)
 REWORDING = {
     "Lecture1/lecture1.tex": [
         ("this is proved in Lecture~2", "this is proved in Theorem~\\ref{L2-thm:orthogonal}"),
+        ("(see the appendix to Lecture~3)", "(Section~\\ref{A-sec:lie-groups})"),
     ],
     "Lecture2/lecture2.tex": [
         ("with $k$-means (Lecture~4)", "with $k$-means (Section~\\ref{L4-sec:latent})"),
+        ("(see the appendix to Lecture~3)", "(Section~\\ref{A-sec:lie-groups})"),
     ],
     "Lecture3/lecture3.tex": [
         ("(by the proposition on coercive functions in the separate appendix on topology, differential topology and functional analysis)",
@@ -62,6 +64,8 @@ REWORDING = {
          "Example~\\ref{B-ex:escaping-mass} proves this with the dominated convergence theorem"),
     ],
     "Lecture4/lecture4.tex": [
+        ("(This is the Banach fixed-point theorem of the appendix to Lecture~3, for the maximum norm.)",
+         "(This is the Banach fixed-point theorem, Theorem~\\ref{A-thm:banach}, for the maximum norm.)"),
         ("(by the proposition on uniform continuity in the appendix to Lecture~3)",
          "(by Proposition~\\ref{A-prop:uniform-continuity})"),
         ("the likelihood ratio test in the appendix to this lecture",

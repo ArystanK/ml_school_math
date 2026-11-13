@@ -94,6 +94,15 @@
     \end{enumerate}
 \end{problem}
 
+\begin{problem}[\mandatory]\label{pr:cholesky}
+    Let $A = \begin{pmatrix} 4 & 2 & 2 \\ 2 & 5 & 3 \\ 2 & 3 & 6 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the Cholesky decomposition $A = LL^\top$. Why does this show that $A$ is positive definite?
+        \item Use it to solve $A\mathbf{x} = (8, 10, 11)^\top$ by forward and back substitution, and to compute $\det(A)$.
+        \item Write $\mathbf{x}^\top A\mathbf{x}$ as a sum of three squares.
+    \end{enumerate}
+\end{problem}
+
 \section{Lengths and Distances}
 
 \begin{problem}[$\star$]\label{pr:cs-apps}
@@ -355,6 +364,23 @@
     \end{enumerate}
 \end{problem}
 
+\begin{problem}\label{pr:sqrt-whitening}
+    Let $\Sigma = \begin{pmatrix} 5 & 4 \\ 4 & 5 \end{pmatrix}$ be the covariance matrix of some centered data.
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute $\Sigma^{1/2}$ and $\Sigma^{-1/2}$, and check that $(\Sigma^{1/2})^2 = \Sigma$.
+        \item The whitened data are $\mathbf{z}_i = \Sigma^{-1/2}\mathbf{x}_i$. Show that their covariance matrix $\Sigma^{-1/2}\Sigma\Sigma^{-1/2}$ is $I_2$.
+        \item Find a second matrix $B \neq \Sigma^{1/2}$ with $B^2 = \Sigma$. Why does this not contradict the uniqueness of the square root?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[$\star$]\label{pr:courant-fischer}
+    Let $A$ be a symmetric $3 \times 3$ matrix with eigenvalues $\lambda_1 \geq \lambda_2 \geq \lambda_3$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that every plane $U$ through the origin contains a unit vector $\mathbf{x}$ with $\mathbf{x}^\top A\mathbf{x} \leq \lambda_2$, and one with $\mathbf{x}^\top A\mathbf{x} \geq \lambda_2$.
+        \item Let $A = \diag(3, 2, 1)$ and $B = A + E$, where $E$ is symmetric with $|E_{ij}| \leq 0.01$ for all $i, j$. Show that the eigenvalues of $E$ lie in $[-0.03, 0.03]$, and give intervals that contain the eigenvalues of $B$. (Hint: $|\mathbf{x}^\top E\mathbf{x}| \leq 0.01\big(\sum_i |x_i|\big)^2$.)
+    \end{enumerate}
+\end{problem}
+
 \begin{problem}\label{pr:laplacian-components}
     A graph on the vertices $1, \ldots, 5$ has the edges $\{1, 2\}$ with weight $2$, $\{2, 3\}$ with weight $1$, and $\{4, 5\}$ with weight $3$. Find a basis of $\Null(L)$ without computing any eigenvalues, and give the multiplicity of the eigenvalue $0$. Then find the remaining eigenvalues.
 \end{problem}
@@ -389,6 +415,15 @@
         \item Show that if $A$ is invertible, then the singular values of $A^{-1}$ are $\frac{1}{\sigma_i}$, and $\norm{A^{-1}}_2 = \frac{1}{\sigma_n}$.
         \item Show that $|\det(A)| = \sigma_1 \sigma_2 \cdots \sigma_n$ for every $n \times n$ matrix $A$.
         \item Show that for a matrix of rank $1$, $\norm{A}_2 = \norm{A}_F$, and check this for $A = \begin{pmatrix} 1 & 2 \\ 0 & 0 \end{pmatrix}$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\mandatory]\label{pr:condition}
+    Let $A = \begin{pmatrix} 1 & 1 \\ 1 & 1.01 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the eigenvalues of $A$ (to four digits) and its condition number $\kappa(A)$.
+        \item Solve $A\mathbf{x} = (2, 2.01)^\top$ and $A\mathbf{x} = (2, 2.02)^\top$. Compare the relative change of the solution with the bound of the theorem on the sensitivity of linear systems.
+        \item What is $\kappa(A^\top A)$? Why does this matter for least squares?
     \end{enumerate}
 \end{problem}
 

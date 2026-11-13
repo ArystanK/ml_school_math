@@ -9,7 +9,7 @@
 In Lecture~3, we used several facts without proof: that a continuous function on a closed and bounded set attains its maximum, that a function with continuous partial derivatives is differentiable (Theorem~\ref{L3-thm:C1}), that integrals depending on a parameter are continuous (in the proof of Proposition~\ref{L3-prop:leibniz}), the implicit function theorem in the proof of the Lagrange multiplier theorem (Theorem~\ref{L3-thm:lagrange}), the necessity of the KKT conditions (Theorem~\ref{L3-thm:kkt}), and the existence and uniqueness of solutions of differential equations (Theorem~\ref{L3-thm:picard}). We also met sets that are not open subsets of $\mathbb{R}^n$, but curved objects: spheres, the set of orthogonal matrices, and level sets of functions. And in Lectures~2 and~4, we worked with vector spaces of functions and of random variables, which are infinite-dimensional. This appendix provides the mathematical background.
 \begin{itemize}
     \item Sections~\ref{A-sec:metric}--\ref{A-sec:connected} are about topology, the mathematics of nearness and continuity. Its central notions are open sets, compactness and connectedness. Topology studies the properties of sets that do not change under continuous deformations.
-    \item Sections~\ref{A-sec:inverse}--\ref{A-sec:forms} are about differential topology, which studies manifolds, i.e., sets that look like $\mathbb{R}^k$ near each of their points, and differentiable maps between them. Its main tools are the inverse and implicit function theorems. Morse theory connects the critical points of a function, classified by the eigenvalues of its Hessian as in Lecture~3, with the shape of the space on which it is defined. Finally, differential forms, which are built from the tensors of Lecture~1, unify the integral theorems of Lecture~3 in one theorem of Stokes, and they detect holes in a space.
+    \item Sections~\ref{A-sec:inverse}--\ref{A-sec:forms} are about differential topology, which studies manifolds, i.e., sets that look like $\mathbb{R}^k$ near each of their points, and differentiable maps between them. Its main tools are the inverse and implicit function theorems. The matrix groups of Lectures~1 and~2, such as the rotations, are manifolds as well, and they are Lie groups. Morse theory connects the critical points of a function, classified by the eigenvalues of its Hessian as in Lecture~3, with the shape of the space on which it is defined. Finally, differential forms, which are built from the tensors of Lecture~1, unify the integral theorems of Lecture~3 in one theorem of Stokes, and they detect holes in a space.
     \item Section~\ref{A-sec:ml} collects some places where these ideas appear in machine learning.
     \item Sections~\ref{A-sec:banach}--\ref{A-sec:rkhs} are about functional analysis, i.e., linear algebra and analysis in infinite-dimensional vector spaces, such as spaces of functions. Its central notions are completeness, orthogonal projections and the spectral theorem for compact operators. They prove the existence theorem for differential equations of Lecture~3 and the Radon--Nikodym theorem of Appendix~\ref{B-chapter}, and they lead to Fourier series, to expansions of random functions, and to the theory of kernel methods. Section~\ref{A-sec:fa-ml} returns to machine learning.
 \end{itemize}
@@ -410,6 +410,43 @@ Not every level set is a submanifold. The level set $\{x^2 - y^2 = 0\}$ of Figur
         \item $T_Q \mathrm{O}(n) = \{H : H^\top Q + Q^\top H = 0\}$. With $K = Q^\top H$, the condition says $K^\top + K = 0$, so $T_Q \mathrm{O}(n) = \{QK : K^\top = -K\}$, and $T_I \mathrm{O}(n)$ is the space of skew-symmetric matrices, of dimension $\frac{n(n-1)}{2}$. For example, the rotations $R(t)$ by the angle $t$ in the plane have $R'(0) = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$.
     \end{enumerate}
 \end{example}
+
+\subsection{Lie groups}\label{A-sec:lie-groups}
+
+The examples $\mathrm{GL}(n, \mathbb{R})$, $\mathrm{SL}(n, \mathbb{R})$ and $\mathrm{O}(n)$ are both groups (Definition~\ref{L1-def:group}) and submanifolds. Such objects describe continuous symmetries, and they have a name.
+
+\begin{definition}[Lie group]\label{A-def:lie-group}
+    A Lie group is a group that is also a manifold, such that the multiplication $(a, b) \mapsto ab$ and the inversion $a \mapsto a^{-1}$ are smooth. A matrix Lie group is a subgroup $G$ of $\mathrm{GL}(n, \mathbb{R})$ that is a submanifold of $\mathbb{R}^{n \times n}$. Its tangent space $\mathfrak{g} = T_IG$ at the identity is the Lie algebra of $G$.
+\end{definition}
+
+A matrix Lie group is a Lie group in the sense of the first sentence: its multiplication and inversion are restrictions of smooth maps on open sets, namely of $(A, B) \mapsto AB$, whose entries are polynomials in the entries of $A$ and $B$, and of $A \mapsto A^{-1}$ on the open set $\mathrm{GL}(n, \mathbb{R})$, whose entries are rational functions of the entries of $A$ by the cofactor formula (Proposition~\ref{L1-prop:adjugate}). The dimension of $G$ is the number of independent parameters needed to describe its elements near $I$.
+
+\begin{proposition}[The classical matrix groups]\label{A-prop:lie-groups}
+    \begin{enumerate}
+        \item $\mathrm{GL}(n, \mathbb{R})$, $\mathrm{SL}(n, \mathbb{R})$, $\mathrm{O}(n)$ and $\mathrm{SO}(n)$ are matrix Lie groups of the dimensions $n^2$, $n^2 - 1$, $\frac{n(n-1)}{2}$ and $\frac{n(n-1)}{2}$. Their Lie algebras are all of $\mathbb{R}^{n \times n}$, the traceless matrices $\mathfrak{sl}(n)$, and (for both $\mathrm{O}(n)$ and $\mathrm{SO}(n)$) the skew-symmetric matrices $\mathfrak{so}(n)$.
+        \item For every $H \in \mathbb{R}^{n \times n}$ and $s, t \in \mathbb{R}$, $e^{(s+t)H} = e^{sH}e^{tH}$, so $e^{tH} \in \mathrm{GL}(n, \mathbb{R})$ with the inverse $e^{-tH}$, and $\det e^{tH} = e^{t\tr H}$.
+        \item The exponential maps the Lie algebras into the groups: $e^{tH} \in \mathrm{SL}(n, \mathbb{R})$ for $H \in \mathfrak{sl}(n)$, and $e^{tK} \in \mathrm{SO}(n)$ for $K \in \mathfrak{so}(n)$.
+        \item $\mathfrak{sl}(n)$ and $\mathfrak{so}(n)$ are closed under the commutator $[A, B] = AB - BA$.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    (1) These sets are groups by Lecture~1 (for $\mathrm{SO}(n)$, see Lecture~2), and $\mathrm{GL}(n, \mathbb{R})$, $\mathrm{SL}(n, \mathbb{R})$ and $\mathrm{O}(n)$ are submanifolds of the stated dimensions by Example~\ref{A-ex:submanifolds}. Since $\det Q = \pm 1$ on $\mathrm{O}(n)$, $\mathrm{SO}(n)$ is the intersection of $\mathrm{O}(n)$ with the open set $\{\det > 0\}$, so it is a submanifold of the same dimension (in Definition~\ref{A-def:submanifold}, replace $U$ by $U \cap \{\det > 0\}$), and it has the same tangent space at $I$. The Lie algebras are the tangent spaces of Example~\ref{A-ex:tangent-spaces}; for the open set $\mathrm{GL}(n, \mathbb{R})$, every direction is tangent.
+
+    (2) The power series $e^{sH}$ and $e^{tH}$ are limits of polynomials in $H$, so they commute. As functions of $t$, both $e^{(s+t)H}$ and $e^{tH}e^{sH}$ solve the linear ODE $X' = HX$ (Lecture~3: $\frac{d}{dt}e^{tH} = He^{tH}$), column by column, with the same initial value $e^{sH}$ at $t = 0$, so they agree by the uniqueness of solutions (Theorem~\ref{A-thm:picard-lindelof}). With $s = -t$, $e^{-tH}e^{tH} = e^0 = I$. For $\phi(t) = \det e^{tH}$, Jacobi's formula (Proposition~\ref{L3-prop:det-gradient}) and the chain rule give
+    \[\phi'(t) = \det(e^{tH})\tr\big(e^{-tH}He^{tH}\big) = \phi(t)\tr H,\]
+    since $\tr(AB) = \tr(BA)$. So $\big(\phi(t)e^{-t\tr H}\big)' = 0$, and $\phi(t) = \phi(0)e^{t\tr H} = e^{t\tr H}$. (This extends Liouville's formula of Lecture~3 to all matrices.)
+
+    (3) If $\tr H = 0$, then $\det e^{tH} = 1$ by (2). If $K^\top = -K$, then $(e^{tK})^\top = e^{tK^\top} = e^{-tK}$ (transpose the power series term by term), so $(e^{tK})^\top e^{tK} = e^{-tK}e^{tK} = I$ by (2); moreover, $\tr K = 0$, so $\det e^{tK} = 1$.
+
+    (4) $\tr(AB - BA) = \tr(AB) - \tr(BA) = 0$. If $A^\top = -A$ and $B^\top = -B$, then $(AB - BA)^\top = B^\top A^\top - A^\top B^\top = BA - AB = -(AB - BA)$.
+\end{proof}
+
+By (2), $t \mapsto e^{tH}$ is a curve in the group with $e^{(s+t)H} = e^{sH}e^{tH}$, a one-parameter subgroup, whose velocity at $t = 0$ is $H$. So the Lie algebra consists of the infinitesimal generators of the group, and the commutator measures how much the group fails to be abelian. For example, $\mathfrak{so}(2)$ is spanned by $J = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$, and $e^{tJ}$ is the rotation by the angle $t$ (Lecture~3). In $\mathfrak{so}(3)$, each skew-symmetric matrix $K$ acts as $K\mathbf{v} = \boldsymbol{\omega} \times \mathbf{v}$ for a vector $\boldsymbol{\omega} \in \mathbb{R}^3$, and $e^{tK}$ is the rotation about the axis $\boldsymbol{\omega}$ with the angular speed $\norm{\boldsymbol{\omega}}$ (compare the axis of a rotation, Lecture~2).
+
+\begin{remark}[Lie groups in machine learning]
+    Lie groups describe the symmetries of data: rotations and translations of 3D molecules and point clouds (the rotations $\mathrm{SO}(3)$ and the rigid motions, which combine them with translations), and rotations and shifts of images. Equivariant neural networks build these symmetries into their layers, generalizing the translation equivariance of convolutions (Lecture~1). Lie groups also appear in optimization: a weight matrix that must stay orthogonal can be parametrized as $e^K$ with a skew-symmetric $K$, which is unconstrained, or updated as $Q \mapsto Qe^{tK}$, which stays in $\mathrm{O}(n)$; this is an alternative to the retractions of Section~\ref{A-sec:lagrange}.
+\end{remark}
 
 \section{Lagrange Multipliers and Optimization on Manifolds}\label{A-sec:lagrange}
 
@@ -1147,6 +1184,7 @@ So an optimization problem over an infinite-dimensional space of functions reduc
     \item A contraction of a closed set has a unique fixed point, found by iteration (Banach). This proves the inverse function theorem: a map with an invertible Jacobian is locally invertible, with $D(\mathbf{f}^{-1}) = (D\mathbf{f})^{-1}$. Residual layers $\mathbf{x} + \mathbf{g}(\mathbf{x})$ with a contractive $\mathbf{g}$ are invertible.
     \item The implicit function theorem solves $F(\mathbf{x}, \mathbf{y}) = \mathbf{0}$ locally for $\mathbf{y} = \mathbf{g}(\mathbf{x})$ when $D_{\mathbf{y}}F$ is invertible, with $D\mathbf{g} = -D_{\mathbf{y}}F^{-1}D_{\mathbf{x}}F$; this is implicit differentiation, also used for implicit layers and hyperparameter optimization.
     \item The level set of a regular value of $F: \mathbb{R}^n \to \mathbb{R}^m$ is an $(n - m)$-dimensional submanifold, which is locally a graph. Its tangent space is $\Null DF(\mathbf{p})$, and its normal space is spanned by the gradients $\nabla F_i(\mathbf{p})$. Examples: spheres, $\mathrm{SL}(n)$ (dimension $n^2 - 1$, tangent space at $I$: traceless matrices), $\mathrm{O}(n)$ (dimension $\frac{n(n-1)}{2}$, tangent space at $I$: skew-symmetric matrices).
+    \item A matrix Lie group is a subgroup of $\mathrm{GL}(n, \mathbb{R})$ that is a submanifold, such as $\mathrm{GL}(n, \mathbb{R})$, $\mathrm{SL}(n, \mathbb{R})$, $\mathrm{O}(n)$ and $\mathrm{SO}(n)$; multiplication and inversion are smooth. Its Lie algebra $T_IG$ is closed under the commutator $[A, B] = AB - BA$, and $t \mapsto e^{tH}$ is a one-parameter subgroup; $\det e^{tH} = e^{t\tr H}$, and $e^{tK}$ is a rotation for every skew-symmetric $K$.
     \item Lagrange multipliers say that $\nabla f$ is normal to the constraint manifold at a constrained extremum. The Riemannian gradient is the projection of $\nabla f$ onto the tangent space; Riemannian gradient descent alternates such steps with retractions.
     \item By Sard's theorem, almost all values of a smooth map are regular. A critical point is nondegenerate if its Hessian is invertible, and its index is the number of negative eigenvalues. Nondegenerate critical points are isolated, and by the Morse lemma $f$ is exactly a sum of $\pm y_i^2$ near them. Almost every linear perturbation of a function is a Morse function.
     \item Sublevel sets change their topology only at critical values: a critical point of index $k$ attaches a $k$-cell. On a compact manifold, $\chi(M) = \sum_k (-1)^k c_k$.
@@ -1181,6 +1219,12 @@ So an optimization problem over an infinite-dimensional space of functions reduc
     \item \begin{enumerate}[label=(\alph*)]
         \item Find the tangent space of the sphere $x^2 + y^2 + z^2 = 9$ at $(1, 2, 2)$ as $\Null DF$, and the tangent plane $(1, 2, 2) + T_{(1, 2, 2)}M$ as an equation.
         \item Show that $T_Q \mathrm{O}(n) = \{QK : K^\top = -K\}$ and $T_I \mathrm{SL}(n, \mathbb{R}) = \{H : \tr H = 0\}$ have the dimensions predicted by Example~\ref{A-ex:submanifolds}.
+    \end{enumerate}
+    \item (Lie groups.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the upper triangular $n \times n$ matrices with positive diagonal entries form a matrix Lie group of dimension $\frac{n(n+1)}{2}$, whose Lie algebra consists of the upper triangular matrices. (This group appears in the QR and Cholesky decompositions of Lecture~2.)
+        \item For $K_1 = \begin{pmatrix} 0 & 0 & 0 \\ 0 & 0 & -1 \\ 0 & 1 & 0 \end{pmatrix}$, compute $K_1^2$ and $K_1^3$, and show that $e^{tK_1}$ is the rotation by the angle $t$ about the $x_1$-axis.
+        \item With $K_2$ and $K_3$ the analogous generators of the rotations about the $x_2$- and $x_3$-axes, check that $[K_1, K_2] = K_3$. What does this say about rotations about different axes?
     \end{enumerate}
     \item\label{A-exer:procrustes} (Orthogonal Procrustes problem.) Given $A \in \mathbb{R}^{n \times n}$ with SVD $A = U\Sigma V^\top$, show that $\tr(Q^\top A)$ is maximal over $Q \in \mathrm{O}(n)$ for $Q = UV^\top$. (Hint: $\tr(Q^\top A) = \tr(\Sigma Z)$ with the orthogonal matrix $Z = V^\top Q^\top U$, whose entries are at most $1$ in absolute value.) This is how one aligns two point clouds by a rotation or reflection.
     \item \begin{enumerate}[label=(\alph*)]

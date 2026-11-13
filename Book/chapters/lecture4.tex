@@ -13,7 +13,7 @@ Machine learning is about learning from data, and data is noisy, incomplete and 
     \item stochastic gradient descent uses random mini-batches, and works because averages of many random terms concentrate around their mean;
     \item generative models, such as normalizing flows (Lecture~3), learn probability distributions.
 \end{itemize}
-In this lecture, we introduce probability spaces, conditional probability and Bayes' theorem, random variables, expectation and variance, moment generating functions, and random vectors with their covariance matrices, where the linear algebra of Lectures~1 and~2 enters. We then study the Gaussian distribution in detail, the law of large numbers and the central limit theorem, Monte Carlo sampling and the convergence of stochastic gradient descent, and Markov chains with Markov chain Monte Carlo (Metropolis and Gibbs sampling). The second half of the lecture is about learning from data: estimation (the method of moments, maximum likelihood, the Cram\'er--Rao bound, sufficiency and the Rao--Blackwell theorem, exponential families and generalized linear models), hypothesis testing (p-values, power, the Neyman--Pearson lemma, $t$-tests and $\chi^2$-tests, multiple testing, the bootstrap and permutation tests), the evaluation of models and experiments (cross-validation, classification metrics and ROC curves, generalization bounds, and A/B testing), Bayesian inference (including Gaussian processes), information theory (entropy, cross-entropy and the Kullback--Leibler divergence), and latent variable models (Gaussian mixtures, the EM algorithm, $k$-means and variational autoencoders). Finally, we add Gaussian noise to the ordinary differential equations of Lecture~3: Brownian motion, stochastic differential equations and the Ornstein--Uhlenbeck process, and Langevin dynamics, which samples from a distribution by noisy gradient descent and is behind diffusion models. Appendix~\ref{B-chapter} builds probability theory on measure theory, which treats discrete and continuous distributions, and everything in between, in a single framework.
+In this lecture, we introduce probability spaces, conditional probability and Bayes' theorem, random variables, expectation and variance, the Poisson process, the variance of a neural network layer (which explains the Xavier and He initializations), conditional independence, graphical models and naive Bayes, moment generating functions, and random vectors with their covariance matrices, where the linear algebra of Lectures~1 and~2 enters. We then study the Gaussian distribution in detail, the law of large numbers and the central limit theorem, Monte Carlo sampling and the convergence of stochastic gradient descent, and Markov chains with Markov chain Monte Carlo (Metropolis and Gibbs sampling), the Bellman equations of reinforcement learning, and stationary time series with autoregressive models. The second half of the lecture is about learning from data: estimation (the method of moments, maximum likelihood, the Cram\'er--Rao bound, sufficiency and the Rao--Blackwell theorem, exponential families and generalized linear models, the empirical CDF and kernel density estimates, and survival analysis with censored data), hypothesis testing (p-values, power, the Neyman--Pearson lemma, $t$-tests and $\chi^2$-tests, standard errors, $t$-tests and heteroscedasticity in linear regression, multiple testing, the bootstrap and permutation tests), the evaluation of models and experiments (cross-validation, classification metrics and ROC curves, generalization bounds, and A/B testing with Simpson's paradox), Bayesian inference (including Gaussian processes), information theory (entropy, cross-entropy and the Kullback--Leibler divergence), and latent variable models (Gaussian mixtures, the EM algorithm, $k$-means, probabilistic PCA and variational autoencoders). Finally, we add Gaussian noise to the ordinary differential equations of Lecture~3: Brownian motion, stochastic differential equations and the Ornstein--Uhlenbeck process, and Langevin dynamics, which samples from a distribution by noisy gradient descent and is behind diffusion models. Appendix~\ref{B-chapter} builds probability theory on measure theory, which treats discrete and continuous distributions, and everything in between, in a single framework.
 
 \paragraph{Notation.} As in the previous lectures, vectors of $\mathbb{R}^n$ are bold. Random variables are denoted by capital letters such as $X$ and $Y$, their values by small letters such as $x$ and $y$, and random vectors by bold capital letters such as $\mathbf{X}$. We write $P(A)$ for the probability of an event $A$, $\mathbf{1}_A$ for its indicator function, which is $1$ on $A$ and $0$ outside $A$, $\E[X]$ for the expectation of $X$, and $\log$ for the natural logarithm.
 
@@ -337,6 +337,14 @@ For a function $g(X, Y)$, the expectation is $\E[g(X, Y)] = \sum_{x, y} g(x, y)\
     so $X + Y \sim$ Poisson$(\lambda + \mu)$. For example, if a website gets independent Poisson numbers of clicks from search engines and from ads, with the means $3$ and $2$ per minute, then the total number of clicks per minute is Poisson$(5)$.
 \end{example}
 
+\begin{example}[The Poisson process]\label{L4-ex:poisson-process}
+    Customers arrive at a shop, or requests at a server, with independent Exponential$(\lambda)$ waiting times $T_1, T_2, \ldots$ between consecutive arrivals. Let $S_n = T_1 + \cdots + T_n$ be the time of the $n$-th arrival, and $N(t)$ the number of arrivals up to time $t$. By the convolution formula and induction, $S_n$ has the density
+    \[p_{S_n}(t) = \frac{\lambda^nt^{n-1}}{(n - 1)!}e^{-\lambda t} \qquad (t \geq 0),\]
+    since $\int_0^t \frac{\lambda^ns^{n-1}}{(n - 1)!}e^{-\lambda s}\,\lambda e^{-\lambda(t - s)}\, ds = \lambda^{n+1}e^{-\lambda t}\int_0^t \frac{s^{n-1}}{(n - 1)!}\, ds = \frac{\lambda^{n+1}t^n}{n!}e^{-\lambda t}$. Integration by parts gives
+    \[P(S_{n+1} \leq t) = \int_0^t \frac{\lambda^{n+1}s^n}{n!}e^{-\lambda s}\, ds = -\frac{(\lambda t)^n}{n!}e^{-\lambda t} + \int_0^t \frac{\lambda^ns^{n-1}}{(n - 1)!}e^{-\lambda s}\, ds = P(S_n \leq t) - \frac{(\lambda t)^n}{n!}e^{-\lambda t}.\]
+    Since $N(t) \geq n$ exactly when $S_n \leq t$, we get $P(N(t) = n) = P(S_n \leq t) - P(S_{n+1} \leq t) = e^{-\lambda t}\frac{(\lambda t)^n}{n!}$ for $n \geq 1$, and $P(N(t) = 0) = P(T_1 > t) = e^{-\lambda t}$: the number of arrivals in the time $t$ is Poisson$(\lambda t)$. This is the Poisson process with rate $\lambda$. One can show more: by the memorylessness of the exponential distribution, the numbers of arrivals in disjoint time intervals are independent and Poisson distributed, with means $\lambda$ times the lengths of the intervals. This explains why counts of many independent rare events, such as clicks, emails or radioactive decays, are approximately Poisson distributed.
+\end{example}
+
 \begin{example}[Tail integrals]\label{L4-ex:tail-integral}
     For a random variable $X \geq 0$ with a density $p$, exchanging the order of integration (Fubini's theorem for nonnegative functions) gives
     \[\int_0^\infty P(X > t)\, dt = \int_0^\infty\!\!\int_t^\infty p(x)\, dx\, dt = \int_0^\infty\Big(\int_0^x dt\Big)p(x)\, dx = \int_0^\infty x\,p(x)\, dx = \E[X],\]
@@ -379,6 +387,26 @@ The covariance behaves like an inner product. For random variables $U$ and $V$ w
     In Example~\ref{L4-ex:joint-table}, $\E[XY] = P(X = 1, Y = 1) = 0.4$, so $\Cov(X, Y) = 0.4 - 0.5 \cdot 0.6 = 0.1$. With $\Var(X) = 0.25$ and $\Var(Y) = 0.24$, the correlation is $\frac{0.1}{\sqrt{0.06}} \approx 0.41$.
 \end{example}
 
+\paragraph{Initializing neural networks.} Variances of sums explain how the weights of a neural network have to be scaled when training starts. A unit of a layer computes $z = W_1x_1 + \cdots + W_nx_n$ from the $n$ outputs $x_j$ of the previous layer, and passes $a(z)$ on, for an activation function $a$ such as $\mathrm{ReLU}(z) = \max(z, 0)$ (Lecture~3). At initialization, the weights are random, and the following proposition tracks the size of the signal.
+
+\begin{proposition}[Variance of a layer]\label{L4-prop:layer-variance}
+    Let $x_1, \ldots, x_n$ be random variables with $\E[x_j^2] = q$ for all $j$, and let $W_1, \ldots, W_n$ have mean $0$ and variance $v$, such that $W_1, \ldots, W_n$ and the vector $(x_1, \ldots, x_n)$ are independent. Then $z = W_1x_1 + \cdots + W_nx_n$ has
+    \[\E[z] = 0 \qquad \text{and} \qquad \Var(z) = nvq.\]
+    If moreover $-W_j$ has the same distribution as $W_j$ for every $j$, then $-z$ has the same distribution as $z$, and $\E[\mathrm{ReLU}(z)^2] = \frac{1}{2}\Var(z)$.
+\end{proposition}
+
+\begin{proof}
+    By Proposition~\ref{L4-prop:independent-product}, $\E[W_jx_j] = \E[W_j]\,\E[x_j] = 0$, and for $j \neq k$, $\E[W_jx_jW_kx_k] = \E[W_j]\,\E[W_kx_jx_k] = 0$, since $W_j$ is independent of $(W_k, x_j, x_k)$. So the terms $W_jx_j$ are uncorrelated, with $\Var(W_jx_j) = \E[W_j^2]\,\E[x_j^2] = vq$, and $\Var(z) = nvq$ by Proposition~\ref{L4-prop:variance-sum}. If every $W_j$ is symmetric, then $(-W_1, \ldots, -W_n, x_1, \ldots, x_n)$ has the same joint distribution as $(W_1, \ldots, W_n, x_1, \ldots, x_n)$, by independence, so $-z$ has the same distribution as $z$. Then $\E[z^2\mathbf{1}_{\{z > 0\}}] = \E[z^2\mathbf{1}_{\{z < 0\}}]$, and the two add up to $\E[z^2]$, so $\E[\mathrm{ReLU}(z)^2] = \E[z^2\mathbf{1}_{\{z > 0\}}] = \frac{1}{2}\E[z^2] = \frac{1}{2}\Var(z)$.
+\end{proof}
+
+Note that $q = \E[x_j^2]$ is the second moment, not the variance: the outputs of a ReLU layer are nonnegative and do not have mean $0$, but only their second moments matter.
+
+\begin{example}[Xavier and He initialization]\label{L4-ex:initialization}
+    Consider a network of ReLU layers, where layer $l$ has $n_{l-1}$ inputs and weights with mean $0$ and variance $v_l$, drawn independently and symmetrically. By Proposition~\ref{L4-prop:layer-variance}, the second moments $q_l$ of the outputs of layer $l$ satisfy $q_l = \frac{1}{2}n_{l-1}v_lq_{l-1}$, so after $L$ layers,
+    \[q_L = q_0\prod_{l=1}^L \frac{n_{l-1}v_l}{2}.\]
+    With $v_l = \frac{2}{n_{l-1}}$ (He initialization), every factor is $1$, and the signal keeps its size through any number of layers. With $v_l = \frac{1}{n_{l-1}}$, it is halved in every layer, and after $50$ layers, it is multiplied by $2^{-50} \approx 9 \cdot 10^{-16}$: it vanishes. With standard normal weights ($v_l = 1$) and $512$ units per layer, it is multiplied by $256$ in every layer, and explodes. The same computation for backpropagation, which multiplies the gradients by $W_l^\top$ and sums over the $n_l$ outputs of layer $l$ (Lecture~3), asks for $n_lv_l \approx 2$; for activations such as $\tanh$, which are linear near $0$ (no factor $\frac{1}{2}$), the forward and backward conditions are $n_{l-1}v_l = 1$ and $n_lv_l = 1$, and Xavier (Glorot) initialization compromises with $v_l = \frac{2}{n_{l-1} + n_l}$. For weights that are uniform on $[-b, b]$, the variance is $\frac{b^2}{3}$, so the uniform He initialization uses $b = \sqrt{6/n_{l-1}}$. These are the default initializations of deep learning libraries, and normalization layers such as batch normalization keep the scale under control during training, by standardizing $z$.
+\end{example}
+
 \subsection{Conditional expectation}\label{L4-sec:conditional-expectation}
 
 \begin{definition}[Conditional expectation]\label{L4-def:conditional-expectation}
@@ -412,6 +440,53 @@ So $\E[Y \mid X]$ is the best prediction of $Y$ from $X$ in the sense of the mea
         \[\Var(Y) = \E\big[\Var(Y \mid X)\big] + \Var\big(\E[Y \mid X]\big):\]
         the variance of $Y$ is the mean of the variances within the groups $\{X = x\}$ plus the variance of the group means. For example, let the number of customers of a shop on a day be $N \sim$ Poisson$(\lambda)$, and let customer $i$ spend $Y_i$, where the $Y_i$ are i.i.d.\ with mean $\mu$ and variance $\sigma^2$, and independent of $N$. The revenue $T = Y_1 + \cdots + Y_N$ has $\E[T \mid N] = N\mu$ and $\Var(T \mid N) = N\sigma^2$, so $\E[T] = \lambda\mu$ and $\Var(T) = \E[N]\sigma^2 + \Var(N)\mu^2 = \lambda(\sigma^2 + \mu^2)$. For $\lambda = 50$, $\mu = 20$ and $\sigma^2 = 100$, the revenue has the mean $1000$ and the standard deviation $\sqrt{25\,000} \approx 158$.
     \end{enumerate}
+\end{example}
+
+\subsection{Conditional independence and graphical models}\label{L4-sec:conditional-independence}
+
+Many models in machine learning are built from the assumption that some variables are independent once others are known.
+
+\begin{definition}[Conditional independence]\label{L4-def:conditional-independence}
+    Random variables $X$ and $Y$ are conditionally independent given $Z$, written $X \indep Y \mid Z$, if
+    \[p(x, y \mid z) = p(x \mid z)\,p(y \mid z) \qquad \text{for all } x, y \text{ and all } z \text{ with } p_Z(z) > 0.\]
+\end{definition}
+
+Equivalently, $p(x \mid y, z) = p(x \mid z)$ whenever $p(y, z) > 0$: once $Z$ is known, $Y$ carries no further information about $X$. Indeed, $p(x \mid y, z) = \frac{p(x, y, z)}{p(y, z)} = \frac{p(x, y \mid z)}{p(y \mid z)}$, which equals $p(x \mid z)$ if and only if $p(x, y \mid z) = p(x \mid z)p(y \mid z)$. Conditional independence and independence are different properties.
+\begin{itemize}
+    \item (A common cause.) Choose one of two coins with probability $\frac{1}{2}$ each, a fair one ($Z = 0$) and one with heads probability $0.9$ ($Z = 1$), and let $X$ and $Y$ indicate heads in two flips of the chosen coin. Then $X \indep Y \mid Z$. But $P(X = 1) = \frac{1}{2}(0.5 + 0.9) = 0.7$ and $P(X = 1, Y = 1) = \frac{1}{2}(0.25 + 0.81) = 0.53 \neq 0.7^2$, so $X$ and $Y$ are dependent: heads in the first flip makes the biased coin more likely, and $P(Y = 1 \mid X = 1) = \frac{0.53}{0.7} \approx 0.76$. Bayesian inference has this structure, with the parameter $\theta$ in the role of $Z$: the data are i.i.d.\ given $\theta$, and we learn about future data from past data.
+    \item (Explaining away.) Let $X$ and $Y$ be independent fair bits, and $Z = X + Y$. Then $X \indep Y$, but not given $Z$: $P(X = 1 \mid Z = 1) = \frac{1}{2}$, while $P(X = 1 \mid Y = 1, Z = 1) = 0$. If an alarm ($Z$) can be set off by a burglary ($X$) or an earthquake ($Y$), then learning about the earthquake explains the alarm away and makes the burglary less likely.
+    \item The defining property of a Markov chain (Section~\ref{L4-sec:markov}) is that the future is independent of the past given the present.
+\end{itemize}
+
+Applying the product rule repeatedly gives the chain rule of probability,
+\[p(x_1, \ldots, x_n) = p(x_1)\,p(x_2 \mid x_1)\,p(x_3 \mid x_1, x_2) \cdots p(x_n \mid x_1, \ldots, x_{n-1}).\]
+A directed graphical model, or Bayesian network, assumes that each variable only depends on a few of the earlier ones, its parents $\mathrm{pa}(i) \subseteq \{1, \ldots, i - 1\}$:
+\[p(x_1, \ldots, x_n) = \prod_{i=1}^n p\big(x_i \mid x_{\mathrm{pa}(i)}\big).\]
+It is drawn as a graph with an arrow from each parent to its child. The factorization saves parameters: a general distribution of $n$ binary variables has $2^n - 1$ free parameters, but if every variable has at most $k$ parents, the conditional tables have at most $n2^k$ entries. Such factorizations are equivalent to conditional independence statements; the three basic patterns are the following.
+
+\begin{proposition}\label{L4-prop:three-graphs}
+    Let $X$, $Y$, $Z$ have a joint pmf or density of one of the following forms.
+    \begin{enumerate}
+        \item (Chain $X \to Z \to Y$.) $p(x, y, z) = p(x)\,p(z \mid x)\,p(y \mid z)$. Then $X \indep Y \mid Z$.
+        \item (Fork $X \leftarrow Z \to Y$.) $p(x, y, z) = p(z)\,p(x \mid z)\,p(y \mid z)$. Then $X \indep Y \mid Z$.
+        \item (Collider $X \to Z \leftarrow Y$.) $p(x, y, z) = p(x)\,p(y)\,p(z \mid x, y)$. Then $X \indep Y$, but in general not given $Z$.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    (1) By Bayes' theorem, $p(x)p(z \mid x) = p_Z(z)p(x \mid z)$, so $p(x, y \mid z) = \frac{p(x, y, z)}{p_Z(z)} = p(x \mid z)p(y \mid z)$. (2) Divide by $p(z)$. (3) Summing over $z$ gives $p(x, y) = p(x)p(y)\sum_z p(z \mid x, y) = p(x)p(y)$; the explaining-away example above shows that $X$ and $Y$ can be dependent given $Z$.
+\end{proof}
+
+Many models of this lecture are graphical models: a mixture model $z \to \mathbf{x}$ (Section~\ref{L4-sec:latent}), Bayesian inference $\theta \to x_1, \ldots, x_N$ (a fork with $N$ branches), a hidden Markov model, in which hidden states form a Markov chain $z_1 \to z_2 \to \cdots$ and each $z_t$ emits an observation $x_t$, and the following classifier.
+
+\begin{example}[Naive Bayes]\label{L4-ex:naive-bayes}
+    A naive Bayes classifier predicts a class $y \in \{1, \ldots, K\}$ from features $x_1, \ldots, x_d$ under the assumption that the features are conditionally independent given the class: $p(\mathbf{x}, y) = p(y)\prod_{j=1}^d p(x_j \mid y)$. By Bayes' theorem,
+    \[p(y \mid \mathbf{x}) \propto p(y)\prod_{j=1}^d p(x_j \mid y),\]
+    and maximum likelihood estimates each factor by counting. For a spam filter, let $P(\text{spam}) = 0.4$, let the word ``free'' appear in $30\%$ of spam and $2\%$ of other emails, and the word ``meeting'' in $1\%$ of spam and $10\%$ of other emails. An email that contains ``free'' but not ``meeting'' has the posterior odds
+    \[\frac{P(\text{spam} \mid \mathbf{x})}{P(\text{other} \mid \mathbf{x})} = \frac{0.4}{0.6} \cdot \frac{0.3}{0.02} \cdot \frac{0.99}{0.9} = 11,\]
+    so $P(\text{spam} \mid \mathbf{x}) = \frac{11}{12} \approx 0.92$. With binary features $x_j \in \{0, 1\}$ and two classes, the log-odds
+    \[\log\frac{p(y = 1 \mid \mathbf{x})}{p(y = 0 \mid \mathbf{x})} = \log\frac{p(y = 1)}{p(y = 0)} + \sum_{j=1}^d\Big(x_j\log\frac{p(x_j = 1 \mid y = 1)}{p(x_j = 1 \mid y = 0)} + (1 - x_j)\log\frac{p(x_j = 0 \mid y = 1)}{p(x_j = 0 \mid y = 0)}\Big)\]
+    are an affine function of $\mathbf{x}$, as for logistic regression (Lecture~3). Naive Bayes is a generative model, which fits $p(\mathbf{x}, y)$ by counting, while logistic regression is the corresponding discriminative model, which fits $p(y \mid \mathbf{x})$ directly; naive Bayes needs less data, but its probabilities are overconfident when the features are dependent. A word that never appears in the spam of the training data would get $p(x_j = 1 \mid \text{spam}) = 0$ and veto the class; adding a pseudo-count to all counts (Laplace smoothing, a MAP estimate with a Beta prior, Section~\ref{L4-sec:bayesian}) avoids this.
 \end{example}
 
 \subsection{Moment generating functions}\label{L4-sec:mgf}
@@ -1020,8 +1095,122 @@ The algorithm only uses the ratios $\frac{\pi_j}{\pi_i}$, so the unknown normali
 
 Gibbs sampling needs no proposal and no rejections, but it moves only along the coordinate axes, which is slow if the entries are strongly dependent. For a standard bivariate Gaussian with correlation $\rho$, the conditional distributions are $X_1 \mid X_2 = x_2 \sim \mathcal{N}(\rho x_2, 1 - \rho^2)$ and vice versa (Theorem~\ref{L4-thm:gaussian-conditional}). A sweep maps $X_1$ to $\rho^2X_1$ plus independent Gaussian noise, so successive values of $X_1$ have the correlation $\rho^2$. For $\rho = 0.99$, it is $0.98$, and it takes about $35$ sweeps until the correlation drops below $\frac{1}{2}$ (since $0.98^{35} \approx 0.5$). Gibbs sampling is the method of choice for models with conditionally conjugate priors, such as mixture models and topic models, and for Markov random fields such as the Ising model.
 
+\subsection{Markov reward processes and the Bellman equation}\label{L4-sec:bellman}
+
+Reinforcement learning studies agents that collect rewards while they move through the states of a Markov chain. Before the agent makes any decisions, the basic question is how much reward to expect in the long run.
+
+\begin{definition}[Markov reward process]\label{L4-def:mrp}
+    A Markov reward process consists of a Markov chain $X_0, X_1, \ldots$ with the transition matrix $P$ on the states $\{1, \ldots, n\}$, a reward vector $\mathbf{r} \in \mathbb{R}^n$ (the reward $r_i$ is collected in every step that the chain spends in state $i$), and a discount factor $\gamma \in [0, 1)$. The value of the state $i$ is the expected discounted total reward
+    \[V_i = \E\Big[\sum_{t=0}^\infty \gamma^tr_{X_t} \Bigm| X_0 = i\Big],\]
+    and $\mathbf{V} = (V_1, \ldots, V_n)^\top$ is the value vector.
+\end{definition}
+
+The discount factor makes rewards in the far future count less. One can also read $1 - \gamma$ as the probability that the process stops after each step, so that an episode lasts $\frac{1}{1 - \gamma}$ steps on average. Since $|r_{X_t}| \leq \norm{\mathbf{r}}_\infty$, the series converges absolutely, uniformly in the outcomes, so we may take expectations term by term, and $|V_i| \leq \frac{\norm{\mathbf{r}}_\infty}{1 - \gamma}$. We use the maximum norm $\norm{\mathbf{x}}_\infty = \max_i |x_i|$ of Lecture~2. For a stochastic matrix $P$, each entry $(P\mathbf{x})_i = \sum_j P_{ij}x_j$ is a weighted average of the entries of $\mathbf{x}$, so
+\[\norm{P\mathbf{x}}_\infty \leq \norm{\mathbf{x}}_\infty \qquad \text{for all } \mathbf{x} \in \mathbb{R}^n.\]
+
+\begin{theorem}[Bellman equation]\label{L4-thm:bellman}
+    The value vector of a Markov reward process satisfies the Bellman equation
+    \[\mathbf{V} = \mathbf{r} + \gamma P\mathbf{V}, \qquad \text{i.e.,} \qquad V_i = r_i + \gamma\sum_{j=1}^n P_{ij}V_j.\]
+    The matrix $I - \gamma P$ is invertible, with $(I - \gamma P)^{-1} = \sum_{k=0}^\infty \gamma^kP^k$, and $\mathbf{V} = (I - \gamma P)^{-1}\mathbf{r}$ is the only solution of the Bellman equation.
+\end{theorem}
+
+\begin{proof}
+    By Proposition~\ref{L4-prop:markov-evolution}, $\E[r_{X_k} \mid X_0 = i] = \sum_j (P^k)_{ij}r_j = (P^k\mathbf{r})_i$, so $\mathbf{V} = \sum_{k \geq 0}\gamma^kP^k\mathbf{r}$. For every $\mathbf{x}$, $\norm{\gamma^kP^k\mathbf{x}}_\infty \leq \gamma^k\norm{\mathbf{x}}_\infty$, so the series $S = \sum_{k \geq 0}\gamma^kP^k$ converges (apply it to $\mathbf{x} = \mathbf{e}_j$ to get the columns). Since
+    \[(I - \gamma P)\sum_{k=0}^{K-1}\gamma^kP^k = I - \gamma^KP^K \to I \qquad (K \to \infty),\]
+    and in the same way with the factors in the other order, $(I - \gamma P)S = S(I - \gamma P) = I$. So $I - \gamma P$ is invertible with the inverse $S$, and $\mathbf{V} = S\mathbf{r}$ is the only solution of $(I - \gamma P)\mathbf{V} = \mathbf{r}$, which is the Bellman equation.
+\end{proof}
+
+The Bellman equation says that the value of a state is the reward now plus the discounted expected value of the next state; this ``first-step analysis'' is how it is usually derived.
+
+\begin{example}[The value of sunny days]\label{L4-ex:bellman-weather}
+    In the weather chain of Example~\ref{L4-ex:weather}, let every sunny day give the reward $1$, i.e., $\mathbf{r} = (1, 0)^\top$, and let $\gamma = 0.9$. Then
+    \[I - \gamma P = \begin{pmatrix} 0.19 & -0.09 \\ -0.45 & 0.55 \end{pmatrix}, \qquad \mathbf{V} = (I - \gamma P)^{-1}\mathbf{r} = \frac{1}{0.064}\begin{pmatrix} 0.55 \\ 0.45 \end{pmatrix} = \begin{pmatrix} 8.59375 \\ 7.03125 \end{pmatrix}.\]
+    Check: $1 + 0.9(0.9 \cdot 8.59375 + 0.1 \cdot 7.03125) = 8.59375$. With $\frac{1}{1 - \gamma} = 10$ days as the effective horizon, the normalized values $(1 - \gamma)\mathbf{V} = (0.859, 0.703)$ are discounted averages of the fraction of sunny days. A sunny start is worth more, but the advantage fades: as $\gamma \to 1$, both entries of $(1 - \gamma)\mathbf{V}$ tend to the long-run fraction $\pi_1 = \frac{5}{6}$ of sunny days (Exercise~\ref{L4-ex4:bellman-limit}).
+\end{example}
+
+For large state spaces, solving the linear system is too expensive, and $P$ may not even be known explicitly. The Bellman equation then suggests an iteration.
+
+\begin{proposition}[Iterative policy evaluation]\label{L4-prop:policy-evaluation}
+    Let $\mathbf{V}_0 \in \mathbb{R}^n$ be arbitrary, and let $\mathbf{V}_{k+1} = \mathbf{r} + \gamma P\mathbf{V}_k$. Then $\norm{\mathbf{V}_k - \mathbf{V}}_\infty \leq \gamma^k\norm{\mathbf{V}_0 - \mathbf{V}}_\infty$.
+\end{proposition}
+
+\begin{proof}
+    Subtracting the Bellman equation, $\mathbf{V}_{k+1} - \mathbf{V} = \gamma P(\mathbf{V}_k - \mathbf{V})$, so $\norm{\mathbf{V}_{k+1} - \mathbf{V}}_\infty \leq \gamma\norm{\mathbf{V}_k - \mathbf{V}}_\infty$; use induction.
+\end{proof}
+
+In other words, the map $B(\mathbf{V}) = \mathbf{r} + \gamma P\mathbf{V}$ is a contraction, $\norm{B(\mathbf{U}) - B(\mathbf{V})}_\infty \leq \gamma\norm{\mathbf{U} - \mathbf{V}}_\infty$, and $\mathbf{V}$ is its fixed point. In Example~\ref{L4-ex:bellman-weather}, starting from $\mathbf{V}_0 = \mathbf{0}$, the iterates are $(1, 0)$, $(1.81, 0.45)$, $(2.51, 1.02)$, \ldots, and the error bound $0.9^k \cdot 8.6$ drops below $0.01$ after $65$ steps. The convergence is slow if $\gamma$ is close to $1$, i.e., if the horizon is long.
+
+\paragraph{Markov decision processes.} In reinforcement learning, an agent chooses an action $a$ from a finite set $A$ in every state $s$. It then receives the reward $r(s, a)$, and the next state is $s'$ with the probability $P(s' \mid s, a)$. A (deterministic) policy $\pi$ chooses the action $\pi(s)$ in the state $s$. For a fixed policy, the states form a Markov reward process with the transition probabilities $P^\pi_{ss'} = P(s' \mid s, \pi(s))$ and the rewards $r^\pi_s = r(s, \pi(s))$, and its value vector $\mathbf{V}^\pi$ solves the Bellman equation $\mathbf{V}^\pi = \mathbf{r}^\pi + \gamma P^\pi\mathbf{V}^\pi$ (policy evaluation). The agent wants a policy with the largest value. The Bellman optimality operator is
+\[(T\mathbf{V})_s = \max_{a \in A}\Big(r(s, a) + \gamma\sum_{s'}P(s' \mid s, a)V_{s'}\Big).\]
+
+\begin{theorem}[Value iteration]\label{L4-thm:value-iteration}
+    \begin{enumerate}
+        \item $\norm{T\mathbf{U} - T\mathbf{V}}_\infty \leq \gamma\norm{\mathbf{U} - \mathbf{V}}_\infty$ for all $\mathbf{U}, \mathbf{V} \in \mathbb{R}^n$. Hence $T$ has exactly one fixed point $\mathbf{V}^*$, the solution of the Bellman optimality equation $\mathbf{V}^* = T\mathbf{V}^*$, and the iterates $\mathbf{V}_{k+1} = T\mathbf{V}_k$ of value iteration satisfy $\norm{\mathbf{V}_k - \mathbf{V}^*}_\infty \leq \gamma^k\norm{\mathbf{V}_0 - \mathbf{V}^*}_\infty$.
+        \item $\mathbf{V}^\pi \leq \mathbf{V}^*$ (entrywise) for every policy $\pi$.
+        \item The greedy policy $\pi^*$, which chooses in every state $s$ an action that attains the maximum in $(T\mathbf{V}^*)_s$, has $\mathbf{V}^{\pi^*} = \mathbf{V}^*$. So it is an optimal policy, and $\mathbf{V}^*$ is the optimal value.
+    \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+    \begin{enumerate}
+        \item For functions $f, g$ on $A$, $|\max_a f(a) - \max_a g(a)| \leq \max_a |f(a) - g(a)|$: if $\max f$ is attained at $a^*$, then $\max f - \max g \leq f(a^*) - g(a^*)$, and symmetrically. Apply this with $f(a)$ and $g(a)$ the brackets in $(T\mathbf{U})_s$ and $(T\mathbf{V})_s$, whose difference is $\gamma\sum_{s'}P(s' \mid s, a)(U_{s'} - V_{s'})$, of absolute value at most $\gamma\norm{\mathbf{U} - \mathbf{V}}_\infty$. Now let $\mathbf{V}_0$ be arbitrary and $\mathbf{V}_{k+1} = T\mathbf{V}_k$. Then $\norm{\mathbf{V}_{k+1} - \mathbf{V}_k}_\infty \leq \gamma^k\norm{\mathbf{V}_1 - \mathbf{V}_0}_\infty$, so for $m > k$, $\norm{\mathbf{V}_m - \mathbf{V}_k}_\infty \leq (\gamma^k + \cdots + \gamma^{m-1})\norm{\mathbf{V}_1 - \mathbf{V}_0}_\infty \leq \frac{\gamma^k}{1 - \gamma}\norm{\mathbf{V}_1 - \mathbf{V}_0}_\infty$. Each entry of $\mathbf{V}_k$ is a Cauchy sequence of real numbers, so $\mathbf{V}_k$ converges to some $\mathbf{V}^*$, and since $T$ is continuous, $T\mathbf{V}^* = \lim T\mathbf{V}_k = \lim\mathbf{V}_{k+1} = \mathbf{V}^*$. If also $T\mathbf{U} = \mathbf{U}$, then $\norm{\mathbf{U} - \mathbf{V}^*}_\infty \leq \gamma\norm{\mathbf{U} - \mathbf{V}^*}_\infty$, so $\mathbf{U} = \mathbf{V}^*$. The error bound follows as in Proposition~\ref{L4-prop:policy-evaluation}. (This is the Banach fixed-point theorem, Theorem~\ref{A-thm:banach}, for the maximum norm.)
+        \item $T$ is monotone: if $\mathbf{U} \leq \mathbf{V}$, then $T\mathbf{U} \leq T\mathbf{V}$, since the probabilities $P(s' \mid s, a)$ are nonnegative. Moreover, $\mathbf{V}^\pi = \mathbf{r}^\pi + \gamma P^\pi\mathbf{V}^\pi \leq T\mathbf{V}^\pi$, since the action $\pi(s)$ is one of the candidates in the maximum. By monotonicity and induction, $\mathbf{V}^\pi \leq T^k\mathbf{V}^\pi$ for all $k$, and $T^k\mathbf{V}^\pi \to \mathbf{V}^*$ by part 1.
+        \item By the choice of $\pi^*$, $\mathbf{r}^{\pi^*} + \gamma P^{\pi^*}\mathbf{V}^* = T\mathbf{V}^* = \mathbf{V}^*$. So $\mathbf{V}^*$ solves the Bellman equation of the Markov reward process of $\pi^*$, and by the uniqueness in Theorem~\ref{L4-thm:bellman}, $\mathbf{V}^{\pi^*} = \mathbf{V}^*$. \qedhere
+    \end{enumerate}
+\end{proof}
+
+The expression in the bracket is the action value $Q^*(s, a) = r(s, a) + \gamma\sum_{s'}P(s' \mid s, a)V^*_{s'}$, the value of taking the action $a$ in the state $s$ and acting optimally afterwards, and $V^*_s = \max_a Q^*(s, a)$. If the transition probabilities are unknown, Q-learning observes single transitions $(s, a, r, s')$ of the agent and updates
+\[Q(s, a) \leftarrow Q(s, a) + \eta\big(r + \gamma\max_{a'}Q(s', a') - Q(s, a)\big):\]
+it replaces the expectation over $s'$ in value iteration by a sample, in the same way as SGD replaces the full gradient by a stochastic gradient (Section~\ref{L4-sec:sgd}). Its convergence, for suitable step sizes $\eta$ and if every pair $(s, a)$ is tried infinitely often, is proved with the same kind of stochastic approximation argument as for SGD. Deep Q-networks approximate $Q$ by a neural network.
+
+\subsection{Stationary time series and autoregressive models}\label{L4-sec:time-series}
+
+A time series is a sequence of random variables $X_0, X_1, X_2, \ldots$ indexed by time: daily sales, temperatures, server loads, or the training loss of a neural network. Unlike i.i.d.\ data, neighboring values are dependent, and the simplest description of this dependence is by covariances.
+
+\begin{definition}[Stationary time series]\label{L4-def:stationary-series}
+    A sequence $X_0, X_1, \ldots$ of random variables with finite variances is (weakly) stationary if the mean $\E[X_t] = \mu$ and the autocovariances $c(h) = \Cov(X_t, X_{t+h})$ do not depend on $t$, for all $t, h \geq 0$. Its autocorrelation function is $\rho(h) = \frac{c(h)}{c(0)}$.
+\end{definition}
+
+So a stationary series has the same mean and variance at all times, and the dependence between two values depends only on their distance in time. (We write $c(h)$ rather than the common $\gamma(h)$, to keep $\gamma$ for discount factors.) Three basic examples, with uncorrelated noise terms $\varepsilon_t$ with mean $0$ and variance $\sigma^2$ (white noise):
+\begin{itemize}
+    \item White noise itself is stationary, with $c(0) = \sigma^2$ and $c(h) = 0$ for $h \geq 1$.
+    \item The moving average $X_t = \varepsilon_t + \theta\varepsilon_{t-1}$, an MA(1) process, is stationary, with $c(0) = (1 + \theta^2)\sigma^2$, $c(1) = \theta\sigma^2$ and $c(h) = 0$ for $h \geq 2$: values more than one step apart are uncorrelated. Its autocorrelation $\rho(1) = \frac{\theta}{1 + \theta^2}$ is at most $\frac{1}{2}$ in absolute value.
+    \item The random walk $S_t = \varepsilon_1 + \cdots + \varepsilon_t$ (with $S_0 = 0$) has $\Var(S_t) = t\sigma^2$, so it is not stationary. Its differences $S_t - S_{t-1} = \varepsilon_t$ are. Trends of this kind are removed by differencing before a stationary model is fitted; this is the ``I'' (integrated) in ARIMA models.
+\end{itemize}
+
+The most important model is the autoregressive process, in which each value is a multiple of the previous one plus fresh noise.
+
+\begin{proposition}[The AR(1) process]\label{L4-prop:ar1}
+    Let $\varepsilon_1, \varepsilon_2, \ldots$ be uncorrelated, with mean $0$ and variance $\sigma^2 > 0$, let $X_0$ have a finite variance and be uncorrelated with all $\varepsilon_t$, and let $X_t = \phi X_{t-1} + \varepsilon_t$ for $t \geq 1$.
+    \begin{enumerate}
+        \item $X_t = \phi^tX_0 + \sum_{k=0}^{t-1}\phi^k\varepsilon_{t-k}$. Hence $\E[X_t] = \phi^t\E[X_0]$, $\Var(X_t) = \phi^{2t}\Var(X_0) + \sigma^2\sum_{k=0}^{t-1}\phi^{2k}$, and $\Cov(X_t, X_{t+h}) = \phi^h\Var(X_t)$.
+        \item Let $|\phi| < 1$. If $\E[X_0] = 0$ and $\Var(X_0) = \frac{\sigma^2}{1 - \phi^2}$, then the series is stationary, with
+        \[c(h) = \frac{\sigma^2\phi^h}{1 - \phi^2} \qquad \text{and} \qquad \rho(h) = \phi^h.\]
+        For every $X_0$, $\E[X_t] \to 0$ and $\Var(X_t) \to \frac{\sigma^2}{1 - \phi^2}$ as $t \to \infty$.
+        \item If $|\phi| \geq 1$, then $\Var(X_t) \geq \Var(X_0) + t\sigma^2 \to \infty$, so the series is not stationary, whatever $X_0$ is.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    \begin{enumerate}
+        \item The formula for $X_t$ follows by induction. The terms $\phi^tX_0, \phi^0\varepsilon_t, \ldots, \phi^{t-1}\varepsilon_1$ are uncorrelated, which gives the variance (Proposition~\ref{L4-prop:variance-sum}). In the same way, $X_{t+h} = \phi^hX_t + \sum_{k=0}^{h-1}\phi^k\varepsilon_{t+h-k}$, and the noise terms $\varepsilon_{t+1}, \ldots, \varepsilon_{t+h}$ are uncorrelated with $X_t$, which is a linear combination of $X_0, \varepsilon_1, \ldots, \varepsilon_t$. So $\Cov(X_t, X_{t+h}) = \phi^h\Var(X_t)$.
+        \item By part 1 and the geometric sum, $\Var(X_t) = \phi^{2t}\Var(X_0) + \sigma^2\frac{1 - \phi^{2t}}{1 - \phi^2}$, which is $\frac{\sigma^2}{1 - \phi^2}$ for all $t$ if $\Var(X_0) = \frac{\sigma^2}{1 - \phi^2}$. Then $c(h) = \phi^h\frac{\sigma^2}{1 - \phi^2}$, and the mean is $\phi^t \cdot 0 = 0$. For a general $X_0$, $\phi^t \to 0$ and $\phi^{2t} \to 0$.
+        \item $\Var(X_t) = \phi^2\Var(X_{t-1}) + \sigma^2 \geq \Var(X_{t-1}) + \sigma^2$; use induction. \qedhere
+    \end{enumerate}
+\end{proof}
+
+So for $|\phi| < 1$, the process forgets its starting point and settles into a stationary regime, whose correlations decay geometrically. If the noise is Gaussian and independent, the AR(1) process is a Markov chain with values in $\mathbb{R}$, its stationary distribution is $\mathcal{N}\big(0, \frac{\sigma^2}{1 - \phi^2}\big)$, and the best prediction of $X_{t+h}$ given the past is $\E[X_{t+h} \mid X_t] = \phi^hX_t$ (by the formula for $X_{t+h}$ in the proof), with the error variance $\sigma^2\frac{1 - \phi^{2h}}{1 - \phi^2}$. Forecasts revert to the mean, and their uncertainty grows to the stationary variance. For example, for $\phi = 0.8$ and $\sigma^2 = 1$, the stationary variance is $\frac{1}{0.36} \approx 2.78$, and $\rho(3) = 0.512$. The AR(1) process is the time discretization of the Ornstein--Uhlenbeck process of Section~\ref{L4-sec:sde}.
+
+To fit the model to data $x_0, \ldots, x_T$, one regresses $x_t$ on $x_{t-1}$: the least squares estimate, which is the maximum likelihood estimate for Gaussian noise given $x_0$, is
+\[\hat\phi = \frac{\sum_{t=1}^T x_tx_{t-1}}{\sum_{t=1}^T x_{t-1}^2},\]
+close to the sample autocorrelation at lag $1$.
+
+\paragraph{AR($p$) processes and the companion matrix.} An AR($p$) process $X_t = \phi_1X_{t-1} + \cdots + \phi_pX_{t-p} + \varepsilon_t$ uses $p$ past values. The vector $\mathbf{Y}_t = (X_t, X_{t-1}, \ldots, X_{t-p+1})^\top$ follows the AR(1)-type recursion
+\[\mathbf{Y}_t = A\mathbf{Y}_{t-1} + \varepsilon_t\mathbf{e}_1, \qquad A = \begin{pmatrix} \phi_1 & \phi_2 & \cdots & \phi_{p-1} & \phi_p \\ 1 & 0 & \cdots & 0 & 0 \\ 0 & 1 & \cdots & 0 & 0 \\ \vdots & & \ddots & & \vdots \\ 0 & 0 & \cdots & 1 & 0 \end{pmatrix},\]
+with the companion matrix $A$. As in part 1 of Proposition~\ref{L4-prop:ar1}, $\mathbf{Y}_t = A^t\mathbf{Y}_0 + \sum_{k=0}^{t-1}A^k\mathbf{e}_1\varepsilon_{t-k}$, so the process forgets its start and becomes stationary if $A^k \to 0$. This happens if and only if all complex eigenvalues of $A$ have absolute value less than $1$; for a diagonalizable $A = QDQ^{-1}$ (with complex entries), this follows from $A^k = QD^kQ^{-1}$ (Lecture~1). The eigenvalues are the roots of $\lambda^p - \phi_1\lambda^{p-1} - \cdots - \phi_p$ (Exercise~\ref{L4-ex4:time-series}), and this condition is what time series software checks when it fits AR, ARMA and ARIMA models. For example, $X_t = 0.5X_{t-1} + 0.3X_{t-2} + \varepsilon_t$ has the eigenvalues $0.85$ and $-0.35$ and is stationary, while for $X_t = 0.5X_{t-1} + 0.6X_{t-2} + \varepsilon_t$, the eigenvalue $1.06$ makes the variance explode. The same condition on the eigenvalues of a matrix that is applied again and again decides whether the gradients of a recurrent neural network vanish or explode (Lecture~3).
+
 \begin{remark}[Markov models in machine learning]
-    An $n$-gram language model is a Markov chain on words (or on tuples of $n - 1$ words), whose transition probabilities are estimated by counting in a large text, which is maximum likelihood estimation (Section~\ref{L4-sec:estimation}). Hidden Markov models, in which only a noisy function of the state is observed, were long the standard model in speech recognition. Reinforcement learning is based on Markov decision processes, in which the transition probabilities depend on the actions of an agent. Diffusion models for image generation learn to reverse a Markov chain that gradually adds Gaussian noise to an image (Section~\ref{L4-sec:langevin}).
+    An $n$-gram language model is a Markov chain on words (or on tuples of $n - 1$ words), whose transition probabilities are estimated by counting in a large text, which is maximum likelihood estimation (Section~\ref{L4-sec:estimation}). Hidden Markov models, in which only a noisy function of the state is observed, were long the standard model in speech recognition. Reinforcement learning is based on Markov decision processes, in which the transition probabilities depend on the actions of an agent (Section~\ref{L4-sec:bellman}). Diffusion models for image generation learn to reverse a Markov chain that gradually adds Gaussian noise to an image (Section~\ref{L4-sec:langevin}).
 \end{remark}
 
 \section{Parameter Estimation}\label{L4-sec:estimation}
@@ -1265,6 +1454,87 @@ An estimate is more useful with an error bar. By the central limit theorem, $\ba
 \[P\Big(|\bar X_N - \mu| \leq 1.96\frac{\sigma}{\sqrt{N}}\Big) \approx 0.95.\]
 Replacing the unknown $\sigma$ by the sample standard deviation $s$ (which is justified for large $N$ by Slutsky's theorem, Theorem~\ref{L4-thm:slutsky}), the interval $\bar x \pm 1.96\frac{s}{\sqrt{N}}$ is an approximate $95\%$ confidence interval for $\mu$. For example, for $N = 100$ data points with $\bar x = 5.2$ and $s = 1.5$, it is $[4.91, 5.49]$. Note that $\mu$ is fixed and the interval is random: if we repeated the experiment many times, about $95\%$ of the intervals would contain $\mu$. For a classifier with accuracy $0.9$ on $1000$ independent test examples, the standard error is $\sqrt{0.9 \cdot 0.1/1000} \approx 0.0095$, so the accuracy is known up to about $\pm 0.019$, and a difference of one percentage point between two models on such a test set may well be due to chance.
 
+\subsection{Nonparametric estimation}\label{L4-sec:nonparametric}
+
+So far, we assumed a parametric family of distributions and estimated its parameters. Nonparametric methods estimate the distribution itself. For i.i.d.\ data $X_1, \ldots, X_N$ with the CDF $F$, the empirical CDF
+\[\hat F_N(t) = \frac{1}{N}\#\{i : X_i \leq t\} = \frac{1}{N}\sum_{i=1}^N \mathbf{1}_{\{X_i \leq t\}}\]
+is the CDF of the empirical distribution, which puts the probability $\frac{1}{N}$ on each data point. For fixed $t$, $N\hat F_N(t)$ is Binomial$(N, F(t))$, so $\hat F_N(t)$ is unbiased with the variance $\frac{F(t)(1 - F(t))}{N}$, and Hoeffding's inequality (Theorem~\ref{L4-thm:hoeffding}) gives $P(|\hat F_N(t) - F(t)| \geq \varepsilon) \leq 2e^{-2N\varepsilon^2}$. In fact, the approximation is good for all $t$ at once.
+
+\begin{theorem}[Uniform convergence of the empirical CDF]\label{L4-thm:glivenko-cantelli}
+    Let $F$ be continuous. For every $\varepsilon \in (0, 1]$,
+    \[P\Big(\sup_{t \in \mathbb{R}} |\hat F_N(t) - F(t)| > \varepsilon\Big) \leq \frac{4}{\varepsilon}e^{-N\varepsilon^2/2}.\]
+\end{theorem}
+
+\begin{proof}
+    Let $m = \lceil 2/\varepsilon \rceil$. Since $F$ is continuous and increases from $0$ to $1$, the intermediate value theorem gives points $t_1 < \cdots < t_{m-1}$ with $F(t_j) = \frac{j}{m}$; let $t_0 = -\infty$ and $t_m = \infty$, with $\hat F_N = F = 0$ at $t_0$ and $= 1$ at $t_m$. For $t_{j-1} \leq t \leq t_j$, both functions are nondecreasing, so
+    \[\hat F_N(t) - F(t) \leq \hat F_N(t_j) - F(t_{j-1}) = \hat F_N(t_j) - F(t_j) + \tfrac{1}{m}, \qquad \hat F_N(t) - F(t) \geq \hat F_N(t_{j-1}) - F(t_{j-1}) - \tfrac{1}{m}.\]
+    Hence $\sup_t |\hat F_N(t) - F(t)| \leq \max_{1 \leq j \leq m-1} |\hat F_N(t_j) - F(t_j)| + \frac{\varepsilon}{2}$, and if the supremum exceeds $\varepsilon$, then $|\hat F_N(t_j) - F(t_j)| > \frac{\varepsilon}{2}$ for some $j$. By the union bound and Hoeffding's inequality, this has probability at most $(m - 1) \cdot 2e^{-2N(\varepsilon/2)^2} \leq \frac{4}{\varepsilon}e^{-N\varepsilon^2/2}$, since $m - 1 < \frac{2}{\varepsilon}$.
+\end{proof}
+
+So $\sup_t |\hat F_N(t) - F(t)| \to 0$ in probability (the Glivenko--Cantelli theorem; since the bounds are summable over $N$, the Borel--Cantelli lemma in Appendix~\ref{B-chapter} even gives almost sure convergence). The bound is crude; the Dvoretzky--Kiefer--Wolfowitz inequality, which we do not prove, improves it to $2e^{-2N\varepsilon^2}$ for every $F$. With it, $\hat F_N(t) \pm \sqrt{\log(40)/(2N)}$ is a $95\%$ confidence band for the whole function $F$; for $N = 1000$, its half-width is $0.043$. The largest distance $\sup_t |\hat F_N(t) - F_0(t)|$ to a hypothesized CDF $F_0$ is the statistic of the Kolmogorov--Smirnov test of $H_0$: $F = F_0$.
+
+\paragraph{Kernel density estimation.} A density cannot be estimated by the empirical distribution, which has no density. A histogram counts the data in bins; a smoother estimate replaces each data point by a small bump. With a kernel $K \geq 0$ with $\int K = 1$ and $K(-u) = K(u)$, such as the standard normal density $\varphi$, and a bandwidth $h > 0$, the kernel density estimate is
+\[\hat f_h(x) = \frac{1}{Nh}\sum_{i=1}^N K\Big(\frac{x - X_i}{h}\Big),\]
+a mixture of $N$ copies of $K$, scaled by $h$ and centered at the data points.
+
+\begin{proposition}[Bias and variance of kernel density estimates]\label{L4-prop:kde}
+    Let the data have a density $f$ with bounded continuous derivatives $f'$, $f''$ and $f'''$, and let $\kappa_2 = \int u^2K(u)\, du$, $\kappa_3 = \int |u|^3K(u)\, du$, $R = \int K(u)^2\, du$ and $R_1 = \int |u|K(u)^2\, du$ be finite. Then for every $x$,
+    \[\Big|\E[\hat f_h(x)] - f(x) - \frac{h^2}{2}\kappa_2f''(x)\Big| \leq \frac{h^3}{6}\kappa_3\sup|f'''|, \qquad \Var\big(\hat f_h(x)\big) \leq \frac{f(x)R + hR_1\sup|f'|}{Nh}.\]
+\end{proposition}
+
+\begin{proof}
+    Each term $Y_i = \frac{1}{h}K\big(\frac{x - X_i}{h}\big)$ has the mean $\int \frac{1}{h}K\big(\frac{x - y}{h}\big)f(y)\, dy = \int K(u)f(x - hu)\, du$, with the substitution $y = x - hu$. By Taylor's theorem (Lecture~3), $f(x - hu) = f(x) - huf'(x) + \frac{h^2u^2}{2}f''(x) - \frac{h^3u^3}{6}f'''(\xi)$ for some $\xi$. Integrating against $K$, with $\int K = 1$ and $\int uK(u)\, du = 0$ by symmetry, gives the bias. Since $\hat f_h(x)$ is the average of the i.i.d.\ $Y_i$, $\Var(\hat f_h(x)) = \frac{1}{N}\Var(Y_1) \leq \frac{1}{N}\E[Y_1^2] = \frac{1}{Nh}\int K(u)^2f(x - hu)\, du$, and $f(x - hu) \leq f(x) + h|u|\sup|f'|$ by the mean value theorem.
+\end{proof}
+
+This is a bias--variance tradeoff, controlled by $h$: a small bandwidth gives a spiky estimate with a large variance, of order $\frac{1}{Nh}$, and a large bandwidth oversmooths, with a bias of order $h^2$. Minimizing the leading terms $\frac{h^4}{4}\kappa_2^2f''(x)^2 + \frac{f(x)R}{Nh}$ of the mean squared error over $h$ gives $h \propto N^{-1/5}$ and a mean squared error of order $N^{-4/5}$, slower than the rate $\frac{1}{N}$ of parametric estimates; in practice, $h$ is chosen by cross-validation or by rules of thumb such as $h = 1.06\,\hat\sigma N^{-1/5}$ for the Gaussian kernel. In $d$ dimensions, the same computation gives the rate $N^{-4/(4+d)}$, which is very slow for large $d$: the curse of dimensionality, and a reason why high-dimensional densities are modeled with parametric or neural network models instead.
+
+\subsection{Survival analysis and censored data}\label{L4-sec:survival}
+
+How long until a customer cancels a subscription, a machine fails, or a patient relapses? Such waiting times are positive random variables $T$, and their analysis has two peculiarities: they are naturally described by the risk of the event at each moment, and they are often only partially observed, because the study ends before the event happens. Let $T \geq 0$ have a continuous density $p$, the CDF $F$, and $F(0) = 0$.
+
+\begin{definition}[Survival function and hazard rate]\label{L4-def:hazard}
+    The survival function of $T$ is $S(t) = P(T > t) = 1 - F(t)$. For $t$ with $S(t) > 0$, the hazard rate is $h(t) = \frac{p(t)}{S(t)}$, and the cumulative hazard is $H(t) = \int_0^t h(u)\, du$.
+\end{definition}
+
+The hazard rate is the rate of events among the survivors: $P(t < T \leq t + \delta \mid T > t) = \frac{F(t + \delta) - F(t)}{S(t)} \approx h(t)\delta$ for small $\delta$. A constant hazard describes events that strike at random; a decreasing hazard, ``infant mortality'' (defective units fail early); and an increasing one, wear-out.
+
+\begin{proposition}\label{L4-prop:hazard}
+    \begin{enumerate}
+        \item $S(t) = e^{-H(t)}$ and $p(t) = h(t)e^{-H(t)}$, so the hazard rate determines the distribution. Moreover, $\E[T] = \int_0^\infty S(t)\, dt$.
+        \item The hazard rate is constant, $h(t) = \lambda$, if and only if $T \sim$ Exponential$(\lambda)$.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    \begin{enumerate}
+        \item $S' = -p$, so $(\log S)' = -\frac{p}{S} = -h$. Since $S(0) = 1$, integration gives $\log S(t) = -H(t)$, and $p = hS$. The formula for $\E[T]$ is the tail integral of Example~\ref{L4-ex:tail-integral}.
+        \item If $h = \lambda$, then $S(t) = e^{-\lambda t}$, the survival function of Exponential$(\lambda)$, and conversely $h(t) = \frac{\lambda e^{-\lambda t}}{e^{-\lambda t}} = \lambda$. \qedhere
+    \end{enumerate}
+\end{proof}
+
+A constant hazard is the memorylessness of the exponential distribution (Section~\ref{L4-sec:random-variables}). The Weibull distribution with the shape $k > 0$ and the scale $s > 0$ has the hazard $h(t) = \frac{k}{s}\big(\frac{t}{s}\big)^{k-1}$, so $H(t) = (\frac{t}{s})^k$ and $S(t) = e^{-(t/s)^k}$; it has a decreasing hazard for $k < 1$, a constant one for $k = 1$ (the exponential distribution), and an increasing one for $k > 1$.
+
+\paragraph{Censoring.} In a study that runs for a limited time, some units have not experienced the event when the study ends, or they leave the study early. For each unit $i$, we then observe $t_i = \min(T_i, C_i)$, where $C_i$ is the censoring time, and the indicator $\delta_i = 1$ if the event was observed ($T_i \leq C_i$) and $\delta_i = 0$ if the observation was censored. For a censored unit, we only know that $T_i > t_i$. Assume that the censoring times are independent of the event times, with a distribution that does not depend on the parameter $\theta$ of the event times (non-informative censoring). Then an observed event contributes the density $p_\theta(t_i)$ to the likelihood, a censored observation contributes the probability $S_\theta(t_i)$, and the factors that come from the censoring times do not depend on $\theta$. So the likelihood is
+\[L(\theta) = \prod_{i=1}^N p_\theta(t_i)^{\delta_i}S_\theta(t_i)^{1 - \delta_i} = \prod_{i=1}^N h_\theta(t_i)^{\delta_i}e^{-H_\theta(t_i)}.\]
+
+\begin{proposition}[Exponential survival times with censoring]\label{L4-prop:censored-mle}
+    For Exponential$(\lambda)$ event times with non-informative censoring, the maximum likelihood estimate is
+    \[\hat\lambda = \frac{D}{\sum_{i=1}^N t_i},\]
+    where $D = \sum_i \delta_i$ is the number of observed events: the number of events divided by the total time at risk.
+\end{proposition}
+
+\begin{proof}
+    With $h = \lambda$ and $H(t) = \lambda t$, $\log L(\lambda) = D\log\lambda - \lambda\sum_i t_i$, whose derivative $\frac{D}{\lambda} - \sum_i t_i$ vanishes at $\hat\lambda$; the second derivative $-\frac{D}{\lambda^2}$ is negative (for $D > 0$).
+\end{proof}
+
+\begin{example}[Censored waiting times]\label{L4-ex:censored}
+    Six customers are observed until they cancel their subscription or until the study ends. The times (in months) are $2, 3^+, 4, 5^+, 7, 8^+$, where $^+$ marks a censored time: these customers had not canceled yet. With $D = 3$ and the total time $29$, $\hat\lambda = \frac{3}{29} \approx 0.103$ per month, and the estimated mean lifetime is $\frac{1}{\hat\lambda} \approx 9.7$ months. Two naive approaches are biased: dropping the censored customers gives $\frac{3}{2 + 4 + 7} \approx 0.23$, and treating the censoring times as cancellations gives $\frac{6}{29} \approx 0.21$. Both ignore that the censored customers stayed at least as long as observed, and both overestimate the risk of canceling by a factor of about $2$.
+\end{example}
+
+\paragraph{The Kaplan--Meier estimator.} Without a parametric model, the survival function is estimated as a product of conditional survival probabilities. Let $\tau_1 < \tau_2 < \cdots$ be the distinct times at which events are observed, let $d_j$ be the number of events at $\tau_j$, and let $n_j$ be the number of units at risk just before $\tau_j$, i.e., with $t_i \geq \tau_j$. Since surviving past $t$ means surviving each event time $\tau_j \leq t$, given survival until then, the Kaplan--Meier estimator is
+\[\hat S(t) = \prod_{j : \tau_j \leq t}\Big(1 - \frac{d_j}{n_j}\Big).\]
+A censored unit counts as at risk until its censoring time, and then leaves the risk set without causing an event. Without censoring, $n_{j+1} = n_j - d_j$, the product telescopes to $\frac{n_{j+1}}{N}$ for $\tau_j \leq t < \tau_{j+1}$, and $\hat S(t) = 1 - \hat F_N(t)$ is one minus the empirical CDF of Section~\ref{L4-sec:nonparametric}. In Example~\ref{L4-ex:censored}, $\hat S$ drops to $\frac{5}{6}$ at $t = 2$, to $\frac{5}{6} \cdot \frac{3}{4} = \frac{5}{8}$ at $t = 4$ (only $4$ customers are at risk then), and to $\frac{5}{8} \cdot \frac{1}{2} = \frac{5}{16}$ at $t = 7$. To compare groups, or to include features $\mathbf{x}$, the Cox proportional hazards model assumes $h(t \mid \mathbf{x}) = h_0(t)e^{\mathbf{w}^\top\mathbf{x}}$, with a baseline hazard $h_0$ that is common to all units.
+
 \section{Hypothesis Testing}\label{L4-sec:testing}
 
 Often we want to decide a yes-or-no question from data: is a coin fair? Does a new model have a lower error rate than the old one? Does a new website design increase sales? A hypothesis test makes such decisions while controlling the probability of a false alarm.
@@ -1313,7 +1583,7 @@ Often we want to decide a yes-or-no question from data: is a coin fair? Does a n
 
 In classification, the two hypotheses are the two classes, a test is a classifier, its level is the false positive rate, and its power is the true positive rate (Section~\ref{L4-sec:classification-metrics}). So a classifier that thresholds the likelihood ratio $\frac{p(\mathbf{x} \mid y = 1)}{p(\mathbf{x} \mid y = 0)}$, or equivalently the posterior probability $P(y = 1 \mid \mathbf{x})$, has at each threshold the largest true positive rate among all classifiers whose false positive rate is not larger. Training a classifier to predict $P(y = 1 \mid \mathbf{x})$ well is therefore the right goal for every tradeoff between the two kinds of errors.
 
-\paragraph{Tests for a mean.} To test $H_0$: $\mu = \mu_0$ for i.i.d.\ data, we use the standardized statistic $Z = \frac{\bar X_N - \mu_0}{s/\sqrt{N}}$, which is approximately $\mathcal{N}(0, 1)$ under $H_0$ by the central limit theorem (the z-test). The two-sided p-value is $2(1 - \Phi(|z|))$. For small samples from a Gaussian distribution, $Z$ has a Student t-distribution with $N - 1$ degrees of freedom, whose quantiles are larger than $1.96$ (for example, $2.78$, $2.26$ and $2.05$ for $N = 5$, $10$ and $30$); this is the t-test. Tests and confidence intervals are two sides of the same coin: the two-sided test at level $0.05$ rejects $\mu = \mu_0$ exactly if $\mu_0$ lies outside the $95\%$ confidence interval $\bar x \pm 1.96\frac{s}{\sqrt{N}}$.
+\paragraph{Tests for a mean.} To test $H_0$: $\mu = \mu_0$ for i.i.d.\ data, we use the standardized statistic $Z = \frac{\bar X_N - \mu_0}{s/\sqrt{N}}$, which is approximately $\mathcal{N}(0, 1)$ under $H_0$ by the central limit theorem (the z-test). The two-sided p-value is $2(1 - \Phi(|z|))$. For small samples from a Gaussian distribution, $Z$ has a Student t-distribution with $N - 1$ degrees of freedom (Theorem~\ref{L4-thm:regression-inference} below, with $X = \mathbf{1}$), whose quantiles are larger than $1.96$ (for example, $2.78$, $2.26$ and $2.05$ for $N = 5$, $10$ and $30$); this is the t-test. Tests and confidence intervals are two sides of the same coin: the two-sided test at level $0.05$ rejects $\mu = \mu_0$ exactly if $\mu_0$ lies outside the $95\%$ confidence interval $\bar x \pm 1.96\frac{s}{\sqrt{N}}$.
 
 \begin{example}[A paired $t$-test]\label{L4-ex:t-test}
     A new model B is compared with a model A on $8$ benchmark data sets, and the differences of the accuracies (B minus A, in percentage points) are
@@ -1334,6 +1604,58 @@ Under $H_0$, for large $N$, it has approximately the $\chi^2$ distribution with 
 \begin{remark}[What a p-value is not]
     A p-value is not the probability that $H_0$ is true. That probability depends on the prior plausibility of $H_0$, as in the medical test of Example~\ref{L4-ex:medical}, and only Bayesian inference can compute it. A small p-value can also come from a tiny effect that is irrelevant in practice, if $N$ is huge (statistical versus practical significance), so effect sizes and confidence intervals should be reported as well. Conversely, a large p-value does not show that there is no effect: the test may just have too little power.
 \end{remark}
+
+\subsection{Inference for linear regression}\label{L4-sec:regression-inference}
+
+A fitted regression model reports a coefficient for every feature. Is the effect of a feature real, or could the coefficient be $0$? Standard errors, confidence intervals and $t$-tests answer this, and they are the numbers in the output tables of statistical software. We consider the model $\mathbf{y} = X\mathbf{w} + \boldsymbol{\varepsilon}$ with a fixed $N \times n$ matrix $X$ with linearly independent columns (usually the first column is $\mathbf{1}$, for the intercept), an unknown $\mathbf{w} \in \mathbb{R}^n$, and noise with
+\[\E[\boldsymbol{\varepsilon}] = \mathbf{0} \qquad \text{and} \qquad \Cov(\boldsymbol{\varepsilon}) = \sigma^2I_N:\]
+the noise terms are uncorrelated and have the same variance (homoscedasticity). Let $\hat{\mathbf{w}} = (X^\top X)^{-1}X^\top\mathbf{y}$ be the least squares estimate (Lecture~2), $\mathbf{e} = \mathbf{y} - X\hat{\mathbf{w}}$ the residuals, and $\mathrm{RSS} = \norm{\mathbf{e}}^2$ the residual sum of squares. The exact distributions of the test statistics are the following.
+
+\begin{definition}[$\chi^2$- and $t$-distributions]\label{L4-def:chi2-t}
+    For independent $Z_1, \ldots, Z_k \sim \mathcal{N}(0, 1)$, the distribution of $Z_1^2 + \cdots + Z_k^2$ is the $\chi^2$-distribution with $k$ degrees of freedom, $\chi^2_k$. If $Z \sim \mathcal{N}(0, 1)$ and $V \sim \chi^2_k$ are independent, the distribution of $\frac{Z}{\sqrt{V/k}}$ is the $t$-distribution with $k$ degrees of freedom, $t_k$.
+\end{definition}
+
+The $\chi^2_k$-distribution has the mean $k$. The $t_k$-distribution is symmetric and has heavier tails than $\mathcal{N}(0, 1)$, because the denominator is random; as $k \to \infty$, $\frac{V}{k} \to 1$ in probability by the law of large numbers, and $t_k$ tends to $\mathcal{N}(0, 1)$ by Slutsky's theorem. Its $97.5\%$ quantiles are $t_{1, 0.975} = 12.71$, $t_{2, 0.975} = 4.30$, $t_{3, 0.975} = 3.18$, $t_{10, 0.975} = 2.23$ and $t_{30, 0.975} = 2.04$.
+
+\begin{theorem}[Sampling distribution of least squares]\label{L4-thm:regression-inference}
+    In the model above:
+    \begin{enumerate}
+        \item $\hat{\mathbf{w}}$ is unbiased, $\E[\hat{\mathbf{w}}] = \mathbf{w}$, with the covariance matrix $\Cov(\hat{\mathbf{w}}) = \sigma^2(X^\top X)^{-1}$.
+        \item $\E[\mathrm{RSS}] = (N - n)\sigma^2$, so $s^2 = \frac{\mathrm{RSS}}{N - n}$ is an unbiased estimate of $\sigma^2$.
+        \item If $\boldsymbol{\varepsilon} \sim \mathcal{N}(\mathbf{0}, \sigma^2I_N)$, then $\hat{\mathbf{w}} \sim \mathcal{N}\big(\mathbf{w}, \sigma^2(X^\top X)^{-1}\big)$, $\frac{\mathrm{RSS}}{\sigma^2} \sim \chi^2_{N-n}$, and $\hat{\mathbf{w}}$ and $\mathrm{RSS}$ are independent. Consequently, with the standard errors $\mathrm{SE}_j = s\sqrt{\big((X^\top X)^{-1}\big)_{jj}}$,
+        \[\frac{\hat w_j - w_j}{\mathrm{SE}_j} \sim t_{N-n} \qquad \text{for } j = 1, \ldots, n.\]
+    \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+    \begin{enumerate}
+        \item $\hat{\mathbf{w}} = (X^\top X)^{-1}X^\top(X\mathbf{w} + \boldsymbol{\varepsilon}) = \mathbf{w} + (X^\top X)^{-1}X^\top\boldsymbol{\varepsilon}$. So $\E[\hat{\mathbf{w}}] = \mathbf{w}$, and by Proposition~\ref{L4-prop:covariance-matrix}, $\Cov(\hat{\mathbf{w}}) = (X^\top X)^{-1}X^\top(\sigma^2I)X(X^\top X)^{-1} = \sigma^2(X^\top X)^{-1}$.
+        \item Let $H = X(X^\top X)^{-1}X^\top$ be the matrix of the orthogonal projection onto $\col(X)$ (Lecture~2). Then $(I - H)X = 0$, so $\mathbf{e} = (I - H)\mathbf{y} = (I - H)\boldsymbol{\varepsilon}$, and since $I - H$ is symmetric with $(I - H)^2 = I - H$, $\mathrm{RSS} = \boldsymbol{\varepsilon}^\top(I - H)\boldsymbol{\varepsilon}$. For every matrix $M$, $\E[\boldsymbol{\varepsilon}^\top M\boldsymbol{\varepsilon}] = \sum_{i,j}M_{ij}\E[\varepsilon_i\varepsilon_j] = \sigma^2\tr(M)$, and $\tr(I - H) = N - \tr\big((X^\top X)^{-1}X^\top X\big) = N - n$, since $\tr(AB) = \tr(BA)$.
+        \item Choose an orthonormal basis $\mathbf{u}_1, \ldots, \mathbf{u}_n$ of $\col(X)$ and an orthonormal basis $\mathbf{u}_{n+1}, \ldots, \mathbf{u}_N$ of $\col(X)^\perp$ (Lecture~2), and let $Q$ be the orthogonal matrix with the columns $\mathbf{u}_1, \ldots, \mathbf{u}_N$. By Corollary~\ref{L4-cor:gaussian-linear}, $Q^\top\boldsymbol{\varepsilon} \sim \mathcal{N}(\mathbf{0}, \sigma^2Q^\top Q) = \mathcal{N}(\mathbf{0}, \sigma^2I)$, so the numbers $Z_i = \frac{1}{\sigma}\mathbf{u}_i^\top\boldsymbol{\varepsilon}$ are independent and $\mathcal{N}(0, 1)$ (Theorem~\ref{L4-thm:gaussian-blocks}). Now $(I - H)\boldsymbol{\varepsilon} = \sum_{i > n}(\mathbf{u}_i^\top\boldsymbol{\varepsilon})\mathbf{u}_i$, so $\mathrm{RSS} = \sigma^2\sum_{i > n}Z_i^2$, and $\frac{\mathrm{RSS}}{\sigma^2} \sim \chi^2_{N-n}$. On the other hand, $X^\top = X^\top H$ (since $HX = X$), so $\hat{\mathbf{w}} - \mathbf{w} = (X^\top X)^{-1}X^\top H\boldsymbol{\varepsilon}$, and $H\boldsymbol{\varepsilon} = \sigma\sum_{i \leq n}Z_i\mathbf{u}_i$ only depends on $Z_1, \ldots, Z_n$. Functions of the independent groups $Z_1, \ldots, Z_n$ and $Z_{n+1}, \ldots, Z_N$ are independent, so $\hat{\mathbf{w}}$ and $\mathrm{RSS}$ are independent. The matrix $(X^\top X)^{-1}X^\top$ has rank $n$, so $\hat{\mathbf{w}}$ is Gaussian by Corollary~\ref{L4-cor:gaussian-linear}, with the mean and covariance matrix of part 1. Finally, with $c_j = ((X^\top X)^{-1})_{jj}$, the number $\frac{\hat w_j - w_j}{\sigma\sqrt{c_j}}$ is $\mathcal{N}(0, 1)$, it is independent of $V = \frac{\mathrm{RSS}}{\sigma^2} \sim \chi^2_{N-n}$, and dividing it by $\sqrt{V/(N - n)} = \frac{s}{\sigma}$ gives $\frac{\hat w_j - w_j}{\mathrm{SE}_j}$. \qedhere
+    \end{enumerate}
+\end{proof}
+
+So $\hat w_j \pm t_{N-n, 0.975}\,\mathrm{SE}_j$ is an exact $95\%$ confidence interval for $w_j$ under Gaussian noise (and an approximate one in general, for large $N$, by the central limit theorem), and $H_0$: $w_j = 0$ (``the feature has no effect'') is tested with the $t$-statistic $\frac{\hat w_j}{\mathrm{SE}_j}$. The one-sample $t$-test of a mean is the special case $X = \mathbf{1}$, with $\hat w = \bar x$ and $\mathrm{SE} = \frac{s}{\sqrt{N}}$. Two degrees of freedom are lost in a regression with an intercept and a slope, one for each estimated coefficient, as in the factor $\frac{1}{N - 1}$ of the sample variance.
+
+\begin{example}[Standard errors of a regression line]\label{L4-ex:regression-t}
+    For the five points $x = -2, -1, 0, 1, 2$ with $y = 0.8, 2.3, 2.9, 4.4, 5.6$, the design matrix has the columns $\mathbf{1}$ and $\mathbf{x}$, and $X^\top X = \diag(5, 10)$, since $\sum_i x_i = 0$. So $\hat w_0 = \bar y = 3.2$, $\hat w_1 = \frac{\sum_i x_iy_i}{10} = 1.17$, the residuals are $-0.06, 0.27, -0.30, 0.03, 0.06$, $\mathrm{RSS} = 0.171$, and $s^2 = \frac{0.171}{5 - 2} = 0.057$. The standard error of the slope is $\sqrt{0.057/10} \approx 0.0755$, its $t$-statistic is $15.5$, with a two-sided p-value of $0.0006$ ($3$ degrees of freedom), and the $95\%$ confidence interval is $1.17 \pm 3.18 \cdot 0.0755 = [0.93, 1.41]$.
+\end{example}
+
+Least squares is not only unbiased, it is also the most precise among the unbiased estimators that are linear in $\mathbf{y}$.
+
+\begin{proposition}[Gauss--Markov]\label{L4-prop:gauss-markov}
+    Let $\tilde{\mathbf{w}} = C\mathbf{y}$, with an $n \times N$ matrix $C$, be unbiased for every $\mathbf{w}$. Then $\Cov(\tilde{\mathbf{w}}) - \Cov(\hat{\mathbf{w}})$ is positive semidefinite; in particular, $\Var(\tilde w_j) \geq \Var(\hat w_j)$ for every $j$.
+\end{proposition}
+
+\begin{proof}
+    $\E[C\mathbf{y}] = CX\mathbf{w} = \mathbf{w}$ for all $\mathbf{w}$ means $CX = I$. Let $D = C - (X^\top X)^{-1}X^\top$, so that $DX = 0$. By Proposition~\ref{L4-prop:covariance-matrix}, $\Cov(\tilde{\mathbf{w}}) = \sigma^2CC^\top = \sigma^2\big((X^\top X)^{-1} + DD^\top\big)$, since the cross terms $(X^\top X)^{-1}X^\top D^\top = (X^\top X)^{-1}(DX)^\top$ vanish. And $DD^\top$ is positive semidefinite.
+\end{proof}
+
+Biased estimators such as ridge regression can still have a smaller mean squared error (Section~\ref{L4-sec:estimation}): Gauss--Markov only compares unbiased ones.
+
+\paragraph{Heteroscedasticity.} Often the noise is larger for some data points than for others: prices of expensive houses vary more than those of cheap ones, and measurements of large quantities are less precise. If $\Cov(\boldsymbol{\varepsilon}) = \Sigma = \diag(\sigma_1^2, \ldots, \sigma_N^2)$ with different variances (heteroscedasticity), the estimate $\hat{\mathbf{w}}$ is still unbiased, but by Proposition~\ref{L4-prop:covariance-matrix}, its covariance matrix is the ``sandwich''
+\[\Cov(\hat{\mathbf{w}}) = (X^\top X)^{-1}X^\top\Sigma X(X^\top X)^{-1},\]
+and the formula $s^2(X^\top X)^{-1}$ is wrong, together with the standard errors, confidence intervals and $t$-tests based on it. For example, in the model $y_i = wx_i + \varepsilon_i$ without intercept, with the noise standard deviations $\sigma_i = \sigma|x_i|$ that grow with $|x_i|$, the true variance is $\Var(\hat w) = \frac{\sigma^2\sum_i x_i^4}{(\sum_i x_i^2)^2}$. The homoscedastic formula, with the average noise variance $\bar\sigma^2 = \frac{\sigma^2}{N}\sum_i x_i^2$, gives $\frac{\bar\sigma^2}{\sum_i x_i^2} = \frac{\sigma^2}{N}$. Their ratio is $\frac{N\sum_i x_i^4}{(\sum_i x_i^2)^2} \geq 1$, by the Cauchy--Schwarz inequality for the vectors $(x_i^2)_i$ and $\mathbf{1}$, with equality only if all $|x_i|$ are equal. For $x = 1, 2, \ldots, 10$, the ratio is $1.71$: the usual standard error is too small by a factor of $1.31$, and the test finds effects too often. Heteroscedasticity is detected by plotting the residuals against the fitted values or against a feature, which shows a funnel shape. The remedies are robust (White) standard errors, which replace $\Sigma$ in the sandwich by the estimate $\diag(e_1^2, \ldots, e_N^2)$, and, if the variances are known up to a factor, weighted least squares, which minimizes $\sum_i \frac{(y_i - \mathbf{w}^\top\mathbf{x}_i)^2}{\sigma_i^2}$ and is the maximum likelihood estimate for Gaussian noise with these variances.
 
 \subsection{Multiple testing}
 
@@ -1439,6 +1761,18 @@ The price for choosing among many models is the factor $\log|\mathcal{H}|$, whic
 \subsection{A/B testing and experiment design}
 
 To find out whether a change causes an improvement, for example a new recommendation model, the most reliable method is a randomized controlled experiment, called an A/B test in industry: each user is randomly assigned to version A (the control) or version B (the treatment), and the outcomes are compared. Randomization makes the two groups comparable in all respects, observed or not, on average. So a significant difference can be attributed to the treatment. Observational comparisons, such as ``users who chose the new feature buy more'', can be confounded by other differences between the groups.
+
+\paragraph{Confounding and Simpson's paradox.} A classic medical study compared two treatments for kidney stones:
+\begin{center}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{l|ccc}
+        & small stones & large stones & all \\
+        \hline
+        treatment A & $81/87 = 93\%$ & $192/263 = 73\%$ & $273/350 = 78\%$ \\
+        treatment B & $234/270 = 87\%$ & $55/80 = 69\%$ & $289/350 = 83\%$
+    \end{tabular}
+\end{center}
+Treatment A is more successful for small stones and for large stones, but less successful overall. The reason is that A was mostly given for large stones ($263$ of $350$ patients), which are harder to treat, and B mostly for small ones. By the law of total probability, $P(\text{success} \mid A) = \sum_s P(\text{success} \mid A, s)\,P(s \mid A)$ averages over the stone sizes $s$ with weights $P(s \mid A)$ that differ between the treatments; the stone size is a confounder. Weighting both treatments with the same distribution of stone sizes, that of all $700$ patients ($51\%$ small), gives $0.51 \cdot 0.93 + 0.49 \cdot 0.73 = 0.83$ for A and $0.51 \cdot 0.87 + 0.49 \cdot 0.69 = 0.78$ for B, the right comparison if the size is the only confounder. Randomization makes $P(s \mid A) = P(s \mid B)$ on average for every confounder $s$, including the ones we do not know about.
 
 \paragraph{Analyzing an A/B test.} Let $\hat p_A$ and $\hat p_B$ be the conversion rates (for example, the fractions of users who buy something) of $n_A$ and $n_B$ users. Under $H_0$: $p_A = p_B$, the pooled rate $\hat p$ of all users estimates the common rate, and by the central limit theorem,
 \[Z = \frac{\hat p_B - \hat p_A}{\sqrt{\hat p(1 - \hat p)\big(\frac{1}{n_A} + \frac{1}{n_B}\big)}}\]
@@ -1760,6 +2094,38 @@ Lloyd's algorithm alternates two steps: assign each point to its nearest center,
 
 $k$-means is EM for a Gaussian mixture with equal weights and covariance matrices $\sigma^2I$, in the limit $\sigma \to 0$: the responsibilities are proportional to $e^{-\norm{\mathbf{x}_i - \boldsymbol{\mu}_k}^2/(2\sigma^2)}$, and as $\sigma \to 0$, the ratio of the responsibilities of two components $k$ and $j$ is $e^{(\norm{\mathbf{x}_i - \boldsymbol{\mu}_j}^2 - \norm{\mathbf{x}_i - \boldsymbol{\mu}_k}^2)/(2\sigma^2)}$, which tends to $\infty$ if $\boldsymbol{\mu}_k$ is closer to $\mathbf{x}_i$. So the responsibility of the nearest center tends to $1$, and the M-step becomes the update of the centers. Like EM, $k$-means only finds a local minimum and depends on the initial centers; the method $k$-means++ chooses them at random, far apart from each other. Since it measures distances with the Euclidean norm, $k$-means finds round clusters of similar size; for other shapes, Gaussian mixtures with general covariance matrices, or spectral clustering (Lecture~2), work better.
 
+\subsection{Probabilistic PCA}\label{L4-sec:ppca}
+
+Principal component analysis (Lecture~2) can also be derived from a latent variable model, with a continuous latent variable: each data point is a linear function of $k$ hidden factors plus noise.
+
+\begin{definition}[Probabilistic PCA]\label{L4-def:ppca}
+    Let $k < d$. In probabilistic PCA, the latent vector is $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I_k)$, and the observation is $\mathbf{x} = W\mathbf{z} + \boldsymbol{\mu} + \boldsymbol{\varepsilon}$ with $\boldsymbol{\varepsilon} \sim \mathcal{N}(\mathbf{0}, \sigma^2I_d)$ independent of $\mathbf{z}$. The parameters are $W \in \mathbb{R}^{d \times k}$, $\boldsymbol{\mu} \in \mathbb{R}^d$ and $\sigma^2 > 0$.
+\end{definition}
+
+The vector $(\mathbf{z}, \boldsymbol{\varepsilon})$ is $\mathcal{N}(\mathbf{0}, \diag(I_k, \sigma^2I_d))$, and $(\mathbf{z}, \mathbf{x})$ is an affine function of it, so it is Gaussian (Theorem~\ref{L4-thm:gaussian-affine}), with
+\[\mathbf{x} \sim \mathcal{N}(\boldsymbol{\mu}, C), \qquad C = WW^\top + \sigma^2I_d, \qquad \Cov(\mathbf{z}, \mathbf{x}) = \E[\mathbf{z}(W\mathbf{z} + \boldsymbol{\varepsilon})^\top] = W^\top.\]
+So the model describes data whose covariance matrix is a rank-$k$ matrix plus isotropic noise. By Theorem~\ref{L4-thm:gaussian-conditional}, the posterior of $\mathbf{z}$ is Gaussian with the mean $W^\top C^{-1}(\mathbf{x} - \boldsymbol{\mu})$ and the covariance $I_k - W^\top C^{-1}W$. With $M = W^\top W + \sigma^2I_k$, the identity $W^\top(WW^\top + \sigma^2I_d) = MW^\top$ gives $W^\top C^{-1} = M^{-1}W^\top$, so
+\[\E[\mathbf{z} \mid \mathbf{x}] = M^{-1}W^\top(\mathbf{x} - \boldsymbol{\mu}), \qquad \Cov(\mathbf{z} \mid \mathbf{x}) = I_k - M^{-1}W^\top W = \sigma^2M^{-1},\]
+which only needs the inverse of a $k \times k$ matrix. As $\sigma^2 \to 0$, the posterior mean tends to $(W^\top W)^{-1}W^\top(\mathbf{x} - \boldsymbol{\mu})$, the coordinates of the orthogonal projection of $\mathbf{x} - \boldsymbol{\mu}$ onto the column space of $W$ (Lecture~2).
+
+\begin{theorem}[Maximum likelihood for probabilistic PCA]\label{L4-thm:ppca}
+    Let $\mathbf{x}_1, \ldots, \mathbf{x}_N \in \mathbb{R}^d$ have the mean $\bar{\mathbf{x}}$ and the sample covariance matrix $S = \frac{1}{N}\sum_i (\mathbf{x}_i - \bar{\mathbf{x}})(\mathbf{x}_i - \bar{\mathbf{x}})^\top$, with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_d$ and orthonormal eigenvectors $\mathbf{u}_1, \ldots, \mathbf{u}_d$, and assume $\lambda_{k+1} > 0$. Then the likelihood is maximized by
+    \[\hat{\boldsymbol{\mu}} = \bar{\mathbf{x}}, \qquad \hat\sigma^2 = \frac{1}{d - k}\sum_{j=k+1}^d \lambda_j, \qquad \hat W = U_k(\Lambda_k - \hat\sigma^2I_k)^{1/2},\]
+    where $U_k$ has the columns $\mathbf{u}_1, \ldots, \mathbf{u}_k$ and $\Lambda_k = \diag(\lambda_1, \ldots, \lambda_k)$, and also by $\hat WR$ for every orthogonal $k \times k$ matrix $R$.
+\end{theorem}
+
+\begin{proof}
+    As in the proof of Theorem~\ref{L4-thm:mle-mvn}, $\boldsymbol{\mu} = \bar{\mathbf{x}}$ is optimal for every $C$, and then $\ell = \frac{N}{2}\big(-\log\det C - \tr(C^{-1}S)\big)$ plus a constant. By the spectral theorem, $WW^\top = \sum_{j=1}^k s_j\mathbf{v}_j\mathbf{v}_j^\top$ with $s_1 \geq \cdots \geq s_k \geq 0$ and orthonormal vectors $\mathbf{v}_1, \ldots, \mathbf{v}_d$ (its rank is at most $k$). So $C$ has the eigenvalues $c_j = \sigma^2 + s_j$ for $j \leq k$ and $\sigma^2$ for $j > k$, $\log\det C = \sum_{j \leq k}\log c_j + (d - k)\log\sigma^2$, and
+    \[C^{-1} = \frac{1}{\sigma^2}I_d - \sum_{j=1}^k a_j\mathbf{v}_j\mathbf{v}_j^\top, \qquad a_j = \frac{1}{\sigma^2} - \frac{1}{c_j}, \qquad a_1 \geq \cdots \geq a_k \geq 0.\]
+    With $q_j = \mathbf{v}_j^\top S\mathbf{v}_j$ and $a_{k+1} = 0$, we have $\sum_{j \leq k} a_jq_j = \sum_{j \leq k}(a_j - a_{j+1})(q_1 + \cdots + q_j) \leq \sum_{j \leq k}(a_j - a_{j+1})(\lambda_1 + \cdots + \lambda_j) = \sum_{j \leq k} a_j\lambda_j$, by Ky Fan's inequality (Lecture~2) and since $a_j - a_{j+1} \geq 0$. Hence
+    \[\tr(C^{-1}S) = \frac{\tr S}{\sigma^2} - \sum_{j \leq k} a_jq_j \geq \sum_{j \leq k}\frac{\lambda_j}{c_j} + \sum_{j > k}\frac{\lambda_j}{\sigma^2},\]
+    and with $\bar\sigma^2 = \frac{1}{d - k}\sum_{j > k}\lambda_j$,
+    \[-\log\det C - \tr(C^{-1}S) \leq -\sum_{j \leq k}\Big(\log c_j + \frac{\lambda_j}{c_j}\Big) - (d - k)\Big(\log\sigma^2 + \frac{\bar\sigma^2}{\sigma^2}\Big).\]
+    For $\lambda > 0$, the function $c \mapsto \log c + \frac{\lambda}{c}$ on $(0, \infty)$ has the derivative $\frac{c - \lambda}{c^2}$, so its minimum is $\log\lambda + 1$, at $c = \lambda$. So the right side is at most $-\sum_{j \leq k}(\log\lambda_j + 1) - (d - k)(\log\bar\sigma^2 + 1)$, for all parameters. For $\sigma^2 = \bar\sigma^2$ and $W = \hat W$ (note $\lambda_j \geq \lambda_k \geq \bar\sigma^2$ for $j \leq k$), we get $WW^\top = \sum_{j \leq k}(\lambda_j - \bar\sigma^2)\mathbf{u}_j\mathbf{u}_j^\top$, so $\mathbf{v}_j = \mathbf{u}_j$ and $c_j = \lambda_j$, and all inequalities are equalities. Finally, $(\hat WR)(\hat WR)^\top = \hat W\hat W^\top$.
+\end{proof}
+
+So the maximum likelihood estimate spans the principal subspace $\Span\{\mathbf{u}_1, \ldots, \mathbf{u}_k\}$ of PCA, reproduces the variances $\lambda_1, \ldots, \lambda_k$ in these directions exactly, and replaces the variances in the remaining $d - k$ directions by their average $\hat\sigma^2$, the noise level. For example, for $S = \diag(4, 2, 1)$ and $k = 1$, $\hat\sigma^2 = 1.5$ and $\hat W = (\sqrt{2.5}, 0, 0)^\top$, so the fitted covariance matrix is $\hat C = \diag(4, 1.5, 1.5)$. Unlike PCA, probabilistic PCA has a likelihood, which can be compared across different $k$ or used in mixtures of such models, and it can be fitted with EM when some entries of the data are missing. Its decoder $p(\mathbf{x} \mid \mathbf{z}) = \mathcal{N}(W\mathbf{z} + \boldsymbol{\mu}, \sigma^2I)$ is linear; a variational autoencoder replaces it by a neural network.
+
 \subsection{Variational inference and variational autoencoders}
 
 In more complex models, such as deep generative models, the posterior $p(z \mid \mathbf{x}, \theta)$ cannot be computed, and the E-step is impossible. Variational inference maximizes the ELBO over a family of tractable distributions $q$ instead, for example Gaussians $q(z) = \mathcal{N}(\boldsymbol{\mu}, \diag(\boldsymbol{\sigma}^2))$; by Theorem~\ref{L4-thm:elbo}, this finds the member of the family that is closest to the posterior in the sense of $\KL(q \,\|\, p(\cdot \mid \mathbf{x}, \theta))$. Writing $p(\mathbf{x}, z \mid \theta) = p(\mathbf{x} \mid z, \theta)p(z)$ gives the form
@@ -1867,6 +2233,9 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \item The expectation is linear; $\Var(X) = \E[X^2] - \E[X]^2$; Markov's, Chebyshev's, Chernoff's and Jensen's inequalities relate them. For $X \geq 0$, $\E[X] = \sum_{k \geq 0} P(X > k)$ for integer values and $\E[X] = \int_0^\infty P(X > t)\, dt$ for densities. For densities, $p_Y(y) = \frac{p_X(x)}{|g'(x)|}$ under $y = g(x)$, and $F^{-1}(U)$, with the quantile function $F^{-1}(u) = \min\{x : F(x) \geq u\}$, samples from the CDF $F$.
     \item The moment generating function $M_X(t) = \E[e^{tX}]$ has the derivatives $M_X^{(k)}(0) = \E[X^k]$, and $M_{X+Y} = M_XM_Y$ for independent $X$ and $Y$; for $\mathcal{N}(\mu, \sigma^2)$, it is $e^{\mu t + \sigma^2t^2/2}$. Optimizing the Chernoff bound $e^{-ta}M_X(t)$ over $t$ gives exponential tail bounds.
     \item Covariance is an inner product on centered random variables, and correlation is the cosine of their angle, so $|\Corr| \leq 1$. Uncorrelated does not imply independent. $\E[Y \mid X]$ is the best mean-squared-error predictor of $Y$, the orthogonal projection of $Y$ onto functions of $X$, and $\Var(Y) = \E[\Var(Y \mid X)] + \Var(\E[Y \mid X])$ (law of total variance).
+    \item A unit $z = \sum_{j=1}^n W_jx_j$ with independent weights of mean $0$ and variance $v$ has $\Var(z) = nv\E[x_j^2]$, and a ReLU halves the second moment of a symmetric $z$. So signals keep their size through deep ReLU networks with $v = \frac{2}{n_{\text{in}}}$ (He initialization), and vanish or explode geometrically otherwise; Xavier initialization $v = \frac{2}{n_{\text{in}} + n_{\text{out}}}$ balances the forward and the backward pass.
+    \item $X \indep Y \mid Z$ means $p(x, y \mid z) = p(x \mid z)p(y \mid z)$; it neither implies nor follows from independence (common causes, explaining away). Directed graphical models factor $p(\mathbf{x}) = \prod_i p(x_i \mid x_{\mathrm{pa}(i)})$; in chains and forks, the middle variable makes the ends conditionally independent, in a collider, it makes independent causes dependent. Naive Bayes assumes conditionally independent features, $p(y \mid \mathbf{x}) \propto p(y)\prod_j p(x_j \mid y)$, and has linear log-odds like logistic regression.
+    \item In a Poisson process with rate $\lambda$, the waiting times are i.i.d.\ Exponential$(\lambda)$, the $n$-th arrival time has the density $\frac{\lambda^nt^{n-1}}{(n - 1)!}e^{-\lambda t}$, and the number of arrivals in the time $t$ is Poisson$(\lambda t)$.
     \item The covariance matrix $\Sigma = \E[(\mathbf{X} - \boldsymbol{\mu})(\mathbf{X} - \boldsymbol{\mu})^\top]$ is symmetric positive semidefinite, $\Cov(A\mathbf{X} + \mathbf{b}) = A\Sigma A^\top$, and $\Var(\mathbf{u}^\top\mathbf{X}) = \mathbf{u}^\top\Sigma\mathbf{u}$ is maximal for the top eigenvector (PCA). Whitening $\Sigma^{-1/2}(\mathbf{X} - \boldsymbol{\mu})$ gives identity covariance.
     \item $\mathcal{N}(\boldsymbol{\mu}, \Sigma)$ is the distribution of $\boldsymbol{\mu} + A\mathbf{Z}$ with $AA^\top = \Sigma$ and $\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, I)$; its level sets are ellipsoids along the eigenvectors of $\Sigma$. Affine maps, marginals and conditionals of Gaussians are Gaussian, with $\mathbf{X}_a \mid \mathbf{x}_b \sim \mathcal{N}\big(\boldsymbol{\mu}_a + \Sigma_{ab}\Sigma_{bb}^{-1}(\mathbf{x}_b - \boldsymbol{\mu}_b), \Sigma_{aa} - \Sigma_{ab}\Sigma_{bb}^{-1}\Sigma_{ba}\big)$; for jointly Gaussian vectors, uncorrelated means independent.
     \item The sample mean of $N$ i.i.d.\ variables has standard error $\frac{\sigma}{\sqrt{N}}$; it converges to $\mu$ in probability (law of large numbers), its fluctuations are approximately Gaussian (central limit theorem), and for bounded variables Hoeffding's inequality bounds large deviations exponentially. Slutsky's theorem allows us to replace $\sigma$ by $s$ in confidence intervals, and the delta method gives the approximate standard error $|g'(\theta)|\,\mathrm{SE}$ of a smooth function $g(\hat\theta)$ of an estimator.
@@ -1874,16 +2243,21 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \item SGD with unbiased stochastic gradients converges for strongly convex functions with step sizes $\eta_k = \frac{1}{\mu(k + 1)}$, at the rate $\E\norm{\mathbf{x}_k - \mathbf{x}^*}^2 \leq \frac{G^2}{\mu^2k}$; with a constant step size, it converges to a noise ball whose size is proportional to the step size.
     \item A Markov chain with transition matrix $P$ evolves by $\boldsymbol{\pi}_{t+1} = \boldsymbol{\pi}_t P$. Stationary distributions are left eigenvectors of $P$ with eigenvalue $1$; an irreducible, aperiodic chain converges to its unique stationary distribution, at a speed governed by the second largest eigenvalue in absolute value. Detailed balance $\pi_i P_{ij} = \pi_j P_{ji}$ implies stationarity; the Metropolis algorithm uses it to sample from distributions that are only known up to a constant (MCMC).
     \item Gibbs sampling updates one coordinate at a time from its conditional distribution; each update satisfies detailed balance, so the target distribution is stationary. It is slow when the coordinates are strongly correlated.
+    \item The value $\mathbf{V}$ of a Markov reward process, the expected discounted sum of rewards, solves the Bellman equation $\mathbf{V} = \mathbf{r} + \gamma P\mathbf{V}$, so $\mathbf{V} = (I - \gamma P)^{-1}\mathbf{r} = \sum_k \gamma^kP^k\mathbf{r}$. Since $\norm{P\mathbf{x}}_\infty \leq \norm{\mathbf{x}}_\infty$, the Bellman maps are $\gamma$-contractions in the maximum norm: policy evaluation and value iteration converge like $\gamma^k$, the Bellman optimality equation has exactly one solution $\mathbf{V}^*$, and the greedy policy with respect to $\mathbf{V}^*$ is optimal. Q-learning is a stochastic version of value iteration.
+    \item A time series is (weakly) stationary if its mean and its autocovariances $c(h) = \Cov(X_t, X_{t+h})$ do not depend on $t$. The AR(1) process $X_t = \phi X_{t-1} + \varepsilon_t$ is stationary for $|\phi| < 1$, with the variance $\frac{\sigma^2}{1 - \phi^2}$ and the autocorrelations $\phi^h$; for $|\phi| \geq 1$, its variance grows without bound, like that of a random walk, which differencing makes stationary. An AR($p$) process is stationary if the eigenvalues of its companion matrix lie inside the unit circle.
     \item Estimators have a bias and a variance, and $\mathrm{MSE} = \text{bias}^2 + \text{variance}$, so some bias (shrinkage) can pay off; if both tend to $0$, the estimator is consistent. The sample variance needs the factor $\frac{1}{N - 1}$ to be unbiased. No unbiased estimator has a variance below the Cram\'er--Rao bound $\frac{1}{N\,I(\theta)}$, where the Fisher information $I(\theta)$ is the variance of the score $\frac{\partial}{\partial\theta}\log p(x \mid \theta)$; the MLE attains it asymptotically, and its standard error is estimated from the curvature of the log-likelihood. A sufficient statistic carries all the information about $\theta$, and conditioning an estimator on it never increases the MSE (Rao--Blackwell).
     \item Maximum likelihood maximizes $\sum_i \log p(x_i \mid \theta)$. Least squares is maximum likelihood with Gaussian noise, and the cross-entropy loss is maximum likelihood for categorical labels; the MLE of a Gaussian is the sample mean and the (biased) sample covariance. The method of moments matches sample moments instead; it is simpler but usually less efficient. Confidence intervals $\bar x \pm 1.96\frac{s}{\sqrt{N}}$ quantify uncertainty.
     \item Exponential families $h(x)e^{\boldsymbol{\eta}^\top T(x) - A(\boldsymbol{\eta})}$ include the Bernoulli, Poisson, Gaussian and categorical distributions. The log-partition function $A$ is convex, with $\nabla A = \E[T]$, so the log-likelihood is concave and the MLE matches $\E[T]$ with the average of the $T(x_i)$. Generalized linear models have the gradient ``prediction minus target'' times the input.
+    \item The empirical CDF converges to $F$ uniformly in $t$, with exponentially small failure probabilities, which gives confidence bands and the Kolmogorov--Smirnov test. Kernel density estimates $\frac{1}{Nh}\sum_i K(\frac{x - X_i}{h})$ have a bias of order $h^2$ and a variance of order $\frac{1}{Nh}$; the best bandwidth is of order $N^{-1/5}$, and the rate $N^{-4/(4+d)}$ in $d$ dimensions shows the curse of dimensionality.
+    \item A waiting time $T$ is described by its survival function $S(t) = P(T > t) = e^{-H(t)}$ and its hazard rate $h = \frac{p}{S}$, the rate of events among the survivors; a constant hazard means an exponential distribution. Censored observations, of which we only know $T > t_i$, contribute $S(t_i)$ to the likelihood; for exponential times, $\hat\lambda$ is the number of events divided by the total time at risk. Ignoring censoring biases the estimates. The Kaplan--Meier estimator $\prod_{\tau_j \leq t}(1 - \frac{d_j}{n_j})$ generalizes the empirical survival function to censored data.
     \item A test rejects $H_0$ if the p-value, the probability under $H_0$ of data at least as extreme as observed, is at most $\alpha$; under $H_0$, p-values are uniform, so the false positive rate is $\alpha$, and the power is the probability of detecting a real effect. A p-value is not the probability that $H_0$ is true. Paired $t$-tests compare two models on the same data sets, and Pearson's $\chi^2$ test compares observed counts with expected counts. Many tests need corrections: Bonferroni ($\frac{\alpha}{m}$) controls the family-wise error rate, Benjamini--Hochberg the false discovery rate. The bootstrap (resampling the data with replacement) estimates standard errors of any statistic, and permutation tests (relabeling the groups) give exact p-values without distributional assumptions.
     \item Neyman--Pearson: for two simple hypotheses, the likelihood ratio test is the most powerful test at its level; for a Gaussian mean, it is the one-sided z-test.
-    \item Cross-validation estimates the generalization error, but its naive standard error is too small, and the best of many cross-validated models is optimistically biased; compare models with paired differences and evaluate the final choice on untouched data. A/B tests randomize to measure causal effects; plan the sample size $n \approx (z_{1-\alpha/2} + z_{1-\beta})^2\,2\bar p(1 - \bar p)/\delta^2$ per group in advance, and do not stop at the first significant peek.
+    \item In linear regression with uncorrelated noise of constant variance $\sigma^2$, least squares is unbiased with $\Cov(\hat{\mathbf{w}}) = \sigma^2(X^\top X)^{-1}$, and it is the best linear unbiased estimator (Gauss--Markov); $s^2 = \frac{\mathrm{RSS}}{N - n}$ estimates $\sigma^2$ without bias. For Gaussian noise, $\frac{\hat w_j - w_j}{\mathrm{SE}_j}$ has the $t_{N-n}$-distribution, which gives exact confidence intervals and $t$-tests for the coefficients. With heteroscedastic noise, $\hat{\mathbf{w}}$ is still unbiased, but its covariance is the sandwich $(X^\top X)^{-1}X^\top\Sigma X(X^\top X)^{-1}$, and the usual standard errors are wrong; robust standard errors or weighted least squares fix this.
+    \item Cross-validation estimates the generalization error, but its naive standard error is too small, and the best of many cross-validated models is optimistically biased; compare models with paired differences and evaluate the final choice on untouched data. A/B tests randomize to measure causal effects, since a confounder can reverse a comparison in every group (Simpson's paradox); plan the sample size $n \approx (z_{1-\alpha/2} + z_{1-\beta})^2\,2\bar p(1 - \bar p)/\delta^2$ per group in advance, and do not stop at the first significant peek.
     \item Precision, recall and the false positive rate describe the errors of a classifier at a threshold; the ROC curve shows all thresholds, and the AUC is the fraction of correctly ordered positive--negative pairs. The cross-entropy loss is a proper scoring rule. For $|\mathcal{H}|$ models and $N$ i.i.d.\ examples, all empirical risks are within $\sqrt{\log(2|\mathcal{H}|/\delta)/(2N)}$ of the risks with probability $1 - \delta$ (Hoeffding and the union bound).
     \item Bayesian inference updates a prior to the posterior $p(\theta \mid \mathcal{D}) \propto p(\mathcal{D} \mid \theta)p(\theta)$. Conjugate priors (Beta for Bernoulli, Gamma for Poisson, Gaussian for linear regression) give closed-form posteriors, and credible intervals are quantiles of the posterior. MAP estimation adds the regularizer $-\log p(\theta)$: a Gaussian prior gives ridge regression, a Laplace prior the lasso. The Bayesian posterior also gives predictive uncertainty. A Gaussian process is a prior on functions given by a kernel; its posterior follows from Gaussian conditioning, with the mean $\mathbf{k}_*^\top(K + \sigma^2I)^{-1}\mathbf{y}$ and a variance that is small near the data.
     \item Entropy measures uncertainty, cross-entropy $H(p, q) = H(p) + \KL(p \,\|\, q)$, and $\KL(p \,\|\, q) \geq 0$ with equality only for $p = q$ (Gibbs). Maximum likelihood minimizes the cross-entropy and the KL divergence from the empirical distribution to the model. Among all densities with a given variance, the Gaussian has the largest entropy.
-    \item In latent variable models, $\log p(\mathbf{x} \mid \theta) = \mathrm{ELBO}(q, \theta) + \KL(q \,\|\, p(z \mid \mathbf{x}, \theta))$. EM alternates between setting $q$ to the posterior (E-step) and maximizing the ELBO over $\theta$ (M-step), and never decreases the likelihood; for Gaussian mixtures, it alternates responsibilities and weighted means and covariances. $k$-means is its hard-assignment limit, and variational autoencoders maximize the ELBO over an encoder and a decoder.
+    \item In latent variable models, $\log p(\mathbf{x} \mid \theta) = \mathrm{ELBO}(q, \theta) + \KL(q \,\|\, p(z \mid \mathbf{x}, \theta))$. EM alternates between setting $q$ to the posterior (E-step) and maximizing the ELBO over $\theta$ (M-step), and never decreases the likelihood; for Gaussian mixtures, it alternates responsibilities and weighted means and covariances. $k$-means is its hard-assignment limit. Probabilistic PCA, $\mathbf{x} = W\mathbf{z} + \boldsymbol{\mu} + \boldsymbol{\varepsilon}$, has the maximum likelihood solution $\hat W = U_k(\Lambda_k - \hat\sigma^2I)^{1/2}$, which spans the principal subspace, with $\hat\sigma^2$ the average of the remaining eigenvalues. Variational autoencoders maximize the ELBO over an encoder and a decoder.
     \item Brownian motion has independent Gaussian increments $B(t) - B(s) \sim \mathcal{N}(0, t - s)$ and continuous, nowhere differentiable paths. An SDE $dX = \mu(X)\,dt + \sigma(X)\,dB$ is simulated by Euler--Maruyama, $X_{k+1} = X_k + \mu(X_k)h + \sigma(X_k)\sqrt{h}\,Z_k$: noise of size $\sqrt{h}$, not $h$. Langevin dynamics $d\mathbf{X} = -\nabla U\,dt + \sqrt{2}\,d\mathbf{B}$ samples from $p \propto e^{-U}$, the stationary solution of the Fokker--Planck equation; its discretization is gradient descent plus noise, and diffusion models generate data by reversing a noising SDE.
 \end{itemize}
 
@@ -1904,7 +2278,24 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \end{enumerate}
     \item\label{L4-ex4:joint-pmf} Let $(X, Y)$ have the joint pmf $p(0, 0) = 0.1$, $p(0, 1) = 0.2$, $p(0, 2) = 0.1$, $p(1, 0) = 0.2$, $p(1, 1) = 0.1$, $p(1, 2) = 0.3$. Compute the marginal distributions, $\E[Y \mid X = 0]$ and $\E[Y \mid X = 1]$, and check the tower property. Compute $\Cov(X, Y)$. Are $X$ and $Y$ independent?
     \item Let $X \sim \mathcal{N}(0, 1)$. Show that $X$ and $X^2$ are uncorrelated, but not independent. Show that $\Corr(X, aX + b) = \sign(a)$ for $a \neq 0$.
+    \item (Initialization.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Let $z \sim \mathcal{N}(0, s^2)$. Show that $\E[\mathrm{ReLU}(z)] = \frac{s}{\sqrt{2\pi}}$, $\E[\mathrm{ReLU}(z)^2] = \frac{s^2}{2}$ and $\Var(\mathrm{ReLU}(z)) = s^2\big(\frac{1}{2} - \frac{1}{2\pi}\big)$.
+        \item (The backward pass.) Let $W$ be an $m \times n$ matrix with independent entries of mean $0$ and variance $v$, and let $\boldsymbol{\delta} \in \mathbb{R}^m$ be a random vector independent of $W$, with $\E[\delta_i^2] = q$ for all $i$. Show that every entry of $W^\top\boldsymbol{\delta}$, the gradient that backpropagation passes to the inputs of a linear layer $\mathbf{y} = W\mathbf{x}$, has mean $0$ and variance $mvq$. Which condition on $v$ keeps the size of the gradients constant?
+        \item Find the standard deviations of the He and Xavier normal initializations for a layer with $256$ inputs and $128$ outputs, and the bound $b$ of the uniform He initialization on $[-b, b]$.
+    \end{enumerate}
     \item Let $X$ and $Y$ be independent and Exponential$(\lambda)$. Show that $X + Y$ has the density $\lambda^2ze^{-\lambda z}$ for $z > 0$.
+    \item (The Poisson process.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the minimum of independent $X \sim$ Exponential$(\lambda)$ and $Y \sim$ Exponential$(\mu)$ is Exponential$(\lambda + \mu)$, and that $P(X < Y) = \frac{\lambda}{\lambda + \mu}$.
+        \item Requests arrive at a server as a Poisson process with the rate $2$ per second. Find the probability of no request in one second, the probability of at least $3$ requests in two seconds, and the expected waiting time until the $10$th request.
+    \end{enumerate}
+    \item (Conditional independence.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that $X \indep Y \mid Z$ if and only if $p(x, y, z) = g(x, z)h(y, z)$ for some functions $g$ and $h$.
+        \item In a chain $X \to Z \to Y$ of binary variables, let $P(Z = 1 \mid X = 1) = 0.9$, $P(Z = 1 \mid X = 0) = 0.2$, $P(Y = 1 \mid Z = 1) = 0.7$ and $P(Y = 1 \mid Z = 0) = 0.1$. Compute $P(Y = 1 \mid X = 1)$, $P(Y = 1 \mid X = 0)$ and $P(Y = 1 \mid X = 1, Z = 1)$. Are $X$ and $Y$ independent? Are they independent given $Z$?
+        \item A naive Bayes classifier has seen the word ``meeting'' in $0$ of $50$ spam emails. What is the maximum likelihood estimate of $P(\text{meeting} \mid \text{spam})$, and what happens to an email that contains ``meeting'' and many typical spam words? What does Laplace smoothing, adding $1$ to each of the counts of ``contains the word'' and ``does not contain the word'', estimate instead?
+    \end{enumerate}
     \item (Moment generating functions.) Let $X \sim$ Exponential$(\lambda)$. Use the cumulant generating function $K_X(t) = \log\frac{\lambda}{\lambda - t}$ to find $\E[X]$ and $\Var(X)$. Find the moment generating function of the sum of $n$ independent Exponential$(\lambda)$ variables, and its mean and variance. Show that $\E[X^k] = \frac{k!}{\lambda^k}$ by expanding $M_X(t) = \frac{1}{1 - t/\lambda}$ as a geometric series.
     \item Let $\mathbf{X}$ have the covariance matrix $\Sigma = \begin{pmatrix} 2 & -1 & 0 \\ -1 & 2 & -1 \\ 0 & -1 & 2 \end{pmatrix}$. Compute $\Var(X_1 + X_2 + X_3)$ and $\Var(X_1 - X_3)$. In which direction $\mathbf{u}$ (with $\norm{\mathbf{u}} = 1$) is $\Var(\mathbf{u}^\top\mathbf{X})$ largest, and what is it? Find a matrix $A$ such that $A\mathbf{X}$ has covariance matrix $I$.
     \item Let $(X, Y) \sim \mathcal{N}\Big(\mathbf{0}, \begin{pmatrix} 4 & 2 \\ 2 & 2 \end{pmatrix}\Big)$. Find the conditional distributions of $Y$ given $X = x$ and of $X$ given $Y = y$, the distribution of $X - Y$, and $P(X > Y)$. Describe the level curves of the density.
@@ -1926,6 +2317,19 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item The lazy walk stays at the current vertex with probability $\frac{1}{2}$, i.e., it has the transition matrix $\frac{1}{2}(I + P)$. Show that it has the same stationary distribution, find its eigenvalues, and explain why it converges.
     \end{enumerate}
     \item (Gibbs sampling.) Let $(X_1, X_2)$ be uniformly distributed on the four points $(0, 0)$, $(0, 1)$, $(1, 1)$ and $(1, 2)$. Find the conditional distributions of $X_1$ given $X_2$ and of $X_2$ given $X_1$, write down the $4 \times 4$ transition matrix of one sweep of the Gibbs sampler (first update $X_1$, then $X_2$), and check that the uniform distribution is stationary. Is the chain irreducible?
+    \item\label{L4-ex4:bellman-limit} (Markov reward processes and decision processes.)
+    \begin{enumerate}[label=(\alph*)]
+        \item For the weather chain of Example~\ref{L4-ex:bellman-weather}, compute $\mathbf{V}$ as a function of $\gamma$, and show that $(1 - \gamma)\mathbf{V} \to (\frac{5}{6}, \frac{5}{6})^\top$ as $\gamma \to 1$. For a general irreducible, aperiodic chain with the stationary distribution $\boldsymbol{\pi}$, explain with Theorem~\ref{L4-thm:markov-convergence} why $(1 - \gamma)V_i \to \boldsymbol{\pi}\mathbf{r}$ for every state $i$: the long-run average reward does not depend on the start.
+        \item Show that the Bellman optimality operator satisfies $T(\mathbf{V} + c\mathbf{1}) = T\mathbf{V} + \gamma c\mathbf{1}$ for every $c \in \mathbb{R}$, and that value iteration started at $\mathbf{V}_0 = \mathbf{0}$ produces nondecreasing iterates if all rewards are nonnegative.
+        \item (Policy iteration.) Starting from a policy $\pi_0$, compute $\mathbf{V}^{\pi_k}$ by solving the Bellman equation, and let $\pi_{k+1}$ be greedy with respect to $\mathbf{V}^{\pi_k}$, i.e., let it maximize $r(s, a) + \gamma\sum_{s'}P(s' \mid s, a)V^{\pi_k}_{s'}$ over $a$ in every state $s$. Show that $\mathbf{V}^{\pi_{k+1}} \geq \mathbf{V}^{\pi_k}$, and that if $\mathbf{V}^{\pi_{k+1}} = \mathbf{V}^{\pi_k}$, then $\pi_k$ is optimal. Conclude that policy iteration finds an optimal policy after finitely many steps.
+    \end{enumerate}
+    \item\label{L4-ex4:time-series} (Time series.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Compute the autocovariances of the MA(2) process $X_t = \varepsilon_t + \theta_1\varepsilon_{t-1} + \theta_2\varepsilon_{t-2}$, with white noise $\varepsilon_t$ of variance $\sigma^2$.
+        \item Show that the companion matrix $A$ of an AR($p$) process has the characteristic polynomial $\pm(\lambda^p - \phi_1\lambda^{p-1} - \cdots - \phi_p)$. (Hint: show that $(\lambda^{p-1}, \ldots, \lambda, 1)^\top$ is an eigenvector of $A$ if $\lambda$ is a root of this polynomial, or expand the determinant along the last column.)
+        \item Show that the AR(2) process $X_t = 1.2X_{t-1} - 0.5X_{t-2} + \varepsilon_t$ satisfies the stationarity condition. Its eigenvalues are complex; what does this suggest about the shape of its autocorrelation function?
+        \item For a stationary AR(1) process, show that $\Cov(X_t, X_{t-1}) = \phi\Var(X_{t-1})$, so that $\phi = \rho(1)$ (the Yule--Walker equation), and compare with the least squares estimate $\hat\phi$.
+    \end{enumerate}
     \item\label{L4-ex4:uniform-mle} Let $X_1, \ldots, X_N$ be i.i.d.\ Uniform$(0, \theta)$.
     \begin{enumerate}[label=(\alph*)]
         \item Show that the MLE of $\theta$ is $M = \max_i X_i$, and that $\E[M] = \frac{N}{N + 1}\theta$. (Hint: $P(M \leq t) = (t/\theta)^N$.)
@@ -1942,8 +2346,27 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \item Assume the regression model $y_i = \mathbf{w}^\top\mathbf{x}_i + \varepsilon_i$ with i.i.d.\ Laplace noise, with density $\frac{1}{2b}e^{-|\varepsilon|/b}$. Show that the MLE of $\mathbf{w}$ minimizes $\sum_i |y_i - \mathbf{w}^\top\mathbf{x}_i|$. In the special case $\mathbf{x}_i = 1$ (estimating a single number $w$), show that every median of the $y_i$ is a minimizer.
     \item Find the method of moments estimators of (a) $a$ and $b$ for Uniform$(a, b)$, using the mean and the variance; (b) the shape $k$ and the scale $s$ of a Gamma distribution, for data with the sample mean $4$ and the sample variance $8$.
     \item (Exponential families.) Write the Geometric$(p)$ distribution, $P(X = x) = p(1 - p)^{x - 1}$ for $x = 1, 2, \ldots$, as an exponential family, and find $T$, $\eta$ and $A(\eta)$. Use Proposition~\ref{L4-prop:log-partition} to find the mean and the variance, and Theorem~\ref{L4-thm:exp-family-mle} to find the MLE of $p$. Show also that the Exponential$(\lambda)$ and the Gamma distributions with a known shape are exponential families.
+    \item (Nonparametric estimation.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that a kernel density estimate $\hat f_h$ is a probability density.
+        \item For the uniform kernel $K = \frac{1}{2}\mathbf{1}_{[-1, 1]}$, show that $\hat f_h(x) = \frac{1}{2Nh}\#\{i : |x - X_i| \leq h\}$, a histogram with a moving bin centered at $x$.
+        \item For $\mathcal{N}(0, 1)$ data and the Gaussian kernel, show that $\E[\hat f_h(x)]$ is the density of $\mathcal{N}(0, 1 + h^2)$ at $x$. (Hint: it is the density of $X + hU$ with independent $X, U \sim \mathcal{N}(0, 1)$.) Compare $\E[\hat f_h(0)] - \varphi(0)$ with the bias $\frac{h^2}{2}\kappa_2f''(0)$ of Proposition~\ref{L4-prop:kde} for small $h$.
+    \end{enumerate}
+    \item (Survival analysis.)
+    \begin{enumerate}[label=(\alph*)]
+        \item For the Weibull distribution with the shape $k$ and the scale $s$, find the density, the median $s(\log 2)^{1/k}$, and the mean $s\,\Gamma(1 + \frac{1}{k})$, using $\E[T] = \int_0^\infty S(t)\, dt$ and the Gamma function $\Gamma(a) = \int_0^\infty u^{a-1}e^{-u}\, du$.
+        \item (Discrete time.) A customer who is still subscribed at the beginning of month $j$ cancels during that month with probability $h_j$. Show that the probability to be still subscribed after $t$ months is $\prod_{j=1}^t (1 - h_j)$, and compare with the Kaplan--Meier estimator.
+        \item For Weibull event times with a known shape $k$ and non-informative censoring, show that the maximum likelihood estimate of $\theta = s^{-k}$ is $\hat\theta = \frac{D}{\sum_i t_i^k}$, where $D$ is the number of observed events.
+        \item Show that without censoring, the Kaplan--Meier estimator equals $1 - \hat F_N$.
+    \end{enumerate}
     \item A die is rolled $120$ times and shows $30$ sixes. Test at the level $0.05$ whether the die favors sixes: state $H_0$ and $H_1$, and compute the exact one-sided p-value $P(S \geq 30)$ for $S \sim$ Binomial$(120, \frac{1}{6})$ with a computer, and its normal approximation.
     \item (Neyman--Pearson.) Let $X_1, \ldots, X_N$ be i.i.d.\ Exponential$(\lambda)$. Find the most powerful test at the level $\alpha$ of $H_0$: $\lambda = 1$ against $H_1$: $\lambda = 2$, and show that it rejects if $\sum_i X_i$ is small. For $N = 1$ and $\alpha = 0.05$, find the rejection region and the power.
+    \item (Inference for linear regression.)
+    \begin{enumerate}[label=(\alph*)]
+        \item For the simple regression $y_i = w_0 + w_1x_i + \varepsilon_i$ with homoscedastic noise, show that $\Var(\hat w_1) = \frac{\sigma^2}{\sum_i (x_i - \bar x)^2}$. How should the inputs $x_i$ be chosen in an experiment to estimate the slope precisely?
+        \item For heteroscedastic noise with $\Cov(\boldsymbol{\varepsilon}) = \diag(\sigma_1^2, \ldots, \sigma_N^2)$, show that $\E[\mathrm{RSS}] = \sum_i \sigma_i^2(1 - H_{ii})$, where $H = X(X^\top X)^{-1}X^\top$.
+        \item In the model $y_i = wx_i + \varepsilon_i$ with $\sigma_i = \sigma|x_i|$ and all $x_i \neq 0$, show that weighted least squares gives $\tilde w = \frac{1}{N}\sum_i \frac{y_i}{x_i}$, with the variance $\frac{\sigma^2}{N}$, and that this is at most the variance $\frac{\sigma^2\sum_i x_i^4}{(\sum_i x_i^2)^2}$ of ordinary least squares. Which theorem explains this, applied to the rescaled data $\frac{y_i}{x_i}$?
+    \end{enumerate}
     \item Out of $200$ users, $70$, $80$ and $50$ prefer the layouts A, B and C. Use Pearson's $\chi^2$ test to test at the level $0.05$ whether the three layouts are equally popular. (The $\chi^2_2$ distribution has the tail $P(\chi^2_2 \geq c) = e^{-c/2}$.)
     \item \begin{enumerate}[label=(\alph*)]
         \item Show that for $m$ independent tests of true null hypotheses at the level $\frac{\alpha}{m}$, the probability of at least one rejection is $1 - (1 - \frac{\alpha}{m})^m \leq \alpha$.
@@ -1953,6 +2376,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \item An online shop wants to test whether a new design increases the click-through rate from $10\%$ to $11\%$. How many users per group are needed for a two-sided test at the level $0.05$ with power $0.8$? After the experiment, the two groups of $15\,000$ users have $1500$ and $1650$ clicks. Compute the z-statistic, the p-value, and a $95\%$ confidence interval for the difference.
     \item (Classification metrics.) A test for a disease with a prevalence of $2\%$ has a true positive rate of $90\%$ and a false positive rate of $5\%$. Compute its precision. Which threshold-independent number does not change when the prevalence changes, and why? For the scores $0.9, 0.7, 0.6, 0.4, 0.2$ of five examples with the labels $1, 0, 1, 0, 0$, draw the ROC curve and compute the AUC in two ways.
     \item (Generalization.) How many i.i.d.\ test examples are needed to estimate the error rate of one classifier within $\pm 0.01$ with probability at least $0.95$, using Hoeffding's inequality? How many are needed to estimate the error rates of $1000$ classifiers simultaneously with the same accuracy?
+    \item (Simpson's paradox.) Two treatments are compared in groups $s = 1, \ldots, m$, with the success rates $a_s = P(\text{success} \mid A, s)$ and $b_s = P(\text{success} \mid B, s)$, and $a_s > b_s$ for every $s$. Show that if $P(s \mid A) = P(s \mid B)$ for all $s$, as in a randomized experiment, then $P(\text{success} \mid A) > P(\text{success} \mid B)$. Then construct an example with two groups in which $a_s > b_s$ for both groups, but $P(\text{success} \mid A) < P(\text{success} \mid B)$.
     \item With the uniform prior Beta$(1, 1)$, a coin shows $7$ heads in $10$ flips. Find the posterior distribution, its mean, the MAP estimate, the MLE, and the predictive probability of heads in the next flip.
     \item (Gaussian--Gaussian conjugacy.) Let $x_1, \ldots, x_N$ be i.i.d.\ $\mathcal{N}(\mu, \sigma^2)$ with known $\sigma^2$, and let the prior be $\mu \sim \mathcal{N}(\mu_0, \tau^2)$. Show that the posterior is Gaussian with precision $\frac{1}{\tau^2} + \frac{N}{\sigma^2}$ and mean
     \[\frac{\mu_0/\tau^2 + N\bar x/\sigma^2}{1/\tau^2 + N/\sigma^2},\]
@@ -1971,6 +2395,12 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \end{enumerate}
     \item (EM for a mixture of two coins.) In each of $5$ experiments, one of two coins with the unknown head probabilities $\theta_A$ and $\theta_B$ is chosen with probability $\frac{1}{2}$ and flipped $10$ times. The numbers of heads are $5, 9, 8, 4, 7$, and we do not know which coin was used. Starting from $\theta_A = 0.6$ and $\theta_B = 0.5$, carry out one step of EM: compute the posterior probabilities that coin A was used in each experiment, and the new estimates. Show that the log-likelihood increased.
     \item ($k$-means.) Show that every assignment step and every update step of Lloyd's algorithm can only decrease $J$, and find an example with $N = 4$ points in $\mathbb{R}$ and $K = 2$ for which Lloyd's algorithm, started from a bad pair of centers, stops at an assignment that is not optimal.
+    \item (Probabilistic PCA.)
+    \begin{enumerate}[label=(\alph*)]
+        \item Show that the maximal log-likelihood of probabilistic PCA is $-\frac{N}{2}\big(d\log(2\pi) + \sum_{j \leq k}\log\lambda_j + (d - k)\log\hat\sigma^2 + d\big)$.
+        \item For data with $S = \diag(4, 2, 1)$, compute it (per data point) for $k = 0$, $1$ and $2$. Why does it always increase with $k$, and why is it nevertheless not a good idea to choose $k$ by the likelihood alone?
+        \item Show that the posterior covariance $\sigma^2M^{-1}$ of $\mathbf{z}$ is $\sigma^2I_k$ minus a positive semidefinite matrix, so that observing $\mathbf{x}$ reduces the uncertainty about $\mathbf{z}$ in every direction.
+    \end{enumerate}
     \item (Brownian motion and the Ornstein--Uhlenbeck process.)
     \begin{enumerate}[label=(\alph*)]
         \item Compute $\Var(B(2) - B(0.5))$, $\Cov(B(1), B(3))$ and $\Corr(B(1), B(3))$.
@@ -2087,6 +2517,51 @@ rng = np.random.default_rng(0)
         \item Implement Lloyd's algorithm for $k$-means with $K = 3$. Plot $J$ after each step, and check that it never increases (Proposition~\ref{L4-prop:kmeans}). Run it from $10$ random initializations; do they all give the same $J$?
         \item Implement EM for Gaussian mixtures (Theorem~\ref{L4-thm:em-gmm}), initialized with the $k$-means result. Compute the responsibilities with logarithms and the log-sum-exp trick to avoid underflow. Plot the log-likelihood after each step, and check that it never decreases (Theorem~\ref{L4-thm:em-monotone}).
         \item Plot the data colored by their most likely component, and the ellipses of the fitted covariance matrices. Where do EM and $k$-means disagree, and why?
+    \end{itemize}
+
+    \item \textbf{Naive Bayes.} Generate $2000$ examples with a label $y \in \{0, 1\}$ ($P(y = 1) = 0.3$) and $20$ binary features that are conditionally independent given $y$, with $P(x_j = 1 \mid y)$ drawn uniformly from $[0.1, 0.9]$ for each $j$ and $y$.
+    \begin{itemize}
+        \item Fit naive Bayes by counting, with Laplace smoothing, and logistic regression by gradient descent (Lecture~3), on $1000$ training examples. Compare their test accuracies, and plot the predicted probabilities of one model against those of the other.
+        \item Now copy the first feature $10$ times, so that the features are no longer conditionally independent, and repeat. Which model's probabilities become overconfident, and why?
+    \end{itemize}
+
+    \item \textbf{Nonparametric estimation and probabilistic PCA.}
+    \begin{itemize}
+        \item Draw $N = 100$ and $N = 1000$ samples from Exponential$(1)$, plot the empirical CDF with the band $\hat F_N \pm \sqrt{\log(40)/(2N)}$ and the true CDF, and check in $1000$ repetitions how often the true CDF leaves the band.
+        \item Draw $500$ samples from the mixture $0.5\,\mathcal{N}(-2, 1) + 0.5\,\mathcal{N}(2, 0.5^2)$, and plot kernel density estimates with the Gaussian kernel and $h = 0.05$, $0.3$ and $1$, together with the true density. Choose $h$ by maximizing the leave-one-out log-likelihood $\sum_i \log\hat f_{h, -i}(x_i)$, where $\hat f_{h, -i}$ omits the $i$-th point, and compare with the rule of thumb $h = 1.06\,\hat\sigma N^{-1/5}$.
+        \item Generate $N = 1000$ points $\mathbf{x} = W\mathbf{z} + \boldsymbol{\varepsilon}$ in $\mathbb{R}^{10}$ with a random $10 \times 2$ matrix $W$, $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I_2)$ and $\boldsymbol{\varepsilon} \sim \mathcal{N}(\mathbf{0}, 0.25I)$. Fit probabilistic PCA with Theorem~\ref{L4-thm:ppca}, compare $\hat\sigma^2$ with $0.25$, and compare the orthogonal projections onto the column spaces of $\hat W$ and $W$.
+    \end{itemize}
+
+    \item \textbf{Initialization of deep networks} (Example~\ref{L4-ex:initialization}).
+    \begin{itemize}
+        \item Pass a batch of $1000$ standard normal inputs in $\mathbb{R}^{512}$ through $50$ ReLU layers of width $512$ with weights drawn from $\mathcal{N}(0, v)$, for $v = \frac{2}{512}$ (He), $\frac{1}{512}$ and $\frac{4}{512}$. Plot the mean of the squared activations against the layer on a logarithmic scale, and compare with the prediction $q_l = q_0(\frac{nv}{2})^l$.
+        \item Repeat with $\tanh$ activations and $v = \frac{1}{512}$. Then backpropagate the gradient of the loss $\sum_i y_i$ of the last layer, and plot the mean squared gradient with respect to the activations of each layer. Which initialization keeps both the forward signal and the gradients at a constant size?
+    \end{itemize}
+
+    \item \textbf{Policy evaluation and value iteration} (Section~\ref{L4-sec:bellman}). A robot moves on a $4 \times 4$ grid with the actions up, down, left and right; it moves in the chosen direction with probability $0.8$ and in one of the two perpendicular directions with probability $0.1$ each, and stays in place if it would leave the grid. Entering the corner $(4, 4)$ gives the reward $1$ and restarts the robot at $(1, 1)$, and every other step gives the reward $-0.04$. Let $\gamma = 0.95$.
+    \begin{itemize}
+        \item Compute the value of the uniformly random policy by solving the Bellman equation with \py{np.linalg.solve}, and by iterative policy evaluation. Plot the error $\norm{\mathbf{V}_k - \mathbf{V}}_\infty$ against $k$ on a logarithmic scale, together with $\gamma^k\norm{\mathbf{V}_0 - \mathbf{V}}_\infty$.
+        \item Find the optimal values with value iteration, and draw the greedy policy as arrows on the grid. Compare with policy iteration (Exercise~\ref{L4-ex4:bellman-limit}): how many iterations does each method need?
+        \item Implement Q-learning with $\varepsilon$-greedy exploration (a random action with probability $\varepsilon = 0.1$, otherwise the action with the largest $Q$), using simulated transitions only, and compare the learned greedy policy and $\max_a Q(s, a)$ with the results of value iteration.
+    \end{itemize}
+
+    \item \textbf{Time series} (Section~\ref{L4-sec:time-series}).
+    \begin{itemize}
+        \item Simulate AR(1) processes with $\phi = 0.5$, $0.9$, $0.99$ and $1$ (a random walk) for $T = 1000$ steps with standard normal noise, starting at $X_0 = 0$, and plot them. Compute the sample autocorrelation $\hat\rho(h) = \frac{\sum_t (x_t - \bar x)(x_{t+h} - \bar x)}{\sum_t (x_t - \bar x)^2}$ for $h = 0, \ldots, 30$, and compare with $\phi^h$. What goes wrong for the random walk, and what happens after differencing?
+        \item Estimate $\phi$ by least squares for $100$ simulated series with $\phi = 0.9$ and $T = 50$, and for $T = 500$. Is $\hat\phi$ biased? Compare its standard deviation with $\sqrt{(1 - \phi^2)/T}$.
+        \item Simulate the AR(2) processes of Section~\ref{L4-sec:time-series} and of Exercise~\ref{L4-ex4:time-series}, compute the eigenvalues of their companion matrices with \py{np.linalg.eigvals}, and relate them to the behavior of the simulated paths and of their autocorrelations.
+    \end{itemize}
+
+    \item \textbf{Survival analysis} (Section~\ref{L4-sec:survival}). Generate $N = 200$ lifetimes from the Weibull distribution with the shape $k = 1.5$ and the scale $s = 10$ (by inverse transform sampling), and independent censoring times uniform on $[0, 15]$.
+    \begin{itemize}
+        \item Implement the Kaplan--Meier estimator, and plot it together with the true survival function $e^{-(t/s)^k}$ and with the empirical survival function of the observed times $t_i$ that ignores the censoring. Which one is biased, and in which direction?
+        \item Fit an exponential model with Proposition~\ref{L4-prop:censored-mle}, and a Weibull model by maximizing the censored log-likelihood numerically over $k$ and $s$ (for example, with gradient ascent on $\log k$ and $\log s$). Plot both fitted survival functions together with the Kaplan--Meier estimate. Which model fits, and how do the fitted hazard rates differ?
+    \end{itemize}
+
+    \item \textbf{Inference for linear regression} (Section~\ref{L4-sec:regression-inference}).
+    \begin{itemize}
+        \item Generate $N = 20$ points $y = 1 + 2x + \varepsilon$ with $x$ uniform on $[0, 10]$ and $\varepsilon \sim \mathcal{N}(0, 4)$. Compute $\hat{\mathbf{w}}$, $s^2$, the standard errors, the $t$-statistics and the $95\%$ confidence intervals, and check them against \py{statsmodels} if you have it installed. In $10\,000$ repetitions, estimate the coverage probability of the interval for the slope.
+        \item Repeat with heteroscedastic noise $\varepsilon \sim \mathcal{N}(0, (0.3x)^2)$. Compare the coverage of the usual interval with that of the interval based on the robust standard errors, and plot the residuals against $x$. How do the results change with $N = 200$?
     \end{itemize}
 \end{enumerate}
 \endgroup

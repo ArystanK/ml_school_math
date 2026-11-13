@@ -1,0 +1,107 @@
+\documentclass[11pt]{article}
+
+% Solutions of the final exam
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+% Problem numbers are read from final.aux, so compile final.tex first.
+\externaldocument{final}[final.pdf]
+\usepackage{xcolor}
+
+\title{Final Exam --- Solutions}
+\author{Lectures 3--4: Vector Calculus, Optimization, Probability and Statistics}
+\date{}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\E}{\mathbb{E}}
+
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\KL}{KL}
+
+\begin{document}
+
+\maketitle
+
+\section*{Problem \ref{pr:fin-logistic}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item For one data point, the chain rule along $\mathbf{w} \mapsto z = \mathbf{w}^\top\mathbf{x}_i \mapsto p_i = \sigma(z) \mapsto \ell_i$ gives $\frac{d\ell_i}{dz} = \big(-\frac{y_i}{p_i} + \frac{1 - y_i}{1 - p_i}\big)p_i(1 - p_i) = p_i - y_i$, so $\nabla\ell_i(\mathbf{w}) = (p_i - y_i)\mathbf{x}_i$. Averaging and adding $\nabla\frac{\lambda}{2}\norm{\mathbf{w}}^2 = \lambda\mathbf{w}$ gives $\nabla J = \frac{1}{N}\sum_i(p_i - y_i)\mathbf{x}_i + \lambda\mathbf{w} = \frac{1}{N}X^\top(\mathbf{p} - \mathbf{y}) + \lambda\mathbf{w}$. The Jacobian of $(\sigma(\mathbf{w}^\top\mathbf{x}_i) - y_i)\mathbf{x}_i$ is $\mathbf{x}_i\,\sigma'(\mathbf{w}^\top\mathbf{x}_i)\mathbf{x}_i^\top = p_i(1 - p_i)\mathbf{x}_i\mathbf{x}_i^\top$, so $\nabla^2 J = \frac{1}{N}\sum_i p_i(1 - p_i)\mathbf{x}_i\mathbf{x}_i^\top + \lambda I = \frac{1}{N}X^\top DX + \lambda I$.
+    \item For a unit vector $\mathbf{v}$, $\mathbf{v}^\top\nabla^2 J(\mathbf{w})\mathbf{v} = \frac{1}{N}\sum_i p_i(1 - p_i)(\mathbf{x}_i^\top\mathbf{v})^2 + \lambda$. Since $0 < p_i(1 - p_i) \leq \frac{1}{4}$,
+    \[\lambda \leq \mathbf{v}^\top\nabla^2 J(\mathbf{w})\mathbf{v} \leq \frac{1}{4N}\norm{X\mathbf{v}}^2 + \lambda \leq \frac{\norm{X}_2^2}{4N} + \lambda = L.\]
+    By the Rayleigh quotient, all eigenvalues of the (symmetric) Hessian lie in $[\lambda, L]$. All Hessian eigenvalues $\geq \lambda$ means that $J$ is $\lambda$-strongly convex, and $\norm{\nabla^2 J}_2 \leq L$ everywhere means that $J$ is $L$-smooth. A strongly convex function has exactly one minimizer.
+    \item $X^\top X = 4I_2$, so $\norm{X}_2^2 = \lambda_{\max}(X^\top X) = 4$, and with $N = 4$: $L = \frac{4}{16} + 0.05 = 0.3$, $\mu = \lambda = 0.05$, $\frac{\mu}{L} = \frac{1}{6}$. By the convergence rate for strongly convex functions,
+    \[J(\mathbf{w}_k) - J^* \leq \Big(1 - \frac{1}{6}\Big)^k(J(\mathbf{w}_0) - J^*) \leq e^{-k/6}(J(\mathbf{w}_0) - J^*),\]
+    which is at most $10^{-6}(J(\mathbf{w}_0) - J^*)$ if $k \geq 6 \cdot 6\log 10 \approx 82.9$. So $k = 83$ steps suffice. (With $\log\frac{6}{5}$ instead of $\frac{1}{6}$, $76$ steps suffice.)
+    \item Each term of $J$ is positive, since $p_i \in (0, 1)$, so $J(\mathbf{w}) > 0$ for every $\mathbf{w}$. Along $\mathbf{w} = t\mathbf{u}$ with $t \to \infty$: if $y_i = 1$, then $t\mathbf{u}^\top\mathbf{x}_i \to \infty$, so $p_i \to 1$ and $-\log p_i \to 0$; if $y_i = 0$, then $p_i \to 0$ and $-\log(1 - p_i) \to 0$. Hence $\inf J = 0$, which is not attained, and $J$ has no minimizer. (Regularization with $\lambda > 0$ fixes this, by part (b).)
+\end{enumerate}
+
+\section*{Problem \ref{pr:fin-matrix-calculus}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $F_{ij} = X_{ir}B_{rj}$, so $\frac{\partial F_{ij}}{\partial X_{kl}} = \delta_{ik}B_{lj}$. By the chain rule, $(\nabla_X L)_{kl} = G_{ij}\frac{\partial F_{ij}}{\partial X_{kl}} = G_{ij}\delta_{ik}B_{lj} = G_{kj}B_{lj} = (GB^\top)_{kl}$. As a contraction: \texttt{np.einsum("ij,ijkl->kl", G, DF)}. (In practice, one computes \texttt{G @ B.T} and never forms the $mpmn$ entries of \texttt{DF}.)
+    \item By Jacobi's formula, $\nabla\log\det\Sigma = \Sigma^{-\top} = \Sigma^{-1}$ ($\det\Sigma > 0$). By the formula $\nabla_X\tr(AX^{-1}) = -X^{-\top}A^\top X^{-\top}$ with $A = S$, $\nabla\tr(S\Sigma^{-1}) = -\Sigma^{-1}S\Sigma^{-1}$ (all matrices symmetric). So
+    \[\nabla\varphi(\Sigma) = \Sigma^{-1} - \Sigma^{-1}S\Sigma^{-1} = \Sigma^{-1}(\Sigma - S)\Sigma^{-1},\]
+    which is $0$ if and only if $\Sigma = S$, since $\Sigma^{-1}$ is invertible.
+    \item $M = S^{-1/2}\Sigma S^{-1/2}$ is symmetric positive definite, with eigenvalues $m_1, \ldots, m_d > 0$. Then $\log\det\Sigma = \log\det S + \sum_i\log m_i$ and $\tr(S\Sigma^{-1}) = \tr(S^{1/2}M^{-1}S^{-1/2}) = \tr(M^{-1}) = \sum_i\frac{1}{m_i}$, while $\varphi(S) = \log\det S + d$. Hence
+    \[\varphi(\Sigma) - \varphi(S) = \sum_{i=1}^d\big(t_i - 1 - \log t_i\big), \qquad t_i = \frac{1}{m_i}.\]
+    The function $h(t) = t - 1 - \log t$ is convex on $(0, \infty)$ with $h'(1) = 0$, so $h \geq h(1) = 0$, with equality only at $t = 1$. So $\varphi(\Sigma) \geq \varphi(S)$, with equality only if $M = I$, i.e., $\Sigma = S$.
+    For the Gaussian, $-\ell(\boldsymbol{\mu}, \Sigma) = \frac{N}{2}\log\det\Sigma + \frac{1}{2}\sum_i(\mathbf{x}_i - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{x}_i - \boldsymbol{\mu}) + \frac{Nd}{2}\log(2\pi)$. At $\boldsymbol{\mu} = \bar{\mathbf{x}}$, the sum is $\tr\big(\Sigma^{-1}\sum_i(\mathbf{x}_i - \bar{\mathbf{x}})(\mathbf{x}_i - \bar{\mathbf{x}})^\top\big) = N\tr(S\Sigma^{-1})$, so $-\ell = \frac{N}{2}\varphi(\Sigma) + \text{const}$, which is minimized exactly by $\Sigma = S$.
+\end{enumerate}
+
+\section*{Problem \ref{pr:fin-kkt}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $g_1 = x_1 + x_2 - 1$, $g_2 = -x_2$. KKT: stationarity $2(x_1 - 3) + \mu_1 = 0$ and $2(x_2 - 1) + \mu_1 - \mu_2 = 0$; feasibility $g_1, g_2 \leq 0$; $\mu_1, \mu_2 \geq 0$; $\mu_1g_1 = \mu_2g_2 = 0$. Check the active sets:
+    \begin{itemize}
+        \item none active: $\mathbf{x} = (3, 1)$, infeasible ($g_1 = 3$);
+        \item only $g_1$ active: $x_1 - 3 = x_2 - 1$ and $x_1 + x_2 = 1$ give $(\frac{3}{2}, -\frac{1}{2})$, infeasible ($x_2 < 0$);
+        \item only $g_2$ active: $x_1 = 3$, $x_2 = 0$, infeasible ($g_1 = 2$);
+        \item both active: $\mathbf{x}^* = (1, 0)$, $\mu_1 = 4$, $\mu_2 = 2(0 - 1) + 4 = 2$, both $\geq 0$.
+    \end{itemize}
+    So the minimum is at $(1, 0)$, with $f = 5$, $\mu_1 = 4$, $\mu_2 = 2$.
+    \item $f$ is convex (Hessian $2I$) and $g_1, g_2$ are affine, hence convex. By the converse part of the KKT theorem, every KKT point is a global minimum. (Geometrically: $(1, 0)$ is the point of the feasible region closest to $(3, 1)$.)
+    \item With $g(\mathbf{x}) = 1 - \mathbf{a}^\top\mathbf{x} \leq 0$, $\mathcal{L}(\mathbf{x}, \mu) = \frac{1}{2}\norm{\mathbf{x}}^2 + \mu(1 - \mathbf{a}^\top\mathbf{x})$. It is convex in $\mathbf{x}$, minimized where $\mathbf{x} - \mu\mathbf{a} = \mathbf{0}$, so
+    \[d(\mu) = \frac{\mu^2}{2}\norm{\mathbf{a}}^2 + \mu - \mu^2\norm{\mathbf{a}}^2 = \mu - \frac{\mu^2}{2}\norm{\mathbf{a}}^2.\]
+    This is maximized over $\mu \geq 0$ at $\mu^* = \frac{1}{\norm{\mathbf{a}}^2}$, with $d^* = \frac{1}{2\norm{\mathbf{a}}^2}$. The primal problem asks for the point of the half-space closest to $\mathbf{0}$; it lies on the hyperplane $\mathbf{a}^\top\mathbf{x} = 1$, at the distance $\frac{|0 - 1|}{\norm{\mathbf{a}}}$ (Lecture~2), so $p^* = \frac{1}{2\norm{\mathbf{a}}^2} = d^*$, attained at $\mathbf{x}^* = \mu^*\mathbf{a} = \frac{\mathbf{a}}{\norm{\mathbf{a}}^2}$.
+\end{enumerate}
+
+\section*{Problem \ref{pr:fin-gaussian}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $\Corr(X, Y) = \frac{3}{2 \cdot 3} = \frac{1}{2}$; $\Var(2X - Y) = (2, -1)\Sigma(2, -1)^\top = 16 + 9 - 12 = 13$.
+    \item By the conditioning formula, $Y \mid X = x \sim \mathcal{N}\big(\frac{3}{4}x, \ 9 - \frac{3 \cdot 3}{4}\big) = \mathcal{N}\big(\frac{3}{4}x, \frac{27}{4}\big)$.
+    \item $\E[\Var(Y \mid X)] = \frac{27}{4}$ (the conditional variance does not depend on $x$); $\Var(\E[Y \mid X]) = \Var(\frac{3}{4}X) = \frac{9}{16} \cdot 4 = \frac{9}{4}$; the sum is $9 = \Var(Y)$.
+    \item $(X, Y - \frac{3}{4}X)^\top = A(X, Y)^\top$ with the invertible $A = \begin{pmatrix} 1 & 0 \\ -\frac{3}{4} & 1 \end{pmatrix}$, so it is Gaussian with the covariance matrix $A\Sigma A^\top$, whose off-diagonal entry is $\Cov(X, Y - \frac{3}{4}X) = 3 - \frac{3}{4} \cdot 4 = 0$. A Gaussian vector with a diagonal (block diagonal) covariance matrix has independent components.
+    \item $L = \begin{pmatrix} 2 & 0 \\ \frac{3}{2} & \frac{3\sqrt 3}{2} \end{pmatrix}$: $L_{11}^2 = 4$, $L_{21}L_{11} = 3$, $L_{21}^2 + L_{22}^2 = 9$. For $\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, I_2)$, $L\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, LL^\top) = \mathcal{N}(\mathbf{0}, \Sigma)$, i.e., $X = 2Z_1$ and $Y = \frac{3}{2}Z_1 + \frac{3\sqrt 3}{2}Z_2$.
+\end{enumerate}
+
+\section*{Problem \ref{pr:fin-estimation}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $\ell(\lambda) = N\log\lambda - \lambda\sum_i x_i$, $\ell'(\lambda) = \frac{N}{\lambda} - \sum_i x_i = 0$ gives $\hat\lambda = \frac{N}{\sum_i x_i} = \frac{1}{\bar x}$, a maximum since $\ell'' = -\frac{N}{\lambda^2} < 0$.
+    \item $\log p(x \mid \lambda) = \log\lambda - \lambda x$; the score is $\frac{1}{\lambda} - x$ (mean $0$, since $\E[X] = \frac{1}{\lambda}$), and $-\frac{\partial^2}{\partial\lambda^2}\log p = \frac{1}{\lambda^2}$, so $I(\lambda) = \frac{1}{\lambda^2}$ (also $= \Var(X)$). Cram\'er--Rao: $\Var(\tilde\lambda) \geq \frac{1}{NI(\lambda)} = \frac{\lambda^2}{N}$ for unbiased $\tilde\lambda$.
+    \item CLT: $\sqrt{N}(\bar X - \frac{1}{\lambda}) \to \mathcal{N}(0, \frac{1}{\lambda^2})$. With $g(t) = \frac{1}{t}$, $g'(\frac{1}{\lambda}) = -\lambda^2$, the delta method gives $\sqrt{N}(\hat\lambda - \lambda) \to \mathcal{N}\big(0, \lambda^4 \cdot \frac{1}{\lambda^2}\big) = \mathcal{N}(0, \lambda^2)$. The asymptotic variance $\lambda^2 = \frac{1}{I(\lambda)}$ is the Cram\'er--Rao bound: the MLE is asymptotically efficient. ($\hat\lambda$ itself is biased: $\E[\hat\lambda] = \frac{N}{N - 1}\lambda$.)
+    \item Posterior $\propto \lambda^{a-1}e^{-b\lambda} \cdot \lambda^Ne^{-\lambda\sum_i x_i} = \lambda^{a + N - 1}e^{-(b + \sum_i x_i)\lambda}$: Gamma with the shape $a + N$ and the rate $b + \sum_i x_i$. Posterior mean $\frac{a + N}{b + \sum_i x_i}$, MAP $\frac{a + N - 1}{b + \sum_i x_i}$. Numbers: $\hat\lambda = \frac{10}{4} = 2.5$, posterior mean $\frac{12}{5} = 2.4$, MAP $\frac{11}{5} = 2.2$. The prior mean $\frac{a}{b} = 2$ is below $\hat\lambda$, so both Bayesian estimates are pulled from the MLE towards it; the Gamma posterior is skewed to the right, so its mode lies below its mean. As $N \to \infty$, all three agree.
+\end{enumerate}
+
+\section*{Problem \ref{pr:fin-concentration-kl}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $\hat p$ is the mean of $N$ i.i.d.\ Bernoulli$(p)$ variables, with $\Var(\hat p) = \frac{p(1 - p)}{N} \leq \frac{1}{4N}$.
+    \begin{enumerate}[label=(\roman*)]
+        \item Chebyshev: $P(|\hat p - p| \geq 0.05) \leq \frac{1}{4N \cdot 0.0025} = \frac{100}{N} \leq 0.05$ if $N \geq 2000$.
+        \item Hoeffding (values in $[0, 1]$): $2e^{-2N \cdot 0.0025} \leq 0.05 \iff N \geq \frac{\log 40}{0.005} \approx 737.8$, so $N = 738$ suffices.
+        \item $\hat p \approx \mathcal{N}(p, \frac{p(1 - p)}{N})$; we need $1.96\sqrt{p(1 - p)/N} \leq 0.05$, worst at $p = \frac{1}{2}$: $N \geq \frac{3.84 \cdot 0.25}{0.0025} \approx 384$ (385 with $1.96^2 = 3.8416$). The CLT is a statement about the limit $N \to \infty$ and gives no bound on the approximation error for a fixed $N$ (which is large for $p$ near $0$ or $1$), so this $N$ is not guaranteed to work; (i) and (ii) are guarantees.
+    \end{enumerate}
+    \item $\KL(p \,\|\, q) = \log\frac{2}{1} + \frac{1 + (0 - 1)^2}{2 \cdot 4} - \frac{1}{2} \approx 0.693 + 0.25 - 0.5 = 0.443$. $\KL(q \,\|\, p) = \log\frac{1}{2} + \frac{4 + 1}{2} - \frac{1}{2} \approx -0.693 + 2 = 1.307$. The second is larger: $\KL(q \,\|\, p) = \E_q[\log\frac{q}{p}]$ averages over samples of the wide $q$, which often land in the tails of the narrow $p$, where $\log\frac{q}{p}$ is large (it grows like $\frac{x^2}{2}$). In $\KL(p \,\|\, q)$, the wide $q$ covers all the mass of $p$, and the ratio stays moderate. KL divergence is not symmetric.
+\end{enumerate}
+
+\end{document}
