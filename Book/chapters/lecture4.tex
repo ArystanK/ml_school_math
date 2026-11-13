@@ -2268,7 +2268,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item Prove the inclusion--exclusion formula $P(A \cup B \cup C) = P(A) + P(B) + P(C) - P(A \cap B) - P(A \cap C) - P(B \cap C) + P(A \cap B \cap C)$.
         \item Two fair coins are flipped. Let $A$ = ``the first coin shows heads'', $B$ = ``the second coin shows heads'', and $C$ = ``exactly one coin shows heads''. Show that any two of these events are independent, but the three events are not independent.
     \end{enumerate}
-    \item A spam filter knows that $40\%$ of all emails are spam, that the word ``free'' appears in $30\%$ of the spam emails and in $2\%$ of the other emails. What is the probability that an email containing ``free'' is spam?
+    \item \homework{} A spam filter knows that $40\%$ of all emails are spam, that the word ``free'' appears in $30\%$ of the spam emails and in $2\%$ of the other emails. What is the probability that an email containing ``free'' is spam?
     \item Let $X$ be Geometric$(p)$. Show that $\E[X] = \frac{1}{p}$ and that $P(X > s + t \mid X > s) = P(X > t)$ for all positive integers $s$ and $t$. How many times do you expect to roll a fair die until you see a six?
     \item Let $U$ and $V$ be independent and Uniform$(0, 1)$. Find the densities of (a) $U^2$, (b) $-\log U$, (c) $\max(U, V)$ (Hint: compute the CDF first.)
     \item Let $X$ be Poisson$(\lambda)$. Compute $\E[X(X - 1)]$, and use it to show that $\Var(X) = \lambda$.
@@ -2276,9 +2276,9 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item A nonnegative random variable has mean $2$. Bound $P(X \geq 10)$ with Markov's inequality, and compare with the exact value for $X \sim$ Exponential$(\frac{1}{2})$.
         \item Use Jensen's inequality to show that $\E[\frac{1}{X}] \geq \frac{1}{\E[X]}$ for every positive random variable $X$, and that $\E[e^X] \geq e^{\E[X]}$.
     \end{enumerate}
-    \item\label{L4-ex4:joint-pmf} Let $(X, Y)$ have the joint pmf $p(0, 0) = 0.1$, $p(0, 1) = 0.2$, $p(0, 2) = 0.1$, $p(1, 0) = 0.2$, $p(1, 1) = 0.1$, $p(1, 2) = 0.3$. Compute the marginal distributions, $\E[Y \mid X = 0]$ and $\E[Y \mid X = 1]$, and check the tower property. Compute $\Cov(X, Y)$. Are $X$ and $Y$ independent?
+    \item\label{L4-ex4:joint-pmf} \homework{} Let $(X, Y)$ have the joint pmf $p(0, 0) = 0.1$, $p(0, 1) = 0.2$, $p(0, 2) = 0.1$, $p(1, 0) = 0.2$, $p(1, 1) = 0.1$, $p(1, 2) = 0.3$. Compute the marginal distributions, $\E[Y \mid X = 0]$ and $\E[Y \mid X = 1]$, and check the tower property. Compute $\Cov(X, Y)$. Are $X$ and $Y$ independent?
     \item Let $X \sim \mathcal{N}(0, 1)$. Show that $X$ and $X^2$ are uncorrelated, but not independent. Show that $\Corr(X, aX + b) = \sign(a)$ for $a \neq 0$.
-    \item (Initialization.)
+    \item \homework{} (Initialization.)
     \begin{enumerate}[label=(\alph*)]
         \item Let $z \sim \mathcal{N}(0, s^2)$. Show that $\E[\mathrm{ReLU}(z)] = \frac{s}{\sqrt{2\pi}}$, $\E[\mathrm{ReLU}(z)^2] = \frac{s^2}{2}$ and $\Var(\mathrm{ReLU}(z)) = s^2\big(\frac{1}{2} - \frac{1}{2\pi}\big)$.
         \item (The backward pass.) Let $W$ be an $m \times n$ matrix with independent entries of mean $0$ and variance $v$, and let $\boldsymbol{\delta} \in \mathbb{R}^m$ be a random vector independent of $W$, with $\E[\delta_i^2] = q$ for all $i$. Show that every entry of $W^\top\boldsymbol{\delta}$, the gradient that backpropagation passes to the inputs of a linear layer $\mathbf{y} = W\mathbf{x}$, has mean $0$ and variance $mvq$. Which condition on $v$ keeps the size of the gradients constant?
@@ -2298,9 +2298,9 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \end{enumerate}
     \item (Moment generating functions.) Let $X \sim$ Exponential$(\lambda)$. Use the cumulant generating function $K_X(t) = \log\frac{\lambda}{\lambda - t}$ to find $\E[X]$ and $\Var(X)$. Find the moment generating function of the sum of $n$ independent Exponential$(\lambda)$ variables, and its mean and variance. Show that $\E[X^k] = \frac{k!}{\lambda^k}$ by expanding $M_X(t) = \frac{1}{1 - t/\lambda}$ as a geometric series.
     \item Let $\mathbf{X}$ have the covariance matrix $\Sigma = \begin{pmatrix} 2 & -1 & 0 \\ -1 & 2 & -1 \\ 0 & -1 & 2 \end{pmatrix}$. Compute $\Var(X_1 + X_2 + X_3)$ and $\Var(X_1 - X_3)$. In which direction $\mathbf{u}$ (with $\norm{\mathbf{u}} = 1$) is $\Var(\mathbf{u}^\top\mathbf{X})$ largest, and what is it? Find a matrix $A$ such that $A\mathbf{X}$ has covariance matrix $I$.
-    \item Let $(X, Y) \sim \mathcal{N}\Big(\mathbf{0}, \begin{pmatrix} 4 & 2 \\ 2 & 2 \end{pmatrix}\Big)$. Find the conditional distributions of $Y$ given $X = x$ and of $X$ given $Y = y$, the distribution of $X - Y$, and $P(X > Y)$. Describe the level curves of the density.
+    \item \homework{} Let $(X, Y) \sim \mathcal{N}\Big(\mathbf{0}, \begin{pmatrix} 4 & 2 \\ 2 & 2 \end{pmatrix}\Big)$. Find the conditional distributions of $Y$ given $X = x$ and of $X$ given $Y = y$, the distribution of $X - Y$, and $P(X > Y)$. Describe the level curves of the density.
     \item Let $\mathbf{X} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$ in $\mathbb{R}^d$. Show that the squared Mahalanobis distance $(\mathbf{X} - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{X} - \boldsymbol{\mu})$ has the same distribution as $\norm{\mathbf{Z}}^2$ with $\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, I)$, and that its expectation is $d$. What does this say about where the probability mass of a high-dimensional Gaussian lies?
-    \item How many times do we have to flip a fair coin so that the fraction of heads is within $0.01$ of $\frac{1}{2}$ with probability at least $95\%$? Answer with Chebyshev's inequality, with Hoeffding's inequality, and with the central limit theorem, and compare.
+    \item \homework{} How many times do we have to flip a fair coin so that the fraction of heads is within $0.01$ of $\frac{1}{2}$ with probability at least $95\%$? Answer with Chebyshev's inequality, with Hoeffding's inequality, and with the central limit theorem, and compare.
     \item (Delta method.) Let $X_1, \ldots, X_N$ be i.i.d.\ Exponential$(\lambda)$. Show that $\sqrt{N}\big(\frac{1}{\bar X_N} - \lambda\big) \to \mathcal{N}(0, \lambda^2)$ in distribution, and compare with the Fisher information of the exponential distribution (Exercise~\ref{L4-ex4:fisher}).
     \item Let $p(x) = \sqrt{2/\pi}\,e^{-x^2/2}$ for $x > 0$ be the density of $|Z|$ for $Z \sim \mathcal{N}(0, 1)$, and let $q(x) = e^{-x}$ be the Exponential$(1)$ density.
     \begin{enumerate}[label=(\alph*)]
@@ -2308,7 +2308,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item Write down the importance sampling estimator of $\E_p[X^2]$ with samples from $q$, and explain why its variance is finite.
     \end{enumerate}
     \item (SGD with a constant step size.) For $f(\theta) = \frac{1}{2N}\sum_i (\theta - y_i)^2$, SGD with mini-batches of size $1$ and a constant step size $\eta \in (0, 1)$ is $\theta_{k+1} = \theta_k - \eta(\theta_k - y_{I_k})$. Show that $e_k = \theta_k - \bar y$ satisfies $e_{k+1} = (1 - \eta)e_k + \eta(y_{I_k} - \bar y)$, and that $\E[e_k^2] \to \frac{\eta s^2}{2 - \eta}$, where $s^2 = \frac{1}{N}\sum_i (y_i - \bar y)^2$. Compare with Theorem~\ref{L4-thm:sgd}.
-    \item Consider the Markov chain with the transition matrix
+    \item \homework{} Consider the Markov chain with the transition matrix
     \[P = \begin{pmatrix} 0.7 & 0.2 & 0.1 \\ 0.3 & 0.5 & 0.2 \\ 0.2 & 0.3 & 0.5 \end{pmatrix}.\]
     Draw its transition graph, compute $P(X_2 = 3 \mid X_0 = 1)$, and find the stationary distribution. Is the chain irreducible and aperiodic? In the long run, what fraction of the time does it spend in state $1$?
     \item (Random walks on graphs.)
@@ -2317,7 +2317,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item The lazy walk stays at the current vertex with probability $\frac{1}{2}$, i.e., it has the transition matrix $\frac{1}{2}(I + P)$. Show that it has the same stationary distribution, find its eigenvalues, and explain why it converges.
     \end{enumerate}
     \item (Gibbs sampling.) Let $(X_1, X_2)$ be uniformly distributed on the four points $(0, 0)$, $(0, 1)$, $(1, 1)$ and $(1, 2)$. Find the conditional distributions of $X_1$ given $X_2$ and of $X_2$ given $X_1$, write down the $4 \times 4$ transition matrix of one sweep of the Gibbs sampler (first update $X_1$, then $X_2$), and check that the uniform distribution is stationary. Is the chain irreducible?
-    \item\label{L4-ex4:bellman-limit} (Markov reward processes and decision processes.)
+    \item\label{L4-ex4:bellman-limit} \homework{} (Markov reward processes and decision processes.)
     \begin{enumerate}[label=(\alph*)]
         \item For the weather chain of Example~\ref{L4-ex:bellman-weather}, compute $\mathbf{V}$ as a function of $\gamma$, and show that $(1 - \gamma)\mathbf{V} \to (\frac{5}{6}, \frac{5}{6})^\top$ as $\gamma \to 1$. For a general irreducible, aperiodic chain with the stationary distribution $\boldsymbol{\pi}$, explain with Theorem~\ref{L4-thm:markov-convergence} why $(1 - \gamma)V_i \to \boldsymbol{\pi}\mathbf{r}$ for every state $i$: the long-run average reward does not depend on the start.
         \item Show that the Bellman optimality operator satisfies $T(\mathbf{V} + c\mathbf{1}) = T\mathbf{V} + \gamma c\mathbf{1}$ for every $c \in \mathbb{R}$, and that value iteration started at $\mathbf{V}_0 = \mathbf{0}$ produces nondecreasing iterates if all rewards are nonnegative.
@@ -2336,7 +2336,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item Show that $\frac{N + 1}{N}M$ and $2\bar X_N$ are unbiased, and compare their variances, $\frac{\theta^2}{N(N + 2)}$ and $\frac{\theta^2}{3N}$. Which estimator is better?
     \end{enumerate}
     \item Find the maximum likelihood estimates for i.i.d.\ data from (a) Poisson$(\lambda)$, (b) Exponential$(\lambda)$, (c) Geometric$(p)$.
-    \item\label{L4-ex4:fisher} (Fisher information.)
+    \item\label{L4-ex4:fisher} \homework{} (Fisher information.)
     \begin{enumerate}[label=(\alph*)]
         \item Show that the Fisher information of Poisson$(\lambda)$ is $I(\lambda) = \frac{1}{\lambda}$, and that the MLE $\bar X_N$ is efficient.
         \item Show that $I(\lambda) = \frac{1}{\lambda^2}$ for Exponential$(\lambda)$. The sum $S$ of $N \geq 3$ i.i.d.\ Exponential$(\lambda)$ variables has the Gamma density $\frac{\lambda^N s^{N-1}e^{-\lambda s}}{(N - 1)!}$ for $s > 0$. Use it to show that the MLE $\frac{1}{\bar X_N}$ has the expectation $\frac{N\lambda}{N - 1}$, that $\frac{N - 1}{N\bar X_N}$ is unbiased, and that its variance $\frac{\lambda^2}{N - 2}$ is larger than the Cram\'er--Rao bound. Is the MLE asymptotically efficient?
@@ -2361,7 +2361,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \end{enumerate}
     \item A die is rolled $120$ times and shows $30$ sixes. Test at the level $0.05$ whether the die favors sixes: state $H_0$ and $H_1$, and compute the exact one-sided p-value $P(S \geq 30)$ for $S \sim$ Binomial$(120, \frac{1}{6})$ with a computer, and its normal approximation.
     \item (Neyman--Pearson.) Let $X_1, \ldots, X_N$ be i.i.d.\ Exponential$(\lambda)$. Find the most powerful test at the level $\alpha$ of $H_0$: $\lambda = 1$ against $H_1$: $\lambda = 2$, and show that it rejects if $\sum_i X_i$ is small. For $N = 1$ and $\alpha = 0.05$, find the rejection region and the power.
-    \item (Inference for linear regression.)
+    \item \homework{} (Inference for linear regression.)
     \begin{enumerate}[label=(\alph*)]
         \item For the simple regression $y_i = w_0 + w_1x_i + \varepsilon_i$ with homoscedastic noise, show that $\Var(\hat w_1) = \frac{\sigma^2}{\sum_i (x_i - \bar x)^2}$. How should the inputs $x_i$ be chosen in an experiment to estimate the slope precisely?
         \item For heteroscedastic noise with $\Cov(\boldsymbol{\varepsilon}) = \diag(\sigma_1^2, \ldots, \sigma_N^2)$, show that $\E[\mathrm{RSS}] = \sum_i \sigma_i^2(1 - H_{ii})$, where $H = X(X^\top X)^{-1}X^\top$.
@@ -2377,7 +2377,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \item (Classification metrics.) A test for a disease with a prevalence of $2\%$ has a true positive rate of $90\%$ and a false positive rate of $5\%$. Compute its precision. Which threshold-independent number does not change when the prevalence changes, and why? For the scores $0.9, 0.7, 0.6, 0.4, 0.2$ of five examples with the labels $1, 0, 1, 0, 0$, draw the ROC curve and compute the AUC in two ways.
     \item (Generalization.) How many i.i.d.\ test examples are needed to estimate the error rate of one classifier within $\pm 0.01$ with probability at least $0.95$, using Hoeffding's inequality? How many are needed to estimate the error rates of $1000$ classifiers simultaneously with the same accuracy?
     \item (Simpson's paradox.) Two treatments are compared in groups $s = 1, \ldots, m$, with the success rates $a_s = P(\text{success} \mid A, s)$ and $b_s = P(\text{success} \mid B, s)$, and $a_s > b_s$ for every $s$. Show that if $P(s \mid A) = P(s \mid B)$ for all $s$, as in a randomized experiment, then $P(\text{success} \mid A) > P(\text{success} \mid B)$. Then construct an example with two groups in which $a_s > b_s$ for both groups, but $P(\text{success} \mid A) < P(\text{success} \mid B)$.
-    \item With the uniform prior Beta$(1, 1)$, a coin shows $7$ heads in $10$ flips. Find the posterior distribution, its mean, the MAP estimate, the MLE, and the predictive probability of heads in the next flip.
+    \item \homework{} With the uniform prior Beta$(1, 1)$, a coin shows $7$ heads in $10$ flips. Find the posterior distribution, its mean, the MAP estimate, the MLE, and the predictive probability of heads in the next flip.
     \item (Gaussian--Gaussian conjugacy.) Let $x_1, \ldots, x_N$ be i.i.d.\ $\mathcal{N}(\mu, \sigma^2)$ with known $\sigma^2$, and let the prior be $\mu \sim \mathcal{N}(\mu_0, \tau^2)$. Show that the posterior is Gaussian with precision $\frac{1}{\tau^2} + \frac{N}{\sigma^2}$ and mean
     \[\frac{\mu_0/\tau^2 + N\bar x/\sigma^2}{1/\tau^2 + N/\sigma^2},\]
     a weighted average of the prior mean and the sample mean. What happens as $N \to \infty$?
@@ -2387,13 +2387,13 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item Use (a) to show that for the linear kernel $k(\mathbf{x}, \mathbf{x}') = \alpha^{-1}\mathbf{x}^\top\mathbf{x}'$, the posterior mean of Proposition~\ref{L4-prop:gp-regression} equals $\mathbf{m}^\top\mathbf{x}_*$ from Theorem~\ref{L4-thm:blr}. Which of the two formulas is cheaper to evaluate when $N \gg d$, and which when $d \gg N$?
         \item Let $f \sim \mathcal{GP}(0, k)$ with $k(s, t) = \min(s, t)$, and observe $f(1) = 1$ without noise. Find the posterior mean and variance of $f(t)$ for $0 \leq t \leq 1$ and for $t > 1$, and sketch them.
     \end{enumerate}
-    \item \begin{enumerate}[label=(\alph*)]
+    \item \homework{} \begin{enumerate}[label=(\alph*)]
         \item Compute the entropy of a fair die in bits.
         \item Compute $\KL(\text{Bernoulli}(p) \,\|\, \text{Bernoulli}(q))$, and show that
         \[\KL\big(\mathcal{N}(\mu_1, \sigma^2) \,\|\, \mathcal{N}(\mu_2, \sigma^2)\big) = \frac{(\mu_1 - \mu_2)^2}{2\sigma^2}.\]
         \item Show that $I(X; Y) = H(X) + H(Y) - H(X, Y)$ for discrete random variables, where $H(X, Y)$ is the entropy of the joint distribution. Compute $I(X; Y)$ for Exercise~\ref{L4-ex4:joint-pmf}.
     \end{enumerate}
-    \item (EM for a mixture of two coins.) In each of $5$ experiments, one of two coins with the unknown head probabilities $\theta_A$ and $\theta_B$ is chosen with probability $\frac{1}{2}$ and flipped $10$ times. The numbers of heads are $5, 9, 8, 4, 7$, and we do not know which coin was used. Starting from $\theta_A = 0.6$ and $\theta_B = 0.5$, carry out one step of EM: compute the posterior probabilities that coin A was used in each experiment, and the new estimates. Show that the log-likelihood increased.
+    \item \homework{} (EM for a mixture of two coins.) In each of $5$ experiments, one of two coins with the unknown head probabilities $\theta_A$ and $\theta_B$ is chosen with probability $\frac{1}{2}$ and flipped $10$ times. The numbers of heads are $5, 9, 8, 4, 7$, and we do not know which coin was used. Starting from $\theta_A = 0.6$ and $\theta_B = 0.5$, carry out one step of EM: compute the posterior probabilities that coin A was used in each experiment, and the new estimates. Show that the log-likelihood increased.
     \item ($k$-means.) Show that every assignment step and every update step of Lloyd's algorithm can only decrease $J$, and find an example with $N = 4$ points in $\mathbb{R}$ and $K = 2$ for which Lloyd's algorithm, started from a bad pair of centers, stops at an assignment that is not optimal.
     \item (Probabilistic PCA.)
     \begin{enumerate}[label=(\alph*)]
@@ -2424,7 +2424,7 @@ rng = np.random.default_rng(0)
 \begin{enumerate}[label=\textbf{P\arabic*.}, leftmargin=*]
     \item \textbf{Monte Carlo estimation.} Estimate $\pi$ from $N$ uniform random points in $[-1, 1]^2$, for $N = 10^2, 10^3, \ldots, 10^7$. Plot the absolute error against $N$ on a log-log scale, together with the standard error $4\sqrt{\frac{\pi}{4}(1 - \frac{\pi}{4})/N}$. What is the slope? Then estimate the volume of the unit ball in $\mathbb{R}^d$ for $d = 2, 5, 10, 20$ in the same way. What goes wrong in high dimensions?
 
-    \item \textbf{Sampling.} Generate $10^5$ samples from each of the following distributions, using only \py{rng.random()} (uniform samples), and compare histograms with the densities.
+    \item \homework{} \textbf{Sampling.} Generate $10^5$ samples from each of the following distributions, using only \py{rng.random()} (uniform samples), and compare histograms with the densities.
     \begin{itemize}
         \item Exponential$(\lambda)$ by inverse transform sampling (Theorem~\ref{L4-thm:inverse-transform}).
         \item A discrete distribution with the values $x_1 < \cdots < x_K$ and the probabilities $p_1, \ldots, p_K$, by its quantile function $F^{-1}(u) = \min\{x : F(x) \geq u\}$ (Theorem~\ref{L4-thm:inverse-transform}), using the cumulative sums and \py{np.searchsorted}. Compare the frequencies with the probabilities.
@@ -2451,7 +2451,7 @@ rng = np.random.default_rng(0)
 
     \item \textbf{The bootstrap.} For $N = 50$ samples from Exponential$(1)$, estimate the standard error of the sample median by resampling the data $2000$ times with replacement and computing the median of each resample. Compare with the standard error of the median over many independent data sets. Use the same method to compute a $95\%$ interval for the mean (the $2.5\%$ and $97.5\%$ quantiles of the bootstrapped means), and compare with $\bar x \pm 1.96\frac{s}{\sqrt{N}}$.
 
-    \item \textbf{Bayesian updating and Thompson sampling.}
+    \item \homework{} \textbf{Bayesian updating and Thompson sampling.}
     \begin{itemize}
         \item Simulate $100$ flips of a coin with $\theta = 0.3$, and plot the Beta posterior (starting from Beta$(1, 1)$) after $0, 1, 5, 20$ and $100$ flips, as in Figure~\ref{L4-fig:beta}.
         \item A slot machine has three arms with unknown success probabilities $0.3$, $0.5$ and $0.6$. Thompson sampling keeps a Beta posterior for each arm, and in each round draws one sample from each posterior and plays the arm with the largest sample. Simulate $1000$ rounds, and plot how often each arm is played. Compare the total reward with always playing a random arm and with always playing the best arm.
@@ -2538,7 +2538,7 @@ rng = np.random.default_rng(0)
         \item Repeat with $\tanh$ activations and $v = \frac{1}{512}$. Then backpropagate the gradient of the loss $\sum_i y_i$ of the last layer, and plot the mean squared gradient with respect to the activations of each layer. Which initialization keeps both the forward signal and the gradients at a constant size?
     \end{itemize}
 
-    \item \textbf{Policy evaluation and value iteration} (Section~\ref{L4-sec:bellman}). A robot moves on a $4 \times 4$ grid with the actions up, down, left and right; it moves in the chosen direction with probability $0.8$ and in one of the two perpendicular directions with probability $0.1$ each, and stays in place if it would leave the grid. Entering the corner $(4, 4)$ gives the reward $1$ and restarts the robot at $(1, 1)$, and every other step gives the reward $-0.04$. Let $\gamma = 0.95$.
+    \item \homework{} \textbf{Policy evaluation and value iteration} (Section~\ref{L4-sec:bellman}). A robot moves on a $4 \times 4$ grid with the actions up, down, left and right; it moves in the chosen direction with probability $0.8$ and in one of the two perpendicular directions with probability $0.1$ each, and stays in place if it would leave the grid. Entering the corner $(4, 4)$ gives the reward $1$ and restarts the robot at $(1, 1)$, and every other step gives the reward $-0.04$. Let $\gamma = 0.95$.
     \begin{itemize}
         \item Compute the value of the uniformly random policy by solving the Bellman equation with \py{np.linalg.solve}, and by iterative policy evaluation. Plot the error $\norm{\mathbf{V}_k - \mathbf{V}}_\infty$ against $k$ on a logarithmic scale, together with $\gamma^k\norm{\mathbf{V}_0 - \mathbf{V}}_\infty$.
         \item Find the optimal values with value iteration, and draw the greedy policy as arrows on the grid. Compare with policy iteration (Exercise~\ref{L4-ex4:bellman-limit}): how many iterations does each method need?

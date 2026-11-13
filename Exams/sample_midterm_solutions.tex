@@ -43,16 +43,6 @@
     \item Both functionals vanish on $K$ by the definition of $K$, so $\varphi_1, \varphi_2 \in K^\circ$. They are linearly independent: $\varphi_1(1) = 1$, $\varphi_2(1) = 0$, $\varphi_1(x - 1) = 0$, $\varphi_2(x - 1) = 1$. Since $K^\circ \cong (V/K)^*$ (quotients and duality), $\dim K^\circ = \dim V/K = 2$, so they form a basis.
 \end{enumerate}
 
-\section*{Problem \ref{pr:mid-low-rank}}
-
-\begin{enumerate}[label=(\alph*)]
-    \item $M = aI_n + (b\mathbf{1})\mathbf{1}^\top$. By the determinant lemma, $\det(M) = \big(1 + \mathbf{1}^\top (aI)^{-1} b\mathbf{1}\big)\det(aI_n) = \big(1 + \frac{nb}{a}\big)a^n = a^{n-1}(a + nb)$.
-    \item By Sherman--Morrison with $A = aI$, $\mathbf{u} = b\mathbf{1}$, $\mathbf{v} = \mathbf{1}$ (the denominator is $1 + \frac{nb}{a} \neq 0$):
-    \[M^{-1} = \frac{1}{a}I_n - \frac{\frac{b}{a^2}\mathbf{1}\mathbf{1}^\top}{1 + \frac{nb}{a}} = \frac{1}{a}\Big(I_n - \frac{b}{a + nb}\,\mathbf{1}\mathbf{1}^\top\Big).\]
-    \item $M\mathbf{1} = (a + nb)\mathbf{1}$, and $M\mathbf{x} = a\mathbf{x}$ for every $\mathbf{x} \perp \mathbf{1}$, an $(n - 1)$-dimensional subspace. Since $b \neq 0$, the eigenvalues $a + nb$ and $a$ are distinct, with geometric multiplicities $1$ and $n - 1$; these add up to $n$, so the algebraic multiplicities are the same, $M$ is diagonalizable (indeed symmetric), and $\det(M) = a^{n-1}(a + nb)$ is the product of the eigenvalues. The minimal polynomial is $m_M(t) = (t - a)(t - a - nb)$, a product of distinct linear factors.
-    \item $M$ is symmetric, so it is positive definite if and only if all its eigenvalues are positive: $a > 0$ and $a + nb > 0$. (For $b = 0$, this is $a > 0$, which is also correct.)
-\end{enumerate}
-
 \section*{Problem \ref{pr:mid-eigen}}
 
 \begin{enumerate}[label=(\alph*)]
@@ -98,6 +88,16 @@
     \item $\norm{A}_2 = \sigma_1 = 3\sqrt 5$, $\norm{A}_F = \sqrt{45 + 5} = \sqrt{50} = 5\sqrt 2$ (check: $9 + 16 + 25 = 50$), $\kappa(A) = \sigma_1/\sigma_2 = 3$.
     \item By Eckart--Young, $A_1 = \sigma_1\mathbf{u}_1\mathbf{v}_1^\top = \frac{3}{2}\begin{pmatrix} 1 & 1 \\ 3 & 3 \end{pmatrix}$, and $\norm{A - A_1}_2 = \sigma_2 = \sqrt 5$, $\norm{A - A_1}_F = \sigma_2 = \sqrt 5$ (only one singular value is left).
     \item If $C\mathbf{x} = \mathbf{0}$, then $C^\top C\mathbf{x} = \mathbf{0}$. Conversely, if $C^\top C\mathbf{x} = \mathbf{0}$, then $0 = \mathbf{x}^\top C^\top C\mathbf{x} = \norm{C\mathbf{x}}^2$, so $C\mathbf{x} = \mathbf{0}$. Both matrices have $n$ columns, so by rank--nullity $\rank(C^\top C) = n - \dim\Null(C^\top C) = n - \dim\Null(C) = \rank(C)$. The $n \times n$ matrix $C^\top C$ is invertible iff its rank is $n$, iff $\rank(C) = n$, iff the columns of $C$ are linearly independent.
+\end{enumerate}
+
+\section*{Problem \ref{pr:mid-low-rank} (bonus)}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $M = aI_n + (b\mathbf{1})\mathbf{1}^\top$. By the determinant lemma, $\det(M) = \big(1 + \mathbf{1}^\top (aI)^{-1} b\mathbf{1}\big)\det(aI_n) = \big(1 + \frac{nb}{a}\big)a^n = a^{n-1}(a + nb)$.
+    \item By Sherman--Morrison with $A = aI$, $\mathbf{u} = b\mathbf{1}$, $\mathbf{v} = \mathbf{1}$ (the denominator is $1 + \frac{nb}{a} \neq 0$):
+    \[M^{-1} = \frac{1}{a}I_n - \frac{\frac{b}{a^2}\mathbf{1}\mathbf{1}^\top}{1 + \frac{nb}{a}} = \frac{1}{a}\Big(I_n - \frac{b}{a + nb}\,\mathbf{1}\mathbf{1}^\top\Big).\]
+    \item $M\mathbf{1} = (a + nb)\mathbf{1}$, and $M\mathbf{x} = a\mathbf{x}$ for every $\mathbf{x} \perp \mathbf{1}$, an $(n - 1)$-dimensional subspace. Since $b \neq 0$, the eigenvalues $a + nb$ and $a$ are distinct, with geometric multiplicities $1$ and $n - 1$; these add up to $n$, so the algebraic multiplicities are the same, $M$ is diagonalizable (indeed symmetric), and $\det(M) = a^{n-1}(a + nb)$ is the product of the eigenvalues. The minimal polynomial is $m_M(t) = (t - a)(t - a - nb)$, a product of distinct linear factors.
+    \item $M$ is symmetric, so it is positive definite if and only if all its eigenvalues are positive: $a > 0$ and $a + nb > 0$. (For $b = 0$, this is $a > 0$, which is also correct.)
 \end{enumerate}
 
 \end{document}

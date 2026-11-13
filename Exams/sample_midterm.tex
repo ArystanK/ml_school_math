@@ -37,75 +37,75 @@
 
 \medskip
 \noindent\fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{
-\textbf{Time:} 90 minutes. \textbf{Total:} 100 points, in 6 problems.\\
+\textbf{Time:} 90 minutes. \textbf{Total:} 100 points in Problems 1--5. Problem 6 is a bonus problem for up to 10 extra points; the exam score is capped at 100.\\
 \textbf{Allowed:} the midterm cheatsheet handed out with this exam. No notes, books or calculators.\\
 Justify every answer. You may quote any result from the lectures by name or by its statement on the cheatsheet. Vectors of $\mathbb{R}^n$ are columns, and $\mathbf{e}_1, \ldots, \mathbf{e}_n$ is the standard basis.
 }}
 
 \bigskip
 
-\begin{problem}[16 points]\label{pr:mid-linear-map}
+\begin{problem}[20 points]\label{pr:mid-linear-map}
     Let $V = \mathbb{R}[x]_{\leq 3}$ be the space of polynomials of degree at most $3$, and let
     \[T: V \to \mathbb{R}^2, \qquad T(p) = \big(p(1), \, p'(1)\big).\]
     \begin{enumerate}[label=(\alph*)]
-        \item \pts{4} Show that $T$ is linear, and find its matrix $[T]_{\mathcal{C}, \mathcal{B}}$ with respect to the basis $\mathcal{B} = (1, x, x^2, x^3)$ of $V$ and the standard basis $\mathcal{C}$ of $\mathbb{R}^2$.
-        \item \pts{4} Find a basis of $\ker(T)$ and the dimension of $\im(T)$, and check the rank--nullity theorem.
-        \item \pts{4} Let $K = \ker(T)$. Show that the cosets $1 + K$ and $x + K$ form a basis of the quotient space $V/K$, and write $x^3 + K$ as a linear combination of them.
-        \item \pts{4} Let $\varphi_1, \varphi_2 \in V^*$ be the functionals $\varphi_1(p) = p(1)$ and $\varphi_2(p) = p'(1)$. Show that $\varphi_1, \varphi_2$ form a basis of the annihilator $K^\circ \subseteq V^*$.
+        \item \pts{5} Show that $T$ is linear, and find its matrix $[T]_{\mathcal{C}, \mathcal{B}}$ with respect to the basis $\mathcal{B} = (1, x, x^2, x^3)$ of $V$ and the standard basis $\mathcal{C}$ of $\mathbb{R}^2$.
+        \item \pts{5} Find a basis of $\ker(T)$ and the dimension of $\im(T)$, and check the rank--nullity theorem.
+        \item \pts{5} Let $K = \ker(T)$. Show that the cosets $1 + K$ and $x + K$ form a basis of the quotient space $V/K$, and write $x^3 + K$ as a linear combination of them.
+        \item \pts{5} Let $\varphi_1, \varphi_2 \in V^*$ be the functionals $\varphi_1(p) = p(1)$ and $\varphi_2(p) = p'(1)$. Show that $\varphi_1, \varphi_2$ form a basis of the annihilator $K^\circ \subseteq V^*$.
     \end{enumerate}
 \end{problem}
 
-\begin{problem}[16 points]\label{pr:mid-low-rank}
-    Let $n \geq 2$, let $a, b \in \mathbb{R}$, let $\mathbf{1} = (1, \ldots, 1)^\top \in \mathbb{R}^n$, and let
-    \[M = aI_n + b\,\mathbf{1}\mathbf{1}^\top,\]
-    the $n \times n$ matrix with $a + b$ on the diagonal and $b$ everywhere else.
-    \begin{enumerate}[label=(\alph*)]
-        \item \pts{4} Let $a \neq 0$. Compute $\det(M)$ without cofactor expansion.
-        \item \pts{4} Let $a \neq 0$ and $a + nb \neq 0$. Find $M^{-1}$.
-        \item \pts{5} Let $b \neq 0$. Find the eigenvalues of $M$ with their algebraic and geometric multiplicities, and check that $\det(M)$ is their product. Is $M$ diagonalizable? What is its minimal polynomial?
-        \item \pts{3} For which $a$ and $b$ is $M$ positive definite?
-    \end{enumerate}
-\end{problem}
-
-\begin{problem}[16 points]\label{pr:mid-eigen}
+\begin{problem}[20 points]\label{pr:mid-eigen}
     Let
     \[A = \begin{pmatrix} 3 & -2 & -1 \\ 2 & -1 & -1 \\ -1 & 1 & 2 \end{pmatrix} \qquad \text{and} \qquad B = \begin{pmatrix} 2 & -1 & -1 \\ 1 & 0 & -1 \\ -1 & 1 & 2 \end{pmatrix}.\]
     \begin{enumerate}[label=(\alph*)]
-        \item \pts{4} Show that $A$ and $B$ have the same characteristic polynomial, and find their eigenvalues.
-        \item \pts{5} Find the algebraic and geometric multiplicity of each eigenvalue of $A$ and of $B$. Which of the two matrices is diagonalizable?
-        \item \pts{3} Find the minimal polynomials of $A$ and $B$. Are $A$ and $B$ similar?
-        \item \pts{4} Without row reduction, write $A^{-1}$ as a polynomial in $A$, and $B^{-1}$ as a polynomial in $B$ of degree $1$.
+        \item \pts{5} Show that $A$ and $B$ have the same characteristic polynomial, and find their eigenvalues.
+        \item \pts{6} Find the algebraic and geometric multiplicity of each eigenvalue of $A$ and of $B$. Which of the two matrices is diagonalizable?
+        \item \pts{4} Find the minimal polynomials of $A$ and $B$. Are $A$ and $B$ similar?
+        \item \pts{5} Without row reduction, write $A^{-1}$ as a polynomial in $A$, and $B^{-1}$ as a polynomial in $B$ of degree $1$.
     \end{enumerate}
 \end{problem}
 
-\begin{problem}[18 points]\label{pr:mid-tensors}
+\begin{problem}[20 points]\label{pr:mid-tensors}
     \begin{enumerate}[label=(\alph*)]
         \item \pts{4} Find the ranks of the tensors
         \[t = \mathbf{e}_1 \otimes \mathbf{e}_1 + \mathbf{e}_1 \otimes \mathbf{e}_2 + \mathbf{e}_2 \otimes \mathbf{e}_1 + \mathbf{e}_2 \otimes \mathbf{e}_2 \qquad \text{and} \qquad s = \mathbf{e}_1 \otimes \mathbf{e}_2 - \mathbf{e}_2 \otimes \mathbf{e}_1\]
         in $\mathbb{R}^2 \otimes \mathbb{R}^2$. Write $t$ as a pure tensor.
-        \item \pts{5} Let $V$ and $W$ be vector spaces. Prove that there is exactly one linear transformation $\sigma: V \otimes W \to W \otimes V$ with $\sigma(v \otimes w) = w \otimes v$ for all $v \in V$ and $w \in W$, and that $\sigma$ is an isomorphism.
-        \item \pts{5} On $V = \mathbb{R}^2$, consider the new basis $\mathbf{b}_1' = \mathbf{e}_1$, $\mathbf{b}_2' = \mathbf{e}_1 + \mathbf{e}_2$. In the standard basis, the array $A = \diag(1, -1)$ describes both the linear transformation $\mathbf{x} \mapsto A\mathbf{x}$ (a tensor in $V \otimes V^*$) and the bilinear form $\beta(\mathbf{x}, \mathbf{y}) = \mathbf{x}^\top A\mathbf{y}$ (a tensor in $V^* \otimes V^*$). Find the arrays of both tensors in the new basis, and their traces. Which of the two traces does not depend on the basis, and why?
+        \item \pts{6} Let $V$ and $W$ be vector spaces. Prove that there is exactly one linear transformation $\sigma: V \otimes W \to W \otimes V$ with $\sigma(v \otimes w) = w \otimes v$ for all $v \in V$ and $w \in W$, and that $\sigma$ is an isomorphism.
+        \item \pts{6} On $V = \mathbb{R}^2$, consider the new basis $\mathbf{b}_1' = \mathbf{e}_1$, $\mathbf{b}_2' = \mathbf{e}_1 + \mathbf{e}_2$. In the standard basis, the array $A = \diag(1, -1)$ describes both the linear transformation $\mathbf{x} \mapsto A\mathbf{x}$ (a tensor in $V \otimes V^*$) and the bilinear form $\beta(\mathbf{x}, \mathbf{y}) = \mathbf{x}^\top A\mathbf{y}$ (a tensor in $V^* \otimes V^*$). Find the arrays of both tensors in the new basis, and their traces. Which of the two traces does not depend on the basis, and why?
         \item \pts{4} Write each of the following in Einstein notation and as a call of \texttt{np.einsum}: (i) the number $\tr(A^\top B)$ for $A, B \in \mathbb{R}^{m \times n}$; (ii) for $X \in \mathbb{R}^{N \times d}$ with the rows $\mathbf{x}_1^\top, \ldots, \mathbf{x}_N^\top$ and $M \in \mathbb{R}^{d \times d}$, the vector $\mathbf{q} \in \mathbb{R}^N$ with the entries $q_b = \mathbf{x}_b^\top M\mathbf{x}_b$.
     \end{enumerate}
 \end{problem}
 
-\begin{problem}[17 points]\label{pr:mid-projection}
+\begin{problem}[20 points]\label{pr:mid-projection}
     On $C[-1, 1]$, consider the inner product $\ip{f}{g} = \int_{-1}^1 f(x)g(x)\, dx$, and let $U = \mathbb{R}[x]_{\leq 2}$.
     \begin{enumerate}[label=(\alph*)]
-        \item \pts{5} Apply the Gram--Schmidt process to $1, x, x^2$ to obtain an orthonormal basis of $U$.
-        \item \pts{5} Find the polynomial $p \in U$ that is closest to $f(x) = |x|$ in the norm of this inner product.
-        \item \pts{3} Compute the squared distance $\norm{f - p}^2$.
+        \item \pts{6} Apply the Gram--Schmidt process to $1, x, x^2$ to obtain an orthonormal basis of $U$.
+        \item \pts{6} Find the polynomial $p \in U$ that is closest to $f(x) = |x|$ in the norm of this inner product.
+        \item \pts{4} Compute the squared distance $\norm{f - p}^2$.
         \item \pts{4} Let $P$ be an $n \times n$ matrix with $P^2 = P$ and $P^\top = P$. Prove that $P\mathbf{x}$ is the orthogonal projection of $\mathbf{x}$ onto $\col(P)$ (with respect to the dot product) for every $\mathbf{x} \in \mathbb{R}^n$.
     \end{enumerate}
 \end{problem}
 
-\begin{problem}[17 points]\label{pr:mid-svd}
+\begin{problem}[20 points]\label{pr:mid-svd}
     Let $A = \begin{pmatrix} 3 & 0 \\ 4 & 5 \end{pmatrix}$.
     \begin{enumerate}[label=(\alph*)]
-        \item \pts{6} Find a singular value decomposition $A = U\Sigma V^\top$.
-        \item \pts{3} Find $\norm{A}_2$, $\norm{A}_F$ and the condition number $\kappa(A)$.
-        \item \pts{4} Find a matrix $A_1$ of rank $1$ that minimizes $\norm{A - A_1}_2$, and compute $\norm{A - A_1}_2$ and $\norm{A - A_1}_F$.
+        \item \pts{7} Find a singular value decomposition $A = U\Sigma V^\top$.
+        \item \pts{4} Find $\norm{A}_2$, $\norm{A}_F$ and the condition number $\kappa(A)$.
+        \item \pts{5} Find a matrix $A_1$ of rank $1$ that minimizes $\norm{A - A_1}_2$, and compute $\norm{A - A_1}_2$ and $\norm{A - A_1}_F$.
         \item \pts{4} Let $C$ be any real $m \times n$ matrix. Prove that $\Null(C^\top C) = \Null(C)$, and conclude that $\rank(C^\top C) = \rank(C)$, and that $C^\top C$ is invertible if and only if the columns of $C$ are linearly independent.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[Bonus, 10 points]\label{pr:mid-low-rank}
+    Let $n \geq 2$, let $a, b \in \mathbb{R}$, let $\mathbf{1} = (1, \ldots, 1)^\top \in \mathbb{R}^n$, and let
+    \[M = aI_n + b\,\mathbf{1}\mathbf{1}^\top,\]
+    the $n \times n$ matrix with $a + b$ on the diagonal and $b$ everywhere else.
+    \begin{enumerate}[label=(\alph*)]
+        \item \pts{3} Let $a \neq 0$. Compute $\det(M)$ without cofactor expansion.
+        \item \pts{2} Let $a \neq 0$ and $a + nb \neq 0$. Find $M^{-1}$.
+        \item \pts{3} Let $b \neq 0$. Find the eigenvalues of $M$ with their algebraic and geometric multiplicities, and check that $\det(M)$ is their product. Is $M$ diagonalizable? What is its minimal polynomial?
+        \item \pts{2} For which $a$ and $b$ is $M$ positive definite?
     \end{enumerate}
 \end{problem}
 
