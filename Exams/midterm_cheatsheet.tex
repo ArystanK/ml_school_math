@@ -1,0 +1,161 @@
+\documentclass[10pt]{article}
+
+% Cheatsheet handed out with the midterm exam (Lectures 1--2): definitions and theorems that are easy to forget
+\usepackage[margin=0.5in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Null}{null}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\row}{row}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+
+\newcommand{\topic}[1]{\par\smallskip\noindent{\color{blue!50!black}\textbf{#1}}\par}
+\newcommand{\head}[1]{\begin{center}\colorbox{blue!10}{\parbox{0.96\linewidth}{\centering\textbf{#1}}}\end{center}}
+\setlist{nosep, leftmargin=1em, label=\textbullet}
+\setlength{\parindent}{0pt}
+\setlength{\columnsep}{1.5em}
+\pagestyle{empty}
+
+\begin{document}
+\footnotesize
+
+\begin{center}
+    {\large\textbf{Midterm Cheatsheet --- Lectures 1--2}}\\
+    Definitions and theorems that are easy to forget. Vectors of $\mathbb{R}^n$ are columns.
+\end{center}
+
+\head{Definitions people forget}
+
+\raggedcolumns
+\begin{multicols}{2}
+
+\topic{Spaces and maps}
+\begin{itemize}
+    \item \textbf{Subspace}: contains $0$, closed under $+$ and scalar multiplication.
+    \item \textbf{Linear independence} of an infinite set: every \emph{finite} subset is independent; span = finite linear combinations.
+    \item \textbf{Matrix of $T: V \to W$}: $[T]_{\mathcal{C}, \mathcal{B}}$ has $j$-th column $[T(b_j)]_{\mathcal{C}}$; then $[T(v)]_{\mathcal{C}} = [T]_{\mathcal{C}, \mathcal{B}}[v]_{\mathcal{B}}$.
+    \item \textbf{Similar}: $B = P^{-1}AP$ for an invertible $P$.
+    \item \textbf{Group}: associative, identity, inverses; \textbf{abelian} if $ab = ba$. $\mathrm{GL}(n)$, $\mathrm{SL}(n) = \{\det = 1\}$, $\mathrm{O}(n) = \{Q^\top Q = I\}$, $\mathrm{SO}(n) = \mathrm{O}(n) \cap \mathrm{SL}(n)$.
+\end{itemize}
+
+\topic{Duality and quotients}
+\begin{itemize}
+    \item \textbf{Dual space} $V^* = \{\varphi: V \to \mathbb{F} \text{ linear}\}$. \textbf{Dual basis}: $b^i(b_j) = \delta_{ij}$; for $\mathbb{R}^n$ with $P = (\mathbf{b}_1 \cdots \mathbf{b}_n)$, $b^i$ = $i$-th \emph{row} of $P^{-1}$.
+    \item \textbf{Dual map} $T^*: W^* \to V^*$, $T^*(\psi) = \psi \circ T$; its matrix in the dual bases is $A^\top$.
+    \item \textbf{Annihilator} $U^\circ = \{\varphi \in V^* : \varphi|_U = 0\}$.
+    \item \textbf{Double dual}: $\iota(v)(\varphi) = \varphi(v)$; $V \cong V^{**}$ if $\dim V < \infty$.
+    \item \textbf{Coset} $v + U$; $v + U = w + U \iff v - w \in U$. \textbf{Quotient} $V/U$ = set of cosets, $(v + U) + (w + U) = (v + w) + U$, $c(v + U) = cv + U$, zero vector $U$; quotient map $\pi(v) = v + U$.
+    \item \textbf{Sum} $U + W$; \textbf{direct sum} $V = U \oplus W$: every $v = u + w$ \emph{uniquely}.
+\end{itemize}
+
+\topic{Matrices}
+\begin{itemize}
+    \item \textbf{Schur complement} of $A$ in $M = \begin{pmatrix} A & B \\ C & D \end{pmatrix}$: $S = D - CA^{-1}B$.
+    \item \textbf{Cofactor} $C_{ij} = (-1)^{i+j}\det A^{(ij)}$ ($A^{(ij)}$: delete row $i$, column $j$).
+    \item \textbf{Characteristic polynomial} $p_A(\lambda) = \det(A - \lambda I)$. \textbf{Algebraic multiplicity}: multiplicity as a root of $p_A$. \textbf{Geometric}: $\dim E_\lambda = n - \rank(A - \lambda I)$.
+    \item \textbf{Minimal polynomial} $m_A$: monic, smallest degree, $m_A(A) = 0$.
+    \item \textbf{Circulant} $\mathrm{circ}(\mathbf{c})_{jk} = c_{j - k \bmod n}$, matrix of $\mathbf{x} \mapsto \mathbf{c} \ast \mathbf{x}$.
+\end{itemize}
+
+\topic{Tensors}
+\begin{itemize}
+    \item \textbf{Tensor product} $V \otimes W = \mathcal{F}_0(V \times W)/R$, $R$ spanned by the bilinearity relations; $v \otimes w = \delta_{(v,w)} + R$. \textbf{Pure tensor}: $v \otimes w$.
+    \item \textbf{Tensor rank}: least number of pure tensors with sum $t$ (zero tensor: $0$).
+    \item \textbf{Contraction} $C: V \otimes V^* \to \mathbb{R}$, $C(v \otimes \varphi) = \varphi(v)$.
+    \item \textbf{Type $(p, q)$}: element of $V^{\otimes p} \otimes (V^*)^{\otimes q}$. Vector $(1,0)$, functional $(0,1)$, linear map $(1,1)$, bilinear form $(0,2)$.
+    \item \textbf{Einstein convention}: repeated indices are summed; the others are free.
+\end{itemize}
+
+\topic{Inner products and norms}
+\begin{itemize}
+    \item \textbf{Inner product}: bilinear, symmetric, positive definite. \textbf{SPD}: $A = A^\top$, $\mathbf{x}^\top A\mathbf{x} > 0$ for $\mathbf{x} \neq \mathbf{0}$.
+    \item \textbf{Orthogonal complement} $U^\perp = \{v : \ip{v}{u} = 0 \ \forall u \in U\}$.
+    \item \textbf{Orthogonal projection}: $\pi_U(v) \in U$ and $v - \pi_U(v) \in U^\perp$.
+    \item \textbf{Spectral norm} $\norm{A}_2 = \max_{\mathbf{x} \neq \mathbf{0}} \norm{A\mathbf{x}}/\norm{\mathbf{x}}$; \textbf{Frobenius} $\norm{A}_F^2 = \sum_{ij} A_{ij}^2 = \tr(A^\top A)$.
+    \item \textbf{Pseudo-inverse} $A^+ = V\Sigma^+U^\top$, $(\Sigma^+)_{ii} = 1/\sigma_i$ for $i \leq r$.
+    \item \textbf{Condition number} $\kappa(A) = \sigma_1/\sigma_n$ (independent columns).
+    \item \textbf{Graph Laplacian} $L = D - W$, $D = \diag(d_i)$, $d_i = \sum_j w_{ij}$.
+\end{itemize}
+
+\end{multicols}
+
+\head{Theorems people forget}
+
+\begin{multicols}{2}
+
+\topic{Dimension counting}
+\begin{itemize}
+    \item \textbf{Rank--nullity}: $\dim\ker T + \dim\im T = \dim V$. $\rank A = \dim\col A = \dim\row A$.
+    \item \textbf{First isomorphism theorem}: $V/\ker T \cong \im T$ via $v + \ker T \mapsto T(v)$.
+    \item $\dim V/U = \dim V - \dim U$; $(V/U)^* \cong U^\circ$; in $\mathbb{R}^n$: $\dim U + \dim U^\circ = n$.
+    \item $\dim(U + W) + \dim(U \cap W) = \dim U + \dim W$. Second iso: $(U + W)/W \cong U/(U \cap W)$.
+    \item \textbf{Fredholm}: $A\mathbf{x} = \mathbf{b}$ is solvable $\iff$ $\mathbf{y}\mathbf{b} = 0$ for every row $\mathbf{y}$ with $\mathbf{y}A = \mathbf{0}$.
+\end{itemize}
+
+\topic{Determinants, traces, inverses}
+\begin{itemize}
+    \item $\det(AB) = \det A\det B$, $\det A^\top = \det A$, $\det(cA) = c^n\det A$, $\det A^{-1} = 1/\det A$. Row swap: $\times(-1)$; scale a row by $c$: $\times c$; add a multiple of a row: unchanged.
+    \item $\tr(AB) = \tr(BA)$ (also for rectangular $A$, $B$); $\tr(P^{-1}AP) = \tr A$.
+    \item $A^{-1} = \frac{1}{\det A}C^\top$ (cofactor matrix $C$). For $2 \times 2$: $\begin{pmatrix} a & b \\ c & d \end{pmatrix}^{-1} = \frac{1}{ad - bc}\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}$.
+    \item $\det\begin{pmatrix} A & B \\ 0 & D \end{pmatrix} = \det A\det D$; $\det M = \det A \det S$ (Schur), and
+    $M^{-1} = \begin{pmatrix} A^{-1} + A^{-1}BS^{-1}CA^{-1} & -A^{-1}BS^{-1} \\ -S^{-1}CA^{-1} & S^{-1} \end{pmatrix}$.
+    \item \textbf{Woodbury}: $(A + UCV)^{-1} = A^{-1} - A^{-1}U(C^{-1} + VA^{-1}U)^{-1}VA^{-1}$.
+    \item \textbf{Sherman--Morrison}: $(A + \mathbf{u}\mathbf{v}^\top)^{-1} = A^{-1} - \dfrac{A^{-1}\mathbf{u}\mathbf{v}^\top A^{-1}}{1 + \mathbf{v}^\top A^{-1}\mathbf{u}}$.
+    \item \textbf{Determinant lemma}: $\det(I_n + UV) = \det(I_k + VU)$; $\det(A + \mathbf{u}\mathbf{v}^\top) = (1 + \mathbf{v}^\top A^{-1}\mathbf{u})\det A$.
+    \item \textbf{LU}: $PA = LU$ for invertible $A$ ($L$ unit lower, $U$ upper triangular).
+\end{itemize}
+
+\topic{Eigenvalues}
+\begin{itemize}
+    \item $\det A = \prod\lambda_i$, $\tr A = \sum\lambda_i$ (complex, with multiplicity). $2 \times 2$: $p_A(\lambda) = \lambda^2 - \tr(A)\lambda + \det A$.
+    \item Eigenvectors for distinct eigenvalues are independent. $1 \leq$ geometric $\leq$ algebraic.
+    \item Diagonalizable $\iff$ $n$ independent eigenvectors $\iff$ $p_A$ has $n$ real roots and geometric = algebraic for all $\lambda$ $\iff$ $m_A$ = product of \emph{distinct} real linear factors.
+    \item \textbf{Cayley--Hamilton}: $p_A(A) = 0$. $m_A$ divides every $q$ with $q(A) = 0$; the roots of $m_A$ are the eigenvalues.
+    \item $A = PDP^{-1} \Rightarrow A^k = PD^kP^{-1}$. A matrix commutes with the cyclic shift $\iff$ it is circulant; the DFT diagonalizes circulants.
+\end{itemize}
+
+\topic{Tensors}
+\begin{itemize}
+    \item \textbf{Universal property}: every bilinear $\beta: V \times W \to U$ gives exactly one linear $\tilde\beta: V \otimes W \to U$ with $\tilde\beta(v \otimes w) = \beta(v, w)$.
+    \item $\{b_i \otimes c_j\}$ is a basis; $\dim(V \otimes W) = \dim V\dim W$. $\mathbb{R}^m \otimes \mathbb{R}^n \cong \mathbb{R}^{m \times n}$, $\mathbf{u} \otimes \mathbf{v} \mapsto \mathbf{u}\mathbf{v}^\top$; tensor rank = matrix rank.
+    \item $\mathrm{Hom}(V, W) \cong W \otimes V^*$, $w \otimes \varphi \mapsto (v \mapsto \varphi(v)w)$; multilinear forms $\leftrightarrow V_1^* \otimes \cdots \otimes V_k^*$; $\tr = $ contraction.
+    \item \textbf{Change of basis} $b_j' = \sum_i P_{ij}b_i$: vectors $\mathbf{x}' = P^{-1}\mathbf{x}$; linear maps $A' = P^{-1}AP$; bilinear forms $A' = P^\top AP$; $V \otimes V$: $A' = P^{-1}A(P^{-1})^\top$. Each $V$-index transforms with $P^{-1}$, each $V^*$-index with $P$.
+\end{itemize}
+
+\topic{Inner product spaces}
+\begin{itemize}
+    \item \textbf{Cauchy--Schwarz} $|\ip{x}{y}| \leq \norm{x}\norm{y}$, equality $\iff$ dependent. \textbf{Parallelogram}: $\norm{x + y}^2 + \norm{x - y}^2 = 2\norm{x}^2 + 2\norm{y}^2$. \textbf{Polarization}: $\ip{x}{y} = \frac{1}{4}(\norm{x + y}^2 - \norm{x - y}^2)$.
+    \item $\norm{\mathbf{x}}_\infty \leq \norm{\mathbf{x}}_2 \leq \norm{\mathbf{x}}_1 \leq n\norm{\mathbf{x}}_\infty$.
+    \item \textbf{Gram--Schmidt}: $u_j = v_j - \sum_{i < j}\ip{v_j}{e_i}e_i$, $e_j = u_j/\norm{u_j}$. \textbf{QR}: $A = QR$.
+    \item ONB: $v = \sum_i\ip{v}{b_i}b_i$, $\norm{v}^2 = \sum_i\ip{v}{b_i}^2$ (Parseval).
+    \item $V = U \oplus U^\perp$, $(U^\perp)^\perp = U$; $\Null A = (\row A)^\perp$, $\Null A^\top = (\col A)^\perp$.
+    \item \textbf{Projections}: onto a line $P = \frac{\mathbf{b}\mathbf{b}^\top}{\mathbf{b}^\top\mathbf{b}}$; onto $\col B$: $P = B(B^\top B)^{-1}B^\top$; $P^\top = P = P^2$. $\pi_U(v)$ is the closest point of $U$ to $v$. Distance to $\{\mathbf{w}^\top\mathbf{z} = c\}$: $\frac{|\mathbf{w}^\top\mathbf{x} - c|}{\norm{\mathbf{w}}}$.
+    \item \textbf{Least squares}: $A^\top A\mathbf{w}^* = A^\top\mathbf{y}$. All minimizers: $A^+\mathbf{y} + \Null(A)$; $A^+\mathbf{y}$ has the least norm.
+    \item SPD $\iff$ all eigenvalues $> 0$ $\iff$ all leading minors $> 0$ (Sylvester) $\iff$ $A = LL^\top$, $L$ lower triangular with positive diagonal (Cholesky).
+\end{itemize}
+
+\topic{Spectral theorem and SVD}
+\begin{itemize}
+    \item Symmetric $A = Q\Lambda Q^\top$, $Q$ orthogonal, real eigenvalues. $A^{1/2} = Q\Lambda^{1/2}Q^\top$.
+    \item \textbf{Rayleigh}: $\lambda_n \leq \frac{\mathbf{x}^\top A\mathbf{x}}{\mathbf{x}^\top\mathbf{x}} \leq \lambda_1$. \textbf{Ky Fan}: $\tr(B^\top AB) \leq \lambda_1 + \cdots + \lambda_k$ for $B^\top B = I_k$. \textbf{Courant--Fischer}: $\lambda_k = \max_{\dim U = k}\min_{\mathbf{x} \in U \setminus 0} R_A(\mathbf{x})$. \textbf{Weyl} ($A$, $E$ symmetric, eigenvalues of $E$ in $[-\varepsilon, \varepsilon]$): $|\lambda_k(A + E) - \lambda_k(A)| \leq \varepsilon$.
+    \item \textbf{SVD} $A = U\Sigma V^\top = \sum_{i \leq r}\sigma_i\mathbf{u}_i\mathbf{v}_i^\top$; $\sigma_i^2$ = eigenvalues of $A^\top A$; $\mathbf{u}_i = A\mathbf{v}_i/\sigma_i$. $\col A = \Span\{\mathbf{u}_{1..r}\}$, $\Null A = \Span\{\mathbf{v}_{r+1..n}\}$.
+    \item $\norm{A}_2 = \sigma_1$, $\norm{A}_F^2 = \sum\sigma_i^2$. \textbf{Eckart--Young}: $A_k = \sum_{i \leq k}\sigma_i\mathbf{u}_i\mathbf{v}_i^\top$ is best of rank $\leq k$; $\norm{A - A_k}_2 = \sigma_{k+1}$, $\norm{A - A_k}_F^2 = \sum_{i > k}\sigma_i^2$.
+    \item $\frac{\norm{\delta\mathbf{x}}}{\norm{\mathbf{x}}} \leq \kappa(A)\frac{\norm{\delta\mathbf{b}}}{\norm{\mathbf{b}}}$; $\kappa(A^\top A) = \kappa(A)^2$.
+    \item \textbf{PCA} (centered data, $S = \frac{1}{N}X^\top X$): best $k$-dim subspace $\Span\{\mathbf{q}_1, \ldots, \mathbf{q}_k\}$, mean error $\lambda_{k+1} + \cdots + \lambda_d$.
+    \item \textbf{Laplacian}: $\mathbf{x}^\top L\mathbf{x} = \sum_{i < j}w_{ij}(x_i - x_j)^2$; multiplicity of eigenvalue $0$ = number of connected components.
+\end{itemize}
+
+\end{multicols}
+
+\end{document}

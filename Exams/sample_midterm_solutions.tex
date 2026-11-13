@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+
+% Solutions of the midterm exam
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+% Problem numbers are read from sample_midterm.aux, so compile sample_midterm.tex first.
+\externaldocument{sample_midterm}[sample_midterm.pdf]
+\usepackage{xcolor}
+
+\title{Sample Midterm Exam --- Solutions}
+\author{Lectures 1--2: Linear Algebra and Analytic Geometry}
+\date{}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Null}{null}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+
+\begin{document}
+
+\maketitle
+
+\section*{Problem \ref{pr:mid-linear-map}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Evaluation at $1$ and differentiation are linear, so $T(p + q) = T(p) + T(q)$ and $T(cp) = cT(p)$. The columns are $T(1) = (1, 0)$, $T(x) = (1, 1)$, $T(x^2) = (1, 2)$, $T(x^3) = (1, 3)$:
+    \[[T]_{\mathcal{C}, \mathcal{B}} = \begin{pmatrix} 1 & 1 & 1 & 1 \\ 0 & 1 & 2 & 3 \end{pmatrix}.\]
+    \item The matrix has rank $2$, so $\dim \im(T) = 2$ and $\im(T) = \mathbb{R}^2$. A polynomial with $p(1) = p'(1) = 0$ has a double root at $1$, so $\ker(T) = \{(x - 1)^2(c_0 + c_1x)\}$, with the basis $(x - 1)^2, (x - 1)^3$ (coordinates $(1, -2, 1, 0)$ and $(-1, 3, -3, 1)$). Rank--nullity: $2 + 2 = 4 = \dim V$.
+    \item By Theorem (quotient dimension), $\dim V/K = 4 - 2 = 2$, so it suffices to show independence: if $a(1 + K) + b(x + K) = K$, then $a + bx \in K$, so $T(a + bx) = (a + b, b) = (0, 0)$ and $a = b = 0$. For $x^3 + K = a(1 + K) + b(x + K)$ we need $x^3 - a - bx \in K$, i.e., $T(x^3) = aT(1) + bT(x)$: $(1, 3) = (a + b, b)$, so $b = 3$, $a = -2$, and
+    \[x^3 + K = -2\,(1 + K) + 3\,(x + K). \qquad \text{(Check: } x^3 - 3x + 2 = (x - 1)^2(x + 2) \in K.)\]
+    Equivalently, $\bar T: V/K \to \mathbb{R}^2$ of the first isomorphism theorem maps $1 + K \mapsto (1, 0)$ and $x + K \mapsto (1, 1)$, a basis of $\mathbb{R}^2$.
+    \item Both functionals vanish on $K$ by the definition of $K$, so $\varphi_1, \varphi_2 \in K^\circ$. They are linearly independent: $\varphi_1(1) = 1$, $\varphi_2(1) = 0$, $\varphi_1(x - 1) = 0$, $\varphi_2(x - 1) = 1$. Since $K^\circ \cong (V/K)^*$ (quotients and duality), $\dim K^\circ = \dim V/K = 2$, so they form a basis.
+\end{enumerate}
+
+\section*{Problem \ref{pr:mid-low-rank}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $M = aI_n + (b\mathbf{1})\mathbf{1}^\top$. By the determinant lemma, $\det(M) = \big(1 + \mathbf{1}^\top (aI)^{-1} b\mathbf{1}\big)\det(aI_n) = \big(1 + \frac{nb}{a}\big)a^n = a^{n-1}(a + nb)$.
+    \item By Sherman--Morrison with $A = aI$, $\mathbf{u} = b\mathbf{1}$, $\mathbf{v} = \mathbf{1}$ (the denominator is $1 + \frac{nb}{a} \neq 0$):
+    \[M^{-1} = \frac{1}{a}I_n - \frac{\frac{b}{a^2}\mathbf{1}\mathbf{1}^\top}{1 + \frac{nb}{a}} = \frac{1}{a}\Big(I_n - \frac{b}{a + nb}\,\mathbf{1}\mathbf{1}^\top\Big).\]
+    \item $M\mathbf{1} = (a + nb)\mathbf{1}$, and $M\mathbf{x} = a\mathbf{x}$ for every $\mathbf{x} \perp \mathbf{1}$, an $(n - 1)$-dimensional subspace. Since $b \neq 0$, the eigenvalues $a + nb$ and $a$ are distinct, with geometric multiplicities $1$ and $n - 1$; these add up to $n$, so the algebraic multiplicities are the same, $M$ is diagonalizable (indeed symmetric), and $\det(M) = a^{n-1}(a + nb)$ is the product of the eigenvalues. The minimal polynomial is $m_M(t) = (t - a)(t - a - nb)$, a product of distinct linear factors.
+    \item $M$ is symmetric, so it is positive definite if and only if all its eigenvalues are positive: $a > 0$ and $a + nb > 0$. (For $b = 0$, this is $a > 0$, which is also correct.)
+\end{enumerate}
+
+\section*{Problem \ref{pr:mid-eigen}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Expanding $\det(A - \lambda I)$ and $\det(B - \lambda I)$ gives in both cases
+    \[p(\lambda) = -\lambda^3 + 4\lambda^2 - 5\lambda + 2 = -(\lambda - 1)^2(\lambda - 2).\]
+    (Check: $\tr = 4 = 1 + 1 + 2$ and $\det = 2 = 1 \cdot 1 \cdot 2$ for both.) The eigenvalues are $1$ and $2$.
+    \item For both matrices, $\lambda = 1$ has algebraic multiplicity $2$ and $\lambda = 2$ algebraic multiplicity $1$ (hence geometric multiplicity $1$). The geometric multiplicity of $1$ is $3 - \rank(X - I)$:
+    \[A - I = \begin{pmatrix} 2 & -2 & -1 \\ 2 & -2 & -1 \\ -1 & 1 & 1 \end{pmatrix}, \ \rank 2; \qquad B - I = \begin{pmatrix} 1 & -1 & -1 \\ 1 & -1 & -1 \\ -1 & 1 & 1 \end{pmatrix}, \ \rank 1.\]
+    So $\lambda = 1$ has geometric multiplicity $1$ for $A$ (eigenvector $(1, 1, 0)^\top$) and $2$ for $B$ (eigenvectors $(1, 1, 0)^\top$, $(1, 0, 1)^\top$). $B$ is diagonalizable, $A$ is not.
+    \item $m$ divides $p$ and has both eigenvalues as roots, so it is $(t - 1)(t - 2)$ or $(t - 1)^2(t - 2)$. Since $B$ is diagonalizable, $m_B(t) = (t - 1)(t - 2)$; since $A$ is not, $m_A(t) = (t - 1)^2(t - 2)$ (one can also check $(A - I)(A - 2I) \neq 0$ and $(B - I)(B - 2I) = 0$). Similar matrices have the same minimal polynomial (or: $B = PDP^{-1}$ would make $A$ diagonalizable as well), so $A$ and $B$ are not similar, although they have the same characteristic polynomial, trace and determinant.
+    \item Cayley--Hamilton: $A^3 - 4A^2 + 5A - 2I = 0$, so $A(A^2 - 4A + 5I) = 2I$ and
+    \[A^{-1} = \tfrac{1}{2}(A^2 - 4A + 5I) = \tfrac{1}{2}\begin{pmatrix} -1 & 3 & 1 \\ -3 & 5 & 1 \\ 1 & -1 & 1 \end{pmatrix}.\]
+    From $m_B$: $B^2 - 3B + 2I = 0$, so $B(3I - B) = 2I$ and $B^{-1} = \frac{1}{2}(3I - B)$.
+\end{enumerate}
+
+\section*{Problem \ref{pr:mid-tensors}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Under $\mathbb{R}^2 \otimes \mathbb{R}^2 \cong \mathbb{R}^{2 \times 2}$, $\mathbf{e}_i \otimes \mathbf{e}_j \mapsto \mathbf{e}_i\mathbf{e}_j^\top$, the tensor rank is the matrix rank. $t \mapsto \begin{pmatrix} 1 & 1 \\ 1 & 1 \end{pmatrix}$ has rank $1$, and $t = (\mathbf{e}_1 + \mathbf{e}_2) \otimes (\mathbf{e}_1 + \mathbf{e}_2)$ by bilinearity. $s \mapsto \begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix}$ has rank $2$, so $s$ is not a pure tensor.
+    \item The map $\beta: V \times W \to W \otimes V$, $\beta(v, w) = w \otimes v$, is bilinear, since $\otimes$ is bilinear in each argument. By the universal property, there is exactly one linear $\sigma = \tilde\beta$ with $\sigma(v \otimes w) = w \otimes v$. In the same way, there is a linear $\tau: W \otimes V \to V \otimes W$ with $\tau(w \otimes v) = v \otimes w$. Then $\tau \circ \sigma$ is linear and fixes all pure tensors, which span $V \otimes W$, so $\tau \circ \sigma = \mathrm{id}$; similarly $\sigma \circ \tau = \mathrm{id}$. Hence $\sigma$ is an isomorphism with inverse $\tau$. (Uniqueness also follows directly: a linear map is determined by its values on the pure tensors, which span.)
+    \item The change of basis matrix has the new basis vectors as columns, $P = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$, $P^{-1} = \begin{pmatrix} 1 & -1 \\ 0 & 1 \end{pmatrix}$. The linear map (type $(1, 1)$) becomes $P^{-1}AP = \begin{pmatrix} 1 & 2 \\ 0 & -1 \end{pmatrix}$ with trace $0$; the bilinear form (type $(0, 2)$) becomes $P^\top AP = \begin{pmatrix} 1 & 1 \\ 1 & 0 \end{pmatrix}$ with trace $1$. The trace of the linear map is basis independent: it is the contraction $C: V \otimes V^* \to \mathbb{R}$, defined without bases, and $\tr(P^{-1}AP) = \tr(APP^{-1}) = \tr(A)$. There is no contraction on $V^* \otimes V^*$, and indeed the trace of the bilinear form changed from $0$ to $1$.
+    \item (i) $A_{ij}B_{ij}$, \texttt{np.einsum("ij,ij->", A, B)}. (ii) $q_b = X_{bi}M_{ij}X_{bj}$, \texttt{np.einsum("bi,ij,bj->b", X, M, X)}.
+\end{enumerate}
+
+\section*{Problem \ref{pr:mid-projection}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $\norm{1}^2 = 2$, so $e_1 = \frac{1}{\sqrt 2}$. $\ip{x}{e_1} = 0$ (odd integrand) and $\norm{x}^2 = \frac{2}{3}$, so $e_2 = \sqrt{\frac{3}{2}}\,x$. For $x^2$: $\ip{x^2}{e_1}e_1 = \frac{1}{2}\int_{-1}^1 x^2\,dx = \frac{1}{3}$ and $\ip{x^2}{e_2} = 0$, so $u_3 = x^2 - \frac{1}{3}$, with $\norm{u_3}^2 = \frac{2}{5} - \frac{4}{9} + \frac{2}{9} = \frac{8}{45}$, and $e_3 = \sqrt{\frac{45}{8}}\big(x^2 - \frac{1}{3}\big)$.
+    \item $p = \pi_U(f) = \sum_i \ip{f}{e_i}e_i$. With the orthogonal (not normalized) basis $1, x, x^2 - \frac{1}{3}$: $\frac{\ip{|x|}{1}}{\ip{1}{1}} = \frac{1}{2}$; $\ip{|x|}{x} = 0$ (odd); $\ip{|x|}{x^2 - \frac{1}{3}} = 2\int_0^1 \big(x^3 - \frac{x}{3}\big)dx = \frac{1}{6}$, divided by $\frac{8}{45}$ gives $\frac{15}{16}$. So
+    \[p(x) = \frac{1}{2} + \frac{15}{16}\Big(x^2 - \frac{1}{3}\Big) = \frac{15x^2 + 3}{16}.\]
+    \item By Pythagoras, $\norm{f - p}^2 = \norm{f}^2 - \norm{p}^2 = \frac{2}{3} - \Big(\frac{1}{4} \cdot 2 + \frac{225}{256} \cdot \frac{8}{45}\Big) = \frac{2}{3} - \frac{21}{32} = \frac{1}{96}$.
+    \item Let $\mathbf{x} \in \mathbb{R}^n$. Clearly $P\mathbf{x} \in \col(P)$. Every $\mathbf{u} \in \col(P)$ is $\mathbf{u} = P\mathbf{z}$, and
+    \[(\mathbf{x} - P\mathbf{x})^\top P\mathbf{z} = \mathbf{x}^\top P\mathbf{z} - \mathbf{x}^\top P^\top P\mathbf{z} = \mathbf{x}^\top P\mathbf{z} - \mathbf{x}^\top P^2\mathbf{z} = 0.\]
+    So $P\mathbf{x} \in \col(P)$ and $\mathbf{x} - P\mathbf{x} \in \col(P)^\perp$, which characterizes $\pi_{\col(P)}(\mathbf{x})$ uniquely.
+\end{enumerate}
+
+\section*{Problem \ref{pr:mid-svd}}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $A^\top A = \begin{pmatrix} 25 & 20 \\ 20 & 25 \end{pmatrix}$ has the eigenvalues $45$ and $5$ with eigenvectors $\mathbf{v}_1 = \frac{1}{\sqrt 2}(1, 1)^\top$, $\mathbf{v}_2 = \frac{1}{\sqrt 2}(1, -1)^\top$. So $\sigma_1 = 3\sqrt 5$, $\sigma_2 = \sqrt 5$, and $\mathbf{u}_i = A\mathbf{v}_i/\sigma_i$: $\mathbf{u}_1 = \frac{1}{\sqrt{10}}(1, 3)^\top$, $\mathbf{u}_2 = \frac{1}{\sqrt{10}}(3, -1)^\top$. Hence
+    \[A = \underbrace{\frac{1}{\sqrt{10}}\begin{pmatrix} 1 & 3 \\ 3 & -1 \end{pmatrix}}_{U}\underbrace{\begin{pmatrix} 3\sqrt 5 & 0 \\ 0 & \sqrt 5 \end{pmatrix}}_{\Sigma}\underbrace{\frac{1}{\sqrt 2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}}_{V^\top}.\]
+    (Signs of matching pairs $\mathbf{u}_i, \mathbf{v}_i$ may be flipped together.)
+    \item $\norm{A}_2 = \sigma_1 = 3\sqrt 5$, $\norm{A}_F = \sqrt{45 + 5} = \sqrt{50} = 5\sqrt 2$ (check: $9 + 16 + 25 = 50$), $\kappa(A) = \sigma_1/\sigma_2 = 3$.
+    \item By Eckart--Young, $A_1 = \sigma_1\mathbf{u}_1\mathbf{v}_1^\top = \frac{3}{2}\begin{pmatrix} 1 & 1 \\ 3 & 3 \end{pmatrix}$, and $\norm{A - A_1}_2 = \sigma_2 = \sqrt 5$, $\norm{A - A_1}_F = \sigma_2 = \sqrt 5$ (only one singular value is left).
+    \item If $C\mathbf{x} = \mathbf{0}$, then $C^\top C\mathbf{x} = \mathbf{0}$. Conversely, if $C^\top C\mathbf{x} = \mathbf{0}$, then $0 = \mathbf{x}^\top C^\top C\mathbf{x} = \norm{C\mathbf{x}}^2$, so $C\mathbf{x} = \mathbf{0}$. Both matrices have $n$ columns, so by rank--nullity $\rank(C^\top C) = n - \dim\Null(C^\top C) = n - \dim\Null(C) = \rank(C)$. The $n \times n$ matrix $C^\top C$ is invertible iff its rank is $n$, iff $\rank(C) = n$, iff the columns of $C$ are linearly independent.
+\end{enumerate}
+
+\end{document}

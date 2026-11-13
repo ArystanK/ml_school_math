@@ -9,7 +9,7 @@ In Lecture~1, we studied vector spaces and linear transformations. Vector spaces
 \begin{itemize}
     \item data points are vectors, and many algorithms, such as $k$-nearest neighbors and clustering, rely on distances between them; graphs of similar data points lead to spectral clustering;
     \item similarity between data points, such as text documents or word embeddings, is often measured by the angle between vectors;
-    \item linear regression and principal component analysis find the orthogonal projection of data onto a subspace;
+    \item linear regression and principal component analysis find the orthogonal projection of data onto a subspace, and the singular values of the data matrix decide how accurately this can be computed;
     \item regularization penalizes the size, i.e., the norm, of a weight vector.
 \end{itemize}
 In this lecture, we add geometry to vector spaces, using norms and inner products.
@@ -203,6 +203,28 @@ For larger matrices, there is a similar test, Sylvester's criterion: a symmetric
     Let $B$ be an $m \times n$ matrix with linearly independent columns. Then $B^\top B$ is symmetric positive definite: it is symmetric (Lecture~1), and for $\mathbf{x} \neq \mathbf{0}$ we have $B\mathbf{x} \neq \mathbf{0}$, so
     \[\mathbf{x}^\top B^\top B \mathbf{x} = (B\mathbf{x})^\top (B\mathbf{x}) = \norm{B\mathbf{x}}_2^2 > 0.\]
     Matrices of the form $B^\top B$ appear everywhere in machine learning, for example in linear regression (Section~\ref{L2-sec:least-squares}) and as (scaled) covariance matrices of data.
+\end{example}
+
+Conversely, every symmetric positive definite matrix is of the form $B^\top B$, even with a triangular $B$. This is the most efficient way to compute with such matrices.
+
+\begin{theorem}[Cholesky decomposition]\label{L2-thm:cholesky}
+    A symmetric $n \times n$ matrix $A$ is positive definite if and only if $A = LL^\top$ for a lower triangular matrix $L$ with positive diagonal entries. In this case, $L$ is unique.
+\end{theorem}
+
+\begin{proof}
+    If $A = LL^\top$, then $L^\top$ is invertible (it is triangular, with nonzero diagonal entries), so $\mathbf{x}^\top A\mathbf{x} = \norm{L^\top\mathbf{x}}^2 > 0$ for $\mathbf{x} \neq \mathbf{0}$. Conversely, we use induction on $n$; for $n = 1$, $A = (a)$ with $a > 0$, and $L = (\sqrt{a})$ is the only choice. For $n \geq 2$, write
+    \[A = \begin{pmatrix} a & \mathbf{b}^\top \\ \mathbf{b} & A' \end{pmatrix}, \qquad \text{with } a = A_{11} > 0 \text{ (Proposition~\ref{L2-prop:spd-properties})},\]
+    and let $S = A' - \frac{1}{a}\mathbf{b}\mathbf{b}^\top$ be the Schur complement of $a$ (Lecture~1). For $\mathbf{y} \in \mathbb{R}^{n-1}$ with $\mathbf{y} \neq \mathbf{0}$, the vector $\mathbf{x} = (-\frac{1}{a}\mathbf{b}^\top\mathbf{y}, \mathbf{y})$ is nonzero, and expanding gives $0 < \mathbf{x}^\top A\mathbf{x} = \frac{1}{a}(\mathbf{b}^\top\mathbf{y})^2 - \frac{2}{a}(\mathbf{b}^\top\mathbf{y})^2 + \mathbf{y}^\top A'\mathbf{y} = \mathbf{y}^\top S\mathbf{y}$. So $S$ is symmetric positive definite, and by induction, $S = L'L'^\top$ with a unique lower triangular $L'$ with positive diagonal entries. Then
+    \[L = \begin{pmatrix} \sqrt{a} & \mathbf{0}^\top \\ \frac{1}{\sqrt{a}}\mathbf{b} & L' \end{pmatrix} \qquad \text{satisfies} \qquad LL^\top = \begin{pmatrix} a & \mathbf{b}^\top \\ \mathbf{b} & \frac{1}{a}\mathbf{b}\mathbf{b}^\top + L'L'^\top \end{pmatrix} = A.\]
+    For uniqueness, compare the blocks of $LL^\top = A$ for any such $L$: the upper left entry gives $L_{11}^2 = a$, so $L_{11} = \sqrt{a}$; the first column gives $L_{11}$ times the rest of the first column of $L$ equal to $\mathbf{b}$; and the lower right block then gives $L'L'^\top = S$ for the lower right block $L'$ of $L$, which determines $L'$ by induction.
+\end{proof}
+
+The proof is an algorithm: take the square root of the upper left entry, divide the rest of the first column by it, and continue with the Schur complement. It is the LU decomposition of Lecture~1 with $U = L^\top$, and it needs about half as many operations. It fails, with a nonpositive number under a square root, exactly when $A$ is not positive definite, which is how \py{np.linalg.cholesky} detects such matrices. Once $A = LL^\top$ is known, $A\mathbf{x} = \mathbf{b}$ is solved by forward substitution in $L\mathbf{y} = \mathbf{b}$ and back substitution in $L^\top\mathbf{x} = \mathbf{y}$, and $\det(A) = (L_{11} \cdots L_{nn})^2$. Lecture~4 uses the Cholesky decomposition to sample Gaussian vectors and Gaussian processes.
+
+\begin{example}\label{L2-ex:cholesky}
+    For $A = \begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$, the algorithm gives $L_{11} = 3$, $L_{21} = \frac{6}{3} = 2$ and $L_{22} = \sqrt{5 - 2^2} = 1$, so
+    \[A = \begin{pmatrix} 3 & 0 \\ 2 & 1 \end{pmatrix}\begin{pmatrix} 3 & 2 \\ 0 & 1 \end{pmatrix}, \qquad \mathbf{x}^\top A\mathbf{x} = \norm{L^\top\mathbf{x}}^2 = (3x_1 + 2x_2)^2 + x_2^2.\]
+    The Cholesky decomposition is a systematic way of completing the square, as in the proof of Proposition~\ref{L2-prop:spd-properties}.
 \end{example}
 
 \begin{remark}[Kernels]
@@ -921,7 +943,7 @@ The number $\frac{\mathbf{w}^\top \mathbf{x} - c}{\norm{\mathbf{w}}}$, without t
     A rotation of $\mathbb{R}^n$ is an orthogonal $n \times n$ matrix $R$ with $\det(R) = 1$. The set of rotations is denoted by $\mathrm{SO}(n)$, the special orthogonal group.
 \end{definition}
 
-By Theorem~\ref{L2-thm:orthogonal}, rotations preserve lengths, distances and angles, and the condition $\det(R) = 1$ means that they preserve the orientation (Lecture~1). Orthogonal matrices with determinant $-1$, such as reflections, reverse the orientation. Since products and inverses of orthogonal matrices are orthogonal, and $\det(R_1 R_2) = \det(R_1)\det(R_2)$, products and inverses of rotations are again rotations; so $\mathrm{SO}(n)$ is a matrix group. The inverse of a rotation $R$ is simply $R^\top$.
+By Theorem~\ref{L2-thm:orthogonal}, rotations preserve lengths, distances and angles, and the condition $\det(R) = 1$ means that they preserve the orientation (Lecture~1). Orthogonal matrices with determinant $-1$, such as reflections, reverse the orientation. Since products and inverses of orthogonal matrices are orthogonal, and $\det(R_1 R_2) = \det(R_1)\det(R_2)$, products and inverses of rotations are again rotations; so $\mathrm{SO}(n)$ is a matrix group, i.e., a subgroup of $\mathrm{GL}(n, \mathbb{R})$ (Lecture~1). The inverse of a rotation $R$ is simply $R^\top$. Like $\mathrm{O}(n)$, $\mathrm{SO}(n)$ is a Lie group of dimension $\frac{n(n-1)}{2}$ (Section~\ref{A-sec:lie-groups}): a rotation of $\mathbb{R}^3$, for example, is described by three angles (Proposition~\ref{L2-prop:rotations-3d}).
 
 \subsection{Rotations in the plane}
 
@@ -1044,6 +1066,18 @@ For example, the matrix $A = J + 2I_3$ of Example~\ref{L2-ex:spectral} has $\det
     The matrix $\begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$ from the subsection on symmetric positive definite matrices has trace $14$ and determinant $9$, so its eigenvalues $7 \pm 2\sqrt{10}$ are both positive, and it is positive definite. The matrix $\begin{pmatrix} 9 & 6 \\ 6 & 3 \end{pmatrix}$ has determinant $-9 < 0$, so its eigenvalues have opposite signs (their product is negative), and it is not positive definite.
 \end{example}
 
+Positive semidefinite matrices have square roots, just like nonnegative numbers.
+
+\begin{proposition}[Square root]\label{L2-prop:sqrt}
+    Let $A = Q\Lambda Q^\top$ be symmetric positive semidefinite, with $\Lambda = \diag(\lambda_1, \ldots, \lambda_n)$. Then $A^{1/2} = Q\Lambda^{1/2}Q^\top$, where $\Lambda^{1/2} = \diag(\sqrt{\lambda_1}, \ldots, \sqrt{\lambda_n})$, is the only symmetric positive semidefinite matrix $B$ with $B^2 = A$. If $A$ is positive definite, then so is $A^{1/2}$, and $A^{-1/2} = (A^{1/2})^{-1} = Q\Lambda^{-1/2}Q^\top$.
+\end{proposition}
+
+\begin{proof}
+    The matrix $Q\Lambda^{1/2}Q^\top$ is symmetric, its eigenvalues $\sqrt{\lambda_i}$ are nonnegative, and $(Q\Lambda^{1/2}Q^\top)^2 = Q\Lambda^{1/2}Q^\top Q\Lambda^{1/2}Q^\top = Q\Lambda Q^\top = A$. For uniqueness, let $B$ be symmetric positive semidefinite with $B^2 = A$, and write $B = PMP^\top$ with $M = \diag(\mu_1, \ldots, \mu_n)$, all $\mu_i \geq 0$. Then $A = PM^2P^\top$, so the columns $\mathbf{p}_i$ of $P$ are eigenvectors of $A$ with the eigenvalues $\mu_i^2$. For an eigenvalue $\lambda$ of $A$, the eigenspace $E_\lambda$ of $A$ is spanned by the $\mathbf{p}_i$ with $\mu_i^2 = \lambda$ (Lecture~1, proof of the theorem on multiplicities), i.e., with $\mu_i = \sqrt{\lambda}$, since $\mu_i \geq 0$. So $B\mathbf{v} = \sqrt{\lambda}\,\mathbf{v}$ for every $\mathbf{v} \in E_\lambda$. The eigenspaces of $A$ together span $\mathbb{R}^n$, so $B$ is determined by $A$. If all $\lambda_i > 0$, then all $\sqrt{\lambda_i} > 0$, and $Q\Lambda^{-1/2}Q^\top$ is the inverse of $Q\Lambda^{1/2}Q^\top$.
+\end{proof}
+
+For example, $\begin{pmatrix} 5 & 4 \\ 4 & 5 \end{pmatrix}$ has the eigenvalues $9$ and $1$, with eigenvectors $(1, 1)^\top$ and $(1, -1)^\top$, and its square root is $\begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, with eigenvalues $3$ and $1$. If $\Sigma$ is the covariance matrix of data, multiplying the centered data by $\Sigma^{-1/2}$ gives data with the covariance matrix $I$ (whitening; see Lecture~4). Both $A = A^{1/2}A^{1/2}$ and the Cholesky decomposition $A = LL^\top$ write $A$ as $BB^\top$; they differ by an orthogonal matrix, since $L^{-1}A^{1/2}$ is orthogonal (Exercise~\ref{L2-ex2:sqrt-cholesky}).
+
 \begin{proposition}[Rayleigh quotient]\label{L2-prop:rayleigh}
     Let $A$ be symmetric with eigenvalues $\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $\mathbf{q}_1, \ldots, \mathbf{q}_n$. Then for every $\mathbf{x} \neq \mathbf{0}$,
     \[\lambda_n \leq \frac{\mathbf{x}^\top A \mathbf{x}}{\mathbf{x}^\top \mathbf{x}} \leq \lambda_1,\]
@@ -1069,6 +1103,28 @@ So the largest eigenvalue of a symmetric matrix is the maximum of $\mathbf{x}^\t
     \[\sum_{i=1}^n \lambda_i c_i - \sum_{i=1}^k \lambda_i = \sum_{i \leq k} \lambda_i(c_i - 1) + \sum_{i > k} \lambda_i c_i \leq \lambda_k\sum_{i \leq k}(c_i - 1) + \lambda_k\sum_{i > k} c_i = \lambda_k\Big(\sum_{i=1}^n c_i - k\Big) = 0.\]
     For $\mathbf{b}_j = \mathbf{q}_j$, $\tr(B^\top AB) = \sum_{j \leq k} \mathbf{q}_j^\top A\mathbf{q}_j = \lambda_1 + \cdots + \lambda_k$.
 \end{proof}
+
+The Rayleigh quotient $R_A(\mathbf{x}) = \frac{\mathbf{x}^\top A\mathbf{x}}{\mathbf{x}^\top\mathbf{x}}$ also describes the eigenvalues between $\lambda_1$ and $\lambda_n$.
+
+\begin{theorem}[Courant--Fischer]\label{L2-thm:courant-fischer}
+    Let $A$ be symmetric with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n$. For $k = 1, \ldots, n$,
+    \[\lambda_k = \max_{\dim U = k}\; \min_{\mathbf{x} \in U, \, \mathbf{x} \neq \mathbf{0}} R_A(\mathbf{x}),\]
+    where the maximum is over all $k$-dimensional subspaces $U$ of $\mathbb{R}^n$, and it is attained for $U = \Span\{\mathbf{q}_1, \ldots, \mathbf{q}_k\}$.
+\end{theorem}
+
+\begin{proof}
+    Write $\mathbf{x} = \sum_i y_i\mathbf{q}_i$, so that $R_A(\mathbf{x}) = \sum_i \lambda_iy_i^2 / \sum_i y_i^2$. For $U = \Span\{\mathbf{q}_1, \ldots, \mathbf{q}_k\}$, every nonzero $\mathbf{x} \in U$ has $y_i = 0$ for $i > k$, so $R_A(\mathbf{x}) \geq \lambda_k$, with equality for $\mathbf{x} = \mathbf{q}_k$; so the minimum over this $U$ is $\lambda_k$. Now let $U$ be any $k$-dimensional subspace. The subspace $W = \Span\{\mathbf{q}_k, \ldots, \mathbf{q}_n\}$ has dimension $n - k + 1$, and $\dim U + \dim W > n$, so $U$ and $W$ contain a common nonzero vector $\mathbf{x}$, as in the proof of Theorem~\ref{L2-thm:eckart-young}. It has $y_i = 0$ for $i < k$, so $R_A(\mathbf{x}) \leq \lambda_k$. Hence the minimum over $U$ is at most $\lambda_k$.
+\end{proof}
+
+\begin{corollary}[Weyl]\label{L2-cor:weyl}
+    Let $A$ and $E$ be symmetric, and let all eigenvalues of $E$ lie in $[-\varepsilon, \varepsilon]$. Then the $k$-th largest eigenvalues of $A$ and $A + E$ differ by at most $\varepsilon$: $|\lambda_k(A + E) - \lambda_k(A)| \leq \varepsilon$ for every $k$.
+\end{corollary}
+
+\begin{proof}
+    By Proposition~\ref{L2-prop:rayleigh}, $-\varepsilon \leq R_E(\mathbf{x}) \leq \varepsilon$, so $R_A(\mathbf{x}) - \varepsilon \leq R_{A+E}(\mathbf{x}) = R_A(\mathbf{x}) + R_E(\mathbf{x}) \leq R_A(\mathbf{x}) + \varepsilon$ for all $\mathbf{x} \neq \mathbf{0}$. Taking the minimum over $U$ and then the maximum over all $k$-dimensional $U$ preserves these inequalities, and Theorem~\ref{L2-thm:courant-fischer} gives $\lambda_k(A) - \varepsilon \leq \lambda_k(A + E) \leq \lambda_k(A) + \varepsilon$.
+\end{proof}
+
+So the eigenvalues of a symmetric matrix depend continuously, and even with Lipschitz constant $1$, on its entries. For example, the eigenvalues of a covariance matrix that is estimated from data are close to the true ones when the estimate is close to the true matrix, which justifies PCA on estimated covariance matrices. For nonsymmetric matrices, this fails badly: $\begin{pmatrix} 0 & 1 \\ \delta & 0 \end{pmatrix}$ has the eigenvalues $\pm\sqrt{\delta}$, which change by $10^{-3}$ when the entry $\delta$ changes from $0$ to $10^{-6}$.
 
 \begin{remark}[Geometry of symmetric positive definite matrices]
     If $A$ is symmetric positive definite, the set $\{\mathbf{x} : \mathbf{x}^\top A \mathbf{x} = 1\}$ is an ellipse (in $\mathbb{R}^2$) or an ellipsoid (in higher dimensions), whose axes point in the directions of the eigenvectors $\mathbf{q}_i$ and have lengths $\frac{1}{\sqrt{\lambda_i}}$, since in the coordinates $\mathbf{y} = Q^\top \mathbf{x}$ the equation becomes $\lambda_1 y_1^2 + \cdots + \lambda_n y_n^2 = 1$. In machine learning, such ellipsoids describe the shape of Gaussian distributions (with $A$ the inverse covariance matrix) and the shape of the loss surface of least squares problems near a minimum; when the eigenvalues have very different sizes, gradient descent zig-zags and converges slowly.
@@ -1318,6 +1374,36 @@ In general, when the columns of $A$ are dependent, the least squares problem has
 
 NumPy's \py{np.linalg.pinv} and \py{np.linalg.lstsq} use the SVD in this way.
 
+\subsection{The condition number}\label{L2-sec:condition}
+
+Data are never exact, and computers round every number to about $16$ significant digits. How much can such small errors change the solution of a linear system? The singular values give the answer.
+
+\begin{definition}[Condition number]
+    Let $A$ be an $m \times n$ matrix with linearly independent columns, and singular values $\sigma_1 \geq \cdots \geq \sigma_n > 0$. Its condition number is $\kappa(A) = \frac{\sigma_1}{\sigma_n} \geq 1$.
+\end{definition}
+
+For an invertible $n \times n$ matrix, $A^{-1} = V\Sigma^{-1}U^\top$ has the singular values $\frac{1}{\sigma_i}$, so $\kappa(A) = \norm{A}_2\norm{A^{-1}}_2$ by Proposition~\ref{L2-prop:matrix-norms}. For a symmetric matrix $A = Q\Lambda Q^\top$, the singular values are the numbers $|\lambda_i|$ (as $A^\top A = Q\Lambda^2Q^\top$), so $\kappa(A) = \frac{\max_i|\lambda_i|}{\min_i|\lambda_i|}$. Orthogonal matrices have $\kappa(Q) = 1$, the best possible value.
+
+\begin{theorem}[Sensitivity of linear systems]\label{L2-thm:condition}
+    Let $A$ be invertible, $A\mathbf{x} = \mathbf{b} \neq \mathbf{0}$, and $A(\mathbf{x} + \boldsymbol{\delta}\mathbf{x}) = \mathbf{b} + \boldsymbol{\delta}\mathbf{b}$. Then
+    \[\frac{\norm{\boldsymbol{\delta}\mathbf{x}}}{\norm{\mathbf{x}}} \leq \kappa(A)\,\frac{\norm{\boldsymbol{\delta}\mathbf{b}}}{\norm{\mathbf{b}}},\]
+    with equality for $\mathbf{b} = \mathbf{u}_1$ and $\boldsymbol{\delta}\mathbf{b} = t\mathbf{u}_n$.
+\end{theorem}
+
+\begin{proof}
+    $\boldsymbol{\delta}\mathbf{x} = A^{-1}\boldsymbol{\delta}\mathbf{b}$, so $\norm{\boldsymbol{\delta}\mathbf{x}} \leq \norm{A^{-1}}_2\norm{\boldsymbol{\delta}\mathbf{b}} = \frac{1}{\sigma_n}\norm{\boldsymbol{\delta}\mathbf{b}}$, and $\norm{\mathbf{b}} = \norm{A\mathbf{x}} \leq \sigma_1\norm{\mathbf{x}}$. Dividing the first inequality by $\norm{\mathbf{x}} \geq \frac{1}{\sigma_1}\norm{\mathbf{b}}$ gives the claim. For $\mathbf{b} = \mathbf{u}_1$, $\mathbf{x} = \frac{1}{\sigma_1}\mathbf{v}_1$, and for $\boldsymbol{\delta}\mathbf{b} = t\mathbf{u}_n$, $\boldsymbol{\delta}\mathbf{x} = \frac{t}{\sigma_n}\mathbf{v}_n$, so both inequalities are equalities.
+\end{proof}
+
+A relative error in $\mathbf{b}$ can thus be amplified by the factor $\kappa(A)$ in the solution. As a rule of thumb, solving a system with a condition number of $10^k$ in floating-point arithmetic loses about $k$ of the $16$ significant digits.
+
+\begin{example}\label{L2-ex:ill-conditioned}
+    Let $A = \begin{pmatrix} 1 & 1 \\ 1 & 1.001 \end{pmatrix}$, whose columns are almost parallel. Then $\kappa(A) \approx 4002$. The system $A\mathbf{x} = (2, 2.001)^\top$ has the solution $\mathbf{x} = (1, 1)^\top$, but changing the right side by $0.001$ to $(2, 2.002)^\top$ gives $\mathbf{x} = (0, 2)^\top$: a relative change of $0.035\%$ in $\mathbf{b}$ changes $\mathbf{x}$ by $100\%$.
+\end{example}
+
+The condition number explains how least squares problems should be solved. The singular values of $A^\top A$ are $\sigma_i^2$, so
+\[\kappa(A^\top A) = \kappa(A)^2.\]
+Solving the normal equations $A^\top A\mathbf{w} = A^\top\mathbf{y}$ squares the condition number, and may lose twice as many digits as necessary. With a QR decomposition $A = QR$ (Proposition~\ref{L2-prop:qr}), the normal equations become $R^\top R\mathbf{w} = R^\top Q^\top\mathbf{y}$, i.e., $R\mathbf{w} = Q^\top\mathbf{y}$, and $\kappa(R) = \kappa(A)$, since multiplying by $Q$ does not change lengths. This is why \py{np.linalg.lstsq} uses the SVD and never forms $A^\top A$. Regularization also helps: ridge regression solves $(A^\top A + \lambda I)\mathbf{w} = A^\top\mathbf{y}$, whose matrix has the condition number $\frac{\sigma_1^2 + \lambda}{\sigma_n^2 + \lambda} \leq \kappa(A)^2$. In Lecture~3, the condition number of the Hessian determines how fast gradient descent converges.
+
 \subsection{Principal component analysis}\label{L2-sec:pca}
 
 Principal component analysis (PCA) is the most widely used method to reduce the dimension of data. Let $\mathbf{x}_1, \ldots, \mathbf{x}_N \in \mathbb{R}^d$ be data points, which we assume to be centered, i.e., $\sum_i \mathbf{x}_i = \mathbf{0}$ (otherwise, subtract the mean from every data point first). Let $X$ be the $N \times d$ data matrix whose rows are $\mathbf{x}_1^\top, \ldots, \mathbf{x}_N^\top$, and let
@@ -1358,9 +1444,11 @@ so the principal components are the right singular vectors of $X$, and $\lambda_
     \item A hyperplane $\{\mathbf{x} : \mathbf{w}^\top \mathbf{x} = c\}$ has normal vector $\mathbf{w}$; linear classifiers use hyperplanes as decision boundaries, and the distance of $\mathbf{x}$ to the hyperplane is $\frac{|\mathbf{w}^\top \mathbf{x} - c|}{\norm{\mathbf{w}}}$.
     \item The orthogonal projection onto $U = \col(B)$ is $\pi_U(\mathbf{x}) = B(B^\top B)^{-1}B^\top \mathbf{x}$; it is the point of $U$ closest to $\mathbf{x}$. Least squares regression projects the target vector onto the column space of the design matrix, which leads to the normal equations $A^\top A \mathbf{w} = A^\top \mathbf{y}$.
     \item Rotations are orthogonal matrices with determinant $1$. They preserve lengths, angles and orientation; rotations of the plane commute, but rotations of $\mathbb{R}^3$ do not.
-    \item Spectral theorem: a symmetric matrix has real eigenvalues and an orthonormal basis of eigenvectors, $A = Q\Lambda Q^\top = \sum_i \lambda_i \mathbf{q}_i \mathbf{q}_i^\top$. It is positive definite if and only if all eigenvalues are positive, and $\max_{\norm{\mathbf{x}} = 1} \mathbf{x}^\top A \mathbf{x} = \lambda_{\max}$.
+    \item Spectral theorem: a symmetric matrix has real eigenvalues and an orthonormal basis of eigenvectors, $A = Q\Lambda Q^\top = \sum_i \lambda_i \mathbf{q}_i \mathbf{q}_i^\top$. It is positive definite if and only if all eigenvalues are positive, and $\max_{\norm{\mathbf{x}} = 1} \mathbf{x}^\top A \mathbf{x} = \lambda_{\max}$; more generally, $\lambda_k$ is the max-min of the Rayleigh quotient over $k$-dimensional subspaces (Courant--Fischer), so eigenvalues of symmetric matrices move by at most $\varepsilon$ under perturbations with eigenvalues in $[-\varepsilon, \varepsilon]$ (Weyl).
+    \item A symmetric matrix is positive definite if and only if $A = LL^\top$ with a lower triangular $L$ with positive diagonal (Cholesky), the standard way to solve systems with such matrices and to compute $\det(A)$. Positive semidefinite matrices have a unique positive semidefinite square root $A^{1/2} = Q\Lambda^{1/2}Q^\top$.
     \item The Laplacian $L = D - W$ of a weighted graph satisfies $\mathbf{x}^\top L\mathbf{x} = \sum_{i < j} w_{ij}(x_i - x_j)^2$, so it is positive semidefinite. The multiplicity of its eigenvalue $0$ is the number of connected components, and its second smallest eigenvalue $\lambda_2$ is a lower bound for the ratio cut of every split of the vertices. Spectral clustering splits the vertices by the signs of the Fiedler vector $\mathbf{q}_2$.
     \item Every matrix has a singular value decomposition $A = U\Sigma V^\top = \sum_{i=1}^r \sigma_i \mathbf{u}_i \mathbf{v}_i^\top$: rotate, scale the axes by the singular values, rotate. The $\sigma_i^2$ are the eigenvalues of $A^\top A$, $r = \rank(A)$, $\norm{A}_2 = \sigma_1$ and $\norm{A}_F^2 = \sum_i \sigma_i^2$.
+    \item The condition number $\kappa(A) = \sigma_1/\sigma_n$ bounds the amplification of relative errors in linear systems, $\frac{\norm{\boldsymbol{\delta}\mathbf{x}}}{\norm{\mathbf{x}}} \leq \kappa(A)\frac{\norm{\boldsymbol{\delta}\mathbf{b}}}{\norm{\mathbf{b}}}$. Since $\kappa(A^\top A) = \kappa(A)^2$, least squares problems are solved with QR or the SVD rather than the normal equations.
     \item Keeping the $k$ largest singular values gives the best rank-$k$ approximation (Eckart--Young), with applications to compression and recommender systems. PCA projects centered data onto the eigenvectors of the covariance matrix with the largest eigenvalues, i.e., onto the top right singular vectors of the data matrix.
 \end{itemize}
 
@@ -1392,6 +1480,18 @@ so the principal components are the right singular vectors of $X$, and $\lambda_
     \item Use the Cauchy--Schwarz inequality to show that $(x_1 + \cdots + x_n)^2 \leq n(x_1^2 + \cdots + x_n^2)$. Conclude that if $a, b, c \geq 0$ and $a + b + c = 1$, then $a^2 + b^2 + c^2 \geq \frac{1}{3}$. When does equality hold?
     \item Find the spectral decomposition $A = Q\Lambda Q^\top$ of $A = \begin{pmatrix} 5 & 2 \\ 2 & 2 \end{pmatrix}$, and write $A$ as $\lambda_1 \mathbf{q}_1 \mathbf{q}_1^\top + \lambda_2 \mathbf{q}_2 \mathbf{q}_2^\top$. Is $A$ positive definite? Conversely, show that every matrix of the form $Q\Lambda Q^\top$, with $Q$ orthogonal and $\Lambda$ diagonal, is symmetric.
     \item Find the largest and the smallest value of $\mathbf{x}^\top A \mathbf{x}$ over all unit vectors $\mathbf{x} \in \mathbb{R}^2$, for $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, and the unit vectors where they are attained.
+    \item\label{L2-ex2:sqrt-cholesky} (Cholesky decomposition and square roots.)
+    \begin{enumerate}
+        \item Find the Cholesky decomposition of $\begin{pmatrix} 4 & 2 \\ 2 & 10 \end{pmatrix}$. What goes wrong when you apply the algorithm to $\begin{pmatrix} 1 & 2 \\ 2 & 1 \end{pmatrix}$, and why?
+        \item Compute the square root of $\begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$.
+        \item Let $A$ be symmetric positive definite with the Cholesky decomposition $A = LL^\top$. Show that $Q = L^{-1}A^{1/2}$ is orthogonal, so that $A^{1/2} = LQ$. More generally, show that if $A = BB^\top = CC^\top$ with invertible matrices $B$ and $C$, then $B^{-1}C$ is orthogonal.
+    \end{enumerate}
+    \item (Courant--Fischer.) Let $A$ be a symmetric $n \times n$ matrix with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n$, and let $A'$ be its upper left $(n - 1) \times (n - 1)$ submatrix, with eigenvalues $\mu_1 \geq \cdots \geq \mu_{n-1}$.
+    \begin{enumerate}
+        \item Show that $\lambda_k \geq \mu_k$ for $k \leq n - 1$. (Hint: the subspaces of $\mathbb{R}^{n-1}$ are subspaces of $\mathbb{R}^n$ after appending a zero coordinate.)
+        \item Apply (a) to $-A$ to show that $\mu_k \geq \lambda_{k+1}$. So the eigenvalues of $A'$ interlace with those of $A$ (Cauchy's interlacing theorem).
+        \item Check the interlacing for the matrix $J + 2I_3$ of Example~\ref{L2-ex:spectral}.
+    \end{enumerate}
     \item Let $L$ be the Laplacian of a graph with weights $w_{ij}$.
     \begin{enumerate}
         \item Show that $L = \sum_{i < j} w_{ij}(\mathbf{e}_i - \mathbf{e}_j)(\mathbf{e}_i - \mathbf{e}_j)^\top$, and use this to give another proof of Proposition~\ref{L2-prop:laplacian}.
@@ -1404,6 +1504,12 @@ so the principal components are the right singular vectors of $X$, and $\lambda_
         \item the singular values of a symmetric matrix are the absolute values of its nonzero eigenvalues;
         \item $A^\top A$ and $AA^\top$ have the same nonzero eigenvalues;
         \item $\norm{A}_2 = \norm{A^\top}_2$.
+    \end{enumerate}
+    \item (Condition numbers.)
+    \begin{enumerate}
+        \item Show that $\kappa(cA) = \kappa(A)$ for $c \neq 0$, that $\kappa(QA) = \kappa(A)$ for an orthogonal matrix $Q$, and that $\kappa(A^{-1}) = \kappa(A)$ for an invertible matrix $A$.
+        \item Compute the condition numbers of $\begin{pmatrix} 1 & 0 \\ 0 & \varepsilon \end{pmatrix}$ for $0 < \varepsilon < 1$, and of the shear $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$.
+        \item Show that $\kappa(A^\top A + \lambda I) = \frac{\sigma_1^2 + \lambda}{\sigma_n^2 + \lambda}$ for $\lambda > 0$, and that this is a decreasing function of $\lambda$ if $\sigma_1 > \sigma_n$.
     \end{enumerate}
     \item Carry out PCA by hand for the four data points $(3, 3)$, $(-3, -3)$, $(1, -1)$, $(-1, 1)$: compute the covariance matrix, the principal components, and the proportion of the variance explained by the first principal component. Project the data onto the first principal component, and compute the average reconstruction error.
 \end{enumerate}
@@ -1429,7 +1535,7 @@ rng = np.random.default_rng(0)  # random number generator for test data
     \item \textbf{Inner products and angles.} Write a function \py{inner(x, y, A)} that computes $\mathbf{x}^\top A \mathbf{y}$, and functions \py{norm_A(x, A)} and \py{angle_A(x, y, A)} for the induced norm and angle.
     \begin{itemize}
         \item Check Example~\ref{L2-ex:orth-depends}: the angle between $(1, 1)$ and $(-1, 1)$ is $90^\circ$ for $A = I_2$, but about $109.5^\circ$ for $A = \diag(2, 1)$.
-        \item Write a function \py{is_spd(A)} that tests whether a symmetric $2 \times 2$ matrix is positive definite, using Proposition~\ref{L2-prop:spd-properties}. For larger matrices, NumPy's \py{np.linalg.cholesky(A)} succeeds exactly for symmetric positive definite matrices and raises \py{np.linalg.LinAlgError} otherwise; use it to test the matrices of Exercise~4.
+        \item Write a function \py{is_spd(A)} that tests whether a symmetric $2 \times 2$ matrix is positive definite, using Proposition~\ref{L2-prop:spd-properties}. For larger matrices, NumPy's \py{np.linalg.cholesky(A)} succeeds exactly for symmetric positive definite matrices (Theorem~\ref{L2-thm:cholesky}) and raises \py{np.linalg.LinAlgError} otherwise; use it to test the matrices of Exercise~4.
         \item For random vectors, check the Cauchy--Schwarz inequality, and the parallelogram law for the $\ell_2$ norm (but not for the $\ell_1$ norm).
     \end{itemize}
 
@@ -1526,6 +1632,13 @@ X = np.c_[r * np.cos(t), r * np.sin(t)] + 0.1 * rng.normal(size=(200, 2))
         \item Build the weights $w_{ij} = e^{-\norm{\mathbf{x}_i - \mathbf{x}_j}^2/(2s^2)}$ with $s = 0.5$ (and $w_{ii} = 0$), the Laplacian $L$ (Definition~\ref{L2-def:laplacian}), and its eigenvalues and eigenvectors with \py{np.linalg.eigh}. Check that the smallest eigenvalue is $0$, with the eigenvector $\frac{1}{\sqrt{n}}\mathbf{1}$ (up to sign).
         \item Cluster the points by the signs of the Fiedler vector, and plot them in two colors. Does spectral clustering find the two circles? Why would a method that only splits the plane by a line fail here?
         \item Repeat with $s = 2$ and $s = 0.2$. How do the second and third smallest eigenvalues change, and how does the clustering change? Relate your observations to Theorem~\ref{L2-thm:laplacian-components}.
+    \end{itemize}
+
+    \item \textbf{Conditioning and least squares.}
+    \begin{itemize}
+        \item Write a function \py{cholesky(A)} following the proof of Theorem~\ref{L2-thm:cholesky}, and compare it with \py{np.linalg.cholesky} on a random matrix $B^\top B + I$. Use it to solve $A\mathbf{x} = \mathbf{b}$ by forward and back substitution.
+        \item The Hilbert matrix $H_n$ has the entries $\frac{1}{i + j - 1}$. For $n = 4, 6, \ldots, 14$, compute $\kappa(H_n)$ with \py{np.linalg.cond}, solve $H_n\mathbf{x} = H_n\mathbf{1}$, and plot the error $\norm{\mathbf{x} - \mathbf{1}}$ against $\kappa(H_n)$ on logarithmic axes. How many correct digits does the rule of thumb after Theorem~\ref{L2-thm:condition} predict?
+        \item Fit a polynomial of degree $12$ to $50$ points $(t_i, \sin 4t_i)$ with $t_i$ equally spaced in $[0, 1]$, using the columns $1, t, \ldots, t^{12}$ of a design matrix $A$. Compare $\kappa(A)$ with $\kappa(A^\top A)$, and compare the residuals of three solutions: the normal equations with \py{np.linalg.solve}, the QR decomposition, and \py{np.linalg.lstsq}.
     \end{itemize}
 \end{enumerate}
 \endgroup

@@ -18,7 +18,7 @@ In this lecture:
     \item we study linear transformations, including differentiation and integration, and the matrices that represent them: matrix operations, row reduction for solving linear systems and computing inverses, special types of matrices, the trace and the determinant, which measures how a linear map scales areas and volumes, and block matrices, with the LU decomposition behind every linear solver and the Woodbury identity for low-rank updates;
     \item we relate the null space, the column space and the rank of a matrix by the rank--nullity theorem;
     \item we introduce dual spaces, which explain what the transpose of a matrix is, and quotient spaces with the isomorphism theorems;
-    \item we find eigenvalues and eigenvectors, diagonalize matrices, and use powers of matrices to analyze Fibonacci numbers, Markov chains and power iteration;
+    \item we find eigenvalues and eigenvectors, diagonalize matrices, prove the Cayley--Hamilton theorem, characterize diagonalizable matrices by their minimal polynomials, use powers of matrices to analyze Fibonacci numbers, Markov chains and power iteration, and show that the discrete Fourier transform diagonalizes convolutions, the linear maps behind convolutional networks;
     \item we construct the tensor product of vector spaces, define tensors as its elements, and derive their description by arrays (the tensors of deep learning libraries), multilinear forms, the trace as a contraction, tensor rank, and Einstein notation.
 \end{itemize}
 Lecture~2 adds geometry to vector spaces: lengths, angles and orthogonality. The later lectures use the language of this lecture throughout: derivatives are linear maps (Lecture~3), covariance matrices describe random vectors (Lecture~4), and the eigenvalues of a matrix decide whether the solutions of a linear differential equation grow or decay (Lecture~3).
@@ -58,35 +58,23 @@ Lecture~2 adds geometry to vector spaces: lengths, angles and orthogonality. The
     $2 + 5i$ is a complex number, but not a real number.
 \end{example}
 
-\begin{definition}[Field]
-    A field is a triple $(\mathbb{F}, +, \cdot)$, where $\mathbb{F}$ is a set and $+$, $\cdot$ are binary operations on $\mathbb{F}$ such that
+\begin{definition}[Field]\label{L1-def:field}
+    A field is a set $\mathbb{F}$ with two operations, an addition and a multiplication, which assign to all $a, b \in \mathbb{F}$ elements $a + b \in \mathbb{F}$ and $a \cdot b = ab \in \mathbb{F}$, and with two elements $0, 1 \in \mathbb{F}$, such that for all $a, b, c \in \mathbb{F}$:
     \begin{enumerate}
-        \item Both $+$ and $\cdot$ are associative, meaning that for all $a, b, c \in \mathbb{F}$,
-            \[(a + b) + c = a + (b + c), \qquad (a\cdot b)\cdot c = a\cdot (b\cdot c);\]
-        \item Both $+$ and $\cdot$ are commutative, meaning that for all $a, b \in \mathbb{F}$,
-            \[a + b = b + a, \qquad a\cdot b = b\cdot a;\]
-        \item There exists an additive identity $0 \in \mathbb{F}$ such that $a + 0 = a$ for all $a \in \mathbb{F}$, and there exists a multiplicative identity $1 \in \mathbb{F}$ such that $a\cdot 1 = a$ for all $a \in \mathbb{F}$. Moreover, $0 \neq 1$;
-        \item For every $a \in \mathbb{F}$, there exists an additive inverse $-a \in \mathbb{F}$ such that $a + (-a) = 0$, and for every $a \in \mathbb{F}$ with $a \neq 0$, there exists a multiplicative inverse $a^{-1} \in \mathbb{F}$ such that $a\cdot a^{-1} = 1$;
-        \item The distributive property holds, meaning $a\cdot (b + c) = a\cdot b + a\cdot c$ for all $a, b, c \in \mathbb{F}$.
+        \item (associativity) $(a + b) + c = a + (b + c)$ and $(ab)c = a(bc)$;
+        \item (commutativity) $a + b = b + a$ and $ab = ba$;
+        \item (identities) $a + 0 = a$ and $a \cdot 1 = a$;
+        \item (inverses) there is an element $-a \in \mathbb{F}$ with $a + (-a) = 0$, and if $a \neq 0$, there is an element $a^{-1} \in \mathbb{F}$ with $aa^{-1} = 1$;
+        \item (distributivity) $a(b + c) = ab + ac$;
+        \item (nontriviality) $0 \neq 1$.
     \end{enumerate}
-    Saying that $+$ and $\cdot$ are binary operations on $\mathbb{F}$ means that $a + b \in \mathbb{F}$ and $a\cdot b \in \mathbb{F}$ for all $a, b \in \mathbb{F}$; in other words, $\mathbb{F}$ is closed under $+$ and $\cdot$.
 \end{definition}
 
-\begin{example}
-    The set of real numbers $\mathbb{R}$ with the usual addition and multiplication operations forms a field.
-\end{example}
+The last axiom says that a field has at least two elements. The set $\{0\}$, with $0 + 0 = 0$ and $0 \cdot 0 = 0$, satisfies axioms 1 to 5, with the element $0$ as the identity for both operations (so $1 = 0$ there); the inverse axiom for nonzero elements holds because there are none. Axiom 6 excludes it: $\{0\}$ is not a field. In fact, $\{0\}$ is the only set that satisfies axioms 1 to 5 with $0 = 1$: the distributive law gives $a \cdot 0 = a(0 + 0) = a \cdot 0 + a \cdot 0$, so $a \cdot 0 = 0$ after adding $-(a \cdot 0)$, and if $0 = 1$, then $a = a \cdot 1 = a \cdot 0 = 0$ for every $a$.
 
-\begin{proof}
-    The sum and the product of two real numbers are again real numbers, so $+$ and $\cdot$ are binary operations on $\mathbb{R}$. We need to verify that $\mathbb{R}$ satisfies all the field axioms:
-    \begin{enumerate}
-        \item Associativity: For any $a, b, c \in \mathbb{R}$, we have $(a + b) + c = a + (b + c)$ and $(a\cdot b)\cdot c = a\cdot (b\cdot c)$.
-        \item Commutativity: For any $a, b \in \mathbb{R}$, we have $a + b = b + a$ and $a\cdot b = b\cdot a$.
-        \item Identities: The number $0$ is the additive identity since $a + 0 = a$ for all $a \in \mathbb{R}$, and the number $1$ is the multiplicative identity since $a\cdot 1 = a$ for all $a \in \mathbb{R}$. Clearly, $0 \neq 1$.
-        \item Inverses: For every $a \in \mathbb{R}$, the additive inverse is $-a$, satisfying $a + (-a) = 0$. For every non-zero $a \in \mathbb{R}$, the multiplicative inverse is $\frac{1}{a}$, satisfying $a\cdot \frac{1}{a} = 1$.
-        \item Distributive property: For any $a, b, c \in \mathbb{R}$, we have $a\cdot (b + c) = a\cdot b + a\cdot c$.
-    \end{enumerate}
-    Since all axioms are satisfied, $\mathbb{R}$ is indeed a field.
-\end{proof}
+\begin{example}
+    The real numbers $\mathbb{R}$, with the usual addition and multiplication, form a field: axioms 1, 2, 3 and 5 are the familiar rules of arithmetic, the inverses of $a$ are $-a$ and, for $a \neq 0$, $\frac{1}{a}$, and $0 \neq 1$.
+\end{example}
 
 \begin{example}
     The set of integers $\mathbb{Z}$ with the usual addition and multiplication operations does not form a field, since not every non-zero integer has a multiplicative inverse in $\mathbb{Z}$.
@@ -99,41 +87,25 @@ Lecture~2 adds geometry to vector spaces: lengths, angles and orthogonality. The
 
 \section{Vector Spaces}
 
-\begin{definition}[Vector space]
-    A vector space over a field $\mathbb{F}$ is a set $V$, whose elements are called vectors, together with two operations:
-    \begin{itemize}
-        \item vector addition, which assigns to any two vectors $u, v \in V$ a vector $u + v \in V$;
-        \item scalar multiplication, which assigns to any scalar $a \in \mathbb{F}$ and any vector $v \in V$ a vector $a \cdot v \in V$,
-    \end{itemize}
-    satisfying the following axioms:
+\begin{definition}[Vector space]\label{L1-def:vector-space}
+    A vector space over a field $\mathbb{F}$ is a set $V$, whose elements are called vectors, with a vector addition, which assigns to $u, v \in V$ a vector $u + v \in V$, and a scalar multiplication, which assigns to $a \in \mathbb{F}$ and $v \in V$ a vector $a \cdot v = av \in V$, such that for all $u, v, w \in V$ and $a, b \in \mathbb{F}$:
     \begin{enumerate}
-        \item Vector addition is associative and commutative, meaning $(u + v) + w = u + (v + w)$ and $u + v = v + u$ for all $u, v, w \in V$.
-        \item There exists an additive identity $0$ in $V$ (called the zero vector, also written $0_V$), meaning $v + 0 = v$ for all $v \in V$.
-        \item Every element in $V$ has an additive inverse, meaning for every $v \in V$, there exists $-v \in V$ such that $v + (-v) = 0$.
-        \item Scalar multiplication is associative with respect to the field multiplication, meaning $(a \cdot b) \cdot v = a \cdot (b \cdot v)$ for all $a, b \in \mathbb{F}$ and $v \in V$.
-        \item Scalar multiplication distributes over vector addition, meaning $a \cdot (u + v) = a \cdot u + a \cdot v$ for all $a \in \mathbb{F}$ and $u, v \in V$.
-        \item Scalar multiplication distributes over field addition, meaning $(a + b) \cdot v = a \cdot v + b \cdot v$ for all $a, b \in \mathbb{F}$ and $v \in V$.
-        \item The multiplicative identity of the field acts as the identity for scalar multiplication, meaning $1 \cdot v = v$ for all $v \in V$.
+        \item $(u + v) + w = u + (v + w)$ and $u + v = v + u$;
+        \item there is a vector $0 \in V$, the zero vector (also written $0_V$), with $v + 0 = v$;
+        \item there is a vector $-v \in V$ with $v + (-v) = 0$;
+        \item $a(bv) = (ab)v$ and $1v = v$;
+        \item $a(u + v) = au + av$ and $(a + b)v = av + bv$.
     \end{enumerate}
 \end{definition}
 
+Axioms 1 to 3 are the rules for the addition of a field, now for vectors. Axioms 4 and 5 connect the two operations: in $(ab)v$, the scalars are multiplied in $\mathbb{F}$ before the vector is scaled, and in $(a + b)v = av + bv$, the left side adds scalars in $\mathbb{F}$, while the right side adds vectors in $V$.
+
 \begin{example}
-    Any field $\mathbb{F}$ is a vector space over itself, with the usual addition and multiplication operations.
+    Every field $\mathbb{F}$ is a vector space over itself, with the field addition as vector addition and the field multiplication as scalar multiplication.
 \end{example}
 
 \begin{proof}
-    Let $V = \mathbb{F}$, and let the vector addition and scalar multiplication be the usual addition and multiplication in the field $\mathbb{F}$. Since $\mathbb{F}$ is closed under $+$ and $\cdot$, both operations give results in $V = \mathbb{F}$. We need to verify that $V$ satisfies all the vector space axioms:
-    \begin{enumerate}
-        \item Associativity of vector addition: For any $u, v, w \in V$, we have $(u + v) + w = u + (v + w)$, which holds since addition in $\mathbb{F}$ is associative.
-        \item Commutativity of vector addition: For any $u, v \in V$, we have $u + v = v + u$, which holds since addition in $\mathbb{F}$ is commutative.
-        \item Additive identity: The element $0 \in V$ serves as the additive identity since $v + 0 = v$ for all $v \in V$.
-        \item Additive inverse: For every $v \in V$, the additive inverse is $-v$, satisfying $v + (-v) = 0$.
-        \item Associativity of scalar multiplication: For any $a, b \in \mathbb{F}$ and $v \in V$, we have $(a \cdot b) \cdot v = a \cdot (b \cdot v)$, which holds since multiplication in $\mathbb{F}$ is associative.
-        \item Distributivity of scalar multiplication over vector addition: For any $a \in \mathbb{F}$ and $u, v \in V$, we have $a \cdot (u + v) = a \cdot u + a \cdot v$, which holds since multiplication distributes over addition in $\mathbb{F}$.
-        \item Distributivity of scalar multiplication over field addition: For any $a, b \in \mathbb{F}$ and $v \in V$, we have $(a + b) \cdot v = a \cdot v + b \cdot v$, which holds since multiplication distributes over addition in $\mathbb{F}$.
-        \item Identity element of scalar multiplication: The multiplicative identity $1$ acts as the identity for scalar multiplication since $1 \cdot v = v$ for all $v \in V$.
-    \end{enumerate}
-    Since all axioms are satisfied, $V = \mathbb{F}$ is indeed a vector space over itself.
+    Since the operations are those of $\mathbb{F}$, every vector space axiom is a field axiom: axioms 1 to 3 are the field axioms for the addition, $a(bv) = (ab)v$ is the associativity of the multiplication, $1v = v$ is the identity axiom, and axiom 5 is the distributive law, which gives $(a + b)v = v(a + b) = va + vb = av + bv$ together with commutativity.
 \end{proof}
 
 \begin{corollary}\label{L1-cor:fields}
@@ -155,47 +127,9 @@ Lecture~2 adds geometry to vector spaces: lengths, angles and orthogonality. The
 \end{proposition}
 
 \begin{proof}
-    The operations give results in $V \times W$, since $v_1 + v_2, a \cdot v \in V$ and $w_1 + w_2, a \cdot w \in W$. We need to verify that $V \times W$ satisfies all the vector space axioms. Each of them follows from the corresponding axiom in $V$ and in $W$:
-    \begin{enumerate}
-        \item Associativity of vector addition: For any $(v_1, w_1), (v_2, w_2), (v_3, w_3) \in V \times W$, we have
-        \[
-        ((v_1, w_1) + (v_2, w_2)) + (v_3, w_3) = (v_1 + v_2 + v_3, w_1 + w_2 + w_3) = (v_1, w_1) + ((v_2, w_2) + (v_3, w_3)).
-        \]
-        \item Commutativity of vector addition: For any $(v_1, w_1), (v_2, w_2) \in V \times W$, we have
-        \[
-        (v_1, w_1) + (v_2, w_2) = (v_1 + v_2, w_1 + w_2) = (v_2 + v_1, w_2 + w_1) = (v_2, w_2) + (v_1, w_1).
-        \]
-        \item Additive identity: The element $(0_V, 0_W)$ serves as the additive identity since
-        \[
-        (v, w) + (0_V, 0_W) = (v + 0_V, w + 0_W) = (v, w).
-        \]
-        \item Additive inverse: For every $(v, w) \in V \times W$, the additive inverse is $(-v, -w)$ satisfying
-        \[
-        (v, w) + (-v, -w) = (0_V, 0_W).
-        \]
-        \item Associativity of scalar multiplication: For any $a, b \in \mathbb{F}$ and $(v, w) \in V \times W$, we have
-        \[
-        a(b(v,w)) = a(b\cdot v, b\cdot w) = (ab\cdot v, ab\cdot w) = (ab)(v,w).
-        \]
-        \item Distributivity of scalar multiplication over vector addition: For any $a \in \mathbb{F}$ and any $(v_1, w_1)$, $(v_2, w_2) \in V \times W$, we have
-        \[
-        \begin{aligned}
-        a((v_1, w_1) + (v_2, w_2)) &= (a(v_1 + v_2), a(w_1 + w_2)) \\
-        &= (a v_1 + a v_2, a w_1 + a w_2) \\
-        &= (a v_1, a w_1) + (a v_2, a w_2) \\
-        &= a(v_1, w_1) + a(v_2, w_2).
-        \end{aligned}
-        \]
-        \item Distributivity of scalar multiplication over field addition: For any $a, b \in \mathbb{F}$ and $(v, w) \in V \times W$, we have
-        \[
-        (a + b)(v, w) = ((a + b)v, (a + b)w) = (av + bv, aw + bw) = (av, aw) + (bv, bw) = a(v, w) + b(v, w).
-        \]
-        \item Identity element of scalar multiplication: For any $(v, w) \in V \times W$, we have
-        \[
-        1 \cdot (v, w) = (1 \cdot v, 1 \cdot w) = (v, w).
-        \]
-    \end{enumerate}
-    Since all axioms are satisfied, $V \times W$ is a vector space over $\mathbb{F}$.
+    The operations act on each component separately, so each axiom for $V \times W$ is the same axiom in $V$ for the first components and in $W$ for the second components. For example,
+    \[(a + b)(v, w) = ((a + b)v, (a + b)w) = (av + bv, aw + bw) = a(v, w) + b(v, w).\]
+    The zero vector is $(0_V, 0_W)$, and the additive inverse of $(v, w)$ is $(-v, -w)$.
 \end{proof}
 
 \begin{remark}
@@ -236,17 +170,9 @@ In words: to add two functions, we add their values at every point. Two function
 \end{proposition}
 
 \begin{proof}
-    The operations give functions $S \to \mathbb{R}$ again, so their results lie in $\mathcal{F}(S)$. Each axiom is an equation between functions, so it suffices to check it at every point $s \in S$, where it becomes an equation between real numbers. Let $f, g, h \in \mathcal{F}(S)$, $a, b \in \mathbb{R}$ and $s \in S$.
-    \begin{enumerate}
-        \item Associativity and commutativity of vector addition: $((f + g) + h)(s) = (f(s) + g(s)) + h(s) = f(s) + (g(s) + h(s)) = (f + (g + h))(s)$, and $(f + g)(s) = f(s) + g(s) = g(s) + f(s) = (g + f)(s)$.
-        \item Additive identity: the zero function, $0(s) = 0$ for all $s$, satisfies $(f + 0)(s) = f(s) + 0 = f(s)$.
-        \item Additive inverse: the function $-f$, with $(-f)(s) = -f(s)$, satisfies $(f + (-f))(s) = f(s) - f(s) = 0$.
-        \item Associativity of scalar multiplication: $((ab) \cdot f)(s) = (ab) f(s) = a(b f(s)) = (a \cdot (b \cdot f))(s)$.
-        \item Distributivity over vector addition: $(a \cdot (f + g))(s) = a(f(s) + g(s)) = a f(s) + a g(s) = (a \cdot f + a \cdot g)(s)$.
-        \item Distributivity over field addition: $((a + b) \cdot f)(s) = (a + b) f(s) = a f(s) + b f(s) = (a \cdot f + b \cdot f)(s)$.
-        \item Identity element of scalar multiplication: $(1 \cdot f)(s) = 1 \cdot f(s) = f(s)$.
-    \end{enumerate}
-    In each case, the middle equalities are rules of arithmetic in the field $\mathbb{R}$. Since the equations hold at every point $s \in S$, they hold as equations between functions.
+    Each axiom is an equation between functions, so it suffices to check it at every point $s \in S$, where it becomes the same rule of arithmetic in $\mathbb{R}$. For example,
+    \[\big((a + b)f\big)(s) = (a + b)f(s) = af(s) + bf(s) = (af + bf)(s).\]
+    The zero vector is the zero function, $0(s) = 0$ for all $s$, and the additive inverse of $f$ is the function $-f$ with $(-f)(s) = -f(s)$.
 \end{proof}
 
 For $S = \{1, 2, \ldots, n\}$, a function $x: S \to \mathbb{R}$ is the same thing as the list of its values $(x(1), \ldots, x(n))$, and the pointwise operations are the componentwise operations of $\mathbb{R}^n$: so $\mathbb{R}^n$ is $\mathcal{F}(\{1, \ldots, n\})$ in disguise. In the same way, the real sequences $(a_0, a_1, a_2, \ldots)$ are the functions $\{0, 1, 2, \ldots\} \to \mathbb{R}$, so they form a vector space.
@@ -1266,7 +1192,7 @@ which is again a linear transformation by Lemma~\ref{L1-lem:composition}. By The
     \[((AB)^\top)_{ij} = (AB)_{ji} = \sum_k A_{jk} B_{ki} = \sum_k (B^\top)_{ik} (A^\top)_{kj} = (B^\top A^\top)_{ij}. \qedhere\]
 \end{proof}
 
-\begin{remark}
+\begin{remark}\label{L1-rem:noncommutative}
     Matrix multiplication is not commutative: even when $AB$ and $BA$ are both defined and have the same size, in general $AB \neq BA$. For example,
     \[\begin{pmatrix}
         1 & 1 \\
@@ -2058,9 +1984,25 @@ The next two sets of matrices are defined using multiplication rather than by co
     For the three properties: $I_n I_n = I_n$, so $I_n$ is invertible and is its own inverse. Properties 2 and 3 are parts 2 and 1 of Proposition~\ref{L1-prop:inverse-props}.
 \end{proof}
 
-\begin{remark}
-    A set of matrices that contains $I_n$ and is closed under multiplication and under taking inverses is called a matrix group. This is why $\mathrm{GL}(n, \mathbb{R})$ is called the general linear group. Groups and vector spaces are different kinds of structures: in a vector space we add vectors and multiply them by scalars, while in a group we multiply its elements with each other. Another important matrix group, the special linear group $\mathrm{SL}(n, \mathbb{R})$, is defined using determinants; see Subsection~\ref{L1-subsec:trace-det}.
-\end{remark}
+These three properties say that $\mathrm{GL}(n, \mathbb{R})$ is a group, a structure that appears throughout mathematics.
+
+\begin{definition}[Group]\label{L1-def:group}
+    A group is a set $G$ with an operation that assigns to $a, b \in G$ an element $ab \in G$, such that:
+    \begin{enumerate}
+        \item (associativity) $(ab)c = a(bc)$ for all $a, b, c \in G$;
+        \item (identity) there is an element $e \in G$ with $ea = ae = a$ for all $a \in G$;
+        \item (inverses) for every $a \in G$, there is an element $a^{-1} \in G$ with $aa^{-1} = a^{-1}a = e$.
+    \end{enumerate}
+    The group is abelian if moreover $ab = ba$ for all $a, b \in G$. A subgroup of $G$ is a subset that contains $e$ and is closed under the operation and under taking inverses; it is a group itself, with the same operation.
+\end{definition}
+
+The identity is unique: if $e'$ is another one, then $e = ee' = e'$. So is the inverse: if $b$ and $c$ are inverses of $a$, then $b = b(ac) = (ba)c = c$. When the operation is an addition, we write $a + b$, $0$ and $-a$ instead of $ab$, $e$ and $a^{-1}$.
+\begin{itemize}
+    \item $\mathbb{Z}$, $\mathbb{R}$ and every vector space are abelian groups under addition (axioms 1 to 3 of Definition~\ref{L1-def:vector-space}; by commutativity, $v + 0 = v$ and $v + (-v) = 0$ also hold in the other order). The natural numbers $\{0, 1, 2, \ldots\}$ are not a group under addition, since $1$ has no inverse.
+    \item The field axioms (Definition~\ref{L1-def:field}) say that $(\mathbb{F}, +)$ and $(\mathbb{F} \setminus \{0\}, \cdot)$ are abelian groups, connected by the distributive law. (The product of nonzero elements is nonzero: if $ab = 0$ with $a \neq 0$, then $b = a^{-1}ab = a^{-1} \cdot 0 = 0$.) The nonzero integers are not a group under multiplication, since $2$ has no inverse.
+    \item By the proposition above, $\mathrm{GL}(n, \mathbb{R})$ is a group under matrix multiplication, with the identity $e = I_n$; it is called the general linear group. For $n \geq 2$, it is not abelian (Remark~\ref{L1-rem:noncommutative}).
+\end{itemize}
+A subgroup of $\mathrm{GL}(n, \mathbb{R})$, i.e., a set of invertible matrices that contains $I_n$ and is closed under multiplication and under taking inverses, is called a matrix group. Important matrix groups are the orthogonal matrices $\mathrm{O}(n)$ (below), the matrices with determinant $1$, which form the special linear group $\mathrm{SL}(n, \mathbb{R})$ (Subsection~\ref{L1-subsec:trace-det}), and the rotations, which form the special orthogonal group $\mathrm{SO}(n)$ (Lecture~2). Groups and vector spaces are different kinds of structures: in a vector space we add vectors and multiply them by scalars, while in a matrix group we multiply its elements with each other, and their sums usually leave the group. The matrix groups above are also smooth curved surfaces in $\mathbb{R}^{n \times n}$ on which multiplication and inversion are smooth maps: they are Lie groups, the mathematical description of continuous symmetries such as rotations (Section~\ref{A-sec:lie-groups}).
 
 \begin{definition}[Orthogonal matrices]
     An $n \times n$ matrix $Q$ is called orthogonal if $Q^\top Q = I_n$. The set of all orthogonal $n \times n$ matrices is denoted by $\mathrm{O}(n)$.
@@ -3426,6 +3368,74 @@ The second part says that we need ``enough'' eigenvectors: $A$ is diagonalizable
     Symmetric matrices are always diagonalizable, and their eigenvectors can even be chosen to be orthonormal. This is the spectral theorem, which we prove in Lecture~2 once we have inner products.
 \end{remark}
 
+\subsection{The Cayley--Hamilton theorem and the minimal polynomial}\label{L1-subsec:cayley-hamilton}
+
+Matrices can be substituted into polynomials: for $q(t) = a_0 + a_1t + \cdots + a_mt^m$ and an $n \times n$ matrix $A$, let $q(A) = a_0I_n + a_1A + \cdots + a_mA^m$. Since powers of $A$ commute with each other, $(qr)(A) = q(A)r(A)$ for all polynomials $q$ and $r$. If $A\mathbf{v} = \lambda\mathbf{v}$, then $q(A)\mathbf{v} = q(\lambda)\mathbf{v}$, by Proposition~\ref{L1-prop:eigen-related}.
+
+\begin{theorem}[Cayley--Hamilton]\label{L1-thm:cayley-hamilton}
+    Every square matrix $A$ satisfies $p_A(A) = 0$.
+\end{theorem}
+
+Substituting $A$ for $\lambda$ in $\det(A - \lambda I_n)$ would give $\det(A - A) = 0$, a number rather than the zero matrix, so this is not a proof; we use the cofactor formula instead.
+
+\begin{proof}
+    For $n = 1$, $p_A(t) = A_{11} - t$, and $p_A(A) = 0$. Let $n \geq 2$, and let $B(t)$ be the transposed cofactor matrix of $A - tI_n$, so that $(A - tI_n)B(t) = p_A(t)\, I_n$ for every $t \in \mathbb{R}$, by Proposition~\ref{L1-prop:adjugate}. Each entry of $B(t)$ is $\pm$ the determinant of an $(n - 1) \times (n - 1)$ matrix whose entries are polynomials of degree at most $1$ in $t$, so it is a polynomial of degree at most $n - 1$. Collecting powers of $t$, we can write $B(t) = B_0 + B_1t + \cdots + B_{n-1}t^{n-1}$ with constant matrices $B_j$. Let $p_A(t) = c_0 + c_1t + \cdots + c_nt^n$. Comparing the coefficients of $t^j$ on both sides of $(A - tI_n)B(t) = p_A(t)\, I_n$ (entry by entry, two polynomials that agree for all $t$ have the same coefficients) gives
+    \[AB_0 = c_0I_n, \qquad AB_j - B_{j-1} = c_jI_n \quad (1 \leq j \leq n - 1), \qquad -B_{n-1} = c_nI_n.\]
+    We multiply the equation for $t^j$ by $A^j$ from the left, and add all of them:
+    \[p_A(A) = AB_0 + \sum_{j=1}^{n-1}\big(A^{j+1}B_j - A^jB_{j-1}\big) - A^nB_{n-1} = 0,\]
+    since the sum telescopes: each term $A^{j+1}B_j$ with $0 \leq j \leq n - 1$ appears once with a plus sign and once with a minus sign.
+\end{proof}
+
+So $A^n$ is a linear combination of $I_n, A, \ldots, A^{n-1}$, and by induction, so is every higher power of $A$. If $A$ is invertible, then $c_0 = p_A(0) = \det(A) \neq 0$, and multiplying $p_A(A) = 0$ by $A^{-1}$ gives
+\[A^{-1} = -\frac{1}{c_0}\big(c_1I_n + c_2A + \cdots + c_nA^{n-1}\big):\]
+the inverse is a polynomial in $A$. This is the idea behind the Krylov subspace methods for large linear systems, such as the conjugate gradient method, which approximate $A^{-1}\mathbf{b}$ by vectors in $\Span\{\mathbf{b}, A\mathbf{b}, \ldots, A^{k-1}\mathbf{b}\}$ and only need matrix-vector products.
+
+\begin{example}\label{L1-ex:cayley-hamilton}
+    For $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, $p_A(t) = t^2 - 4t + 3$, so $A^2 = 4A - 3I_2$. Hence $A^3 = 4A^2 - 3A = 13A - 12I_2 = \begin{pmatrix} 14 & 13 \\ 13 & 14 \end{pmatrix}$, and $A(4I_2 - A) = 3I_2$ gives $A^{-1} = \frac{1}{3}(4I_2 - A) = \frac{1}{3}\begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}$.
+\end{example}
+
+The characteristic polynomial is not always the polynomial of smallest degree that $A$ satisfies: $I_n$ satisfies $I_n - I_n = 0$, a polynomial equation of degree $1$, while $p_{I_n}(t) = (1 - t)^n$.
+
+\begin{definition}[Minimal polynomial]
+    The minimal polynomial $m_A$ of a square matrix $A$ is a polynomial of smallest degree with leading coefficient $1$ such that $m_A(A) = 0$.
+\end{definition}
+
+Such polynomials exist, since $(-1)^np_A$ has leading coefficient $1$ and annihilates $A$ by the Cayley--Hamilton theorem.
+
+\begin{proposition}\label{L1-prop:minimal-polynomial}
+    Let $A$ be a square matrix.
+    \begin{enumerate}
+        \item If $q(A) = 0$ for a polynomial $q$, then $m_A$ divides $q$. In particular, $m_A$ divides $p_A$, and $m_A$ is unique.
+        \item The real roots of $m_A$ are exactly the eigenvalues of $A$.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    (1) Division with remainder gives $q = sm_A + r$ with polynomials $s$ and $r$, where $r = 0$ or $\deg r < \deg m_A$. Then $r(A) = q(A) - s(A)m_A(A) = 0$, so $r = 0$ by the minimality of $\deg m_A$ (otherwise, $r$ divided by its leading coefficient would be a smaller polynomial annihilating $A$). If $m$ and $m'$ are two minimal polynomials, each divides the other, and since both have leading coefficient $1$, $m = m'$.
+
+    (2) If $A\mathbf{v} = \lambda\mathbf{v}$ with $\mathbf{v} \neq \mathbf{0}$, then $\mathbf{0} = m_A(A)\mathbf{v} = m_A(\lambda)\mathbf{v}$, so $m_A(\lambda) = 0$. Conversely, let $m_A(\lambda) = 0$, and write $m_A(t) = (t - \lambda)s(t)$. Since $\deg s < \deg m_A$, $s(A) \neq 0$, so there is a vector $\mathbf{w}$ with $\mathbf{v} = s(A)\mathbf{w} \neq \mathbf{0}$. Then $(A - \lambda I_n)\mathbf{v} = m_A(A)\mathbf{w} = \mathbf{0}$, so $\mathbf{v}$ is an eigenvector for $\lambda$.
+\end{proof}
+
+\begin{theorem}\label{L1-thm:minimal-diagonalizable}
+    A square matrix $A$ is diagonalizable if and only if $m_A(t) = (t - \mu_1) \cdots (t - \mu_k)$ for distinct real numbers $\mu_1, \ldots, \mu_k$.
+\end{theorem}
+
+\begin{proof}
+    Let $A = PDP^{-1}$, and let $\mu_1, \ldots, \mu_k$ be the distinct diagonal entries of $D$, the eigenvalues of $A$. For $q(t) = (t - \mu_1) \cdots (t - \mu_k)$, the matrix $q(D)$ is diagonal with the entries $q(\lambda_i) = 0$, so $q(A) = Pq(D)P^{-1} = 0$. By Proposition~\ref{L1-prop:minimal-polynomial}, $m_A$ divides $q$, so $m_A$ is a product of some of the distinct factors $t - \mu_j$; since every eigenvalue $\mu_j$ is a root of $m_A$, all of them appear, and $m_A = q$.
+
+    Conversely, let $m_A(t) = (t - \mu_1) \cdots (t - \mu_k)$ with distinct $\mu_j$, and consider the Lagrange polynomials
+    \[\ell_j(t) = \prod_{i \neq j} \frac{t - \mu_i}{\mu_j - \mu_i}, \qquad \text{with } \ell_j(\mu_i) = \delta_{ij}.\]
+    The polynomial $\ell_1 + \cdots + \ell_k - 1$ has degree at most $k - 1$ and the $k$ roots $\mu_1, \ldots, \mu_k$, so it is $0$ (a nonzero polynomial of degree at most $k - 1$ has at most $k - 1$ roots). Hence $I_n = \ell_1(A) + \cdots + \ell_k(A)$, and every $\mathbf{v} \in \mathbb{R}^n$ is the sum of the vectors $\ell_j(A)\mathbf{v}$. Each of them lies in the eigenspace $E_{\mu_j}$, since $(t - \mu_j)\ell_j(t)$ is a constant multiple of $m_A(t)$, so that $(A - \mu_jI_n)\ell_j(A)\mathbf{v} = \mathbf{0}$. So the eigenspaces together span $\mathbb{R}^n$. Bases of the eigenspaces together are linearly independent, as in the proof of Theorem~\ref{L1-thm:multiplicities}, so they form a basis of $\mathbb{R}^n$ consisting of eigenvectors, and $A$ is diagonalizable by Theorem~\ref{L1-thm:diagonalization}.
+\end{proof}
+
+\begin{example}\label{L1-ex:minimal-polynomial}
+    \begin{itemize}
+        \item For the shear $N = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$, the only eigenvalue is $1$, so $m_N$ is $t - 1$ or $(t - 1)^2$. Since $N - I_2 \neq 0$ but $(N - I_2)^2 = 0$, $m_N = (t - 1)^2$ has a repeated root, and $N$ is not diagonalizable.
+        \item For the matrix $J$ of Example~\ref{L1-ex:eigen-3x3}, $(J - 2I_3)(J + I_3) = 0$, and both $2$ and $-1$ must be roots of $m_J$, so $m_J = (t - 2)(t + 1)$, and $J$ is diagonalizable, without computing any eigenvectors.
+        \item If $P^2 = P$, then $m_P$ divides $t^2 - t = t(t - 1)$, so its roots lie in $\{0, 1\}$ and are not repeated, and $P$ is diagonalizable. Similarly, every matrix with $A^2 = I_n$, such as a reflection, is diagonalizable, with eigenvalues in $\{1, -1\}$.
+    \end{itemize}
+\end{example}
+
 \subsection{Powers of matrices and applications}
 
 \begin{proposition}\label{L1-prop:powers}
@@ -3454,10 +3464,10 @@ The second part says that we need ``enough'' eigenvectors: $A$ is diagonalizable
 \end{example}
 
 \begin{example}[Markov chains]\label{L1-ex:markov}
-    Suppose that the weather is either sunny or rainy, and that a sunny day is followed by a sunny day with probability $0.9$, while a rainy day is followed by a sunny day with probability $0.5$. If $x_k = (s_k, r_k)^\top$ contains the probabilities that day $k$ is sunny or rainy, then
-    \[x_{k+1} = A x_k, \qquad \text{where} \quad A = \begin{pmatrix} 0.9 & 0.5 \\ 0.1 & 0.5 \end{pmatrix}.\]
-    The columns of $A$ are probability vectors (nonnegative entries summing to $1$). By Proposition~\ref{L1-prop:char-poly-2x2}, $p_A(\lambda) = \lambda^2 - 1.4\lambda + 0.4 = (\lambda - 1)(\lambda - 0.4)$, with eigenvectors $(5, 1)^\top$ for $\lambda = 1$ and $(1, -1)^\top$ for $\lambda = 0.4$. If today is rainy, then $x_0 = (0, 1)^\top = \big(\frac{5}{6}, \frac{1}{6}\big)^\top - \frac{5}{6}(1, -1)^\top$, so
-    \[x_k = A^k x_0 = \begin{pmatrix} 5/6 \\ 1/6 \end{pmatrix} - \frac{5}{6}\, (0.4)^k \begin{pmatrix} 1 \\ -1 \end{pmatrix} \longrightarrow \begin{pmatrix} 5/6 \\ 1/6 \end{pmatrix} \qquad (k \to \infty).\]
+    Suppose that the weather is either sunny or rainy, and that a sunny day is followed by a sunny day with probability $0.9$, while a rainy day is followed by a sunny day with probability $0.5$. If $\mathbf{x}_k = (s_k, r_k)^\top$ contains the probabilities that day $k$ is sunny or rainy, then
+    \[\mathbf{x}_{k+1} = A \mathbf{x}_k, \qquad \text{where} \quad A = \begin{pmatrix} 0.9 & 0.5 \\ 0.1 & 0.5 \end{pmatrix}.\]
+    The columns of $A$ are probability vectors (nonnegative entries summing to $1$). By Proposition~\ref{L1-prop:char-poly-2x2}, $p_A(\lambda) = \lambda^2 - 1.4\lambda + 0.4 = (\lambda - 1)(\lambda - 0.4)$, with eigenvectors $(5, 1)^\top$ for $\lambda = 1$ and $(1, -1)^\top$ for $\lambda = 0.4$. If today is rainy, then $\mathbf{x}_0 = (0, 1)^\top = \big(\frac{5}{6}, \frac{1}{6}\big)^\top - \frac{5}{6}(1, -1)^\top$, so
+    \[\mathbf{x}_k = A^k \mathbf{x}_0 = \begin{pmatrix} 5/6 \\ 1/6 \end{pmatrix} - \frac{5}{6}\, (0.4)^k \begin{pmatrix} 1 \\ -1 \end{pmatrix} \longrightarrow \begin{pmatrix} 5/6 \\ 1/6 \end{pmatrix} \qquad (k \to \infty).\]
     In the long run, $\frac{5}{6}$ of the days are sunny, whatever the weather today. The limit $\big(\frac{5}{6}, \frac{1}{6}\big)^\top$ is the eigenvector for the eigenvalue $1$, scaled to be a probability vector; it is called the stationary distribution of the Markov chain.
 \end{example}
 
@@ -3466,6 +3476,59 @@ The second part says that we need ``enough'' eigenvectors: $A$ is diagonalizable
     \[A^k \mathbf{x} = \lambda_1^k \Big(c_1 \mathbf{v}_1 + \sum_{i \geq 2} c_i \Big(\frac{\lambda_i}{\lambda_1}\Big)^k \mathbf{v}_i\Big),\]
     so after rescaling, $A^k \mathbf{x}$ points more and more in the direction of $\mathbf{v}_1$ (if $c_1 \neq 0$). You will implement this in Programming Exercise~P10.
 \end{remark}
+
+\subsection{Convolutions and circulant matrices}\label{L1-subsec:circulant}
+
+Convolutional neural networks process images and signals with filters that are applied in the same way at every position. We study the simplest version of this: signals $\mathbf{x} \in \mathbb{R}^n$ whose indices $0, 1, \ldots, n - 1$ are taken modulo $n$, so that, for example, $x_{-1} = x_{n-1}$, as if the signal were periodic. In this subsection, the entries of vectors and matrices are numbered from $0$.
+
+\begin{definition}[Cyclic convolution and circulant matrices]\label{L1-def:circulant}
+    The cyclic convolution of $\mathbf{c}, \mathbf{x} \in \mathbb{R}^n$ is the vector $\mathbf{c} \ast \mathbf{x} \in \mathbb{R}^n$ with the entries
+    \[(\mathbf{c} \ast \mathbf{x})_j = \sum_{k=0}^{n-1} c_kx_{j-k} \qquad (j = 0, \ldots, n - 1),\]
+    where indices are taken modulo $n$. For fixed $\mathbf{c}$, it is linear in $\mathbf{x}$, with the matrix $\mathrm{circ}(\mathbf{c})$ whose entries are $\mathrm{circ}(\mathbf{c})_{jk} = c_{j-k}$. Such matrices are called circulant: the first column is $\mathbf{c}$, and each further column is the previous one, shifted down cyclically by one position.
+\end{definition}
+
+For example, for $n = 4$ and $\mathbf{c} = (2, 1, 0, 1)^\top$, we get $(\mathbf{c} \ast \mathbf{x})_j = 2x_j + x_{j-1} + x_{j+1}$, which smooths $\mathbf{x}$ by averaging each entry with its neighbors (up to the factor $4$), and
+\[\mathrm{circ}(\mathbf{c}) = \begin{pmatrix} 2 & 1 & 0 & 1 \\ 1 & 2 & 1 & 0 \\ 0 & 1 & 2 & 1 \\ 1 & 0 & 1 & 2 \end{pmatrix}, \qquad \mathbf{c} \ast \begin{pmatrix} 1 \\ 2 \\ 3 \\ 4 \end{pmatrix} = \begin{pmatrix} 8 \\ 8 \\ 12 \\ 12 \end{pmatrix}.\]
+A convolutional layer learns a filter $\mathbf{c}$ with only a few nonzero entries; for images, the filters are small two-dimensional arrays, such as $3 \times 3$ filters, and the convolution is defined with two indices in the same way. (Deep learning libraries compute $\sum_k c_kx_{j+k}$ and still call it a convolution; this is the same operation with $\mathbf{c}$ reversed.)
+
+Let $S = \mathrm{circ}(\mathbf{e}_1)$, where $\mathbf{e}_1 = (0, 1, 0, \ldots, 0)^\top$ in the numbering from $0$, be the cyclic shift, with $(S\mathbf{x})_j = x_{j-1}$, which moves every entry one position down and the last entry to the top.
+
+\begin{proposition}\label{L1-prop:circulant-shift}
+    \begin{enumerate}
+        \item $\mathrm{circ}(\mathbf{c}) = c_0I_n + c_1S + c_2S^2 + \cdots + c_{n-1}S^{n-1}$.
+        \item An $n \times n$ matrix $A$ commutes with $S$, i.e., $AS = SA$, if and only if $A$ is circulant.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    (1) $S^k$ shifts by $k$ positions, $(S^k\mathbf{x})_j = x_{j-k}$, so $\big(\sum_k c_kS^k\mathbf{x}\big)_j = \sum_k c_kx_{j-k} = (\mathbf{c} \ast \mathbf{x})_j$.
+
+    (2) By (1), a circulant matrix is a polynomial in $S$, so it commutes with $S$. Conversely, the $k$-th column of $AS$ is $A$ applied to the $k$-th column $\mathbf{e}_{k+1}$ of $S$, so $(AS)_{jk} = A_{j,k+1}$, and $SA$ is $A$ with its rows shifted down, so $(SA)_{jk} = A_{j-1,k}$. Hence $AS = SA$ means that $A_{j+1,k+1} = A_{jk}$ for all $j$ and $k$: the entries of $A$ are constant along the cyclic diagonals, i.e., $A_{jk}$ only depends on $j - k$ modulo $n$, and $A = \mathrm{circ}(\mathbf{c})$ with $c_m = A_{m0}$.
+\end{proof}
+
+Part 2 says that the linear maps that commute with shifts, i.e., that treat every position in the same way (shifting the input shifts the output), are exactly the convolutions. This is why convolutional networks use convolutions: their layers are translation equivariant, and a pattern is detected wherever it appears in an image. The eigenvectors of circulant matrices are complex. Let $\omega = e^{2\pi i/n} = \cos\frac{2\pi}{n} + i\sin\frac{2\pi}{n}$, so that $\omega^n = 1$, and let
+\[\mathbf{f}_m = (1, \omega^m, \omega^{2m}, \ldots, \omega^{(n-1)m})^\top \in \mathbb{C}^n \qquad (m = 0, \ldots, n - 1),\]
+the discrete Fourier basis, which consists of the sampled oscillations with the frequencies $m$. Let $F$ be the $n \times n$ matrix with the columns $\mathbf{f}_0, \ldots, \mathbf{f}_{n-1}$, i.e., $F_{jm} = \omega^{jm}$, and let $\overline{F}$ be its complex conjugate. The discrete Fourier transform (DFT) of $\mathbf{x} \in \mathbb{R}^n$ is $\hat{\mathbf{x}} = \overline{F}\mathbf{x}$, with $\hat{x}_m = \sum_j x_j\omega^{-jm}$. We use complex numbers as in the remark on complex eigenvalues; the rules of matrix algebra hold over $\mathbb{C}$ as well.
+
+\begin{theorem}[The DFT diagonalizes convolutions]\label{L1-thm:circulant-dft}
+    \begin{enumerate}
+        \item $\overline{F}F = nI_n$, so $F$ is invertible, with $F^{-1} = \frac{1}{n}\overline{F}$.
+        \item $\mathrm{circ}(\mathbf{c})\mathbf{f}_m = \hat{c}_m\mathbf{f}_m$ for every $m$, so $\mathrm{circ}(\mathbf{c}) = F\diag(\hat{c}_0, \ldots, \hat{c}_{n-1})F^{-1}$: the eigenvalues of a convolution are the DFT of its filter.
+        \item (Convolution theorem.) $\widehat{\mathbf{c} \ast \mathbf{x}}_m = \hat{c}_m\hat{x}_m$ for every $m$.
+    \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+    (1) The $(l, m)$ entry of $\overline{F}F$ is $\sum_j \omega^{-jl}\omega^{jm} = \sum_{j=0}^{n-1} r^j$ with $r = \omega^{m-l}$. For $l = m$, this is $n$. Otherwise $0 < |m - l| < n$, so $r \neq 1$, and the geometric sum is $\frac{r^n - 1}{r - 1} = 0$, since $r^n = (\omega^n)^{m-l} = 1$.
+
+    (2) Since $\omega^n = 1$, powers of $\omega$ only depend on exponents modulo $n$, and
+    \[\big(\mathrm{circ}(\mathbf{c})\mathbf{f}_m\big)_j = \sum_k c_k\omega^{(j-k)m} = \Big(\sum_k c_k\omega^{-km}\Big)\omega^{jm} = \hat{c}_m(\mathbf{f}_m)_j.\]
+    So $\mathrm{circ}(\mathbf{c})F = F\diag(\hat{c}_0, \ldots, \hat{c}_{n-1})$, and we multiply by $F^{-1}$ from the right.
+
+    (3) By (1) and (2), $\overline{F}(\mathbf{c} \ast \mathbf{x}) = \overline{F}F\diag(\hat{c}_0, \ldots, \hat{c}_{n-1})\frac{1}{n}\overline{F}\mathbf{x} = \diag(\hat{c}_0, \ldots, \hat{c}_{n-1})\hat{\mathbf{x}}$.
+\end{proof}
+
+All circulant matrices have the same eigenvectors $\mathbf{f}_m$, so they commute with each other. For the smoothing filter $\mathbf{c} = (2, 1, 0, 1)^\top$ above, $\omega = i$ and $\hat{\mathbf{c}} = (4, 2, 0, 2)$: the constant signal $\mathbf{f}_0$ is multiplied by $4$, and the fastest oscillation $\mathbf{f}_2 = (1, -1, 1, -1)^\top$ is mapped to $\mathbf{0}$. Smoothing damps high frequencies, and since $0$ is an eigenvalue, it cannot be undone. Theorem~\ref{L1-thm:circulant-dft} is also how convolutions are computed in practice: the fast Fourier transform (FFT) computes $\hat{\mathbf{x}}$ with $O(n\log n)$ operations instead of the $O(n^2)$ operations of a matrix-vector product, so $\mathbf{c} \ast \mathbf{x}$ is computed as the inverse DFT of $\hat{c}_m\hat{x}_m$.
 
 \section{Tensors}\label{L1-sec:tensors}
 
@@ -3745,7 +3808,7 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 	\item Every linear transformation $T: \mathbb{R}^n \to \mathbb{R}^m$ is multiplication by an $m \times n$ matrix $A$, whose $i$-th column is $T(\mathbf{e}_i)$.
 	\item Matrices of the same size are added entry by entry. The product of an $m \times n$ and an $n \times p$ matrix is the $m \times p$ matrix with $(AB)_{ij} = \sum_k A_{ik} B_{kj}$; it represents the composition $T_A \circ T_B$. Matrix multiplication is associative but not commutative, and $(AB)^\top = B^\top A^\top$.
 	\item A square matrix $A$ is invertible if $AB = BA = I_n$ for some matrix $B = A^{-1}$; then $A\mathbf{x} = \mathbf{b}$ has the unique solution $\mathbf{x} = A^{-1}\mathbf{b}$, and $(AB)^{-1} = B^{-1}A^{-1}$. The inverse is computed without determinants by row reducing $(A \mid I_n)$ to $(I_n \mid A^{-1})$.
-	\item Diagonal, upper and lower triangular, symmetric ($A^\top = A$) and skew-symmetric ($A^\top = -A$) matrices form subspaces of $\mathbb{R}^{n \times n}$. The invertible matrices $\mathrm{GL}(n, \mathbb{R})$ and the orthogonal matrices $\mathrm{O}(n)$ (with $Q^\top Q = I_n$, so $Q^{-1} = Q^\top$) do not form subspaces, but they contain $I_n$ and are closed under multiplication and inverses: they are matrix groups.
+	\item Diagonal, upper and lower triangular, symmetric ($A^\top = A$) and skew-symmetric ($A^\top = -A$) matrices form subspaces of $\mathbb{R}^{n \times n}$. The invertible matrices $\mathrm{GL}(n, \mathbb{R})$ and the orthogonal matrices $\mathrm{O}(n)$ (with $Q^\top Q = I_n$, so $Q^{-1} = Q^\top$) do not form subspaces, but they contain $I_n$ and are closed under multiplication and inverses: they are matrix groups, i.e., subgroups of the group $\mathrm{GL}(n, \mathbb{R})$. A group is a set with an associative operation, an identity element and inverses; examples are $(\mathbb{R}, +)$, every vector space under addition, and $(\mathbb{F} \setminus \{0\}, \cdot)$ for a field $\mathbb{F}$.
 	\item The trace $\tr(A) = \sum_i A_{ii}$ is linear and satisfies $\tr(AB) = \tr(BA)$. The determinant is defined by cofactor expansion and is best computed by row reduction to triangular form; it satisfies $\det(AB) = \det(A)\det(B)$ and $\det(A^\top) = \det(A)$, and $|\det(A)|$ is the factor by which $T_A$ scales areas and volumes.
 	\item Block matrices multiply like $2 \times 2$ matrices. With the Schur complement $S = D - CA^{-1}B$, $\det\begin{pmatrix} A & B \\ C & D \end{pmatrix} = \det(A)\det(S)$. Gaussian elimination computes the LU decomposition $A = LU$ (or $PA = LU$ with row swaps), which solves $A\mathbf{x} = \mathbf{b}$ by forward and back substitution and gives $\det(A)$ as a product of pivots. Low-rank updates are inverted with the Woodbury identity, for example $(A + \mathbf{u}\mathbf{v}^\top)^{-1} = A^{-1} - \frac{A^{-1}\mathbf{u}\mathbf{v}^\top A^{-1}}{1 + \mathbf{v}^\top A^{-1}\mathbf{u}}$, and $\det(A + \mathbf{u}\mathbf{v}^\top) = (1 + \mathbf{v}^\top A^{-1}\mathbf{u})\det(A)$.
 	\item Elementary row operations bring a matrix into (reduced) row echelon form. They do not change the null space or the row space, but they can change the column space; the pivot columns of the original matrix form a basis of its column space.
@@ -3755,6 +3818,8 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 	\item The quotient space $V/U$ consists of the cosets $v + U$, where $v + U = w + U$ if and only if $v - w \in U$; it has dimension $\dim V - \dim U$. First isomorphism theorem: $V/\ker(T) \cong \im(T)$, which gives rank--nullity for every linear map. Second: $(U + W)/W \cong U/(U \cap W)$, so $\dim(U + W) + \dim(U \cap W) = \dim U + \dim W$. Third: $(V/U)/(W/U) \cong V/W$.
 	\item An eigenvector $\mathbf{v} \neq \mathbf{0}$ of $A$ satisfies $A\mathbf{v} = \lambda \mathbf{v}$; the eigenvalues are the roots of the characteristic polynomial $\det(A - \lambda I_n)$, and the eigenspace $E_\lambda = \Null(A - \lambda I_n)$ is found by row reduction. The (complex) eigenvalues add up to $\tr(A)$ and multiply to $\det(A)$.
 	\item $A$ is diagonalizable, $A = PDP^{-1}$, exactly when it has $n$ linearly independent eigenvectors (the columns of $P$); this holds, for example, when $A$ has $n$ distinct eigenvalues. Then $A^k = PD^kP^{-1}$, which explains Fibonacci numbers, the long-run behavior of Markov chains, and power iteration (PageRank).
+	\item Cayley--Hamilton: $p_A(A) = 0$, so every power of $A$, and $A^{-1}$ if it exists, is a polynomial in $A$ of degree less than $n$. The minimal polynomial $m_A$ divides every polynomial that annihilates $A$, its real roots are the eigenvalues, and $A$ is diagonalizable if and only if $m_A$ is a product of distinct real linear factors.
+	\item A cyclic convolution $\mathbf{c} \ast \mathbf{x}$ is multiplication by the circulant matrix $\mathrm{circ}(\mathbf{c})$; the matrices that commute with the cyclic shift are exactly the circulant ones. The Fourier vectors $\mathbf{f}_m$ are eigenvectors of every circulant matrix, with the eigenvalues $\hat{c}_m$, so $\widehat{\mathbf{c} \ast \mathbf{x}}_m = \hat{c}_m\hat{x}_m$, and the FFT computes convolutions in $O(n\log n)$ operations.
 	\item The tensor product $V \otimes W$ is the quotient of the free vector space on $V \times W$ by the rules of bilinearity; $(v, w) \mapsto v \otimes w$ is bilinear, and bilinear maps $V \times W \to U$ are the same as linear maps $V \otimes W \to U$ (universal property). If $b_i$ and $c_j$ are bases, the pure tensors $b_i \otimes c_j$ form a basis, so $\dim(V \otimes W) = \dim V \cdot \dim W$. A tensor is an element of $V_1 \otimes \cdots \otimes V_k$; its coordinates form an array, the ``tensor'' of deep learning libraries, and $\mathbb{R}^m \otimes \mathbb{R}^n = \mathbb{R}^{m \times n}$ with $u \otimes v = uv^\top$.
 	\item Multilinear forms are tensors in $V_1^* \otimes \cdots \otimes V_k^*$, and linear maps $V \to W$ are tensors in $W \otimes V^*$; the contraction $v \otimes \varphi \mapsto \varphi(v)$ is the trace. Under a change of basis, indices of type $V$ transform with $P^{-1}$ and indices of type $V^*$ with $P$: linear maps change to $P^{-1}AP$, bilinear forms to $P^\top AP$.
 	\item The rank of a tensor is the smallest number of pure tensors with sum $t$; for matrices, it is the usual rank. Contractions such as $A_{ij}B_{jk}$ in Einstein notation, computed with \py{np.einsum}, describe matrix products, traces, batched products and attention scores.
@@ -3766,6 +3831,7 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 	\begin{enumerate}
 		\item $0 \cdot v = 0_V$ for every $v \in V$. (Hint: $0 \cdot v = (0 + 0) \cdot v$.)
 		\item $(-1) \cdot v = -v$ for every $v \in V$. (Hint: compute $v + (-1) \cdot v$.)
+		\item The axiom $u + v = v + u$ is redundant: it follows from the other axioms. (Hint: first show that $(-v) + v = 0$ and $0 + v = v$, using only associativity and axioms 2 and 3; for the first, add $w = (-v) + v$ to itself. Then expand $(1 + 1)(u + v)$ in two ways, and cancel $u$ on the left and $v$ on the right.)
 	\end{enumerate}
 	\item Which of the following subsets of $\mathbb{R}^2$ are subspaces? Justify your answers.
 	\begin{enumerate}
@@ -3815,7 +3881,15 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 		\item Show that if $A^k = 0$ for some $k \geq 1$, then $\lambda = 0$.
 		\item Show that if $A$ is orthogonal, then $\lambda = 1$ or $\lambda = -1$.
 	\end{enumerate}
-	\item A Markov chain has the transition matrix $A = \begin{pmatrix} 0.8 & 0.3 \\ 0.2 & 0.7 \end{pmatrix}$. Find its eigenvalues and its stationary distribution, and describe what happens to $A^k x_0$ as $k \to \infty$ for a probability vector $x_0$.
+	\item A Markov chain has the transition matrix $A = \begin{pmatrix} 0.8 & 0.3 \\ 0.2 & 0.7 \end{pmatrix}$. Find its eigenvalues and its stationary distribution, and describe what happens to $A^k \mathbf{x}_0$ as $k \to \infty$ for a probability vector $\mathbf{x}_0$.
+	\item Let $A = \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}$. Use the Cayley--Hamilton theorem to write $A^{-1}$ and $A^5$ in the form $aA + bI_2$, and check your answers by multiplying out.
+	\item Find the minimal polynomials of $\diag(2, 2, 3)$ and of $\begin{pmatrix} 2 & 1 & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 3 \end{pmatrix}$, and decide which of the two matrices is diagonalizable. Show that every matrix $A$ with $A^3 = A$ is diagonalizable, and that its eigenvalues lie in $\{-1, 0, 1\}$.
+	\item (Circulant matrices.) Let $\mathbf{c}, \mathbf{d} \in \mathbb{R}^n$.
+	\begin{enumerate}
+		\item Show that $\mathrm{circ}(\mathbf{c})\,\mathrm{circ}(\mathbf{d}) = \mathrm{circ}(\mathbf{c} \ast \mathbf{d})$, and conclude that $\mathbf{c} \ast \mathbf{d} = \mathbf{d} \ast \mathbf{c}$. (Hint: Proposition~\ref{L1-prop:circulant-shift} and $S^n = I_n$.)
+		\item Find the eigenvalues of the difference filter, $(\mathbf{c} \ast \mathbf{x})_j = x_j - x_{j-1}$. Which signals does it map to $\mathbf{0}$?
+		\item Show that $\mathrm{circ}(\mathbf{c})$ is invertible if and only if $\hat{c}_m \neq 0$ for all $m$, and that its inverse is again circulant.
+	\end{enumerate}
 	\item Find the dual basis of the basis $(1, 0, 0)^\top$, $(1, 1, 0)^\top$, $(1, 1, 1)^\top$ of $\mathbb{R}^3$, and check that $b^i(\mathbf{b}_j) = \delta_{ij}$.
 	\item On $V = \mathbb{R}[x]_{\leq 2}$, consider the functionals $\varphi_1(p) = p(0)$, $\varphi_2(p) = p'(0)$ and $\varphi_3(p) = \int_{-1}^1 p(x)\, dx$. Show that $\varphi_1, \varphi_2, \varphi_3$ is a basis of $V^*$, and find the basis $q_1, q_2, q_3$ of $V$ whose dual basis it is, i.e., with $\varphi_i(q_j) = \delta_{ij}$.
 	\item Let $T: \mathbb{R}^2 \to \mathbb{R}^2$, $T(x, y) = (x + 2y, 3y)$. Compute $T^*(\psi)$ for the coordinate functionals $\psi(x, y) = x$ and $\psi(x, y) = y$, and check that the matrix of $T^*$ with respect to the dual of the standard basis is the transpose of the matrix of $T$.
@@ -3901,7 +3975,7 @@ def rref(A, tol=1e-10):
     Go through the columns from left to right, keeping track of the row $r$ in which the next pivot will be placed. For each column $c$, find the entry with the largest absolute value among the rows $r, r+1, \ldots$ of that column. If it is smaller than \py{tol}, the column has no pivot. Otherwise, swap its row with row $r$, divide row $r$ by the pivot, and subtract multiples of row $r$ from all the other rows so that all other entries of column $c$ become zero. (Choosing the largest available entry as the pivot is called partial pivoting; it reduces rounding errors.)
     \begin{itemize}
         \item Test your function: the matrix $\begin{pmatrix} 1 & 2 & -1 \\ 3 & -1 & 4 \end{pmatrix}$ should give $\begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & -1 \end{pmatrix}$ with pivots \py{[0, 1]}, and the matrix $F$ of Example~\ref{L1-ex:F} should give $\begin{pmatrix} 1 & 0 & -1 \\ 0 & 1 & 2 \\ 0 & 0 & 0 \end{pmatrix}$.
-        \item Using \py{rref}, write functions \py{rank(A)}, \py{null_space_basis(A)}, which returns one basis vector for each free variable as in the proof of the rank--nullity theorem, and \py{col_space_basis(A)}, which returns the pivot columns of the \emph{original} matrix (Theorem~\ref{L1-thm:rowops}).
+        \item Using \py{rref}, write the functions \py{rank(A)} and \py{null_space_basis(A)}, which returns one basis vector for each free variable as in the proof of the rank--nullity theorem, and \py{col_space_basis(A)}, which returns the pivot columns of the \emph{original} matrix (Theorem~\ref{L1-thm:rowops}).
         \item For $20$ random $5 \times 7$ matrices $A$, check that \py{A @ v} is close to zero for every vector \py{v} in \py{null_space_basis(A)}, that \py{rank(A) + len(null_space_basis(A)) == 7} (rank--nullity), and that \py{rank(A)} agrees with \py{np.linalg.matrix_rank(A)}.
         \item Random matrices almost always have the largest possible rank. Construct a $6 \times 8$ matrix of rank $4$ as the product of a random $6 \times 4$ matrix and a random $4 \times 8$ matrix, and check that your functions find rank $4$ and a $4$-dimensional null space.
     \end{itemize}
@@ -4051,6 +4125,13 @@ def solve_lu(L, U, b):
         \item Implement \py{lu} by the elimination of Theorem~\ref{L1-thm:lu}: for each column, store the multipliers in $L$ and replace the rest of the matrix by its Schur complement. Check it on Example~\ref{L1-ex:lu}, and check that \py{L @ U} equals $A$ for random $6 \times 6$ matrices.
         \item Implement \py{solve_lu}, and compare it with \py{np.linalg.solve} for random systems. For $A = \begin{pmatrix} 10^{-17} & 1 \\ 1 & 1 \end{pmatrix}$ and $\mathbf{b} = (1, 2)^\top$, the solution is very close to $(1, 1)$. What does your solver return, and why? Swapping the two rows first (partial pivoting) fixes the problem.
         \item For a random $200 \times 50$ data matrix $X$, compute $(X^\top X)^{-1}$. Then add $100$ new random rows one at a time, updating the inverse with the Sherman--Morrison formula of Theorem~\ref{L1-thm:woodbury}, and compare the result with $(X^\top X)^{-1}$ computed from scratch for the final matrix. Compare the running times of the two approaches.
+    \end{itemize}
+
+    \item \textbf{Convolutions and the FFT.} Write a function \py{circulant(c)} that returns the matrix $\mathrm{circ}(\mathbf{c})$ of Definition~\ref{L1-def:circulant}.
+    \begin{itemize}
+        \item For random $\mathbf{c}, \mathbf{x} \in \mathbb{R}^8$, check that the product \py{circulant(c) @ x} agrees with the inverse DFT \py{np.fft.ifft(np.fft.fft(c) * np.fft.fft(x)).real} (NumPy's \py{fft} computes $\hat{\mathbf{x}} = \overline{F}\mathbf{x}$), and that the eigenvalues of \py{circulant(c)} are the entries of \py{np.fft.fft(c)}, up to their order.
+        \item Time both ways of computing $\mathbf{c} \ast \mathbf{x}$ for $n = 2^{12}$ (without counting the construction of the matrix). Which is faster, and by how much?
+        \item Blur a signal $\mathbf{x} \in \mathbb{R}^{101}$ of your choice with the filter $\mathbf{c} = \frac{1}{4}(2, 1, 0, \ldots, 0, 1)^\top$, add noise of size $10^{-3}$, and try to recover $\mathbf{x}$ by dividing the DFT of the result by $\hat{\mathbf{c}}$. Plot $|\hat{c}_m|$ and explain why the recovered signal is so noisy. (Lecture~2 explains this with the condition number of $\mathrm{circ}(\mathbf{c})$.)
     \end{itemize}
 \end{enumerate}
 \endgroup

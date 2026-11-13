@@ -1,0 +1,104 @@
+\documentclass[11pt]{article}
+
+% Sample final exam (public): Lectures 3 and 4 as taught (Sections 3.1-3.12; 4.1-4.7, 4.9 up to confidence intervals, 4.12-4.14), using Lectures 1-2
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{Sample Final Exam}
+\author{Lectures 3--4: Vector Calculus, Optimization, Probability and Statistics}
+\date{}
+
+\theoremstyle{definition}
+\newtheorem{problem}{Problem}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\newcommand{\pts}[1]{\textup{[#1~pts]}}
+\newcommand{\E}{\mathbb{E}}
+
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\KL}{KL}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\noindent Name: \rule{7cm}{0.4pt} \hfill Student ID: \rule{4cm}{0.4pt}
+
+\medskip
+\noindent\fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{
+\textbf{Time:} 90 minutes. \textbf{Total:} 100 points, in 6 problems.\\
+\textbf{Allowed:} the final cheatsheet handed out with this exam. No notes, books or calculators; the numerical values you need are given in the problems.\\
+Justify every answer. You may quote any result from the lectures by name or by its statement on the cheatsheet. Vectors of $\mathbb{R}^n$ are columns, $\sigma(t) = \frac{1}{1 + e^{-t}}$ is the sigmoid function, and $\log$ is the natural logarithm.
+}}
+
+\bigskip
+
+\begin{problem}[18 points]\label{pr:fin-logistic}
+    Let $\mathbf{x}_1, \ldots, \mathbf{x}_N \in \mathbb{R}^n$ be data points with labels $y_1, \ldots, y_N \in \{0, 1\}$, let $X \in \mathbb{R}^{N \times n}$ have the rows $\mathbf{x}_i^\top$, and let $\lambda \geq 0$. Regularized logistic regression minimizes
+    \[J(\mathbf{w}) = \frac{1}{N}\sum_{i=1}^N \big(-y_i\log p_i - (1 - y_i)\log(1 - p_i)\big) + \frac{\lambda}{2}\norm{\mathbf{w}}^2, \qquad p_i = \sigma(\mathbf{w}^\top\mathbf{x}_i).\]
+    \begin{enumerate}[label=(\alph*)]
+        \item \pts{4} Show that $\nabla J(\mathbf{w}) = \frac{1}{N}X^\top(\mathbf{p} - \mathbf{y}) + \lambda\mathbf{w}$ and $\nabla^2 J(\mathbf{w}) = \frac{1}{N}X^\top DX + \lambda I$, where $\mathbf{p} = (p_1, \ldots, p_N)^\top$ and $D = \diag\big(p_1(1 - p_1), \ldots, p_N(1 - p_N)\big)$. You may use $\sigma' = \sigma(1 - \sigma)$.
+        \item \pts{5} Let $\lambda > 0$. Show that every eigenvalue of every Hessian $\nabla^2 J(\mathbf{w})$ lies in the interval $[\lambda, \ L]$ with $L = \frac{\norm{X}_2^2}{4N} + \lambda$. Conclude that $J$ is $\lambda$-strongly convex and $L$-smooth, and that it has exactly one minimizer $\mathbf{w}^*$.
+        \item \pts{5} Let $n = 2$, let the four data points be $(1, 1)$, $(1, -1)$, $(-1, 1)$ and $(-1, -1)$ with arbitrary labels, and let $\lambda = 0.05$. Compute the constants of part (b), and find a number $k$ of gradient descent steps with step size $\eta = \frac{1}{L}$ which guarantees $J(\mathbf{w}_k) - J(\mathbf{w}^*) \leq 10^{-6}\big(J(\mathbf{w}_0) - J(\mathbf{w}^*)\big)$ for every $\mathbf{w}_0$. (Use $1 - t \leq e^{-t}$ and $\log 10 \approx 2.303$.)
+        \item \pts{4} Let $\lambda = 0$, and let the data be linearly separable: there is a $\mathbf{u}$ with $\mathbf{u}^\top\mathbf{x}_i > 0$ whenever $y_i = 1$ and $\mathbf{u}^\top\mathbf{x}_i < 0$ whenever $y_i = 0$. Show that $J$ has no minimizer.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[16 points]\label{pr:fin-matrix-calculus}
+    \begin{enumerate}[label=(\alph*)]
+        \item \pts{6} Let $B \in \mathbb{R}^{n \times p}$ be fixed, and let $F: \mathbb{R}^{m \times n} \to \mathbb{R}^{m \times p}$, $F(X) = XB$. Its derivative is a tensor of order $4$ with the entries $\frac{\partial F_{ij}}{\partial X_{kl}}$. Compute these entries (use the Kronecker delta). For a scalar loss $L(F(X))$ with $G = \nabla_F L \in \mathbb{R}^{m \times p}$, use the chain rule in Einstein notation to show that $\nabla_X L = GB^\top$, and write this contraction as a call of \texttt{np.einsum} that takes $G$ and the order-$4$ array \texttt{DF}.
+        \item \pts{5} Let $S$ be a symmetric positive definite $d \times d$ matrix, and let
+        \[\varphi(\Sigma) = \log\det\Sigma + \tr(S\Sigma^{-1})\]
+        for symmetric positive definite $\Sigma$. Treating the $d^2$ entries of $\Sigma$ as independent variables, compute $\nabla\varphi(\Sigma)$, and show that $\Sigma = S$ is the only critical point.
+        \item \pts{5} Show that $\Sigma = S$ is the global minimum of $\varphi$. (Hint: write $\Sigma = S^{1/2}MS^{1/2}$, and express $\varphi(\Sigma) - \varphi(S)$ through the eigenvalues of $M$.) Explain why this proves that the maximum likelihood estimate of the covariance matrix of a Gaussian, with the mean estimated by $\bar{\mathbf{x}}$, is the sample covariance matrix $S = \frac{1}{N}\sum_i(\mathbf{x}_i - \bar{\mathbf{x}})(\mathbf{x}_i - \bar{\mathbf{x}})^\top$, when $S$ is invertible.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[16 points]\label{pr:fin-kkt}
+    \begin{enumerate}[label=(\alph*)]
+        \item \pts{7} Minimize $f(x_1, x_2) = (x_1 - 3)^2 + (x_2 - 1)^2$ subject to $x_1 + x_2 \leq 1$ and $x_2 \geq 0$. Write the constraints as $g_1 \leq 0$, $g_2 \leq 0$, state the KKT conditions, and find the minimum together with its multipliers $\mu_1, \mu_2$.
+        \item \pts{2} Explain why the point found in (a) is the global minimum.
+        \item \pts{7} Let $\mathbf{a} \in \mathbb{R}^n$ be nonzero. Consider the problem: minimize $\frac{1}{2}\norm{\mathbf{x}}^2$ subject to $\mathbf{a}^\top\mathbf{x} \geq 1$. Compute its dual function $d(\mu)$ for $\mu \geq 0$, solve the dual problem, and check that $d^* = p^*$ by comparing with the distance from $\mathbf{0}$ to the hyperplane $\mathbf{a}^\top\mathbf{x} = 1$.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[18 points]\label{pr:fin-gaussian}
+    Let $(X, Y)^\top \sim \mathcal{N}(\mathbf{0}, \Sigma)$ with $\Sigma = \begin{pmatrix} 4 & 3 \\ 3 & 9 \end{pmatrix}$.
+    \begin{enumerate}[label=(\alph*)]
+        \item \pts{3} Compute $\Corr(X, Y)$ and $\Var(2X - Y)$.
+        \item \pts{4} Find the conditional distribution of $Y$ given $X = x$.
+        \item \pts{4} Compute $\E[\Var(Y \mid X)]$ and $\Var(\E[Y \mid X])$, and check the law of total variance.
+        \item \pts{3} Show that $X$ and $Y - \frac{3}{4}X$ are independent.
+        \item \pts{4} Find a lower triangular matrix $L$ with positive diagonal entries and $LL^\top = \Sigma$, and use it to explain how to sample $(X, Y)$ from two independent standard Gaussian random variables.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[18 points]\label{pr:fin-estimation}
+    Let $X_1, \ldots, X_N$ be i.i.d.\ Exponential$(\lambda)$, with the density $p(x \mid \lambda) = \lambda e^{-\lambda x}$ for $x \geq 0$, where $\lambda > 0$ is unknown.
+    \begin{enumerate}[label=(\alph*)]
+        \item \pts{4} Find the maximum likelihood estimator $\hat\lambda$.
+        \item \pts{4} Compute the Fisher information $I(\lambda)$ of one observation, and the Cram\'er--Rao lower bound for the variance of unbiased estimators of $\lambda$.
+        \item \pts{5} Use the central limit theorem and the delta method to find the limit distribution of $\sqrt{N}(\hat\lambda - \lambda)$. Compare its variance with part (b).
+        \item \pts{5} Let the prior of $\lambda$ be the Gamma distribution with the shape $a$ and the rate $b$, with the density proportional to $\lambda^{a-1}e^{-b\lambda}$, the mean $\frac{a}{b}$ and, for $a \geq 1$, the mode $\frac{a - 1}{b}$. Find the posterior, its mean and the MAP estimate. Evaluate them and $\hat\lambda$ for $a = 2$, $b = 1$, $N = 10$ and $\sum_i x_i = 4$, and explain the order of the three numbers.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[14 points]\label{pr:fin-concentration-kl}
+    \begin{enumerate}[label=(\alph*)]
+        \item \pts{8} To estimate the click-through rate $p$ of an ad, we show it to $N$ users, who click independently with probability $p$, and use the fraction $\hat p$ of clicks. We want $P(|\hat p - p| \geq 0.05) \leq 0.05$ for every $p$. Find a sufficient $N$ (i) from Chebyshev's inequality, and (ii) from Hoeffding's inequality. (iii) Which $N$ does the normal approximation of the central limit theorem suggest, and why is it not a guarantee? (Use $\log 40 \approx 3.689$ and $1.96^2 \approx 3.84$, where $P(|Z| \geq 1.96) \approx 0.05$ for $Z \sim \mathcal{N}(0, 1)$.)
+        \item \pts{6} Let $p = \mathcal{N}(0, 1)$ and $q = \mathcal{N}(1, 4)$. Compute $\KL(p \,\|\, q)$ and $\KL(q \,\|\, p)$ (use $\log 2 \approx 0.693$). Which one is larger? Explain the difference in terms of where $p$ and $q$ put their probability mass.
+    \end{enumerate}
+\end{problem}
+
+\end{document}
