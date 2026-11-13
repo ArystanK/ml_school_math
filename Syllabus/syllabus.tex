@@ -58,7 +58,7 @@ This course gives you the mathematics behind modern machine learning: linear alg
     \item \textbf{Practice problems} for each lecture, grouped by the sections of the notes, with a separate file of answers and hints. Problems marked \emph{Mandatory} cover the core skills; do them before the next lecture.
     \item \textbf{Exercises and programming exercises} at the end of each lecture, the programming exercises in Python with NumPy. They are the homework of the course.
     \item \textbf{Appendices} for further reading: A.~Topology, Differential Topology and Functional Analysis (after Lecture~3), and B.~Measure-Theoretic Probability (after Lecture~4).
-    \item \textbf{Sample exams} with solutions, in the format of the midterm and the final, and the \textbf{cheatsheets} that are handed out with the exams.
+    \item \textbf{Sample exams} with solutions, in the format of the midterm and the final, and \textbf{approximate cheatsheets}: the cheatsheets handed out with the exams are shorter selections from them.
 \end{itemize}
 
 \section*{Assessment}
@@ -68,8 +68,8 @@ This course gives you the mathematics behind modern machine learning: linear alg
     \toprule
     Component & What it consists of & Weight \\
     \midrule
-    Homework & The exercises and the programming exercises at the end of the lecture notes & $60\%$ \\
-    Exams & The midterm and the final exam, $90$ minutes each & $40\%$ \\
+    Homework & The exercises and programming exercises marked \emph{Homework} at the end of the lecture notes: $44$ exercises and $10$ programming exercises, listed under each lecture below & $60\%$ \\
+    Exams & The midterm and the final exam, $90$ minutes each: five problems and a bonus problem & $40\%$ \\
     \midrule
     \textbf{To pass} & \multicolumn{2}{l}{\textbf{at least $70\%$ of the total}} \\
     \bottomrule
@@ -112,75 +112,89 @@ For each lecture: what we cover in class, what to read on your own, the practice
 \lecture{1}{Linear Algebra I --- Vector Spaces and Linear Maps}{Lecture 1, $\S$1.1--1.5}
 \block{In class.} Number sets and fields. Vector spaces, including $\mathbb{R}^n$, matrices, polynomials and spaces of functions. Linear combinations, span, linear independence, bases and dimension (the exchange lemma). Linear transformations, kernel and image, isomorphisms and coordinates; differentiation and integration as linear maps. Subspaces.
 \block{Practice.} Practice 1, sections 1--5.
+\block{Homework.} Lecture 1, Exercises 1, 3, 6 and 37.
 \block{Used in.} The language of every later lecture: data points, parameters and functions are vectors, and models are maps between vector spaces.
 
 \lecture{2}{Linear Algebra I --- Matrices}{Lecture 1, $\S$1.6.1--1.6.4}
 \block{In class.} The matrix of a linear map; matrix operations and composition. Row reduction and the reduced row echelon form. The inverse of a matrix and the Gauss--Jordan method; invertibility criteria. Matrices with respect to arbitrary bases. Special matrices (diagonal, triangular, symmetric, orthogonal), groups, $\mathrm{GL}(n)$ and $\mathrm{O}(n)$.
 \block{Practice.} Practice 1, section 6 (matrix operations, row reduction, inverses, special matrices).
+\block{Homework.} Lecture 1, Exercises 5, 8, 10 and 38; Programming Exercise P3.
 \block{Used in.} Linear layers $W\mathbf{x} + \mathbf{b}$ (ML, DL); solving linear systems for least squares (ML).
 
 \lecture{3}{Linear Algebra I --- Determinants and Matrix Decompositions}{Lecture 1, $\S$1.6.5--1.6.6}
-\block{In class.} The trace and $\tr(AB) = \tr(BA)$. The determinant: cofactor expansion, row operations, the product rule, invertibility, and its geometric meaning as the factor by which areas and volumes change. The cofactor formula for the inverse. Block matrices and the Schur complement; the LU decomposition; the Woodbury identity, the Sherman--Morrison formula and the determinant lemma.
+\block{In class.} The trace and $\tr(AB) = \tr(BA)$. The determinant: cofactor expansion, row operations, the product rule, invertibility, and its geometric meaning as the factor by which areas and volumes change. The cofactor formula for the inverse.
+\block{Self-study.} $\S$1.6.6: block matrices and the Schur complement; the LU decomposition; the Woodbury identity, the Sherman--Morrison formula and the determinant lemma.
 \block{Practice.} Practice 1, section 6 (trace, determinants, block matrices).
+\block{Homework.} Lecture 1, Exercises 12, 13, 15 and 18; Programming Exercise P16.
 \block{Used in.} Gaussian densities and their conditionals (Lecture 9); Jacobian determinants of normalizing flows (DL); cheap updates of inverses in online and Bayesian learning.
 
 \lecture{4}{Linear Algebra I --- Rank, Duality and Quotient Spaces}{Lecture 1, $\S$1.7--1.9}
-\block{In class.} Null space, column space and rank; the rank--nullity theorem. Dual spaces, dual bases and the dual map (the transpose); annihilators and the solvability of linear systems (Fredholm); the double dual. Cosets and quotient spaces; the isomorphism theorems and the dimension formula.
+\block{In class.} Null space, column space and rank; the rank--nullity theorem. Dual spaces, dual bases and the dual map (the transpose); the double dual. Cosets and quotient spaces.
+\block{Self-study.} Annihilators and the solvability of linear systems (Fredholm) in $\S$1.8.4; the isomorphism theorems and the dimension formula in $\S$1.9.3.
 \block{Practice.} Practice 1, sections 7--9.
+\block{Homework.} Lecture 1, Exercises 28, 31, 32 and 34; Programming Exercise P12.
 \block{Used in.} Gradients are linear functionals (Lectures 7--8); identifiability and rank deficiency in regression (ML); tensors (Lecture 5).
 
 \lecture{5}{Linear Algebra I --- Eigenvalues and Tensors}{Lecture 1, $\S$1.10--1.11}
 \block{In class.} Eigenvalues, eigenvectors and eigenspaces; the characteristic polynomial, and trace and determinant as the sum and the product of the eigenvalues. Diagonalization, algebraic and geometric multiplicities, the Cayley--Hamilton theorem and the minimal polynomial. Powers of matrices. Circulant matrices: the discrete Fourier transform diagonalizes convolutions. Tensors: the tensor product and its universal property, arrays of coordinates, multilinear forms, linear maps as tensors, the trace as a contraction, Einstein notation and \texttt{np.einsum}, tensor rank, and how tensors change under a change of basis.
 \block{Practice.} Practice 1, sections 10--11.
+\block{Homework.} Lecture 1, Exercises 19, 25, 41 and 42; Programming Exercise P15.
 \block{Used in.} Convolutional networks (DL); attention scores and batched computations in PyTorch, written as \texttt{einsum} (DL); exploding and vanishing gradients in recurrent networks, Markov chains and ARIMA models, which are all governed by powers of a matrix (DL, RL, ML).
 
 \lecture{6}{Linear Algebra II --- Geometry, the Spectral Theorem, SVD and PCA}{Lecture 2, $\S$2.1--2.8, 2.10, 2.11}
 \block{In class.} Norms and inner products (quickly); symmetric positive definite matrices and the Cholesky decomposition; orthonormal bases, Gram--Schmidt and QR; orthogonal complements and the four fundamental subspaces. Orthogonal projections, least squares and linear regression, distances to hyperplanes. The spectral theorem, the Rayleigh quotient and Courant--Fischer. The singular value decomposition and its geometry, matrix norms, the Eckart--Young theorem, the pseudo-inverse, the condition number, and principal component analysis.
 \block{Self-study.} $\S$2.9 Rotations; $\S$2.10.1 the graph Laplacian and spectral clustering.
 \block{Practice.} Practice 2, all sections except 9 (Rotations).
+\block{Homework.} Lecture 2, Exercises 7, 9, 17 and 22; Programming Exercise P11.
 \block{Used in.} Linear regression (ML); PCA, t-SNE and UMAP (ML); spectral clustering (ML); low-rank fine-tuning such as LoRA (DL); conditioning and optimizers (DL).
 
+
 \subsection*{Midterm exam}
-$90$ minutes, after Lecture~6, on Lectures~1--2 (Lecture 1 and Lecture 2 without Rotations). Six open-ended problems: computations and short proofs, including tensors. The midterm cheatsheet, with the definitions and theorems that are easy to forget, is handed out with the exam; no other notes and no calculators.
+$90$ minutes, after Lecture~6, on Lectures~1--2 (Lecture 1 and Lecture 2). Five open-ended problems of 20 points each (computations and short proofs), and a bonus problem for up to 10 extra points; the exam score is capped at 100. The midterm cheatsheet, with the definitions and theorems, is handed out with the exam; it is a shorter selection from the approximate midterm cheatsheet; no other notes and no calculators.
 
 \lecture{7}{Calculus I --- Derivatives, the Chain Rule and Backpropagation}{Lecture 3, $\S$3.1--3.8 and $\S$3.15.2}
 \block{In class.} Functions of several variables, limits and continuity; derivatives of one variable and Taylor polynomials (review). Partial derivatives, gradients, differentiability, directional derivatives and steepest ascent. Jacobians and the multivariable chain rule. Gradients with respect to matrices and Jacobi's formula for the determinant. Automatic differentiation: forward and reverse mode, computation graphs, backpropagation in a neural network, and vanishing gradients. Hessians and Taylor's theorem in several variables. Ordinary differential equations: gradient flow, and gradient descent as Euler's method.
 \block{Self-study.} $\S$3.13--3.14 vector fields and multiple integrals; $\S$3.15.1 linear systems of ODEs; $\S$3.16 flows and densities.
 \block{Practice.} Practice 3, sections 1--8, and the gradient flow problems of section 15.
+\block{Homework.} Lecture 3, Exercises 4, 10, 13 and 37; Programming Exercise P4.
 \block{Used in.} The derivation of backpropagation, autograd in PyTorch, and the analysis of vanishing and exploding gradients (DL).
 
 \lecture{8}{Calculus II and Optimization}{Lecture 3, $\S$3.9--3.12}
 \block{In class.} Critical points and the second-order test. Gradient descent, derived for the mean squared error; $L$-smooth functions, the descent lemma and line search; the behavior on quadratic functions and the role of the condition number; momentum and Newton's method. Convexity, strong convexity and the convergence rates of gradient descent; subgradients, the proximal gradient method and the lasso. Constrained optimization: Lagrange multipliers, the KKT conditions, duality and convex conjugates.
 \block{Practice.} Practice 3, sections 9--12.
+\block{Homework.} Lecture 3, Exercises 15, 17, 20 and 27; Programming Exercise P7.
 \block{Used in.} Gradient descent and SGD for linear and logistic regression (ML); L1 and L2 regularization as equivalent constrained problems (ML); momentum, RMSProp and Adam (DL); trust regions in TRPO (RL).
 
 \lecture{9}{Probability I--II --- Random Variables, Joint Distributions and Gaussians}{Lecture 4, $\S$4.1--4.6}
 \block{In class.} Probability spaces, conditional probability, Bayes' theorem and independence. Random variables and their distributions (Bernoulli, binomial, geometric, Poisson, uniform, exponential, Gaussian), quantile functions and inverse transform sampling. Expectation and variance, tail sums, the inequalities of Markov, Chebyshev and Jensen. Joint, marginal and conditional distributions; covariance and correlation; the variance of a neural network layer and the Xavier and He initializations; conditional expectation and the law of total variance; conditional independence and graphical models; moment generating functions and Chernoff bounds. Random vectors and covariance matrices. The multivariate Gaussian, its marginals and conditionals, and the reparameterization trick.
 \block{Practice.} Practice 4, sections 1--6.
+\block{Homework.} Lecture 4, Exercises 3, 8, 10 and 16; Programming Exercise P2.
 \block{Used in.} Weight initialization and batch normalization (DL); naive Bayes and probabilistic classifiers (ML); variational autoencoders (DL); Gaussian processes (Lecture 11).
 
 \lecture{10}{Probability III --- Limit Theorems, Markov Chains and Information}{Lecture 4, $\S$4.7, 4.8, 4.13, and Lecture 3, $\S$3.14.3}
 \block{In class.} The law of large numbers, the central limit theorem and Hoeffding's inequality; convergence in distribution and the delta method. Monte Carlo methods and importance sampling; the score-function (REINFORCE) estimator of gradients of expectations. Markov chains, stationary distributions and convergence; the Metropolis algorithm. Markov reward and decision processes: the Bellman equations, policy evaluation and value iteration. Entropy, cross-entropy, the KL divergence and mutual information.
 \block{Self-study.} The proofs of the limit theorems and of Hoeffding's inequality, and Slutsky's theorem ($\S$4.7.1); rejection sampling ($\S$4.7.2); the convergence of stochastic gradient descent ($\S$4.7.3); Gibbs sampling ($\S$4.8.1); $\S$4.8.3 stationary time series and autoregressive models, which the ML course develops further; $\S$4.15 stochastic differential equations, Langevin dynamics and diffusion models.
 \block{Practice.} Practice 4, sections 7, 8 and 13 (the problems on time series are optional).
+\block{Homework.} Lecture 4, Exercises 18, 22, 25 and 48; Programming Exercise P22.
 \block{Used in.} MDPs, Bellman equations, Q-learning (RL); UCB and MCTS via Hoeffding (RL); policy gradients via the score function (RL); off-policy learning and PPO via importance sampling (RL); MCMC in PyMC (ML); the cross-entropy loss, the KL terms of VAEs and RLHF, and contrastive learning (DL, RL).
 
 \lecture{11}{Statistical Inference --- Estimation, Testing and Bayesian Inference}{Lecture 4, $\S$4.9, 4.10, 4.12, 4.14}
 \block{In class.} Estimators, bias, variance and the mean squared error; the method of moments; maximum likelihood (Bernoulli, Gaussian, linear and logistic regression as maximum likelihood); consistency, Fisher information and the Cram\'er--Rao bound (without proof); confidence intervals. Hypothesis tests, p-values and power; $t$-tests, and standard errors and $t$-tests for regression coefficients (the results and an example). Bayesian inference: priors, posteriors and conjugate priors, MAP estimation as regularization, and Bayesian linear regression. The evidence lower bound and the EM algorithm for Gaussian mixtures.
 \block{Self-study.} $\S$4.9.4 sufficiency and Rao--Blackwell; $\S$4.9.6 exponential families and generalized linear models; $\S$4.9.8 nonparametric estimation; $\S$4.9.9 survival analysis and censored data; the Neyman--Pearson lemma and $\chi^2$-tests in $\S$4.10; the proofs in $\S$4.10.1, the Gauss--Markov theorem and heteroscedasticity; $\S$4.10.2 multiple testing; $\S$4.10.3 the bootstrap and permutation tests; $\S$4.11 cross-validation, classification metrics, generalization bounds and A/B testing; $\S$4.12.4 Gaussian processes; $\S$4.14.3--4.14.5 $k$-means, probabilistic PCA and variational autoencoders. The ML course returns to GLMs, survival analysis, heteroscedasticity, cross-validation and classification metrics.
 \block{Practice.} Practice 4, sections 9, 10, 12 and 14 (the problems on survival analysis and heteroscedasticity are optional).
+\block{Homework.} Lecture 4, Exercises 29, 38, 45 and 49; Programming Exercise P8.
 \block{Used in.} Logistic regression, confidence intervals and $t$-tests (ML); Bayesian regularization and PyMC (ML); Thompson sampling (RL); clustering with Gaussian mixtures (ML); the ELBO of VAEs (DL).
 
 \subsection*{Final exam}
-$90$ minutes, after Lecture~11, on Lectures~7--11, using the linear algebra of Lectures~1--6 where needed. Six open-ended problems: computations and short proofs. The final cheatsheet is handed out with the exam; no other notes and no calculators (the problems give the numerical values you need).
+$90$ minutes, after Lecture~11, on Lectures~7--11, using the linear algebra of Lectures~1--6 where needed. Five open-ended problems of 20 points each (computations and short proofs), and a bonus problem for up to 10 extra points; the exam score is capped at 100. The final cheatsheet is handed out with the exam; it is a shorter selection from the approximate final cheatsheet; no other notes and no calculators (the problems give the numerical values you need).
 
 \section*{How to work in this course}
 
 \begin{itemize}
     \item \textbf{Before a lecture,} skim the sections of the notes listed for it.
     \item \textbf{After a lecture,} reread the sections, do the mandatory practice problems of the matching sections, and check your answers with the answer file only after you have tried. Then do as many of the other problems as you can; problems marked with a star are harder or more surprising.
-    \item \textbf{Homework} consists of the exercises and the programming exercises at the end of the lecture notes, and makes up $60\%$ of the grade, so start on it right after each lecture rather than before a deadline. In the programming exercises, implement the methods yourself with NumPy, and use library functions only to check your results.
-    \item \textbf{Self-study sections} are part of the course material and complete the picture, but they are not tested in the exams. The follow-up courses come back to several of them (time series, survival analysis, GLMs, heteroscedasticity, cross-validation, classification metrics, A/B testing, the bootstrap).
+    \item \textbf{Homework} consists of the exercises and the programming exercises marked \emph{Homework} at the end of the lecture notes, about four exercises and one programming exercise per lecture (listed above), and makes up $60\%$ of the grade. The other exercises are optional practice. Start on the homework right after each lecture rather than before a deadline. In the programming exercises, implement the methods yourself with NumPy, and use library functions only to check your results.
+    \item \textbf{Self-study sections} are part of the course material and complete the picture. The follow-up courses come back to several of them (time series, survival analysis, GLMs, heteroscedasticity, cross-validation, classification metrics, A/B testing, the bootstrap).
     \item \textbf{The appendices} are for students who want the rigorous foundations: Appendix~A proves the results of Lecture~3 that need topology (the inverse and implicit function theorems, the existence of solutions of ODEs) and introduces manifolds, differential forms, Hilbert spaces and kernel methods; Appendix~B builds probability on measure theory.
 \end{itemize}
 

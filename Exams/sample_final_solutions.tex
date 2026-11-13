@@ -56,23 +56,6 @@
     For the Gaussian, $-\ell(\boldsymbol{\mu}, \Sigma) = \frac{N}{2}\log\det\Sigma + \frac{1}{2}\sum_i(\mathbf{x}_i - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{x}_i - \boldsymbol{\mu}) + \frac{Nd}{2}\log(2\pi)$. At $\boldsymbol{\mu} = \bar{\mathbf{x}}$, the sum is $\tr\big(\Sigma^{-1}\sum_i(\mathbf{x}_i - \bar{\mathbf{x}})(\mathbf{x}_i - \bar{\mathbf{x}})^\top\big) = N\tr(S\Sigma^{-1})$, so $-\ell = \frac{N}{2}\varphi(\Sigma) + \text{const}$, which is minimized exactly by $\Sigma = S$.
 \end{enumerate}
 
-\section*{Problem \ref{pr:fin-kkt}}
-
-\begin{enumerate}[label=(\alph*)]
-    \item $g_1 = x_1 + x_2 - 1$, $g_2 = -x_2$. KKT: stationarity $2(x_1 - 3) + \mu_1 = 0$ and $2(x_2 - 1) + \mu_1 - \mu_2 = 0$; feasibility $g_1, g_2 \leq 0$; $\mu_1, \mu_2 \geq 0$; $\mu_1g_1 = \mu_2g_2 = 0$. Check the active sets:
-    \begin{itemize}
-        \item none active: $\mathbf{x} = (3, 1)$, infeasible ($g_1 = 3$);
-        \item only $g_1$ active: $x_1 - 3 = x_2 - 1$ and $x_1 + x_2 = 1$ give $(\frac{3}{2}, -\frac{1}{2})$, infeasible ($x_2 < 0$);
-        \item only $g_2$ active: $x_1 = 3$, $x_2 = 0$, infeasible ($g_1 = 2$);
-        \item both active: $\mathbf{x}^* = (1, 0)$, $\mu_1 = 4$, $\mu_2 = 2(0 - 1) + 4 = 2$, both $\geq 0$.
-    \end{itemize}
-    So the minimum is at $(1, 0)$, with $f = 5$, $\mu_1 = 4$, $\mu_2 = 2$.
-    \item $f$ is convex (Hessian $2I$) and $g_1, g_2$ are affine, hence convex. By the converse part of the KKT theorem, every KKT point is a global minimum. (Geometrically: $(1, 0)$ is the point of the feasible region closest to $(3, 1)$.)
-    \item With $g(\mathbf{x}) = 1 - \mathbf{a}^\top\mathbf{x} \leq 0$, $\mathcal{L}(\mathbf{x}, \mu) = \frac{1}{2}\norm{\mathbf{x}}^2 + \mu(1 - \mathbf{a}^\top\mathbf{x})$. It is convex in $\mathbf{x}$, minimized where $\mathbf{x} - \mu\mathbf{a} = \mathbf{0}$, so
-    \[d(\mu) = \frac{\mu^2}{2}\norm{\mathbf{a}}^2 + \mu - \mu^2\norm{\mathbf{a}}^2 = \mu - \frac{\mu^2}{2}\norm{\mathbf{a}}^2.\]
-    This is maximized over $\mu \geq 0$ at $\mu^* = \frac{1}{\norm{\mathbf{a}}^2}$, with $d^* = \frac{1}{2\norm{\mathbf{a}}^2}$. The primal problem asks for the point of the half-space closest to $\mathbf{0}$; it lies on the hyperplane $\mathbf{a}^\top\mathbf{x} = 1$, at the distance $\frac{|0 - 1|}{\norm{\mathbf{a}}}$ (Lecture~2), so $p^* = \frac{1}{2\norm{\mathbf{a}}^2} = d^*$, attained at $\mathbf{x}^* = \mu^*\mathbf{a} = \frac{\mathbf{a}}{\norm{\mathbf{a}}^2}$.
-\end{enumerate}
-
 \section*{Problem \ref{pr:fin-gaussian}}
 
 \begin{enumerate}[label=(\alph*)]
@@ -102,6 +85,23 @@
         \item $\hat p \approx \mathcal{N}(p, \frac{p(1 - p)}{N})$; we need $1.96\sqrt{p(1 - p)/N} \leq 0.05$, worst at $p = \frac{1}{2}$: $N \geq \frac{3.84 \cdot 0.25}{0.0025} \approx 384$ (385 with $1.96^2 = 3.8416$). The CLT is a statement about the limit $N \to \infty$ and gives no bound on the approximation error for a fixed $N$ (which is large for $p$ near $0$ or $1$), so this $N$ is not guaranteed to work; (i) and (ii) are guarantees.
     \end{enumerate}
     \item $\KL(p \,\|\, q) = \log\frac{2}{1} + \frac{1 + (0 - 1)^2}{2 \cdot 4} - \frac{1}{2} \approx 0.693 + 0.25 - 0.5 = 0.443$. $\KL(q \,\|\, p) = \log\frac{1}{2} + \frac{4 + 1}{2} - \frac{1}{2} \approx -0.693 + 2 = 1.307$. The second is larger: $\KL(q \,\|\, p) = \E_q[\log\frac{q}{p}]$ averages over samples of the wide $q$, which often land in the tails of the narrow $p$, where $\log\frac{q}{p}$ is large (it grows like $\frac{x^2}{2}$). In $\KL(p \,\|\, q)$, the wide $q$ covers all the mass of $p$, and the ratio stays moderate. KL divergence is not symmetric.
+\end{enumerate}
+
+\section*{Problem \ref{pr:fin-kkt} (bonus)}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $g_1 = x_1 + x_2 - 1$, $g_2 = -x_2$. KKT: stationarity $2(x_1 - 3) + \mu_1 = 0$ and $2(x_2 - 1) + \mu_1 - \mu_2 = 0$; feasibility $g_1, g_2 \leq 0$; $\mu_1, \mu_2 \geq 0$; $\mu_1g_1 = \mu_2g_2 = 0$. Check the active sets:
+    \begin{itemize}
+        \item none active: $\mathbf{x} = (3, 1)$, infeasible ($g_1 = 3$);
+        \item only $g_1$ active: $x_1 - 3 = x_2 - 1$ and $x_1 + x_2 = 1$ give $(\frac{3}{2}, -\frac{1}{2})$, infeasible ($x_2 < 0$);
+        \item only $g_2$ active: $x_1 = 3$, $x_2 = 0$, infeasible ($g_1 = 2$);
+        \item both active: $\mathbf{x}^* = (1, 0)$, $\mu_1 = 4$, $\mu_2 = 2(0 - 1) + 4 = 2$, both $\geq 0$.
+    \end{itemize}
+    So the minimum is at $(1, 0)$, with $f = 5$, $\mu_1 = 4$, $\mu_2 = 2$.
+    \item $f$ is convex (Hessian $2I$) and $g_1, g_2$ are affine, hence convex. By the converse part of the KKT theorem, every KKT point is a global minimum. (Geometrically: $(1, 0)$ is the point of the feasible region closest to $(3, 1)$.)
+    \item With $g(\mathbf{x}) = 1 - \mathbf{a}^\top\mathbf{x} \leq 0$, $\mathcal{L}(\mathbf{x}, \mu) = \frac{1}{2}\norm{\mathbf{x}}^2 + \mu(1 - \mathbf{a}^\top\mathbf{x})$. It is convex in $\mathbf{x}$, minimized where $\mathbf{x} - \mu\mathbf{a} = \mathbf{0}$, so
+    \[d(\mu) = \frac{\mu^2}{2}\norm{\mathbf{a}}^2 + \mu - \mu^2\norm{\mathbf{a}}^2 = \mu - \frac{\mu^2}{2}\norm{\mathbf{a}}^2.\]
+    This is maximized over $\mu \geq 0$ at $\mu^* = \frac{1}{\norm{\mathbf{a}}^2}$, with $d^* = \frac{1}{2\norm{\mathbf{a}}^2}$. The primal problem asks for the point of the half-space closest to $\mathbf{0}$; it lies on the hyperplane $\mathbf{a}^\top\mathbf{x} = 1$, at the distance $\frac{|0 - 1|}{\norm{\mathbf{a}}}$ (Lecture~2), so $p^* = \frac{1}{2\norm{\mathbf{a}}^2} = d^*$, attained at $\mathbf{x}^* = \mu^*\mathbf{a} = \frac{\mathbf{a}}{\norm{\mathbf{a}}^2}$.
 \end{enumerate}
 
 \end{document}

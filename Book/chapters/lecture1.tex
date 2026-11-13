@@ -3827,7 +3827,7 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 
 \section{Exercises}\label{L1-sec:exercises}
 \begin{enumerate}[leftmargin=*]
-	\item\label{L1-ex:axioms} Using only the vector space axioms, prove that in every vector space $V$ over a field $\mathbb{F}$:
+	\item\label{L1-ex:axioms} \homework{} Using only the vector space axioms, prove that in every vector space $V$ over a field $\mathbb{F}$:
 	\begin{enumerate}
 		\item $0 \cdot v = 0_V$ for every $v \in V$. (Hint: $0 \cdot v = (0 + 0) \cdot v$.)
 		\item $(-1) \cdot v = -v$ for every $v \in V$. (Hint: compute $v + (-1) \cdot v$.)
@@ -3839,12 +3839,12 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 		\item $\{(x, y) \in \mathbb{R}^2 : y = 2x + 1\}$;
 		\item $\{(x, y) \in \mathbb{R}^2 : xy = 0\}$.
 	\end{enumerate}
-	\item Show that $\{(1, 2), (3, 4)\}$ is a basis of $\mathbb{R}^2$, and write $(5, 6)$ as a linear combination of these two vectors.
+	\item \homework{} Show that $\{(1, 2), (3, 4)\}$ is a basis of $\mathbb{R}^2$, and write $(5, 6)$ as a linear combination of these two vectors.
 	\item Let $\mathbb{R}[x]_{\leq 2}$ be the set of polynomials with real coefficients of degree at most $2$. Show that it is a subspace of $\mathbb{R}[x]$, and find its dimension.
-	\item Let $T: \mathbb{R}^3 \to \mathbb{R}^3$ be defined by $T(x, y, z) = (x + y, y + z, x + 2y + z)$. Find the matrix $A$ of $T$ and $\RREF(A)$. Then find a basis of $\Null(A)$, a basis of $\col(A)$, and $\rank(A)$, and check that your answers agree with the rank--nullity theorem.
-	\item Write down explicit isomorphisms $\mathbb{R}^{2 \times 2} \to \mathbb{R}^4$ and $\mathrm{Sym}_2 \to \mathbb{R}^3$, and prove that they are isomorphisms. Are $\mathbb{R}^{2 \times 2}$ and $\mathrm{Sym}_2$ isomorphic?
+	\item \homework{} Let $T: \mathbb{R}^3 \to \mathbb{R}^3$ be defined by $T(x, y, z) = (x + y, y + z, x + 2y + z)$. Find the matrix $A$ of $T$ and $\RREF(A)$. Then find a basis of $\Null(A)$, a basis of $\col(A)$, and $\rank(A)$, and check that your answers agree with the rank--nullity theorem.
+	\item \homework{} Write down explicit isomorphisms $\mathbb{R}^{2 \times 2} \to \mathbb{R}^4$ and $\mathrm{Sym}_2 \to \mathbb{R}^3$, and prove that they are isomorphisms. Are $\mathbb{R}^{2 \times 2}$ and $\mathrm{Sym}_2$ isomorphic?
 	\item Let $A = \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}$ and $B = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$. Compute $AB$ and $BA$. Describe in words what multiplying a $2 \times 2$ matrix by $B$ from the left does, and what multiplying it by $B$ from the right does.
-	\item Use the Gauss--Jordan method to find the inverse of
+	\item \homework{} Use the Gauss--Jordan method to find the inverse of
 	\[A = \begin{pmatrix}
 		1 & 2 & 3 \\
 		0 & 1 & 4 \\
@@ -3852,26 +3852,26 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 	\end{pmatrix},\]
 	and check your answer.
 	\item Show that the matrix $F$ from Example~\ref{L1-ex:F} is not invertible, and find a nonzero vector $\mathbf{x}$ with $F\mathbf{x} = \mathbf{0}$.
-	\item Let $A$ be an $n \times n$ matrix with $A^2 = A$ (where $A^2 = AA$) and $A \neq I_n$. Show that $A$ is not invertible.
+	\item \homework{} Let $A$ be an $n \times n$ matrix with $A^2 = A$ (where $A^2 = AA$) and $A \neq I_n$. Show that $A$ is not invertible.
 	\item Show that an upper triangular matrix is invertible if and only if all of its diagonal entries are nonzero, in two ways: using Theorem~\ref{L1-thm:invertible}, and using determinants.
-	\item Compute the determinant of
+	\item \homework{} Compute the determinant of
 	\[A = \begin{pmatrix}
 		2 & 0 & 1 \\
 		1 & 3 & 2 \\
 		1 & 1 & 1
 	\end{pmatrix}\]
 	in two ways: by cofactor expansion, and by row reduction. Is $A$ invertible?
-	\item Let $A$ be a skew-symmetric $n \times n$ matrix, where $n$ is odd. Show that $\det(A) = 0$. (Hint: compute $\det(A^\top)$ in two ways.)
+	\item \homework{} Let $A$ be a skew-symmetric $n \times n$ matrix, where $n$ is odd. Show that $\det(A) = 0$. (Hint: compute $\det(A^\top)$ in two ways.)
 	\item Show that $\tr(ABC) = \tr(CAB)$ for all $n \times n$ matrices $A$, $B$, $C$, but find $2 \times 2$ matrices with $\tr(ABC) \neq \tr(ACB)$.
-	\item Let $A = \begin{pmatrix} 2 & 4 & -2 \\ 4 & 9 & -3 \\ -2 & -3 & 7 \end{pmatrix}$.
+	\item \homework{} Let $A = \begin{pmatrix} 2 & 4 & -2 \\ 4 & 9 & -3 \\ -2 & -3 & 7 \end{pmatrix}$.
 	\begin{enumerate}
 		\item Find the LU decomposition of $A$, and use it to compute $\det(A)$ and to solve $A\mathbf{x} = (2, 8, 10)^\top$.
 		\item Let $D$ be the diagonal matrix with the diagonal entries of $U$. Check that $U = DL^\top$, so that $A = LDL^\top$. Show that every invertible symmetric matrix that has an LU decomposition can be written as $A = LDL^\top$ in this way. (Hint: uniqueness.)
 	\end{enumerate}
 	\item Show that $\begin{pmatrix} 0 & 1 \\ 1 & 1 \end{pmatrix}$ has no LU decomposition, and find a permutation matrix $P$ such that $PA$ has one.
 	\item Let $A$ be an invertible $k \times k$ matrix and $D$ an invertible $m \times m$ matrix. Show that $\begin{pmatrix} A & B \\ 0 & D \end{pmatrix}^{-1} = \begin{pmatrix} A^{-1} & -A^{-1}BD^{-1} \\ 0 & D^{-1} \end{pmatrix}$, and that $\det\begin{pmatrix} I_k & B \\ B^\top & I_m \end{pmatrix} = \det(I_m - B^\top B)$ for every $k \times m$ matrix $B$.
-	\item Let $\mathbf{u}, \mathbf{v} \in \mathbb{R}^n$. Show that $I_n + \mathbf{u}\mathbf{v}^\top$ is invertible if and only if $\mathbf{v}^\top \mathbf{u} \neq -1$, and find its inverse. Show that every nonzero vector $\mathbf{x}$ with $\mathbf{v}^\top \mathbf{x} = 0$ is an eigenvector with the eigenvalue $1$, and that $\mathbf{u}$ (if $\mathbf{u} \neq \mathbf{0}$) is an eigenvector with the eigenvalue $1 + \mathbf{v}^\top \mathbf{u}$.
-	\item Find the eigenvalues and eigenspaces of $A = \begin{pmatrix} 4 & 1 \\ 2 & 3 \end{pmatrix}$. Diagonalize $A$, and use the diagonalization to find a formula for $A^k$.
+	\item \homework{} Let $\mathbf{u}, \mathbf{v} \in \mathbb{R}^n$. Show that $I_n + \mathbf{u}\mathbf{v}^\top$ is invertible if and only if $\mathbf{v}^\top \mathbf{u} \neq -1$, and find its inverse. Show that every nonzero vector $\mathbf{x}$ with $\mathbf{v}^\top \mathbf{x} = 0$ is an eigenvector with the eigenvalue $1$, and that $\mathbf{u}$ (if $\mathbf{u} \neq \mathbf{0}$) is an eigenvector with the eigenvalue $1 + \mathbf{v}^\top \mathbf{u}$.
+	\item \homework{} Find the eigenvalues and eigenspaces of $A = \begin{pmatrix} 4 & 1 \\ 2 & 3 \end{pmatrix}$. Diagonalize $A$, and use the diagonalization to find a formula for $A^k$.
 	\item Show that $A = \begin{pmatrix} 3 & 1 \\ 0 & 3 \end{pmatrix}$ is not diagonalizable. Find all of its eigenvectors.
 	\item Find the complex eigenvalues of the rotation by $90^\circ$, $\begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$, and check Theorem~\ref{L1-thm:trace-det-eigen} for this matrix.
 	\item Let $A$ be a $3 \times 3$ matrix with eigenvalues $1$, $2$ and $3$. Compute $\tr(A^2)$, $\det(A)$ and $\det(A^{-1})$. (Hint: $A$ is diagonalizable.)
@@ -3882,7 +3882,7 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 		\item Show that if $A$ is orthogonal, then $\lambda = 1$ or $\lambda = -1$.
 	\end{enumerate}
 	\item A Markov chain has the transition matrix $A = \begin{pmatrix} 0.8 & 0.3 \\ 0.2 & 0.7 \end{pmatrix}$. Find its eigenvalues and its stationary distribution, and describe what happens to $A^k \mathbf{x}_0$ as $k \to \infty$ for a probability vector $\mathbf{x}_0$.
-	\item Let $A = \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}$. Use the Cayley--Hamilton theorem to write $A^{-1}$ and $A^5$ in the form $aA + bI_2$, and check your answers by multiplying out.
+	\item \homework{} Let $A = \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}$. Use the Cayley--Hamilton theorem to write $A^{-1}$ and $A^5$ in the form $aA + bI_2$, and check your answers by multiplying out.
 	\item Find the minimal polynomials of $\diag(2, 2, 3)$ and of $\begin{pmatrix} 2 & 1 & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 3 \end{pmatrix}$, and decide which of the two matrices is diagonalizable. Show that every matrix $A$ with $A^3 = A$ is diagonalizable, and that its eigenvalues lie in $\{-1, 0, 1\}$.
 	\item (Circulant matrices.) Let $\mathbf{c}, \mathbf{d} \in \mathbb{R}^n$.
 	\begin{enumerate}
@@ -3890,36 +3890,36 @@ In general, every index that belongs to a factor $V$ transforms with $P^{-1}$, a
 		\item Find the eigenvalues of the difference filter, $(\mathbf{c} \ast \mathbf{x})_j = x_j - x_{j-1}$. Which signals does it map to $\mathbf{0}$?
 		\item Show that $\mathrm{circ}(\mathbf{c})$ is invertible if and only if $\hat{c}_m \neq 0$ for all $m$, and that its inverse is again circulant.
 	\end{enumerate}
-	\item Find the dual basis of the basis $(1, 0, 0)^\top$, $(1, 1, 0)^\top$, $(1, 1, 1)^\top$ of $\mathbb{R}^3$, and check that $b^i(\mathbf{b}_j) = \delta_{ij}$.
+	\item \homework{} Find the dual basis of the basis $(1, 0, 0)^\top$, $(1, 1, 0)^\top$, $(1, 1, 1)^\top$ of $\mathbb{R}^3$, and check that $b^i(\mathbf{b}_j) = \delta_{ij}$.
 	\item On $V = \mathbb{R}[x]_{\leq 2}$, consider the functionals $\varphi_1(p) = p(0)$, $\varphi_2(p) = p'(0)$ and $\varphi_3(p) = \int_{-1}^1 p(x)\, dx$. Show that $\varphi_1, \varphi_2, \varphi_3$ is a basis of $V^*$, and find the basis $q_1, q_2, q_3$ of $V$ whose dual basis it is, i.e., with $\varphi_i(q_j) = \delta_{ij}$.
 	\item Let $T: \mathbb{R}^2 \to \mathbb{R}^2$, $T(x, y) = (x + 2y, 3y)$. Compute $T^*(\psi)$ for the coordinate functionals $\psi(x, y) = x$ and $\psi(x, y) = y$, and check that the matrix of $T^*$ with respect to the dual of the standard basis is the transpose of the matrix of $T$.
-	\item Let $\varphi$ and $\psi$ be nonzero linear functionals on a finite-dimensional vector space with $\ker(\varphi) = \ker(\psi)$. Show that $\psi = c\varphi$ for some $c \neq 0$. (Hint: choose $v$ with $\varphi(v) = 1$, and show that every vector is of the form $w + tv$ with $w \in \ker(\varphi)$.)
-	\item Let $U = \Span\{(1, 0, 1)^\top, (0, 1, 1)^\top\} \subseteq \mathbb{R}^3$. Show that the cosets of $U$ are the planes $x_1 + x_2 - x_3 = c$, and that $\mathbf{x} + U \mapsto x_1 + x_2 - x_3$ is an isomorphism $\mathbb{R}^3/U \to \mathbb{R}$. Check Theorem~\ref{L1-thm:quotient-dim}.
+	\item \homework{} Let $\varphi$ and $\psi$ be nonzero linear functionals on a finite-dimensional vector space with $\ker(\varphi) = \ker(\psi)$. Show that $\psi = c\varphi$ for some $c \neq 0$. (Hint: choose $v$ with $\varphi(v) = 1$, and show that every vector is of the form $w + tv$ with $w \in \ker(\varphi)$.)
+	\item \homework{} Let $U = \Span\{(1, 0, 1)^\top, (0, 1, 1)^\top\} \subseteq \mathbb{R}^3$. Show that the cosets of $U$ are the planes $x_1 + x_2 - x_3 = c$, and that $\mathbf{x} + U \mapsto x_1 + x_2 - x_3$ is an isomorphism $\mathbb{R}^3/U \to \mathbb{R}$. Check Theorem~\ref{L1-thm:quotient-dim}.
 	\item Use the first isomorphism theorem and the map $A \mapsto \frac{1}{2}(A + A^\top)$ to show that $\mathbb{R}^{n \times n}/\mathrm{Skew}_n \cong \mathrm{Sym}_n$, and check that the dimensions agree.
-	\item Let $U$ and $W$ be $3$-dimensional subspaces of $\mathbb{R}^5$. Show that $U \cap W \neq \{0\}$. Which values can $\dim(U \cap W)$ take?
+	\item \homework{} Let $U$ and $W$ be $3$-dimensional subspaces of $\mathbb{R}^5$. Show that $U \cap W \neq \{0\}$. Which values can $\dim(U \cap W)$ take?
 	\item Show that $V/U = \{0\}$ if and only if $U = V$, and that $V/\{0\} \cong V$.
 	\item\label{L1-ex:Cn-strict} For $n \geq 0$, let $f_n(x) = x^n|x|$.
 	\begin{enumerate}
 		\item Show that for $n \geq 1$, $f_n$ is differentiable on $\mathbb{R}$, with $f_n' = (n + 1)f_{n-1}$. (Hint: $f_n(x) = x^{n+1}$ for $x \geq 0$, and $f_n(x) = -x^{n+1}$ for $x < 0$; at $x = 0$, use the definition of the derivative.)
 		\item Conclude that $f_n \in C^n(\mathbb{R})$, but $f_n \notin C^{n+1}(\mathbb{R})$, so that $C^{n+1}(\mathbb{R}) \neq C^n(\mathbb{R})$.
 	\end{enumerate}
-	\item Let $D: C^\infty(\mathbb{R}) \to C^\infty(\mathbb{R})$, $Df = f'$, and $M: C^\infty(\mathbb{R}) \to C^\infty(\mathbb{R})$, $(Mf)(x) = x f(x)$.
+	\item \homework{} Let $D: C^\infty(\mathbb{R}) \to C^\infty(\mathbb{R})$, $Df = f'$, and $M: C^\infty(\mathbb{R}) \to C^\infty(\mathbb{R})$, $(Mf)(x) = x f(x)$.
 	\begin{enumerate}
 		\item Show that $M$ is linear, and that $D \circ M - M \circ D = \mathrm{id}$.
 		\item Show that there are no $n \times n$ matrices $A$ and $B$ with $AB - BA = I_n$. (Hint: take the trace.) So the identity in (a) has no analogue for matrices.
 	\end{enumerate}
-	\item Let $D: \mathbb{R}[x]_{\leq 3} \to \mathbb{R}[x]_{\leq 2}$, $Dp = p'$, and $J: \mathbb{R}[x]_{\leq 2} \to \mathbb{R}[x]_{\leq 3}$, $(Jp)(x) = \int_0^x p(t)\, dt$. Find the matrices of $D$ and $J$ with respect to the bases of monomials, and compute the products of these two matrices in both orders. Which product is the identity matrix? Why can the other product not be the identity?
+	\item \homework{} Let $D: \mathbb{R}[x]_{\leq 3} \to \mathbb{R}[x]_{\leq 2}$, $Dp = p'$, and $J: \mathbb{R}[x]_{\leq 2} \to \mathbb{R}[x]_{\leq 3}$, $(Jp)(x) = \int_0^x p(t)\, dt$. Find the matrices of $D$ and $J$ with respect to the bases of monomials, and compute the products of these two matrices in both orders. Which product is the identity matrix? Why can the other product not be the identity?
 	\item Which of the following maps $\mathbb{R}^2 \times \mathbb{R}^2 \to \mathbb{R}$ are bilinear? For the bilinear ones, find the matrix $A$ with $\beta(\mathbf{x}, \mathbf{y}) = \mathbf{x}^\top A\mathbf{y}$. (a) $\beta(\mathbf{x}, \mathbf{y}) = x_1y_2 - x_2y_1$; (b) $\beta(\mathbf{x}, \mathbf{y}) = x_1 + y_1$; (c) $\beta(\mathbf{x}, \mathbf{y}) = (x_1 + x_2)(y_1 - 3y_2)$; (d) $\beta(\mathbf{x}, \mathbf{y}) = x_1x_2y_1$.
 	\item Let $\beta(\mathbf{x}, \mathbf{y}) = \mathbf{x}^\top A\mathbf{y}$ be a bilinear form on $\mathbb{R}^n$.
 	\begin{enumerate}
 		\item Show that $\beta(\mathbf{x}, \mathbf{y}) = \beta(\mathbf{y}, \mathbf{x})$ for all $\mathbf{x}, \mathbf{y}$ if and only if $A$ is symmetric.
 		\item Let $P$ be invertible. Show that the matrix $P^\top AP$ of $\beta$ in the basis of the columns of $P$ is symmetric if $A$ is, and that $\det(P^\top AP) = \det(P)^2\det(A)$. So the sign of the determinant of the matrix of a bilinear form does not depend on the basis, but its value does.
 	\end{enumerate}
-	\item \begin{enumerate}
+	\item \homework{} \begin{enumerate}
 		\item Let $\mathbf{u} \in \mathbb{R}^m$ and $\mathbf{v} \in \mathbb{R}^n$. Show that $(\mathbf{u} \otimes \mathbf{v})\,\mathbf{y} = (\mathbf{v}^\top \mathbf{y})\,\mathbf{u}$ for every $\mathbf{y} \in \mathbb{R}^n$, and that $\im(T_{\mathbf{u} \otimes \mathbf{v}}) = \Span\{\mathbf{u}\}$ if $\mathbf{v} \neq \mathbf{0}$.
 		\item Write the $2 \times 2 \times 2$ tensor with the entries $T_{ijk} = i + j + k$ as a sum of three rank-one tensors. (Hint: $i + j + k = i \cdot 1 \cdot 1 + 1 \cdot j \cdot 1 + 1 \cdot 1 \cdot k$.) Show that $T$ does not have rank one.
 	\end{enumerate}
-	\item Write the following in Einstein notation and as a call of \py{np.einsum}, and count the multiplications: (a) the vector $A\mathbf{x}$ for $A \in \mathbb{R}^{m \times n}$; (b) $\tr(A^\top B)$ for $A, B \in \mathbb{R}^{m \times n}$; (c) the matrix $XX^\top$ of all dot products of the rows of $X \in \mathbb{R}^{N \times d}$; (d) the number $\mathbf{x}^\top AB\mathbf{y}$ for $n \times n$ matrices $A$ and $B$, computed as $(\mathbf{x}^\top A)(B\mathbf{y})$ and as $\mathbf{x}^\top (AB)\mathbf{y}$.
+	\item \homework{} Write the following in Einstein notation and as a call of \py{np.einsum}, and count the multiplications: (a) the vector $A\mathbf{x}$ for $A \in \mathbb{R}^{m \times n}$; (b) $\tr(A^\top B)$ for $A, B \in \mathbb{R}^{m \times n}$; (c) the matrix $XX^\top$ of all dot products of the rows of $X \in \mathbb{R}^{N \times d}$; (d) the number $\mathbf{x}^\top AB\mathbf{y}$ for $n \times n$ matrices $A$ and $B$, computed as $(\mathbf{x}^\top A)(B\mathbf{y})$ and as $\mathbf{x}^\top (AB)\mathbf{y}$.
 	\item Let $V$ and $W$ be vector spaces.
 	\begin{enumerate}
 		\item Show that $(2v) \otimes w = v \otimes (2w)$ and $v \otimes 0 = 0$ in $V \otimes W$.
@@ -3965,7 +3965,7 @@ print(matrix_of(T, 2))  # should print [[ 2.  3.] [ 4. -1.]]
         \item Measure the running times (with \py{time.perf_counter()}) of \py{matmul} and of \py{@} for random $n \times n$ matrices with $n = 50, 100, 200$. By roughly what factor does the running time of \py{matmul} grow when $n$ doubles? Explain this by counting the multiplications that are performed. (NumPy is much faster because it runs highly optimized compiled code.)
     \end{itemize}
 
-    \item \textbf{Row reduction.} Implement a function that computes the reduced row echelon form of a matrix and its pivot columns.
+    \item \homework{} \textbf{Row reduction.} Implement a function that computes the reduced row echelon form of a matrix and its pivot columns.
 \begin{lstlisting}
 def rref(A, tol=1e-10):
     """Return (R, pivots): the RREF of A and the list of pivot columns."""
@@ -4065,7 +4065,7 @@ def power_iteration(A, num_iter=100):
         \item Apply \py{np.linalg.eig} to the shear $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$. What do you notice about the two eigenvectors it returns?
     \end{itemize}
 
-    \item \textbf{Dual bases and interpolation.} Write a function \py{dual_basis(P)} that returns the rows $r_1, \ldots, r_n$ of the dual basis of the columns of an invertible matrix \py{P} (Proposition~\ref{L1-prop:dual-basis-compute}).
+    \item \homework{} \textbf{Dual bases and interpolation.} Write a function \py{dual_basis(P)} that returns the rows $r_1, \ldots, r_n$ of the dual basis of the columns of an invertible matrix \py{P} (Proposition~\ref{L1-prop:dual-basis-compute}).
     \begin{itemize}
         \item For a random invertible $5 \times 5$ matrix $P$, check that the matrix of all values $\mathbf{r}_i \mathbf{b}_j$ is the identity, and that applying the rows to a vector $\mathbf{x}$ gives its coordinates, i.e., that $\mathbf{x} = \sum_i (\mathbf{r}_i \mathbf{x})\, \mathbf{b}_i$.
         \item Polynomials of degree at most $d$ are stored by their coefficient vectors in $\mathbb{R}^{d+1}$. For $d + 1$ distinct nodes $t_0, \ldots, t_d$, the evaluation functionals $p \mapsto p(t_k)$ are the rows of the Vandermonde matrix $V$ with entries $V_{kj} = t_k^j$. Explain why the coefficient vectors of the Lagrange polynomials $L_0, \ldots, L_d$ (with $L_j(t_k) = \delta_{jk}$) are the columns of $V^{-1}$, and compute them for the nodes $-1, 0, 1$; compare with Example~\ref{L1-ex:lagrange}.
@@ -4094,7 +4094,7 @@ def softmax_stable(z):
         \item The midpoint sum $M_N(f) = \frac{1}{N}\sum_{k=1}^N f(x_k)$ with $x_k = \frac{k - 1/2}{N}$ approximates $\int_0^1 f(x)\, dx$. Explain why $M_N$ is a linear functional on $C[0, 1]$, and why it agrees with the integral on all polynomials of degree at most $1$. Compute $M_N(f)$ for $f(x) = \sin(\pi x)$ and $N = 10, 100, 1000$, and compare with $\int_0^1 \sin(\pi x)\, dx = \frac{2}{\pi}$. By which factor does the error shrink when $N$ grows by a factor of $10$?
     \end{itemize}
 
-    \item \textbf{Tensors with NumPy.}
+    \item \homework{} \textbf{Tensors with NumPy.}
     \begin{itemize}
         \item Create the tensor
 \begin{lstlisting}
@@ -4111,7 +4111,7 @@ def rank_one(u, v, w):
         For random vectors $\mathbf{u}$, $\mathbf{v}$ and $\mathbf{w}$, check that the slices \py{T[:, :, k]} of \py{T = rank_one(u, v, w)} are multiples of the matrix $\mathbf{u}\mathbf{v}^\top$ (Example~\ref{L1-ex:tensor-rank-2}).
     \end{itemize}
 
-    \item \textbf{The LU decomposition and rank-one updates.}
+    \item \homework{} \textbf{The LU decomposition and rank-one updates.}
 \begin{lstlisting}
 def lu(A):
     # return L, U with A = L @ U (no row swaps)
