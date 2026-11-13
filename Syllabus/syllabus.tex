@@ -58,7 +58,7 @@ This course gives you the mathematics behind modern machine learning: linear alg
     \item \textbf{Practice problems} for each lecture, grouped by the sections of the notes, with a separate file of answers and hints. Problems marked \emph{Mandatory} cover the core skills; do them before the next lecture.
     \item \textbf{Exercises and programming exercises} at the end of each lecture, the programming exercises in Python with NumPy. They are the homework of the course.
     \item \textbf{Appendices} for further reading: A.~Topology, Differential Topology and Functional Analysis (after Lecture~3), and B.~Measure-Theoretic Probability (after Lecture~4).
-    \item \textbf{Sample exams} with solutions, in the format of the midterm and the final, and the \textbf{cheatsheets} that are handed out with the exams.
+    \item \textbf{Sample exams} with solutions, in the format of the midterm and the final, and \textbf{approximate cheatsheets}: the cheatsheets handed out with the exams are shorter selections from them.
 \end{itemize}
 
 \section*{Assessment}
@@ -120,12 +120,14 @@ For each lecture: what we cover in class, what to read on your own, the practice
 \block{Used in.} Linear layers $W\mathbf{x} + \mathbf{b}$ (ML, DL); solving linear systems for least squares (ML).
 
 \lecture{3}{Linear Algebra I --- Determinants and Matrix Decompositions}{Lecture 1, $\S$1.6.5--1.6.6}
-\block{In class.} The trace and $\tr(AB) = \tr(BA)$. The determinant: cofactor expansion, row operations, the product rule, invertibility, and its geometric meaning as the factor by which areas and volumes change. The cofactor formula for the inverse. Block matrices and the Schur complement; the LU decomposition; the Woodbury identity, the Sherman--Morrison formula and the determinant lemma.
+\block{In class.} The trace and $\tr(AB) = \tr(BA)$. The determinant: cofactor expansion, row operations, the product rule, invertibility, and its geometric meaning as the factor by which areas and volumes change. The cofactor formula for the inverse.
+\block{Self-study.} $\S$1.6.6: block matrices and the Schur complement; the LU decomposition; the Woodbury identity, the Sherman--Morrison formula and the determinant lemma.
 \block{Practice.} Practice 1, section 6 (trace, determinants, block matrices).
 \block{Used in.} Gaussian densities and their conditionals (Lecture 9); Jacobian determinants of normalizing flows (DL); cheap updates of inverses in online and Bayesian learning.
 
 \lecture{4}{Linear Algebra I --- Rank, Duality and Quotient Spaces}{Lecture 1, $\S$1.7--1.9}
-\block{In class.} Null space, column space and rank; the rank--nullity theorem. Dual spaces, dual bases and the dual map (the transpose); annihilators and the solvability of linear systems (Fredholm); the double dual. Cosets and quotient spaces; the isomorphism theorems and the dimension formula.
+\block{In class.} Null space, column space and rank; the rank--nullity theorem. Dual spaces, dual bases and the dual map (the transpose); the double dual. Cosets and quotient spaces.
+\block{Self-study.} Annihilators and the solvability of linear systems (Fredholm) in $\S$1.8.4; the isomorphism theorems and the dimension formula in $\S$1.9.3.
 \block{Practice.} Practice 1, sections 7--9.
 \block{Used in.} Gradients are linear functionals (Lectures 7--8); identifiability and rank deficiency in regression (ML); tensors (Lecture 5).
 
@@ -140,8 +142,9 @@ For each lecture: what we cover in class, what to read on your own, the practice
 \block{Practice.} Practice 2, all sections except 9 (Rotations).
 \block{Used in.} Linear regression (ML); PCA, t-SNE and UMAP (ML); spectral clustering (ML); low-rank fine-tuning such as LoRA (DL); conditioning and optimizers (DL).
 
+
 \subsection*{Midterm exam}
-$90$ minutes, after Lecture~6, on Lectures~1--2 (Lecture 1 and Lecture 2 without Rotations). Six open-ended problems: computations and short proofs, including tensors. The midterm cheatsheet, with the definitions and theorems that are easy to forget, is handed out with the exam; no other notes and no calculators.
+$90$ minutes, after Lecture~6, on Lectures~1--2 (Lecture 1 and Lecture 2). Six open-ended problems: computations and short proofs. The midterm cheatsheet, with the definitions and theorems, is handed out with the exam; it is a shorter selection from the approximate midterm cheatsheet; no other notes and no calculators.
 
 \lecture{7}{Calculus I --- Derivatives, the Chain Rule and Backpropagation}{Lecture 3, $\S$3.1--3.8 and $\S$3.15.2}
 \block{In class.} Functions of several variables, limits and continuity; derivatives of one variable and Taylor polynomials (review). Partial derivatives, gradients, differentiability, directional derivatives and steepest ascent. Jacobians and the multivariable chain rule. Gradients with respect to matrices and Jacobi's formula for the determinant. Automatic differentiation: forward and reverse mode, computation graphs, backpropagation in a neural network, and vanishing gradients. Hessians and Taylor's theorem in several variables. Ordinary differential equations: gradient flow, and gradient descent as Euler's method.
@@ -172,7 +175,7 @@ $90$ minutes, after Lecture~6, on Lectures~1--2 (Lecture 1 and Lecture 2 without
 \block{Used in.} Logistic regression, confidence intervals and $t$-tests (ML); Bayesian regularization and PyMC (ML); Thompson sampling (RL); clustering with Gaussian mixtures (ML); the ELBO of VAEs (DL).
 
 \subsection*{Final exam}
-$90$ minutes, after Lecture~11, on Lectures~7--11, using the linear algebra of Lectures~1--6 where needed. Six open-ended problems: computations and short proofs. The final cheatsheet is handed out with the exam; no other notes and no calculators (the problems give the numerical values you need).
+$90$ minutes, after Lecture~11, on Lectures~7--11, using the linear algebra of Lectures~1--6 where needed. Six open-ended problems: computations and short proofs. The final cheatsheet is handed out with the exam; it is a shorter selection from the approximate final cheatsheet; no other notes and no calculators (the problems give the numerical values you need).
 
 \section*{How to work in this course}
 
@@ -180,7 +183,7 @@ $90$ minutes, after Lecture~11, on Lectures~7--11, using the linear algebra of L
     \item \textbf{Before a lecture,} skim the sections of the notes listed for it.
     \item \textbf{After a lecture,} reread the sections, do the mandatory practice problems of the matching sections, and check your answers with the answer file only after you have tried. Then do as many of the other problems as you can; problems marked with a star are harder or more surprising.
     \item \textbf{Homework} consists of the exercises and the programming exercises at the end of the lecture notes, and makes up $60\%$ of the grade, so start on it right after each lecture rather than before a deadline. In the programming exercises, implement the methods yourself with NumPy, and use library functions only to check your results.
-    \item \textbf{Self-study sections} are part of the course material and complete the picture, but they are not tested in the exams. The follow-up courses come back to several of them (time series, survival analysis, GLMs, heteroscedasticity, cross-validation, classification metrics, A/B testing, the bootstrap).
+    \item \textbf{Self-study sections} are part of the course material and complete the picture. The follow-up courses come back to several of them (time series, survival analysis, GLMs, heteroscedasticity, cross-validation, classification metrics, A/B testing, the bootstrap).
     \item \textbf{The appendices} are for students who want the rigorous foundations: Appendix~A proves the results of Lecture~3 that need topology (the inverse and implicit function theorems, the existence of solutions of ODEs) and introduces manifolds, differential forms, Hilbert spaces and kernel methods; Appendix~B builds probability on measure theory.
 \end{itemize}
 

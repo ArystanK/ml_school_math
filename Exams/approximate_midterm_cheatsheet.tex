@@ -1,6 +1,7 @@
 \documentclass[10pt]{article}
 
-% Cheatsheet handed out with the midterm exam (Lectures 1--2): definitions and theorems that are easy to forget
+% Approximate midterm cheatsheet (public, Lectures 1--2). The cheatsheet handed out with the
+% midterm (Exams/real, not committed) is a shorter selection of it.
 \usepackage[margin=0.5in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -20,9 +21,10 @@
 \DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\diag}{diag}
 
-\newcommand{\topic}[1]{\par\smallskip\noindent{\color{blue!50!black}\textbf{#1}}\par}
+% A topic heading never ends a column: no break after it, nor at the start of the list below it.
+\newcommand{\topic}[1]{\par\smallskip\noindent{\color{blue!50!black}\textbf{#1}}\par\nopagebreak}
 \newcommand{\head}[1]{\begin{center}\colorbox{blue!10}{\parbox{0.96\linewidth}{\centering\textbf{#1}}}\end{center}}
-\setlist{nosep, leftmargin=1em, label=\textbullet}
+\setlist{nosep, leftmargin=1em, label=\textbullet, beginpenalty=10000}
 \setlength{\parindent}{0pt}
 \setlength{\columnsep}{1.5em}
 \pagestyle{empty}
@@ -31,8 +33,9 @@
 \footnotesize
 
 \begin{center}
-    {\large\textbf{Midterm Cheatsheet --- Lectures 1--2}}\\
-    Definitions and theorems that are easy to forget. Vectors of $\mathbb{R}^n$ are columns.
+    {\large\textbf{Approximate Midterm Cheatsheet --- Lectures 1--2}}\\
+    Definitions and theorems that are easy to forget. Vectors of $\mathbb{R}^n$ are columns.\\
+    The cheatsheet handed out with the midterm is a shorter selection from this one.
 \end{center}
 
 \head{Definitions people forget}

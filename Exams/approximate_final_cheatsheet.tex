@@ -1,6 +1,7 @@
 \documentclass[10pt]{article}
 
-% Cheatsheet handed out with the final exam (Lectures 3--4 as taught): definitions and theorems that are easy to forget
+% Approximate final cheatsheet (public, Lectures 3--4). The cheatsheet handed out with the
+% final (Exams/real, not committed) is a shorter selection of it.
 \usepackage[margin=0.5in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -23,9 +24,10 @@
 \DeclareMathOperator{\prox}{prox}
 \DeclareMathOperator*{\argmin}{arg\,min}
 
-\newcommand{\topic}[1]{\par\smallskip\noindent{\color{blue!50!black}\textbf{#1}}\par}
+% A topic heading never ends a column: no break after it, nor at the start of the list below it.
+\newcommand{\topic}[1]{\par\smallskip\noindent{\color{blue!50!black}\textbf{#1}}\par\nopagebreak}
 \newcommand{\head}[1]{\begin{center}\colorbox{blue!10}{\parbox{0.96\linewidth}{\centering\textbf{#1}}}\end{center}}
-\setlist{nosep, leftmargin=1em, label=\textbullet}
+\setlist{nosep, leftmargin=1em, label=\textbullet, beginpenalty=10000}
 \setlength{\parindent}{0pt}
 \setlength{\columnsep}{1.5em}
 \pagestyle{empty}
@@ -34,8 +36,9 @@
 \footnotesize
 
 \begin{center}
-    {\large\textbf{Final Cheatsheet --- Lectures 3--4}}\\
-    Definitions and theorems that are easy to forget. Vectors are columns; $\log$ is the natural logarithm.
+    {\large\textbf{Approximate Final Cheatsheet --- Lectures 3--4}}\\
+    Definitions and theorems that are easy to forget. Vectors are columns; $\log$ is the natural logarithm.\\
+    The cheatsheet handed out with the final is a shorter selection from this one.
 \end{center}
 
 \head{Definitions people forget}
@@ -70,6 +73,8 @@
     \item \textbf{MGF} $M_X(t) = \E[e^{tX}]$, $K_X = \log M_X$; $K_X'(0) = \E X$, $K_X''(0) = \Var X$.
     \item $\Sigma = \Cov(\mathbf{X}) = \E[(\mathbf{X} - \boldsymbol{\mu})(\mathbf{X} - \boldsymbol{\mu})^\top]$. \textbf{Mahalanobis}: $\sqrt{(\mathbf{x} - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{x} - \boldsymbol{\mu})}$; whitening $\Sigma^{-1/2}(\mathbf{X} - \boldsymbol{\mu})$.
     \item \textbf{In probability}: $P(|Y_n - Y| > \varepsilon) \to 0$ for all $\varepsilon > 0$. \textbf{In distribution}: $P(Y_n \leq y) \to P(Y \leq y)$ where the CDF of $Y$ is continuous.
+    \item \textbf{Markov chain}: $P_{ij} = P(X_{t+1} = j \mid X_t = i)$, rows sum to $1$; distributions are row vectors, $\boldsymbol\pi_{t+1} = \boldsymbol\pi_tP$. \textbf{Stationary}: $\boldsymbol\pi P = \boldsymbol\pi$. \textbf{Irreducible}: every state can be reached from every state; \textbf{aperiodic}: return times have gcd $1$ (if irreducible, some $P_{ii} > 0$ suffices).
+    \item \textbf{Value} of a Markov reward process: $V_i = \E\big[\sum_{t \geq 0}\gamma^tr_{X_t} \bigm| X_0 = i\big]$, $0 \leq \gamma < 1$.
 \end{itemize}
 
 \topic{Statistics}
@@ -80,7 +85,9 @@
     \item \textbf{Exponential family} $p_{\boldsymbol\eta}(x) = h(x)\exp(\boldsymbol\eta^\top T(x) - A(\boldsymbol\eta))$.
     \item \textbf{Beta}$(a, b)$: $\propto \theta^{a-1}(1 - \theta)^{b-1}$, mean $\frac{a}{a + b}$, mode $\frac{a - 1}{a + b - 2}$.
     \item \textbf{GP} $f \sim \mathcal{GP}(m, k)$: every $(f(\mathbf{x}_1), \ldots, f(\mathbf{x}_n))$ is Gaussian with $K_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)$.
-    \item $H(p) = -\sum p_k\log p_k$, $H(p, q) = -\sum p_k\log q_k$, $\KL(p \,\|\, q) = \sum p_k\log\frac{p_k}{q_k} = H(p, q) - H(p)$.
+    \item $H(p) = -\sum p_k\log p_k$, $H(p, q) = -\sum p_k\log q_k$, $\KL(p \,\|\, q) = \sum p_k\log\frac{p_k}{q_k} = H(p, q) - H(p)$. \textbf{Mutual information} $I(X; Y) = \KL(p_{X,Y} \,\|\, p_Xp_Y)$.
+    \item $\boldsymbol{\chi^2_k}$: distribution of $Z_1^2 + \cdots + Z_k^2$; $\boldsymbol{t_k}$: of $\frac{Z}{\sqrt{V/k}}$, with independent $Z \sim \mathcal{N}(0, 1)$, $V \sim \chi^2_k$.
+    \item \textbf{p-value} $P_{H_0}(T \geq t)$; reject $H_0$ at level $\alpha$ if $p \leq \alpha$. Approximate $95\%$ \textbf{confidence interval} $\hat\theta \pm 1.96\,\mathrm{SE}$.
 \end{itemize}
 
 \topic{Distributions}
@@ -124,6 +131,7 @@ $\mathcal{N}(\boldsymbol{\mu}, \Sigma)$: $p(\mathbf{x}) = \frac{1}{(2\pi)^{d/2}\
     \item \textbf{Quadratics} ($A$ SPD): GD converges $\iff 0 < \eta < \frac{2}{\lambda_{\max}}$; best $\eta = \frac{2}{\lambda_{\max} + \lambda_{\min}}$, rate $\frac{\kappa - 1}{\kappa + 1}$.
     \item \textbf{Rates}, convex $L$-smooth, $\eta = \frac{1}{L}$: $f(\mathbf{x}_k) - f^* \leq \frac{L\norm{\mathbf{x}_0 - \mathbf{x}^*}^2}{2k}$; if also $\mu$-strongly convex: $\leq (1 - \frac{\mu}{L})^k(f(\mathbf{x}_0) - f^*)$. PL: $f - f^* \leq \frac{1}{2\mu}\norm{\nabla f}^2$.
     \item \textbf{Newton} $\mathbf{x}_{k+1} = \mathbf{x}_k - \nabla^2 f(\mathbf{x}_k)^{-1}\nabla f(\mathbf{x}_k)$: quadratic convergence near a minimum with a PD, Lipschitz Hessian.
+    \item \textbf{Gradient flow} $\mathbf{x}'(t) = -\nabla f(\mathbf{x}(t))$; gradient descent is Euler's method for it, with the step $\eta$. Distance from $\mathbf{x}$ to the hyperplane $\{\mathbf{w}^\top\mathbf{z} = c\}$: $\frac{|\mathbf{w}^\top\mathbf{x} - c|}{\norm{\mathbf{w}}}$.
     \item Convex: $f(\mathbf{y}) \geq f(\mathbf{x}) + \nabla f(\mathbf{x})^\top(\mathbf{y} - \mathbf{x})$ $\iff$ $\nabla^2 f \succeq 0$; local min = global min. $\mathbf{x}^*$ minimizes $f + h$ $\iff -\nabla f(\mathbf{x}^*) \in \partial h(\mathbf{x}^*)$.
     \item \textbf{KKT} ($g_i \leq 0$, LICQ): $\nabla f + \sum\mu_i\nabla g_i = \mathbf{0}$; $g_i \leq 0$; $\mu_i \geq 0$; $\mu_ig_i = 0$. Convex $f$, $g_i$: KKT $\Rightarrow$ global min. Equality constraints: $\lambda_i$ of any sign.
     \item \textbf{Weak duality} $d(\boldsymbol\mu) \leq f(\mathbf{x})$ for feasible $\mathbf{x}$; convex + KKT point: $d^* = p^*$. \textbf{Fenchel--Young}: $f(\mathbf{x}) + f^*(\mathbf{y}) \geq \mathbf{x}^\top\mathbf{y}$.
@@ -142,6 +150,8 @@ $\mathcal{N}(\boldsymbol{\mu}, \Sigma)$: $p(\mathbf{x}) = \frac{1}{(2\pi)^{d/2}\
     \item $\Var\bar X_N = \frac{\sigma^2}{N}$. \textbf{WLLN}: $P(|\bar X_N - \mu| \geq \varepsilon) \leq \frac{\sigma^2}{N\varepsilon^2}$. \textbf{CLT}: $\frac{\sqrt N(\bar X_N - \mu)}{\sigma} \to \mathcal{N}(0, 1)$ in distribution.
     \item \textbf{Slutsky}: $X_n \to X$ in dist., $Y_n \to c$ in prob.\ $\Rightarrow$ $X_n + Y_n \to X + c$, $X_nY_n \to cX$. \textbf{Delta method}: $\sqrt N(T_N - \theta) \to \mathcal{N}(0, \tau^2)$ $\Rightarrow$ $\sqrt N(g(T_N) - g(\theta)) \to \mathcal{N}(0, g'(\theta)^2\tau^2)$.
     \item \textbf{Rejection sampling}: accept w.p.\ $\frac{p(X)}{Mq(X)}$, overall rate $\frac{1}{M}$. \textbf{Importance sampling}: $\E_p f = \E_q[f\frac{p}{q}]$.
+    \item \textbf{Markov chains}: all eigenvalues of $P$ have $|\lambda| \leq 1$, and $1$ is one. Detailed balance $\pi_iP_{ij} = \pi_jP_{ji}$ $\Rightarrow$ $\boldsymbol\pi$ stationary. Irreducible $\Rightarrow$ unique $\boldsymbol\pi$, all $\pi_i > 0$; if also aperiodic, $\boldsymbol\pi_0P^t \to \boldsymbol\pi$, at a speed given by the second largest $|\lambda|$. Metropolis: accept $i \to j$ w.p.\ $\min(1, \frac{\pi_j}{\pi_i})$ (symmetric proposal).
+    \item \textbf{Bellman}: $\mathbf{V} = \mathbf{r} + \gamma P\mathbf{V}$, so $\mathbf{V} = (I - \gamma P)^{-1}\mathbf{r} = \sum_k\gamma^kP^k\mathbf{r}$; $\norm{P\mathbf{x}}_\infty \leq \norm{\mathbf{x}}_\infty$. Policy evaluation $\mathbf{V}_{k+1} = \mathbf{r} + \gamma P\mathbf{V}_k$ and value iteration $\mathbf{V}_{k+1} = T\mathbf{V}_k$: $\norm{\mathbf{V}_k - \mathbf{V}}_\infty \leq \gamma^k\norm{\mathbf{V}_0 - \mathbf{V}}_\infty$. Optimality: $V^*_s = \max_a\big(r(s, a) + \gamma\sum_{s'}P(s' \mid s, a)V^*_{s'}\big)$; the greedy policy is optimal.
 \end{itemize}
 
 \topic{Statistics and information}
@@ -151,6 +161,7 @@ $\mathcal{N}(\boldsymbol{\mu}, \Sigma)$: $p(\mathbf{x}) = \frac{1}{(2\pi)^{d/2}\
     \item \textbf{Rao--Blackwell}: $\E[\hat\theta \mid T]$, $T$ sufficient, has the same bias and no larger MSE.
     \item Exp.\ family: $\nabla A(\boldsymbol\eta) = \E[T(X)]$, $\nabla^2 A = \Cov(T(X)) \succeq 0$; MLE solves $\nabla A(\hat{\boldsymbol\eta}) = \frac{1}{N}\sum_iT(x_i)$.
     \item Least squares = Gaussian MLE; ridge = MAP with $\mathbf{w} \sim \mathcal{N}(\mathbf{0}, \alpha^{-1}I)$, $\lambda = \alpha\sigma^2$.
+    \item \textbf{Regression} $\mathbf{y} = X\mathbf{w} + \boldsymbol\varepsilon$, $\Cov(\boldsymbol\varepsilon) = \sigma^2I$: $\E\hat{\mathbf{w}} = \mathbf{w}$, $\Cov(\hat{\mathbf{w}}) = \sigma^2(X^\top X)^{-1}$, $s^2 = \frac{\mathrm{RSS}}{N - n}$ is unbiased. Gaussian noise: $\frac{\hat w_j - w_j}{\mathrm{SE}_j} \sim t_{N-n}$ with $\mathrm{SE}_j = s\sqrt{((X^\top X)^{-1})_{jj}}$. Heteroscedastic $\Cov(\boldsymbol\varepsilon) = \Sigma$: $\Cov(\hat{\mathbf{w}}) = (X^\top X)^{-1}X^\top\Sigma X(X^\top X)^{-1}$.
     \item \textbf{Beta--Bernoulli}: Beta$(a, b)$ + $k$ ones in $N$ $\to$ Beta$(a + k, b + N - k)$.
     \item \textbf{Bayesian linear regression}: $S = (\alpha I + \sigma^{-2}X^\top X)^{-1}$, $\mathbf{m} = \sigma^{-2}SX^\top\mathbf{y}$; predictive $\mathcal{N}(\mathbf{m}^\top\mathbf{x}_*, \mathbf{x}_*^\top S\mathbf{x}_* + \sigma^2)$.
     \item \textbf{GP regression}: mean $\mathbf{k}_*^\top(K + \sigma^2I)^{-1}\mathbf{y}$, variance $k(\mathbf{x}_*, \mathbf{x}_*) - \mathbf{k}_*^\top(K + \sigma^2I)^{-1}\mathbf{k}_*$.
