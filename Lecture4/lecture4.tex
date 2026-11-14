@@ -2355,7 +2355,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
     \end{enumerate}
     \item \homework{} A spam filter knows that $40\%$ of all emails are spam, that the word ``free'' appears in $30\%$ of the spam emails and in $2\%$ of the other emails. What is the probability that an email containing ``free'' is spam?
     \item Let $X$ be Geometric$(p)$. Show that $\E[X] = \frac{1}{p}$ and that $P(X > s + t \mid X > s) = P(X > t)$ for all positive integers $s$ and $t$. How many times do you expect to roll a fair die until you see a six?
-    \item Let $U$ and $V$ be independent and Uniform$(0, 1)$. Find the densities of (a) $U^2$, (b) $-\log U$, (c) $\max(U, V)$ (Hint: compute the CDF first.)
+    \item \homework{} Let $U$ and $V$ be independent and Uniform$(0, 1)$. Find the densities of (a) $U^2$, (b) $-\log U$, (c) $\max(U, V)$ (Hint: compute the CDF first.)
     \item Let $X$ be Poisson$(\lambda)$. Compute $\E[X(X - 1)]$, and use it to show that $\Var(X) = \lambda$.
     \item \begin{enumerate}[label=(\alph*)]
         \item A nonnegative random variable has mean $2$. Bound $P(X \geq 10)$ with Markov's inequality, and compare with the exact value for $X \sim$ Exponential$(\frac{1}{2})$.
@@ -2381,13 +2381,13 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item In a chain $X \to Z \to Y$ of binary variables, let $P(Z = 1 \mid X = 1) = 0.9$, $P(Z = 1 \mid X = 0) = 0.2$, $P(Y = 1 \mid Z = 1) = 0.7$ and $P(Y = 1 \mid Z = 0) = 0.1$. Compute $P(Y = 1 \mid X = 1)$, $P(Y = 1 \mid X = 0)$ and $P(Y = 1 \mid X = 1, Z = 1)$. Are $X$ and $Y$ independent? Are they independent given $Z$?
         \item A naive Bayes classifier has seen the word ``meeting'' in $0$ of $50$ spam emails. What is the maximum likelihood estimate of $P(\text{meeting} \mid \text{spam})$, and what happens to an email that contains ``meeting'' and many typical spam words? What does Laplace smoothing, adding $1$ to each of the counts of ``contains the word'' and ``does not contain the word'', estimate instead?
     \end{enumerate}
-    \item (Moment generating functions.) Let $X \sim$ Exponential$(\lambda)$. Use the cumulant generating function $K_X(t) = \log\frac{\lambda}{\lambda - t}$ to find $\E[X]$ and $\Var(X)$. Find the moment generating function of the sum of $n$ independent Exponential$(\lambda)$ variables, and its mean and variance. Show that $\E[X^k] = \frac{k!}{\lambda^k}$ by expanding $M_X(t) = \frac{1}{1 - t/\lambda}$ as a geometric series.
+    \item \homework{} (Moment generating functions.) Let $X \sim$ Exponential$(\lambda)$. Use the cumulant generating function $K_X(t) = \log\frac{\lambda}{\lambda - t}$ to find $\E[X]$ and $\Var(X)$. Find the moment generating function of the sum of $n$ independent Exponential$(\lambda)$ variables, and its mean and variance. Show that $\E[X^k] = \frac{k!}{\lambda^k}$ by expanding $M_X(t) = \frac{1}{1 - t/\lambda}$ as a geometric series.
     \item Let $\mathbf{X}$ have the covariance matrix $\Sigma = \begin{pmatrix} 2 & -1 & 0 \\ -1 & 2 & -1 \\ 0 & -1 & 2 \end{pmatrix}$. Compute $\Var(X_1 + X_2 + X_3)$ and $\Var(X_1 - X_3)$. In which direction $\mathbf{u}$ (with $\norm{\mathbf{u}} = 1$) is $\Var(\mathbf{u}^\top\mathbf{X})$ largest, and what is it? Find a matrix $A$ such that $A\mathbf{X}$ has covariance matrix $I$.
     \item \homework{} Let $(X, Y) \sim \mathcal{N}\Big(\mathbf{0}, \begin{pmatrix} 4 & 2 \\ 2 & 2 \end{pmatrix}\Big)$. Find the conditional distributions of $Y$ given $X = x$ and of $X$ given $Y = y$, the distribution of $X - Y$, and $P(X > Y)$. Describe the level curves of the density.
     \item Let $\mathbf{X} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$ in $\mathbb{R}^d$. Show that the squared Mahalanobis distance $(\mathbf{X} - \boldsymbol{\mu})^\top\Sigma^{-1}(\mathbf{X} - \boldsymbol{\mu})$ has the same distribution as $\norm{\mathbf{Z}}^2$ with $\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, I)$, and that its expectation is $d$. What does this say about where the probability mass of a high-dimensional Gaussian lies?
     \item \homework{} How many times do we have to flip a fair coin so that the fraction of heads is within $0.01$ of $\frac{1}{2}$ with probability at least $95\%$? Answer with Chebyshev's inequality, with Hoeffding's inequality, and with the central limit theorem, and compare.
-    \item (Delta method.) Let $X_1, \ldots, X_N$ be i.i.d.\ Exponential$(\lambda)$. Show that $\sqrt{N}\big(\frac{1}{\bar X_N} - \lambda\big) \to \mathcal{N}(0, \lambda^2)$ in distribution, and compare with the Fisher information of the exponential distribution (Exercise~\ref{ex4:fisher}).
-    \item Let $p(x) = \sqrt{2/\pi}\,e^{-x^2/2}$ for $x > 0$ be the density of $|Z|$ for $Z \sim \mathcal{N}(0, 1)$, and let $q(x) = e^{-x}$ be the Exponential$(1)$ density.
+    \item \homework{} (Delta method.) Let $X_1, \ldots, X_N$ be i.i.d.\ Exponential$(\lambda)$. Show that $\sqrt{N}\big(\frac{1}{\bar X_N} - \lambda\big) \to \mathcal{N}(0, \lambda^2)$ in distribution, and compare with the Fisher information of the exponential distribution (Exercise~\ref{ex4:fisher}).
+    \item \homework{} Let $p(x) = \sqrt{2/\pi}\,e^{-x^2/2}$ for $x > 0$ be the density of $|Z|$ for $Z \sim \mathcal{N}(0, 1)$, and let $q(x) = e^{-x}$ be the Exponential$(1)$ density.
     \begin{enumerate}[label=(\alph*)]
         \item Find the smallest $M$ with $p \leq Mq$, and the acceptance rate of rejection sampling with this proposal.
         \item Write down the importance sampling estimator of $\E_p[X^2]$ with samples from $q$, and explain why its variance is finite.
@@ -2420,7 +2420,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item Show that the MLE of $\theta$ is $M = \max_i X_i$, and that $\E[M] = \frac{N}{N + 1}\theta$. (Hint: $P(M \leq t) = (t/\theta)^N$.)
         \item Show that $\frac{N + 1}{N}M$ and $2\bar X_N$ are unbiased, and compare their variances, $\frac{\theta^2}{N(N + 2)}$ and $\frac{\theta^2}{3N}$. Which estimator is better?
     \end{enumerate}
-    \item Find the maximum likelihood estimates for i.i.d.\ data from (a) Poisson$(\lambda)$, (b) Exponential$(\lambda)$, (c) Geometric$(p)$.
+    \item \homework{} Find the maximum likelihood estimates for i.i.d.\ data from (a) Poisson$(\lambda)$, (b) Exponential$(\lambda)$, (c) Geometric$(p)$.
     \item\label{ex4:fisher} \homework{} (Fisher information.)
     \begin{enumerate}[label=(\alph*)]
         \item Show that the Fisher information of Poisson$(\lambda)$ is $I(\lambda) = \frac{1}{\lambda}$, and that the MLE $\bar X_N$ is efficient.
@@ -2444,7 +2444,7 @@ which is gradient descent on $U$ plus Gaussian noise. To sample from a posterior
         \item For Weibull event times with a known shape $k$ and non-informative censoring, show that the maximum likelihood estimate of $\theta = s^{-k}$ is $\hat\theta = \frac{D}{\sum_i t_i^k}$, where $D$ is the number of observed events.
         \item Show that without censoring, the Kaplan--Meier estimator equals $1 - \hat F_N$.
     \end{enumerate}
-    \item A die is rolled $120$ times and shows $30$ sixes. Test at the level $0.05$ whether the die favors sixes: state $H_0$ and $H_1$, and compute the exact one-sided p-value $P(S \geq 30)$ for $S \sim$ Binomial$(120, \frac{1}{6})$ with a computer, and its normal approximation.
+    \item \homework{} A die is rolled $120$ times and shows $30$ sixes. Test at the level $0.05$ whether the die favors sixes: state $H_0$ and $H_1$, and compute the exact one-sided p-value $P(S \geq 30)$ for $S \sim$ Binomial$(120, \frac{1}{6})$ with a computer, and its normal approximation.
     \item (Neyman--Pearson.) Let $X_1, \ldots, X_N$ be i.i.d.\ Exponential$(\lambda)$. Find the most powerful test at the level $\alpha$ of $H_0$: $\lambda = 1$ against $H_1$: $\lambda = 2$, and show that it rejects if $\sum_i X_i$ is small. For $N = 1$ and $\alpha = 0.05$, find the rejection region and the power.
     \item \homework{} (Inference for linear regression.)
     \begin{enumerate}[label=(\alph*)]
@@ -2526,7 +2526,7 @@ rng = np.random.default_rng(0)
         \item Plot the data and the decision boundary, and compare with logistic regression trained by gradient descent (Lecture~3).
     \end{itemize}
 
-    \item \textbf{Maximum likelihood and bias.} Draw $10^5$ data sets of size $N = 5$ from $\mathcal{N}(2, 9)$. Compute the average of the MLE $\hat\sigma^2$ and of $s^2$ over the data sets, and compare with $\frac{N - 1}{N}\sigma^2 = 7.2$ and $\sigma^2 = 9$. Then estimate the mean squared errors of both estimators. Which one has the smaller MSE?
+    \item \homework{} \textbf{Maximum likelihood and bias.} Draw $10^5$ data sets of size $N = 5$ from $\mathcal{N}(2, 9)$. Compute the average of the MLE $\hat\sigma^2$ and of $s^2$ over the data sets, and compare with $\frac{N - 1}{N}\sigma^2 = 7.2$ and $\sigma^2 = 9$. Then estimate the mean squared errors of both estimators. Which one has the smaller MSE?
 
     \item \textbf{Rao--Blackwell and the delta method.}
     \begin{itemize}
@@ -2557,7 +2557,7 @@ rng = np.random.default_rng(0)
         \item Compute the log marginal likelihood $\log p(\mathbf{y})$ for $\ell$ on a grid from $0.05$ to $3$, and plot it. Which length scale does it select? Compare the posterior with the one for $\ell = 0.1$ and $\ell = 1$.
     \end{itemize}
 
-    \item \textbf{Markov chains and MCMC.}
+    \item \homework{} \textbf{Markov chains and MCMC.}
     \begin{itemize}
         \item (A bigram language model.) Take a text of a few thousand words, split it into words, and estimate the transition probabilities $P(\text{next word} = j \mid \text{current word} = i)$ by counting. Generate random sentences from the chain. Compute the stationary distribution by power iteration, and compare it with the word frequencies in the text.
         \item (Metropolis sampling.) For the probability $\theta$ of heads, use the prior density $p(\theta) \propto e^{-10(\theta - 0.5)^2}$ on $[0, 1]$, which is not a Beta distribution, and the data ``$7$ heads in $10$ flips''. Sample from the posterior $p(\theta \mid \mathcal{D}) \propto \theta^7(1 - \theta)^3 e^{-10(\theta - 0.5)^2}$ with the Metropolis algorithm, using the proposals $\theta' = \theta + \eta\varepsilon$ with $\varepsilon \sim \mathcal{N}(0, 1)$ (and target $0$ outside $[0, 1]$). Compare the histogram of $50\,000$ samples with the posterior density, normalized numerically on a grid. Plot the chain for $\eta = 0.01$, $0.1$ and $1$, and report the acceptance rates. Which step size works best, and why?

@@ -2234,14 +2234,14 @@ which replaces the determinant of a Jacobian by the integral of a trace, estimat
         \item Let $\mathbf{x}(t)$ be a differentiable curve in $\mathbb{R}^n$. Show that $\frac{d}{dt}\norm{\mathbf{x}(t)}^2 = 2\mathbf{x}(t)^\top\mathbf{x}'(t)$, and conclude that if the curve lies on a sphere $\norm{\mathbf{x}} = r$, then its velocity $\mathbf{x}'(t)$ is always orthogonal to $\mathbf{x}(t)$.
         \item Let $f(u, v) = u^2 v$ and $g(x, y) = (x\cos y, \, x\sin y)^\top$. Compute $D(f \circ g)$ in two ways: as the product $Df(g(x, y))\,Dg(x, y)$, and by differentiating $f(g(x, y))$ directly.
     \end{enumerate}
-    \item (Ridge regression.) Let $X \in \mathbb{R}^{N \times d}$, $\mathbf{y} \in \mathbb{R}^N$ and $\lambda > 0$, and let $f(\mathbf{w}) = \norm{X\mathbf{w} - \mathbf{y}}^2 + \lambda\norm{\mathbf{w}}^2$. Compute $\nabla f$ and $\nabla^2 f$. Show that $X^\top X + \lambda I$ is invertible, and that the unique minimum of $f$ is $\mathbf{w}^* = (X^\top X + \lambda I)^{-1}X^\top\mathbf{y}$.
+    \item \homework{} (Ridge regression.) Let $X \in \mathbb{R}^{N \times d}$, $\mathbf{y} \in \mathbb{R}^N$ and $\lambda > 0$, and let $f(\mathbf{w}) = \norm{X\mathbf{w} - \mathbf{y}}^2 + \lambda\norm{\mathbf{w}}^2$. Compute $\nabla f$ and $\nabla^2 f$. Show that $X^\top X + \lambda I$ is invertible, and that the unique minimum of $f$ is $\mathbf{w}^* = (X^\top X + \lambda I)^{-1}X^\top\mathbf{y}$.
     \item Let $A$ be a symmetric $n \times n$ matrix and $R(\mathbf{x}) = \frac{\mathbf{x}^\top A\mathbf{x}}{\mathbf{x}^\top\mathbf{x}}$ for $\mathbf{x} \neq \mathbf{0}$ (the Rayleigh quotient). Show that $\nabla R(\mathbf{x}) = \frac{2}{\mathbf{x}^\top\mathbf{x}}\big(A\mathbf{x} - R(\mathbf{x})\mathbf{x}\big)$, and conclude that the critical points of $R$ are exactly the eigenvectors of $A$.
     \item \homework{} \begin{enumerate}[label=(\alph*)]
         \item Show that $\nabla_X\tr(AXB) = A^\top B^\top$.
         \item Let $X \in \mathbb{R}^{N \times d}$ and $Y \in \mathbb{R}^{N \times k}$. Compute $\nabla_W\norm{XW - Y}_F^2$, and show that if $X$ has linearly independent columns, the minimum is $W^* = (X^\top X)^{-1}X^\top Y$. (This is linear regression with $k$ outputs.)
         \item Let $X$ be invertible. Show that $(X + H)^{-1} = X^{-1} - X^{-1}HX^{-1} + o(\norm{H}_F)$, by multiplying the right side by $X + H$. Conclude that $\nabla_X\tr(AX^{-1}) = -X^{-\top}A^\top X^{-\top}$.
     \end{enumerate}
-    \item Let $\mathbf{y} \in \mathbb{R}^K$ be a probability vector (with $y_k \geq 0$ and $\sum_k y_k = 1$), and let
+    \item \homework{} Let $\mathbf{y} \in \mathbb{R}^K$ be a probability vector (with $y_k \geq 0$ and $\sum_k y_k = 1$), and let
     \[\ell(\mathbf{z}) = -\sum_{k=1}^K y_k\log\softmax(\mathbf{z})_k\]
     be the cross-entropy with ``soft labels''. Show that $\nabla\ell(\mathbf{z}) = \softmax(\mathbf{z}) - \mathbf{y}$. Check that $\ell(\mathbf{z} + c\mathbf{1}) = \ell(\mathbf{z})$ for all $c \in \mathbb{R}$, and that $\nabla\ell(\mathbf{z})^\top\mathbf{1} = 0$. Why do these two facts fit together?
     \item Let $f(x_1, x_2) = x_1^2 x_2 + e^{x_1 x_2}$. Draw the computation graph of $f$, and compute $\nabla f(1, 0)$ with forward mode (two passes) and with reverse mode (one pass), as in Example~\ref{ex:autodiff}.
@@ -2276,9 +2276,9 @@ which replaces the determinant of a Jacobian by the integral of a trace, estimat
         \item Find the largest $\mu$ and the smallest $L$ for which $f$ is $\mu$-strongly convex and $L$-smooth.
         \item How many steps of gradient descent with $\eta = \frac{1}{L}$ does Theorem~\ref{thm:gd-rates} need to guarantee $f(\mathbf{x}_k) - f^* \leq 10^{-6}\big(f(\mathbf{x}_0) - f^*\big)$? Compare with the exact behavior of gradient descent on this function (Theorem~\ref{thm:gd-quadratic}).
     \end{enumerate}
-    \item Compute the subdifferentials of $f(x) = \max(0, 1 - x)$ (the hinge loss) and of $g(x) = |x| + x^2$ at every point $x \in \mathbb{R}$. Use the condition $0 \in \partial f(x^*)$ to minimize $g$ and $h(x) = |x - 1| + |x - 2| + |x - 6|$. What is the minimum of $\sum_{i=1}^N |x - a_i|$ in general?
+    \item \homework{} Compute the subdifferentials of $f(x) = \max(0, 1 - x)$ (the hinge loss) and of $g(x) = |x| + x^2$ at every point $x \in \mathbb{R}$. Use the condition $0 \in \partial f(x^*)$ to minimize $g$ and $h(x) = |x - 1| + |x - 2| + |x - 6|$. What is the minimum of $\sum_{i=1}^N |x - a_i|$ in general?
     \item (Weight decay.) Show that the proximal operator of $h(\mathbf{u}) = \frac{\lambda}{2}\norm{\mathbf{u}}^2$ is $\operatorname{prox}_{\eta h}(\mathbf{v}) = \frac{1}{1 + \eta\lambda}\mathbf{v}$. Write down the proximal gradient method for $f + h$, and compare it with gradient descent on $f + h$. Both shrink the weights towards $\mathbf{0}$ in every step, which is called weight decay.
-    \item (Maximum entropy.) Use a Lagrange multiplier to find the probability vector $\mathbf{p} = (p_1, \ldots, p_n)$ with $p_i > 0$ and $\sum_i p_i = 1$ that maximizes the entropy $H(\mathbf{p}) = -\sum_i p_i\log p_i$. What is the maximal entropy?
+    \item \homework{} (Maximum entropy.) Use a Lagrange multiplier to find the probability vector $\mathbf{p} = (p_1, \ldots, p_n)$ with $p_i > 0$ and $\sum_i p_i = 1$ that maximizes the entropy $H(\mathbf{p}) = -\sum_i p_i\log p_i$. What is the maximal entropy?
     \item \begin{enumerate}[label=(\alph*)]
         \item Use a Lagrange multiplier to find the point of the plane $x + 2y + 2z = 9$ that is closest to the origin. Compare with the formula for the distance to a hyperplane in Lecture~2.
         \item Find the rectangle with sides parallel to the axes and the largest area that fits into the ellipse $\frac{x^2}{a^2} + \frac{y^2}{b^2} \leq 1$.
@@ -2404,7 +2404,7 @@ y = np.r_[np.zeros(N // 2), np.ones(N // 2)]
         \item Move the class centers to $(\pm 3, \pm 3)$, so that the classes are (very likely) linearly separable, and run gradient descent again. What happens to $\norm{\mathbf{w}_k}$ and to the loss, and why does the loss have no minimum? How does a ridge penalty $\lambda\norm{\mathbf{w}}^2$ change this?
     \end{itemize}
 
-    \item \textbf{Training a neural network.} Fit $y = \sin x$ on $[-\pi, \pi]$ with a network with one hidden layer of $20$ units with the $\tanh$ activation function, as in Section~\ref{sec:autodiff}, with the loss $L = \frac{1}{2N}\sum_k (\hat y_k - y_k)^2$ over $N = 100$ equally spaced points.
+    \item \homework{} \textbf{Training a neural network.} Fit $y = \sin x$ on $[-\pi, \pi]$ with a network with one hidden layer of $20$ units with the $\tanh$ activation function, as in Section~\ref{sec:autodiff}, with the loss $L = \frac{1}{2N}\sum_k (\hat y_k - y_k)^2$ over $N = 100$ equally spaced points.
     \begin{itemize}
         \item Implement the forward and backward passes for a whole batch, with the inputs as the rows of a matrix (Example~\ref{ex:linear-layer}). Check all four gradients with \py{numerical_gradient} on a small network.
         \item Initialize $W_1$ with standard normal entries, $W_2$ with normal entries with standard deviation $\frac{1}{\sqrt{20}}$, and the biases with zeros. Train with gradient descent with $\eta = 0.05$ for $20\,000$ steps. Plot the loss (log scale) and the fitted function.
@@ -2474,7 +2474,7 @@ y = X @ w_true + 0.5 * rng.normal(size=N)
         \item The pendulum $x_1' = x_2$, $x_2' = -\sin x_1$ has $\Div F = 0$, and with friction, $x_2' = -\sin x_1 - \gamma x_2$, it has $\Div F = -\gamma$. Represent a small disk around $(1, 0)$ by $200$ points on its boundary circle, move them with the flow, and compute the enclosed area over time with the shoelace formula $\frac{1}{2}\sum_i (x_iy_{i+1} - x_{i+1}y_i)$. Compare with the prediction of the divergence for $\gamma = 0$ and $\gamma = 0.5$, and plot the deformed disks.
     \end{itemize}
 
-    \item \textbf{The lasso.} Generate a regression problem in which only $5$ of $50$ features matter:
+    \item \homework{} \textbf{The lasso.} Generate a regression problem in which only $5$ of $50$ features matter:
 \begin{lstlisting}
 N, d = 100, 50
 X = rng.normal(size=(N, d))
