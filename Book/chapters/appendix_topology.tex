@@ -12,6 +12,7 @@ In Lecture~3, we used several facts without proof: that a continuous function on
     \item Sections~\ref{A-sec:inverse}--\ref{A-sec:forms} are about differential topology, which studies manifolds, i.e., sets that look like $\mathbb{R}^k$ near each of their points, and differentiable maps between them. Its main tools are the inverse and implicit function theorems. The matrix groups of Lectures~1 and~2, such as the rotations, are manifolds as well, and they are Lie groups. Morse theory connects the critical points of a function, classified by the eigenvalues of its Hessian as in Lecture~3, with the shape of the space on which it is defined. Finally, differential forms, which are built from the tensors of Lecture~1, unify the integral theorems of Lecture~3 in one theorem of Stokes, and they detect holes in a space.
     \item Section~\ref{A-sec:ml} collects some places where these ideas appear in machine learning.
     \item Sections~\ref{A-sec:banach}--\ref{A-sec:rkhs} are about functional analysis, i.e., linear algebra and analysis in infinite-dimensional vector spaces, such as spaces of functions. Its central notions are completeness, orthogonal projections and the spectral theorem for compact operators. They prove the existence theorem for differential equations of Lecture~3 and the Radon--Nikodym theorem of Appendix~\ref{B-chapter}, and they lead to Fourier series, to expansions of random functions, and to the theory of kernel methods. Section~\ref{A-sec:fa-ml} returns to machine learning.
+    \item Section~\ref{A-sec:fisher} brings geometry and statistics together: a family of probability distributions is a manifold, and the Fisher information of Lecture~4 is a Riemannian metric on it. This explains the Cram\'er--Rao bound geometrically, shows that the distributions on finitely many outcomes form a piece of a sphere and the Gaussians a hyperbolic plane, and leads to the natural gradient.
 \end{itemize}
 We use the notation of Lecture~3: vectors in $\mathbb{R}^n$ are bold, and $\norm{\cdot}$ is the Euclidean norm unless we say otherwise. Elements of general vector spaces, such as functions, are written in normal font.
 
@@ -1175,6 +1176,173 @@ So an optimization problem over an infinite-dimensional space of functions reduc
     \item \textbf{Neural operators.} Some learning problems map functions to functions, for example the initial condition of a differential equation to the solution at a later time. Neural operators learn such maps between infinite-dimensional spaces, for example by acting on the Fourier coefficients of their inputs (Example~\ref{A-ex:fourier}).
 \end{itemize}
 
+\section{Statistical Manifolds and the Fisher Information Metric}\label{A-sec:fisher}
+
+A family of probability distributions $p(x \mid \boldsymbol{\theta})$, such as the Gaussians $\mathcal{N}(\mu, \sigma^2)$, is a space of distributions with coordinates $\boldsymbol{\theta}$. In Lecture~4, the Fisher information measured how much one observation tells us about $\boldsymbol{\theta}$, and it bounded the variance of unbiased estimators (Theorem~\ref{L4-thm:cramer-rao}). In this section, we see that it is a Riemannian metric: it measures lengths, distances and angles on the family, in a way that does not depend on the parametrization. This is the starting point of information geometry, which goes back to C.~R.~Rao (1945), and was developed by N.~Chentsov and S.~Amari. It explains why the space of distributions on finitely many outcomes is a piece of a sphere, why the Gaussian family is a hyperbolic plane, and which gradient descent is the natural one for statistical models.
+
+\subsection{Riemannian metrics}
+
+On a submanifold of $\mathbb{R}^n$, the tangent spaces inherit the dot product of $\mathbb{R}^n$ (Section~\ref{A-sec:manifolds}). In general, a metric is a choice of an inner product on every tangent space. We only need it in coordinates, i.e., on open subsets of $\mathbb{R}^d$, whose tangent space at every point is $\mathbb{R}^d$.
+
+\begin{definition}[Riemannian metric]\label{A-def:riemannian-metric}
+    Let $\Theta \subseteq \mathbb{R}^d$ be open. A Riemannian metric on $\Theta$ is a smooth map $\boldsymbol{\theta} \mapsto g(\boldsymbol{\theta})$ from $\Theta$ to the symmetric positive definite $d \times d$ matrices. It gives every tangent space $T_{\boldsymbol{\theta}}\Theta = \mathbb{R}^d$ the inner product $\ip{\mathbf{u}}{\mathbf{v}}_{\boldsymbol{\theta}} = \mathbf{u}^\top g(\boldsymbol{\theta})\mathbf{v}$. The length of a smooth curve $\boldsymbol{\gamma}: [a, b] \to \Theta$ is
+    \[L(\boldsymbol{\gamma}) = \int_a^b \sqrt{\boldsymbol{\gamma}'(t)^\top g(\boldsymbol{\gamma}(t))\,\boldsymbol{\gamma}'(t)}\, dt,\]
+    and the distance $d(\boldsymbol{\theta}, \boldsymbol{\theta}')$ is the infimum of the lengths of the smooth curves from $\boldsymbol{\theta}$ to $\boldsymbol{\theta}'$.
+\end{definition}
+
+Physicists write the metric as the length element $ds^2 = \sum_{i,j} g_{ij}(\boldsymbol{\theta})\, d\theta_i\, d\theta_j$, which records the squared length $\mathbf{u}^\top g\mathbf{u}$ of a small step $\mathbf{u}$. The Euclidean metric is $g = I$.
+
+\begin{example}[Induced metrics and the hyperbolic plane]\label{A-ex:induced-metric}
+    \begin{enumerate}
+        \item Let $\boldsymbol{\psi}: \Theta \to \mathbb{R}^n$ be smooth with injective derivatives $D\boldsymbol{\psi}(\boldsymbol{\theta})$, a parametrization of a surface or of a submanifold. The curve $\boldsymbol{\psi} \circ \boldsymbol{\gamma}$ has the velocity $D\boldsymbol{\psi}\,\boldsymbol{\gamma}'$ by the chain rule, so its Euclidean length is the length of $\boldsymbol{\gamma}$ in the metric $g = D\boldsymbol{\psi}^\top D\boldsymbol{\psi}$, which is positive definite since $D\boldsymbol{\psi}$ is injective (Lecture~2). This is the metric that the submanifold inherits from $\mathbb{R}^n$, in the coordinates $\boldsymbol{\theta}$. For the unit sphere in spherical coordinates, $\boldsymbol{\psi}(\vartheta, \varphi) = (\sin\vartheta\cos\varphi, \sin\vartheta\sin\varphi, \cos\vartheta)$, it is $ds^2 = d\vartheta^2 + \sin^2\vartheta\, d\varphi^2$.
+        \item The upper half-plane $\{(x, y) : y > 0\}$ with $ds^2 = \frac{dx^2 + dy^2}{y^2}$ is the Poincar\'e model of the hyperbolic plane. Near the boundary $y = 0$, distances become huge: the vertical segment from $(0, y_1)$ to $(0, y_2)$ has the length $\int_{y_1}^{y_2}\frac{dy}{y} = \log\frac{y_2}{y_1}$, and one can show that it is the shortest curve between its endpoints, while the horizontal segment from $(0, y)$ to $(1, y)$ has the length $\frac{1}{y}$.
+    \end{enumerate}
+\end{example}
+
+\begin{proposition}[Change of coordinates]\label{A-prop:metric-coordinates}
+    Let $g$ be a Riemannian metric on $\Theta$, let $\boldsymbol{\phi}: H \to \Theta$ be a diffeomorphism of open sets (new coordinates $\boldsymbol{\eta}$ with $\boldsymbol{\theta} = \boldsymbol{\phi}(\boldsymbol{\eta})$), and let
+    \[\tilde g(\boldsymbol{\eta}) = D\boldsymbol{\phi}(\boldsymbol{\eta})^\top g(\boldsymbol{\phi}(\boldsymbol{\eta}))\,D\boldsymbol{\phi}(\boldsymbol{\eta}).\]
+    Then $\tilde g$ is a Riemannian metric on $H$, and $L_{\tilde g}(\boldsymbol{\gamma}) = L_g(\boldsymbol{\phi} \circ \boldsymbol{\gamma})$ for every smooth curve $\boldsymbol{\gamma}$ in $H$. So both metrics describe the same lengths and distances, in different coordinates.
+\end{proposition}
+
+\begin{proof}
+    $\tilde g$ is smooth and symmetric, and positive definite since $D\boldsymbol{\phi}$ is invertible. By the chain rule, $(\boldsymbol{\phi} \circ \boldsymbol{\gamma})' = D\boldsymbol{\phi}(\boldsymbol{\gamma})\boldsymbol{\gamma}'$, so the integrands of the two lengths agree: $(D\boldsymbol{\phi}\,\boldsymbol{\gamma}')^\top g\,(D\boldsymbol{\phi}\,\boldsymbol{\gamma}') = \boldsymbol{\gamma}'^\top\tilde g\,\boldsymbol{\gamma}'$.
+\end{proof}
+
+So at every point, the matrix of the metric changes like the matrix of a bilinear form, $A' = P^\top AP$ with $P = D\boldsymbol{\phi}$ (Subsection~\ref{L1-subsec:tensor-basis-change}): a Riemannian metric is a field of symmetric tensors of type $(0, 2)$, and this transformation rule is what makes it a geometric object rather than an array of numbers.
+
+\subsection{The Fisher information metric}
+
+Let $\Theta \subseteq \mathbb{R}^d$ be open, and let $p(x \mid \boldsymbol{\theta})$, $\boldsymbol{\theta} \in \Theta$, be densities or pmfs on a common set of values. We assume that $p(x \mid \boldsymbol{\theta}) > 0$ exactly for $x$ in a set $\mathcal{X}$ that does not depend on $\boldsymbol{\theta}$, that $\log p(x \mid \boldsymbol{\theta})$ is three times continuously differentiable in $\boldsymbol{\theta}$, and that the integrals (or sums) over $x$ below may be differentiated under the integral sign, as in Lecture~4. The score is the gradient of the log-likelihood of one observation,
+\[\mathbf{s}(x; \boldsymbol{\theta}) = \nabla_{\boldsymbol{\theta}}\log p(x \mid \boldsymbol{\theta}) \in \mathbb{R}^d.\]
+
+\begin{definition}[Fisher information metric]\label{A-def:fisher-metric}
+    The Fisher information matrix is $g(\boldsymbol{\theta}) = \E_{\boldsymbol{\theta}}\big[\mathbf{s}(X; \boldsymbol{\theta})\mathbf{s}(X; \boldsymbol{\theta})^\top\big]$, i.e., $g_{ij}(\boldsymbol{\theta}) = \E_{\boldsymbol{\theta}}\big[\partial_i\log p(X \mid \boldsymbol{\theta})\,\partial_j\log p(X \mid \boldsymbol{\theta})\big]$. The family is a regular statistical model if different parameters give different distributions, and for every $\boldsymbol{\theta}$, the scores $\partial_1\log p, \ldots, \partial_d\log p$ are linearly independent functions of $x$ on $\mathcal{X}$. Then $g$ is the Fisher information metric, and the family with this metric is a statistical manifold.
+\end{definition}
+
+\begin{proposition}\label{A-prop:fisher}
+    \begin{enumerate}
+        \item $\E_{\boldsymbol{\theta}}[\mathbf{s}] = \mathbf{0}$, so $g(\boldsymbol{\theta}) = \Cov_{\boldsymbol{\theta}}(\mathbf{s})$, and $g(\boldsymbol{\theta}) = -\E_{\boldsymbol{\theta}}\big[\nabla^2_{\boldsymbol{\theta}}\log p(X \mid \boldsymbol{\theta})\big]$.
+        \item $g(\boldsymbol{\theta})$ is symmetric positive semidefinite, and it is positive definite if and only if the scores are linearly independent. So for a regular model, $g$ is a Riemannian metric on $\Theta$.
+        \item For $N$ independent observations, the Fisher information matrix is $Ng(\boldsymbol{\theta})$.
+        \item (Invariance.) If $\boldsymbol{\theta} = \boldsymbol{\phi}(\boldsymbol{\eta})$ is a change of parameters as in Proposition~\ref{A-prop:metric-coordinates}, then the Fisher matrix of the family $p(x \mid \boldsymbol{\phi}(\boldsymbol{\eta}))$ is $D\boldsymbol{\phi}^\top g\,D\boldsymbol{\phi}$. So the Fisher metric is the same geometric object in all parametrizations.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    \begin{enumerate}
+        \item Differentiating $\int p(x \mid \boldsymbol{\theta})\, dx = 1$ gives $0 = \int \partial_ip\, dx = \int s_i\,p\, dx = \E[s_i]$. Differentiating $\int s_i\,p\, dx = 0$ once more gives $0 = \int (\partial_js_i)\,p\, dx + \int s_i\,\partial_jp\, dx = \E[\partial_j\partial_i\log p] + \E[s_is_j]$.
+        \item $\mathbf{v}^\top g\mathbf{v} = \E[(\mathbf{v}^\top\mathbf{s})^2] \geq 0$, with equality if and only if $\mathbf{v}^\top\mathbf{s} = \sum_i v_is_i$ is $0$ with probability $1$. Smoothness follows from the assumptions on $p$.
+        \item The log-likelihood of independent observations is the sum of their log-likelihoods, so the score is the sum of $N$ independent scores with mean $\mathbf{0}$ and covariance matrix $g$, and their covariance matrices add up.
+        \item By the chain rule (Corollary~\ref{L3-cor:chain-special}), the new score is $\tilde{\mathbf{s}} = D\boldsymbol{\phi}^\top\mathbf{s}$, so $\E[\tilde{\mathbf{s}}\tilde{\mathbf{s}}^\top] = D\boldsymbol{\phi}^\top\E[\mathbf{s}\mathbf{s}^\top]D\boldsymbol{\phi}$. \qedhere
+    \end{enumerate}
+\end{proof}
+
+\begin{example}[Bernoulli and Gaussian families]\label{A-ex:fisher-gaussian}
+    \begin{enumerate}
+        \item For Bernoulli$(\theta)$, $0 < \theta < 1$, the score is $\frac{x}{\theta} - \frac{1 - x}{1 - \theta}$, and $g(\theta) = \frac{1}{\theta(1 - \theta)}$, as in Lecture~4. The distributions near $\theta = 0$ and $\theta = 1$ are far apart: changing $\theta$ from $0.01$ to $0.1$ is much easier to detect from data than changing it from $0.5$ to $0.59$.
+        \item For $\mathcal{N}(\mu, \sigma^2)$ with $\boldsymbol{\theta} = (\mu, \sigma)$, $\sigma > 0$: $\log p = -\log\sigma - \frac{(x - \mu)^2}{2\sigma^2} + \text{const}$, and with $Z = \frac{X - \mu}{\sigma}$, the scores are $s_\mu = \frac{Z}{\sigma}$ and $s_\sigma = \frac{Z^2 - 1}{\sigma}$. Since $\E[Z^2] = 1$, $\E[Z^3] = 0$ and $\E[(Z^2 - 1)^2] = 2$,
+        \[g(\mu, \sigma) = \frac{1}{\sigma^2}\begin{pmatrix} 1 & 0 \\ 0 & 2 \end{pmatrix}, \qquad ds^2 = \frac{d\mu^2 + 2\,d\sigma^2}{\sigma^2}.\]
+        With $u = \frac{\mu}{\sqrt 2}$, this is $ds^2 = 2\,\frac{du^2 + d\sigma^2}{\sigma^2}$, twice the metric of the hyperbolic half-plane of Example~\ref{A-ex:induced-metric}: the Gaussian family is a hyperbolic plane. A shift of the mean by $\Delta\mu$ has the length $\frac{|\Delta\mu|}{\sigma}$, so it is easy to detect if $\sigma$ is small, and the distance between $\mathcal{N}(\mu, \sigma_1^2)$ and $\mathcal{N}(\mu, \sigma_2^2)$ is $\sqrt{2}\,|\log\frac{\sigma_2}{\sigma_1}|$: only the ratio of the standard deviations matters.
+    \end{enumerate}
+\end{example}
+
+\begin{example}[Exponential families and dual coordinates]\label{A-ex:fisher-expfam}
+    For an exponential family $p_{\boldsymbol{\eta}}(x) = h(x)e^{\boldsymbol{\eta}^\top T(x) - A(\boldsymbol{\eta})}$ (Definition~\ref{L4-def:exp-family}), the score is $\mathbf{s} = T(x) - \nabla A(\boldsymbol{\eta})$, and by Proposition~\ref{L4-prop:log-partition},
+    \[g(\boldsymbol{\eta}) = \Cov_{\boldsymbol{\eta}}(T(X)) = \nabla^2 A(\boldsymbol{\eta}):\]
+    the Fisher metric is the Hessian of the convex log-partition function. The expectation parameters $\boldsymbol{\mu} = \nabla A(\boldsymbol{\eta}) = \E_{\boldsymbol{\eta}}[T(X)]$ give other coordinates (where $\boldsymbol{\eta} \mapsto \boldsymbol{\mu}$ is a diffeomorphism), with $D\boldsymbol{\eta} = (D\boldsymbol{\mu})^{-1} = g^{-1}$, so by Proposition~\ref{A-prop:fisher}(4), the metric in the $\boldsymbol{\mu}$ coordinates is $g^{-1}gg^{-1} = g^{-1}$. It is again a Hessian: the convex conjugate $A^*(\boldsymbol{\mu}) = \boldsymbol{\eta}^\top\boldsymbol{\mu} - A(\boldsymbol{\eta})$ (Definition~\ref{L3-def:conjugate}) has $\nabla A^*(\boldsymbol{\mu}) = \boldsymbol{\eta} + D\boldsymbol{\eta}^\top(\boldsymbol{\mu} - \nabla A(\boldsymbol{\eta})) = \boldsymbol{\eta}$, so $\nabla^2A^*(\boldsymbol{\mu}) = D\boldsymbol{\eta} = g^{-1}$. For Poisson$(\lambda)$, $A(\eta) = e^\eta$ and $g(\eta) = e^\eta = \lambda$ in the natural parameter, while in the mean parameter $\lambda$, the metric is $\frac{1}{\lambda}$, the Fisher information of Lecture~4, and $A^*(\lambda) = \lambda\log\lambda - \lambda$. This pair of convex potentials, related by the Legendre transform, is the ``dually flat'' structure of exponential families studied by Amari.
+\end{example}
+
+\subsection{The Fisher metric and the Kullback--Leibler divergence}
+
+The KL divergence (Definition~\ref{L4-def:entropy}) is not a distance: it is not symmetric. But for nearby distributions, it is half the squared Fisher length of the step between them.
+
+\begin{theorem}\label{A-thm:fisher-kl}
+    For a regular statistical model, $\KL\big(p_{\boldsymbol{\theta}} \,\|\, p_{\boldsymbol{\theta} + \mathbf{h}}\big) = \frac{1}{2}\mathbf{h}^\top g(\boldsymbol{\theta})\mathbf{h} + o(\norm{\mathbf{h}}^2)$ as $\mathbf{h} \to \mathbf{0}$.
+\end{theorem}
+
+\begin{proof}
+    Let $f(\mathbf{h}) = \KL(p_{\boldsymbol{\theta}} \,\|\, p_{\boldsymbol{\theta} + \mathbf{h}}) = \E_{\boldsymbol{\theta}}\big[\log p(X \mid \boldsymbol{\theta}) - \log p(X \mid \boldsymbol{\theta} + \mathbf{h})\big]$. Then $f(\mathbf{0}) = 0$, and differentiating under the integral sign, $\nabla f(\mathbf{0}) = -\E_{\boldsymbol{\theta}}[\mathbf{s}] = \mathbf{0}$ and $\nabla^2 f(\mathbf{0}) = -\E_{\boldsymbol{\theta}}[\nabla^2\log p(X \mid \boldsymbol{\theta})] = g(\boldsymbol{\theta})$ by Proposition~\ref{A-prop:fisher}(1). Taylor's theorem (Theorem~\ref{L3-thm:taylor2}) gives the claim.
+\end{proof}
+
+The same holds with the two arguments of $\KL$ exchanged (Exercise~\ref{A-exer:kl-reverse}): the asymmetry of the KL divergence only appears in the third-order terms. For two Gaussians with the same variance, $\KL(\mathcal{N}(\mu, \sigma^2) \,\|\, \mathcal{N}(\mu + \delta, \sigma^2)) = \frac{\delta^2}{2\sigma^2}$ (Proposition~\ref{L4-prop:kl-gaussian}) is exactly $\frac{1}{2}g_{\mu\mu}\delta^2$. So the Fisher metric measures how well nearby distributions can be told apart from data, and the Fisher distance is the length of a path of distributions, built from such infinitesimal steps.
+
+\subsection{The probability simplex is a sphere}
+
+The distributions on finitely many outcomes form the most basic statistical manifold, and its geometry is completely explicit.
+
+\begin{theorem}\label{A-thm:simplex-sphere}
+    Let $\Delta_n^\circ = \{\mathbf{p} \in \mathbb{R}^n : p_k > 0, \ p_1 + \cdots + p_n = 1\}$ be the family of distributions on $\{1, \ldots, n\}$ with positive probabilities, with the coordinates $(p_1, \ldots, p_{n-1})$.
+    \begin{enumerate}
+        \item A curve $\mathbf{p}(t)$ in $\Delta_n^\circ$ has the squared speed $\sum_{k=1}^n \frac{p_k'(t)^2}{p_k(t)}$ in the Fisher metric.
+        \item The map $\Phi(\mathbf{p}) = 2\sqrt{\mathbf{p}} = (2\sqrt{p_1}, \ldots, 2\sqrt{p_n})$ is a bijection from $\Delta_n^\circ$ onto the open part $S_+ = \{\mathbf{y} \in \mathbb{R}^n : \norm{\mathbf{y}} = 2, \ y_k > 0 \text{ for all } k\}$ of the sphere of radius $2$, and it preserves the lengths of curves.
+        \item The Fisher distance is $d(\mathbf{p}, \mathbf{q}) = 2\arccos\big(\sum_{k=1}^n \sqrt{p_kq_k}\big)$.
+    \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+    \begin{enumerate}
+        \item With $\theta_i = p_i$ for $i < n$ and $p_n = 1 - \sum_{i<n}\theta_i$, the score of the outcome $k$ has the entries $\partial_i\log p_k = \frac{\delta_{ik}}{p_k}$ for $k < n$ and $\partial_i\log p_n = -\frac{1}{p_n}$, so $g_{ij} = \sum_k p_k\,\partial_i\log p_k\,\partial_j\log p_k = \frac{\delta_{ij}}{p_i} + \frac{1}{p_n}$. For the velocity $\mathbf{u} = \boldsymbol{\theta}'$, we have $p_n' = -\sum_i u_i$, and $\mathbf{u}^\top g\mathbf{u} = \sum_{i<n}\frac{u_i^2}{p_i} + \frac{(\sum_i u_i)^2}{p_n} = \sum_k \frac{p_k'^2}{p_k}$.
+        \item $\norm{\Phi(\mathbf{p})}^2 = 4\sum_k p_k = 4$, and $\mathbf{y} \mapsto \frac{1}{4}(y_1^2, \ldots, y_n^2)$ is the inverse map. Since $\frac{d}{dt}2\sqrt{p_k} = \frac{p_k'}{\sqrt{p_k}}$, the Euclidean squared speed of $\Phi \circ \mathbf{p}$ is $\sum_k \frac{p_k'^2}{p_k}$, the Fisher squared speed of $\mathbf{p}$ by part 1. So the lengths agree.
+        \item We use without proof that on a sphere of radius $R$, every curve between two points has at least the length $R\alpha$ of the great-circle arc between them, where $\alpha$ is the angle between the two points as vectors. Let $\mathbf{y} = \Phi(\mathbf{p})$ and $\mathbf{z} = \Phi(\mathbf{q})$, with $\cos\alpha = \frac{\mathbf{y}^\top\mathbf{z}}{4} = \sum_k\sqrt{p_kq_k}$. By part 2, every curve from $\mathbf{p}$ to $\mathbf{q}$ has a Fisher length of at least $2\alpha$. The great-circle arc $\frac{\sin((1 - t)\alpha)\,\mathbf{y} + \sin(t\alpha)\,\mathbf{z}}{\sin\alpha}$, $0 \leq t \leq 1$ (for $0 < \alpha < \pi$; for $\alpha = 0$, $\mathbf{p} = \mathbf{q}$), has positive entries, since $\mathbf{y}$ and $\mathbf{z}$ do, so it stays in $S_+$, and $\Phi^{-1}$ of it is a curve from $\mathbf{p}$ to $\mathbf{q}$ of Fisher length exactly $2\alpha$. \qedhere
+    \end{enumerate}
+\end{proof}
+
+The number $\sum_k \sqrt{p_kq_k}$ is the Bhattacharyya coefficient of $\mathbf{p}$ and $\mathbf{q}$, and $2\arccos$ of it is the Fisher--Rao distance. For $n = 2$, i.e., for Bernoulli distributions, $\sqrt{p}\sqrt{q} + \sqrt{1 - p}\sqrt{1 - q} = \cos(a - b)$ with $\sqrt{p} = \sin a$ and $\sqrt{q} = \sin b$, so
+\[d\big(\text{Bernoulli}(p), \text{Bernoulli}(q)\big) = 2\big|\arcsin\sqrt{p} - \arcsin\sqrt{q}\big|,\]
+which is also $\int_p^q \frac{d\theta}{\sqrt{\theta(1 - \theta)}}$ with the metric of Example~\ref{A-ex:fisher-gaussian}. The distances from $0.01$ to $0.1$ and from $0.5$ to $0.59$ are $0.443$ and $0.181$, and the whole family, from $\theta = 0$ to $\theta = 1$, has the length $\pi$, a quarter of a circle of radius $2$. In general, $\Delta_n^\circ$ has the diameter $\pi$: the distributions concentrated on different outcomes are at the distance $2 \cdot \frac{\pi}{2}$ in the limit.
+
+\begin{remark}[Invariant priors and quantum states]
+    The Fisher metric gives every statistical manifold a volume element $\sqrt{\det g(\boldsymbol{\theta})}\, d\boldsymbol{\theta}$, which, unlike $d\boldsymbol{\theta}$, does not depend on the parametrization, since $\sqrt{\det\tilde g} = |\det D\boldsymbol{\phi}|\sqrt{\det g}$ is exactly the change of variables of densities (Exercise~\ref{A-exer:jeffreys}). Normalized, it is Jeffreys' prior of Bayesian statistics (Section~\ref{L4-sec:bayesian}): for Bernoulli, $\frac{1}{\sqrt{\theta(1 - \theta)}}$, the Beta$(\frac{1}{2}, \frac{1}{2})$ distribution, which is the uniform distribution on the quarter circle. The square-root map of Theorem~\ref{A-thm:simplex-sphere} is also the bridge to quantum mechanics: a pure state of an $n$-level system is a unit vector of amplitudes $\boldsymbol{\psi} \in \mathbb{C}^n$, up to a phase, with the outcome probabilities $p_k = |\psi_k|^2$, i.e., a point of the complex projective space $\mathbb{CP}^{n-1}$; its Fubini--Study metric, the K\"ahler metric of $\mathbb{CP}^{n-1}$, agrees up to a constant factor with the Fisher metric on the real amplitudes $\psi_k = \sqrt{p_k}$.
+\end{remark}
+
+\subsection{The Cram\'er--Rao bound in several parameters}
+
+The Fisher metric also bounds the precision of estimators in every direction of the parameter space.
+
+\begin{theorem}[Cram\'er--Rao bound]\label{A-thm:cramer-rao-multi}
+    Let $\mathbf{T}(X)$ be an unbiased estimator of $\boldsymbol{\theta}$ in a regular model, i.e., $\E_{\boldsymbol{\theta}}[\mathbf{T}] = \boldsymbol{\theta}$ for all $\boldsymbol{\theta}$, with finite second moments, such that $\int \mathbf{T}(x)p(x \mid \boldsymbol{\theta})\, dx$ may be differentiated under the integral sign. Then $\Cov_{\boldsymbol{\theta}}(\mathbf{T}) - g(\boldsymbol{\theta})^{-1}$ is positive semidefinite. In particular, $\Var(\mathbf{v}^\top\mathbf{T}) \geq \mathbf{v}^\top g(\boldsymbol{\theta})^{-1}\mathbf{v}$ for every $\mathbf{v} \in \mathbb{R}^d$, and for $N$ independent observations, $g$ is replaced by $Ng$.
+\end{theorem}
+
+\begin{proof}
+    Differentiating $\int T_i(x)p(x \mid \boldsymbol{\theta})\, dx = \theta_i$ with respect to $\theta_j$ gives $\int T_i\,s_j\,p\, dx = \delta_{ij}$, i.e., $\E[T_is_j] = \delta_{ij}$, and since $\E[s_j] = 0$, $\Cov(\mathbf{T}, \mathbf{s}) = I$. The random vector $(\mathbf{T}, \mathbf{s}) \in \mathbb{R}^{2d}$ has the covariance matrix $\begin{pmatrix} C & I \\ I & g \end{pmatrix}$ with $C = \Cov(\mathbf{T})$, which is positive semidefinite (Proposition~\ref{L4-prop:covariance-matrix}). Evaluating its quadratic form at $(\mathbf{u}, -g^{-1}\mathbf{u})$ gives $\mathbf{u}^\top C\mathbf{u} - 2\mathbf{u}^\top g^{-1}\mathbf{u} + \mathbf{u}^\top g^{-1}gg^{-1}\mathbf{u} = \mathbf{u}^\top(C - g^{-1})\mathbf{u} \geq 0$; $C - g^{-1}$ is the Schur complement of $g$ (Lecture~1). The last statement follows from Proposition~\ref{A-prop:fisher}(3).
+\end{proof}
+
+For $d = 1$, this is Theorem~\ref{L4-thm:cramer-rao}. The maximum likelihood estimator attains the bound asymptotically: under regularity conditions, $\sqrt{N}(\hat{\boldsymbol{\theta}} - \boldsymbol{\theta}) \to \mathcal{N}(\mathbf{0}, g(\boldsymbol{\theta})^{-1})$ (the multiparameter version of Theorem~\ref{L4-thm:mle-asymptotic}). In the language of tensors, $g$ is of type $(0, 2)$, while $g^{-1}$, like a covariance matrix of parameters, is of type $(2, 0)$ and transforms with $D\boldsymbol{\phi}^{-1}$, so the bound holds in every parametrization.
+
+\subsection{The natural gradient}
+
+Gradient descent $\boldsymbol{\theta} - \alpha\nabla L(\boldsymbol{\theta})$ moves in the direction of steepest descent for the Euclidean norm of the parameters, which depends on the parametrization: fitting $\sigma$ or $\log\sigma$ gives different paths through the same family of distributions. Steepest descent with respect to the Fisher metric does not have this defect.
+
+\begin{proposition}[Natural gradient]\label{A-prop:natural-gradient}
+    Let $g$ be a Riemannian metric on $\Theta$, let $L: \Theta \to \mathbb{R}$ be differentiable at $\boldsymbol{\theta}$ with $\nabla L(\boldsymbol{\theta}) \neq \mathbf{0}$, and let $\tilde\nabla L = g(\boldsymbol{\theta})^{-1}\nabla L(\boldsymbol{\theta})$ be the natural gradient.
+    \begin{enumerate}
+        \item Among all steps $\mathbf{h}$ with $\mathbf{h}^\top g(\boldsymbol{\theta})\mathbf{h} = \varepsilon^2$, the linear approximation $\nabla L(\boldsymbol{\theta})^\top\mathbf{h}$ of $L(\boldsymbol{\theta} + \mathbf{h}) - L(\boldsymbol{\theta})$ is smallest exactly for $\mathbf{h} = -\varepsilon\tilde\nabla L/\norm{\tilde\nabla L}_g$, where $\norm{\mathbf{v}}_g^2 = \mathbf{v}^\top g\mathbf{v}$.
+        \item (Invariance.) For new coordinates $\boldsymbol{\theta} = \boldsymbol{\phi}(\boldsymbol{\eta})$, with the metric $\tilde g$ of Proposition~\ref{A-prop:metric-coordinates} and $\tilde L = L \circ \boldsymbol{\phi}$, the natural gradients correspond: $D\boldsymbol{\phi}\,\tilde g^{-1}\nabla\tilde L = g^{-1}\nabla L$.
+        \item For an exponential family with the Fisher metric and the average negative log-likelihood $L(\boldsymbol{\eta}) = A(\boldsymbol{\eta}) - \boldsymbol{\eta}^\top\bar T$ of data with the mean statistic $\bar T = \frac{1}{N}\sum_i T(x_i)$, the natural gradient step $\boldsymbol{\eta} - \tilde\nabla L$ is the step of Newton's method.
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    \begin{enumerate}
+        \item $\nabla L^\top\mathbf{h} = \ip{g^{-1}\nabla L}{\mathbf{h}}_g \geq -\norm{\tilde\nabla L}_g\norm{\mathbf{h}}_g = -\varepsilon\norm{\tilde\nabla L}_g$ by the Cauchy--Schwarz inequality for the inner product $\ip{\mathbf{u}}{\mathbf{v}}_g = \mathbf{u}^\top g\mathbf{v}$ (Lecture~2), with equality if and only if $\mathbf{h}$ is a negative multiple of $\tilde\nabla L$.
+        \item By the chain rule, $\nabla\tilde L = D\boldsymbol{\phi}^\top\nabla L$, so $D\boldsymbol{\phi}\,\tilde g^{-1}\nabla\tilde L = D\boldsymbol{\phi}\,(D\boldsymbol{\phi}^\top gD\boldsymbol{\phi})^{-1}D\boldsymbol{\phi}^\top\nabla L = g^{-1}\nabla L$.
+        \item $\nabla L = \nabla A(\boldsymbol{\eta}) - \bar T$ and $\nabla^2L = \nabla^2A(\boldsymbol{\eta}) = g(\boldsymbol{\eta})$ by Example~\ref{A-ex:fisher-expfam}, so $\boldsymbol{\eta} - g^{-1}\nabla L = \boldsymbol{\eta} - (\nabla^2L)^{-1}\nabla L$, the Newton step of Lecture~3. \qedhere
+    \end{enumerate}
+\end{proof}
+
+By part 2, a small natural gradient step moves the distribution in the same way in every parametrization; only the higher-order terms depend on the coordinates. By Theorem~\ref{A-thm:fisher-kl}, the constraint $\mathbf{h}^\top g\mathbf{h} \leq \varepsilon^2$ in part 1 is, to second order, the trust region $\KL(p_{\boldsymbol{\theta}} \,\|\, p_{\boldsymbol{\theta} + \mathbf{h}}) \leq \frac{\varepsilon^2}{2}$. For example, for $N$ Bernoulli observations with the fraction $\hat p$ of ones and the average negative log-likelihood $L(\theta) = -\hat p\log\theta - (1 - \hat p)\log(1 - \theta)$, we have $L'(\theta) = \frac{\theta - \hat p}{\theta(1 - \theta)}$, which explodes near $0$ and $1$, while the natural gradient is $\theta(1 - \theta)L'(\theta) = \theta - \hat p$: one natural gradient step with step size $1$ lands exactly on the maximum likelihood estimate $\hat p$. For Gaussians, Exercise~\ref{A-exer:natural-gaussian} shows that natural gradient descent in $(\mu, \sigma)$ finds $\bar x$ in one step, and then computes $\hat\sigma$ by the Babylonian method for square roots.
+
+\begin{remark}[Information geometry in machine learning]
+    \begin{itemize}
+        \item In reinforcement learning, TRPO and natural policy gradient methods maximize the improvement of a policy subject to a bound on the KL divergence between the old and the new policy, i.e., they take natural gradient steps in the space of policies; PPO approximates this with a clipped objective.
+        \item In deep learning, the Fisher matrix of a network with millions of parameters cannot be inverted, but it can be approximated. K-FAC approximates it by Kronecker products of small matrices, one per layer (the tensor products of Lecture~1), and the denominators of RMSProp and Adam are built from squared gradients, which can be read as a crude diagonal approximation of the (empirical) Fisher matrix.
+        \item Variational inference, EM and mirror descent have natural formulations in the dual coordinates $\boldsymbol{\eta}$ and $\boldsymbol{\mu}$ of exponential families (Example~\ref{A-ex:fisher-expfam}).
+        \item By a theorem of Chentsov (1972), which we do not prove, the Fisher metric is, up to a constant factor, the only Riemannian metric on the families of distributions on finite sets that is invariant under sufficient statistics (in a precise sense). In this sense, it is the canonical geometry of statistics.
+        \item Other geometries on distributions exist and are useful as well: optimal transport gives the Wasserstein distances, which, unlike the Fisher metric, take the geometry of the space of outcomes into account. They are used, for example, for Wasserstein GANs.
+    \end{itemize}
+\end{remark}
+
 \section*{Key Takeaways}
 \addcontentsline{toc}{section}{Key Takeaways}
 \begin{itemize}[leftmargin=*]
@@ -1193,6 +1361,7 @@ So an optimization problem over an infinite-dimensional space of functions reduc
     \item In a Hilbert space, every closed convex set has a unique closest point (projection theorem), every bounded linear functional is an inner product with a fixed vector (Riesz), and an orthonormal basis gives the expansion $x = \sum_k \ip{x}{e_k}e_k$ with Parseval's identity, such as Fourier series. Conditional expectations are projections in $L^2$, and the Riesz representation theorem proves the Radon--Nikodym theorem.
     \item A compact self-adjoint operator has orthonormal eigenvectors with eigenvalues that tend to $0$, and it is diagonal in them. For a continuous positive semidefinite kernel, Mercer's theorem gives $k(x, y) = \sum_k \lambda_ke_k(x)e_k(y)$, and the Karhunen--Lo\`eve expansion of a random function, such as Brownian motion, is its principal component analysis.
     \item In an RKHS, evaluation is continuous, $f(x) = \ip{f}{k_x}$, and every positive semidefinite kernel has one. By the representer theorem, regularized learning in an RKHS reduces to $N$ coefficients; kernel ridge regression gives $\boldsymbol{\alpha} = (K + \lambda I)^{-1}\mathbf{y}$, the posterior mean of a Gaussian process. Networks with one hidden layer are dense in the continuous functions (Cybenko).
+    \item A Riemannian metric is a smooth choice of inner products $\mathbf{u}^\top g(\boldsymbol{\theta})\mathbf{v}$ on the tangent spaces; it changes like a bilinear form, $\tilde g = D\boldsymbol{\phi}^\top gD\boldsymbol{\phi}$, so lengths do not depend on the coordinates. The Fisher information $g_{ij} = \E[\partial_i\log p\,\partial_j\log p] = -\E[\partial_i\partial_j\log p]$ is such a metric on a regular statistical model, and $\KL(p_{\boldsymbol{\theta}} \,\|\, p_{\boldsymbol{\theta} + \mathbf{h}}) \approx \frac{1}{2}\mathbf{h}^\top g\mathbf{h}$. For exponential families, $g = \nabla^2A$ in the natural parameters and $g^{-1} = \nabla^2A^*$ in the mean parameters. The map $\mathbf{p} \mapsto 2\sqrt{\mathbf{p}}$ makes the probability simplex a piece of the sphere of radius $2$, with the Fisher--Rao distance $2\arccos\sum_k\sqrt{p_kq_k}$; the Gaussians $\mathcal{N}(\mu, \sigma^2)$ form a hyperbolic plane, $ds^2 = \frac{d\mu^2 + 2\,d\sigma^2}{\sigma^2}$. Unbiased estimators satisfy $\Cov(\mathbf{T}) \succeq g^{-1}$ (Cram\'er--Rao), and the natural gradient $g^{-1}\nabla L$ is the steepest descent direction in the Fisher metric, independent of the parametrization; for exponential families, it is Newton's method.
 \end{itemize}
 
 \section*{Exercises}
@@ -1273,6 +1442,11 @@ So an optimization problem over an infinite-dimensional space of functions reduc
     \item Check by integrating that $e_1(t) = \sqrt{2}\sin\frac{\pi t}{2}$ is an eigenfunction of the integral operator of Example~\ref{A-ex:karhunen-loeve} with the eigenvalue $\frac{4}{\pi^2}$, and that $\norm{e_1}_{L^2} = 1$.
     \item (Minimal-norm interpolation.) Let $0 < t_1 < \cdots < t_N \leq 1$ and $y_1, \ldots, y_N \in \mathbb{R}$. In the RKHS of the kernel $\min(s, t)$ on $[0, 1]$ (Example~\ref{A-ex:rkhs}), find the function $f$ with the smallest norm such that $f(t_i) = y_i$ for all $i$. (Hint: as in the proof of the representer theorem, $f = \sum_i \alpha_ik_{t_i}$.) Show that $f$ is the piecewise linear function through the points $(0, 0), (t_1, y_1), \ldots, (t_N, y_N)$, constant on $[t_N, 1]$.
     \item For the linear kernel $k(\mathbf{x}, \mathbf{y}) = \mathbf{x}^\top\mathbf{y}$, show that the prediction $\mathbf{k}_*^\top(K + \lambda I)^{-1}\mathbf{y}$ of kernel ridge regression is $\mathbf{x}_*^\top\hat{\mathbf{w}}$ with the ridge regression solution $\hat{\mathbf{w}} = (X^\top X + \lambda I)^{-1}X^\top\mathbf{y}$, where $X$ has the rows $\mathbf{x}_i^\top$. (Compare with the exercise on Gaussian processes and Bayesian linear regression in Lecture~4.)
+    \item (One-parameter families.) Compute the Fisher metric of (a) Poisson$(\lambda)$, (b) Exponential$(\lambda)$, (c) $\mathcal{N}(\mu, \sigma^2)$ with a known $\sigma$. Show that the Fisher distance between Poisson$(\lambda_1)$ and Poisson$(\lambda_2)$ is $2|\sqrt{\lambda_1} - \sqrt{\lambda_2}|$, and find the Fisher distances in (b) and (c). (In one dimension, the distance is the length of the interval between the two parameters.)
+    \item\label{A-exer:kl-reverse} Show that also $\KL(p_{\boldsymbol{\theta} + \mathbf{h}} \,\|\, p_{\boldsymbol{\theta}}) = \frac{1}{2}\mathbf{h}^\top g(\boldsymbol{\theta})\mathbf{h} + o(\norm{\mathbf{h}}^2)$. (Hint: compute the gradient and the Hessian of $\mathbf{h} \mapsto \E_{\boldsymbol{\theta} + \mathbf{h}}[\log p(X \mid \boldsymbol{\theta} + \mathbf{h}) - \log p(X \mid \boldsymbol{\theta})]$ at $\mathbf{0}$.) Check both expansions for $\KL\big(\mathcal{N}(0, \sigma^2) \,\|\, \mathcal{N}(0, \sigma^2(1 + \varepsilon)^2)\big)$ with the formula of Proposition~\ref{L4-prop:kl-gaussian}.
+    \item\label{A-exer:jeffreys} (Jeffreys' prior.) Show that $\sqrt{\det\tilde g(\boldsymbol{\eta})} = |\det D\boldsymbol{\phi}(\boldsymbol{\eta})|\sqrt{\det g(\boldsymbol{\phi}(\boldsymbol{\eta}))}$ under a change of parameters $\boldsymbol{\theta} = \boldsymbol{\phi}(\boldsymbol{\eta})$, and conclude with the change of variables formula that the prior with the density proportional to $\sqrt{\det g}$ is the same in all parametrizations. Compute it for Bernoulli$(\theta)$ (Beta$(\frac{1}{2}, \frac{1}{2})$), for the log-odds $\eta = \log\frac{\theta}{1 - \theta}$, and for $\mathcal{N}(\mu, \sigma^2)$ in the coordinates $(\mu, \sigma)$.
+    \item\label{A-exer:natural-gaussian} (Natural gradient for a Gaussian.) For data $x_1, \ldots, x_N$ with the mean $\bar x$ and $S^2 = \frac{1}{N}\sum_i (x_i - \bar x)^2$, let $L(\mu, \sigma) = \log\sigma + \frac{S^2 + (\bar x - \mu)^2}{2\sigma^2}$ be the average negative log-likelihood of $\mathcal{N}(\mu, \sigma^2)$, up to a constant. Show that the natural gradient step with step size $1$, $(\mu, \sigma) - g^{-1}\nabla L$, gives $\mu_1 = \bar x$ and $\sigma_1 = \frac{\sigma^2 + S^2 + (\bar x - \mu)^2}{2\sigma}$, so that from then on, $\sigma_{k+1} = \frac{1}{2}\big(\sigma_k + \frac{S^2}{\sigma_k}\big)$: the Babylonian method for $\sqrt{S^2}$, which is Newton's method for $\sigma^2 = S^2$. Compare with the Euclidean gradient, whose $\sigma$-component is of order $\frac{1}{\sigma^3}$ for small $\sigma$.
+    \item (The simplex.) Compute the Fisher--Rao distance between the uniform distribution on $\{1, 2, 3\}$ and $(\frac{1}{2}, \frac{1}{4}, \frac{1}{4})$, and compare it with $\sqrt{2\KL}$ in both directions. Show that the Fisher--Rao distance between two distributions on $\{1, \ldots, n\}$ is less than $\pi$, and that it tends to $\pi$ for two distributions that concentrate their mass on different outcomes.
 \end{enumerate}
 
 \section*{Programming Exercises}
@@ -1336,6 +1510,12 @@ rng = np.random.default_rng(0)
     \begin{itemize}
         \item Implement kernel ridge regression with the squared exponential kernel (Example~\ref{A-ex:kernel-ridge}), and check that it gives the posterior mean of your Gaussian process regression in the programming exercises of Lecture~4, with $\lambda = \sigma^2$. Plot the fits for $\lambda = 10^{-4}$, $10^{-2}$ and $1$.
         \item For the polynomial kernel $k(x, y) = (1 + xy)^2$ on $\mathbb{R}$, show that $k(x, y) = \boldsymbol{\phi}(x)^\top\boldsymbol{\phi}(y)$ with $\boldsymbol{\phi}(x) = (1, \sqrt{2}x, x^2)$, and check numerically that kernel ridge regression gives the same predictions as ridge regression with these features. Compare the running times of the two methods for $N = 10^2, 10^3, 10^4$ data points.
+    \end{itemize}
+
+    \item \textbf{Natural gradient and Fisher--Rao distances} (Section~\ref{A-sec:fisher}).
+    \begin{itemize}
+        \item Draw $1000$ samples from $\mathcal{N}(2, 9)$, and minimize the average negative log-likelihood $L(\mu, \sigma)$ of Exercise~\ref{A-exer:natural-gaussian} from the start $(\mu, \sigma) = (-5, 0.5)$ in four ways: gradient descent in $(\mu, \sigma)$, gradient descent in $(\mu, \log\sigma)$, and natural gradient descent in both parametrizations, with small step sizes (say $0.01$, or the largest that works). Plot the four paths in the $(\mu, \sigma)$ half-plane, on the contour lines of $L$. Which paths are nearly the same, and why (Proposition~\ref{A-prop:natural-gradient})?
+        \item Write a function for the Fisher--Rao distance of Theorem~\ref{A-thm:simplex-sphere}. For random distributions $\mathbf{p}$ on $10$ outcomes (\py{rng.dirichlet(np.ones(10))}) and small random perturbations $\mathbf{q} = \mathbf{p} + \varepsilon\mathbf{v}$ (with $\sum_k v_k = 0$), compare $d(\mathbf{p}, \mathbf{q})^2$ with $2\KL(\mathbf{p} \,\|\, \mathbf{q})$ and $2\KL(\mathbf{q} \,\|\, \mathbf{p})$ for $\varepsilon = 10^{-1}, 10^{-2}, 10^{-3}$ (Theorem~\ref{A-thm:fisher-kl}). Then compare them for distant pairs: is $\KL$ symmetric, and does it satisfy the triangle inequality?
     \end{itemize}
 \end{enumerate}
 \endgroup
