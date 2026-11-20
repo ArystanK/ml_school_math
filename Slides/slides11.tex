@@ -1,0 +1,542 @@
+\documentclass[aspectratio=1610,11pt]{beamer}
+\input{slides_preamble}
+\externaldocument[L4-]{../Lecture4/lecture4}
+\setnotes{4}
+
+\title[Lecture 11 · Statistical Inference]{Lecture 11. Statistical Inference:\\ Estimation, Testing and Bayesian Inference}
+\subtitle{Notes: Lecture 4, \S4.9, \S4.10, \S4.12, \S4.14\\ Self-study: sufficiency, exponential families and GLMs, nonparametric estimation, survival analysis, Neyman--Pearson and $\chi^2$, Gauss--Markov, multiple testing, bootstrap, \S4.11, GPs, $k$-means, PPCA, VAEs}
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+\begin{frame}{Today}
+    \begin{columns}[T]
+        \begin{column}{0.52\linewidth}
+            \begin{enumerate}\small
+                \item Estimators: bias, variance, MSE
+                \item The method of moments and maximum likelihood
+                \item Fisher information, Cram\'er--Rao, confidence intervals
+                \item Hypothesis tests, p-values, power, $t$-tests, regression
+                \item Bayesian inference, conjugate priors, MAP $=$ regularization
+                \item The ELBO and the EM algorithm
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.44\linewidth}
+            \begin{mlbox}[Used in]
+                \small
+                \begin{itemize}
+                    \item logistic regression, confidence intervals, $t$-tests (ML)
+                    \item Bayesian regularization, PyMC (ML)
+                    \item Thompson sampling (RL)
+                    \item Gaussian mixtures (ML)
+                    \item the ELBO of VAEs (DL)
+                \end{itemize}
+            \end{mlbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Probability vs statistics}
+    \small
+    \begin{itemize}
+        \item \textbf{Probability} (Lectures 9--10): the model $p(x \mid \theta)$ is known; what data will we see?
+        \item \textbf{Statistics} (today): we see the data $x_1, \ldots, x_N$; what is $\theta$, and how sure are we?
+    \end{itemize}
+    Three answers:
+    \begin{enumerate}
+        \item \textbf{Estimation}: a number $\hat\theta$ (method of moments, maximum likelihood) with an error bar (confidence interval).
+        \item \textbf{Testing}: is the data compatible with a hypothesis $H_0$ (p-values)?
+        \item \textbf{Bayesian inference}: a distribution $p(\theta \mid \text{data})$ over the parameters.
+    \end{enumerate}
+    Every training of a model is an estimation; every comparison of two models is a test; every regularizer is a prior.
+\end{frame}
+
+% ------------------------------------------------------------------ Estimation
+\topic{\secref{sec:estimation}}{Parameter estimation}
+
+\begin{frame}{Estimators, bias and variance}
+    \begin{definition}[][def:estimator]
+        \small An estimator $\hat\theta = \hat\theta(X_1, \ldots, X_N)$ is a random variable. Bias $\E[\hat\theta] - \theta$; \ $\mathrm{MSE}(\hat\theta) = \E[(\hat\theta - \theta)^2]$.
+    \end{definition}
+    \begin{proposition}[Bias--variance decomposition][prop:bias-variance]
+        \small $\mathrm{MSE}(\hat\theta) = \big(\E[\hat\theta] - \theta\big)^2 + \Var(\hat\theta)$.
+    \end{proposition}
+    \sidebyside{0.52}{%
+        \begin{example}[Shrinkage][ex:shrinkage]
+            \small $\hat\mu_c = c\bar X$: MSE $= (1 - c)^2\mu^2 + c^2\frac{\sigma^2}{N}$. For $\mu = 2$, $\sigma^2 = 16$, $N = 4$: the sample mean has MSE $4$, $\hat\mu_{1/2}$ has MSE $2$.
+        \end{example}
+        \small Some bias can pay off (James--Stein; ridge regression).
+    }{%
+        \centering\fig[0.82]{s11_bias_variance}
+    }
+\end{frame}
+
+\board[2]{Proofs: bias--variance, and the sample variance}{(1) $\hat\theta - \theta = (\hat\theta - \E\hat\theta) + (\E\hat\theta - \theta)$; the cross term has mean $0$. \\ (2) Show $\E\big[\sum_i(X_i - \bar X)^2\big] = (N - 1)\sigma^2$, so $s^2 = \frac{1}{N - 1}\sum_i(X_i - \bar X)^2$ is unbiased. Hint: $\sum_i(X_i - \bar X)^2 = \sum_i(X_i - \mu)^2 - N(\bar X - \mu)^2$.}
+
+\checkslide{bias, variance and the factor $\frac{1}{N - 1}$}{
+    \small
+    \textbf{(1)} $\E(\hat\theta - \theta)^2 = \E(\hat\theta - \E\hat\theta)^2 + 2(\E\hat\theta - \theta)\underbrace{\E(\hat\theta - \E\hat\theta)}_{= 0} + (\E\hat\theta - \theta)^2 = \Var\hat\theta + \text{bias}^2$.
+    \\[0.3em]
+    \textbf{Shrinkage} $\hat\mu_c = c\bar X$, $\mu = 2$, $\sigma^2 = 16$, $N = 4$ (so $\Var\bar X = 4$):
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{@{}lccc@{}}
+            \toprule
+            $c$ & bias$^2 = (1 - c)^2\mu^2$ & variance $= c^2 \cdot 4$ & MSE \\
+            \midrule
+            $1$ (sample mean) & $0$ & $4$ & $4$ \\
+            $\frac{1}{2}$ & $\frac{1}{4} \cdot 4 = 1$ & $\frac{1}{4} \cdot 4 = 1$ & $2$ \\
+            $0$ & $4$ & $0$ & $4$ \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    Best $c^* = \frac{\mu^2}{\mu^2 + \sigma^2/N} = \frac{4}{4 + 4} = \frac{1}{2}$, but it needs the unknown $\mu$.
+    \\[0.3em]
+    \textbf{(2)} Expand around $\mu$: $\sum_i(X_i - \bar X)^2 = \sum_i(X_i - \mu)^2 - N(\bar X - \mu)^2$; taking expectations,
+    \[\E\textstyle\sum_i(X_i - \bar X)^2 = N\sigma^2 - N\cdot\frac{\sigma^2}{N} = (N - 1)\sigma^2.\]
+    Dividing by $N$ underestimates $\sigma^2$, since $\bar X$ is fitted to the data and is closer to them than $\mu$.
+}
+
+\begin{frame}{The method of moments}
+    \begin{definition}[][def:moments]
+        \small Solve $\E_{\boldsymbol\theta}[X^j] = \frac{1}{N}\sum_ix_i^j$ for $j = 1, \ldots, k$ ($k$ parameters).
+    \end{definition}
+    \begin{example}[][ex:moments]
+        \small
+        \begin{itemize}
+            \item Exponential$(\lambda)$: $\E X = \frac{1}{\lambda}$, so $\hat\lambda = \frac{1}{\bar x}$.
+            \item Uniform$(0, \theta)$: $\hat\theta = 2\bar x$, unbiased, but it can be smaller than $\max_ix_i$: impossible for the true $\theta$.
+            \item Gamma (shape $k$, scale $s$): mean $ks$, variance $ks^2$; \ $\bar x = 6$, $\hat\sigma^2 = 12$ give $\hat k = 3$, $\hat s = 2$.
+        \end{itemize}
+    \end{example}
+    \small Simple, consistent, usually less efficient than maximum likelihood; a good starting point for Newton's method on the likelihood.
+\end{frame}
+
+\begin{frame}{Maximum likelihood}
+    \begin{definition}[][def:mle]
+        \small Likelihood $L(\theta) = \prod_ip(x_i \mid \theta)$; log-likelihood $\ell(\theta) = \sum_i\log p(x_i \mid \theta)$; the MLE $\hat\theta$ maximizes them.
+    \end{definition}
+    \begin{example}[Bernoulli][ex:mle-bernoulli]
+        \small $k$ ones among $N$: $\ell(\theta) = k\log\theta + (N - k)\log(1 - \theta)$, $\hat\theta = \frac{k}{N}$. Three heads in three flips: $\hat\theta = 1$, ``tails are impossible'' (overfitting).
+    \end{example}
+    \begin{example}[Gaussian][ex:mle-gaussian]
+        \small $\hat\mu = \bar x$, $\hat\sigma^2 = \frac{1}{N}\sum_i(x_i - \bar x)^2$ (biased). Data $2.1, 3.4, 1.9, 2.8, 3.3$: $\hat\mu = 2.7$, $\hat\sigma^2 = 0.372$, $s^2 = 0.465$.
+    \end{example}
+    \begin{theorem}[Multivariate Gaussian][thm:mle-mvn]
+        \small $\hat{\boldsymbol\mu} = \bar\bx$, \ $\hat\Sigma = \frac{1}{N}\sum_i(\bx_i - \bar\bx)(\bx_i - \bar\bx)^\top$ (if invertible).
+    \end{theorem}
+\end{frame}
+
+\board[2]{Derive the MLEs}{Bernoulli: $\ell'(\theta) = 0$, and check $\ell'' < 0$. \quad Gaussian: $\frac{\partial\ell}{\partial\mu} = 0$ and $\frac{\partial\ell}{\partial\sigma^2} = 0$. \quad Numbers: $2.1, 3.4, 1.9, 2.8, 3.3$.}
+
+\checkslide{maximum likelihood estimates}{
+    \small
+    \textbf{Bernoulli.} $\ell(\theta) = k\log\theta + (N - k)\log(1 - \theta)$:
+    \[\ell'(\theta) = \frac{k}{\theta} - \frac{N - k}{1 - \theta} = 0 \iff k(1 - \theta) = (N - k)\theta \iff \hat\theta = \frac{k}{N}, \qquad \ell'' = -\frac{k}{\theta^2} - \frac{N - k}{(1 - \theta)^2} < 0.\]
+    \textbf{Gaussian.} $\ell(\mu, v) = -\frac{N}{2}\log(2\pi v) - \frac{1}{2v}\sum_i(x_i - \mu)^2$ with $v = \sigma^2$:
+    \[\frac{\partial\ell}{\partial\mu} = \frac{1}{v}\sum_i(x_i - \mu) = 0 \Rightarrow \hat\mu = \bar x, \qquad \frac{\partial\ell}{\partial v} = -\frac{N}{2v} + \frac{1}{2v^2}\sum_i(x_i - \mu)^2 = 0 \Rightarrow \hat v = \frac{1}{N}\sum_i(x_i - \bar x)^2.\]
+    \textbf{Numbers} $2.1, 3.4, 1.9, 2.8, 3.3$: sum $13.5$, $\hat\mu = 2.7$; deviations $-0.6, 0.7, -0.8, 0.1, 0.6$, squares $0.36, 0.49, 0.64, 0.01, 0.36$, sum $1.86$:
+    \[\hat\sigma^2 = \tfrac{1.86}{5} = 0.372 \ \ \text{(MLE, biased)}, \qquad s^2 = \tfrac{1.86}{4} = 0.465 \ \ \text{(unbiased)}.\]
+    \textbf{Method of moments, Gamma:} mean $ks = 6$, variance $ks^2 = 12$: divide, $s = 2$, then $k = 3$.
+}
+
+\begin{frame}{Loss functions are negative log-likelihoods}
+    \begin{proposition}[Least squares as maximum likelihood][prop:ls-mle]
+        \small $y_i = \bw^\top\bx_i + \varepsilon_i$, $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$ i.i.d.:
+        \[-\ell(\bw) = \frac{1}{2\sigma^2}\norm{\by - X\bw}^2 + \frac{N}{2}\log(2\pi\sigma^2).\]
+        The MLE of $\bw$ is least squares; $\hat\sigma^2 = \frac{1}{N}\norm{\by - X\hat\bw}^2$.
+    \end{proposition}
+    \small
+    \begin{itemize}
+        \item $y_i \sim$ Bernoulli$(\sigma(\bw^\top\bx_i))$: \ $-\ell = $ the cross-entropy loss of logistic regression (Lecture~7).
+        \item $K$ classes with $\softmax$: the softmax cross-entropy loss.
+        \item Laplace noise $\frac{1}{2b}e^{-|\varepsilon|/b}$: the absolute loss $\sum_i|y_i - \bw^\top\bx_i|$, robust to outliers.
+    \end{itemize}
+    \textbf{Choosing a loss $=$ choosing a noise model.} (Self-study: exponential families and GLMs give ``prediction minus target'' gradients for all of them.)
+\end{frame}
+
+\begin{frame}{Consistency, Fisher information and Cram\'er--Rao}
+    \small
+    \textbf{Consistent}: $\hat\theta_N \to \theta$ in probability (true if bias and variance $\to 0$). \ Score $s = \frac{\partial}{\partial\theta}\log p(x \mid \theta)$, $\E_\theta[s] = 0$; \textbf{Fisher information} $I(\theta) = \Var_\theta(s) = -\E_\theta\big[\frac{\partial^2}{\partial\theta^2}\log p(X \mid \theta)\big]$.
+    \sidebyside{0.55}{%
+        \begin{theorem}[Cram\'er--Rao][thm:cramer-rao]
+            \small Unbiased $\hat\theta$, $N$ i.i.d.\ observations (differentiation under $\int$ allowed): $\Var_\theta(\hat\theta) \geq \frac{1}{N\,I(\theta)}$.
+        \end{theorem}
+        \begin{theorem}[MLE][thm:mle-asymptotic]
+            \small Under regularity conditions: $\sqrt{N}(\hat\theta_{\mathrm{MLE}} - \theta) \to \mathcal{N}(0, \frac{1}{I(\theta)})$.
+        \end{theorem}
+    }{%
+        \centering\fig[0.92]{s11_likelihood}
+    }
+    \small Bernoulli: $I = \frac{1}{\theta(1 - \theta)}$; $\bar X$ attains the bound. Uniform$(0, \theta)$ violates the assumptions.
+\end{frame}
+
+\board{Fisher information of a Bernoulli}{$s(x; \theta) = \frac{x}{\theta} - \frac{1 - x}{1 - \theta}$. Show $\E[s] = 0$ and $I(\theta) = \frac{1}{\theta(1 - \theta)}$; compare $\frac{1}{NI(\theta)}$ with $\Var(\bar X)$. (Appendix A, \S A.17: $I$ as a Riemannian metric.)}
+
+\checkslide{Fisher information and confidence intervals}{
+    \small
+    \textbf{Bernoulli.} $s(1) = \frac{1}{\theta}$, $s(0) = -\frac{1}{1 - \theta}$: \ $\E s = \theta\cdot\frac{1}{\theta} - (1 - \theta)\frac{1}{1 - \theta} = 0$,
+    \[I(\theta) = \E s^2 = \frac{\theta}{\theta^2} + \frac{1 - \theta}{(1 - \theta)^2} = \frac{1}{\theta} + \frac{1}{1 - \theta} = \frac{1}{\theta(1 - \theta)}; \quad \text{also } -\E\partial_\theta s = \frac{\theta}{\theta^2} + \frac{1 - \theta}{(1 - \theta)^2} \ \checkmark.\]
+    Cram\'er--Rao: $\Var\hat\theta \geq \frac{\theta(1 - \theta)}{N} = \Var\bar X$: the relative frequency is efficient. $\theta = 0.3$, $N = 100$: SE $= \sqrt{0.0021} \approx 0.046$.
+    \\[0.2em]
+    \textbf{Gaussian mean:} $s = \frac{x - \mu}{\sigma^2}$, $I = \frac{1}{\sigma^2}$: the bound $\frac{\sigma^2}{N}$ is attained by $\bar X$.
+    \\[0.4em]
+    \textbf{Confidence intervals.} $N = 100$, $\bar x = 5.2$, $s = 1.5$: SE $= \frac{1.5}{10} = 0.15$, \ $5.2 \pm 1.96 \cdot 0.15 = 5.2 \pm 0.294 = [4.91, 5.49]$.
+    \\[0.2em]
+    Accuracy $0.9$ on $1000$ test examples: SE $= \sqrt{\frac{0.9 \cdot 0.1}{1000}} \approx 0.0095$, interval $0.9 \pm 0.019 = [0.881, 0.919]$. To halve it, test on $4000$ examples.
+}
+
+\begin{frame}{Confidence intervals}
+    \small
+    CLT $+$ Slutsky: $\bar x \pm 1.96\frac{s}{\sqrt{N}}$ is an approximate $95\%$ confidence interval for $\mu$. \ $N = 100$, $\bar x = 5.2$, $s = 1.5$: $[4.91, 5.49]$.
+    \\[0.3em]
+    \centering\fig[0.88]{s11_ci_coverage}
+    \\[0.1em]
+    \raggedright
+    $\mu$ is fixed, the \emph{interval} is random: about $95\%$ of such intervals contain $\mu$.
+    \begin{mlbox}
+        \small Accuracy $0.9$ on $1000$ test examples: SE $\approx 0.0095$, so $\pm 0.019$. A one-point difference between two models may be chance.
+    \end{mlbox}
+\end{frame}
+
+\begin{frame}{Self-study: more estimation (\S4.9.4--4.9.9)}
+    \small
+    \begin{itemize}
+        \item \textbf{Sufficiency}: $T(\bx)$ keeps all information about $\theta$ iff $p(\bx \mid \theta) = g(T(\bx), \theta)h(\bx)$. \textbf{Rao--Blackwell}: $\E[\hat\theta \mid T]$ is never worse.
+        \item \textbf{Exponential families} $h(x)e^{\boldsymbol\eta^\top T(x) - A(\boldsymbol\eta)}$: Bernoulli, Poisson, Gaussian, categorical; $\nabla A = \E[T]$, concave log-likelihood; \textbf{GLMs}.
+        \item \textbf{Nonparametric}: the empirical CDF converges uniformly; kernel density estimates (bias $\sim h^2$, variance $\sim\frac{1}{Nh}$, the curse of dimensionality).
+        \item \textbf{Survival analysis}: hazard rates, censored data, Kaplan--Meier.
+    \end{itemize}
+    \textcolor{mlcolor}{The ML course returns to GLMs and survival analysis.}
+\end{frame}
+
+% ------------------------------------------------------------------ Testing
+\topic{\secref{sec:testing}}{Hypothesis testing}
+
+\begin{frame}{Tests and p-values}
+    \begin{definition}[][def:test]
+        \small $H_0$ (``no effect'') vs $H_1$. Reject $H_0$ if the statistic $T$ falls into a rejection region. \textbf{Type I error}: reject a true $H_0$ (false positive); \textbf{type II}: keep a false $H_0$. \textbf{Level} $\alpha$: $P(\text{type I}) \leq \alpha$. \textbf{Power}: $P(\text{reject} \mid H_1)$.
+    \end{definition}
+    \begin{definition}[p-value][def:p-value]
+        \small $p = P_{H_0}(T \geq t)$ for the observed $t$: how surprising the data is under $H_0$. Rejecting when $p \leq \alpha$ has level $\alpha$.
+    \end{definition}
+    \begin{proposition}[][prop:p-uniform]
+        \small If $T$ has a continuous, strictly increasing CDF under $H_0$, the p-value is Uniform$(0, 1)$ under $H_0$.
+    \end{proposition}
+    \begin{remark}[What a p-value is not]
+        \small Not the probability that $H_0$ is true (that needs a prior: the medical test, Lecture~9). Not the size of the effect: with huge $N$ tiny effects are significant.
+    \end{remark}
+\end{frame}
+
+\begin{frame}{Testing a coin, and power}
+    \sidebyside{0.48}{%
+        \begin{example}[][ex:coin-test]
+            \small $60$ heads in $100$ flips. One-sided: $P_{H_0}(S \geq 60) = 0.028$; two-sided: $P_{H_0}(|S - 50| \geq 10) = 0.057$. Choose the test \emph{before} looking at the data.
+        \end{example}
+        \begin{example}[Power][ex:power]
+            \small Level $0.05$: reject if $S \geq 59$ ($\alpha = 0.044$). If $\theta = 0.6$: power $0.62$. With $400$ flips: reject if $S \geq 217$, power $0.99$.
+        \end{example}
+    }{%
+        \centering\fig[1]{s11_power}
+    }
+    \small Small experiments miss real effects: plan the sample size for the power you need (self-study: A/B testing).
+\end{frame}
+
+\board{The coin test with the CLT}{Under $H_0$, $S \approx \mathcal{N}(50, 25)$. Compute the one-sided and two-sided p-values for $S = 60$ (continuity correction), the rejection threshold at level $0.05$, and the power for $\theta = 0.6$ ($S \approx \mathcal{N}(60, 24)$).}
+
+\checkslide{the coin test with the CLT}{
+    \small
+    \textbf{p-values} for $S = 60$, with $S \approx \mathcal{N}(50, 5^2)$ under $H_0$:
+    \[\text{one-sided: } P(S \geq 60) \approx 1 - \Phi\Big(\frac{59.5 - 50}{5}\Big) = 1 - \Phi(1.9) \approx 0.029 \ \ (\text{exact } 0.028);\]
+    \[\text{two-sided: } P(|S - 50| \geq 10) \approx 2 \cdot 0.029 = 0.057 \ \ (\text{exact } 0.057).\]
+    \textbf{Threshold} at level $0.05$: reject if $\frac{c - 0.5 - 50}{5} \geq 1.645$, i.e., $c \geq 58.7$: \ reject if $S \geq 59$.
+    \\[0.4em]
+    \textbf{Power} for $\theta = 0.6$: $S \approx \mathcal{N}(60, 100 \cdot 0.6 \cdot 0.4) = \mathcal{N}(60, 24)$, sd $4.9$:
+    \[P_{0.6}(S \geq 59) \approx 1 - \Phi\Big(\frac{58.5 - 60}{4.9}\Big) = 1 - \Phi(-0.31) \approx 0.62 \quad (\text{exact } 0.62).\]
+    \textbf{$400$ flips:} under $H_0$ mean $200$, sd $10$: threshold $200 + 16.45 + 0.5 \approx 217$; under $\theta = 0.6$: mean $240$, sd $\sqrt{96} \approx 9.8$:
+    \[P_{0.6}(S \geq 217) \approx 1 - \Phi\Big(\frac{216.5 - 240}{9.8}\Big) = 1 - \Phi(-2.4) \approx 0.99.\]
+    Four times the data halves the standard error of the proportion ($0.05 \to 0.025$): the bias $0.1$ grows from $2$ to $4$ standard errors.
+}
+
+\begin{frame}{The $t$-test}
+    \begin{definition}[][def:chi2-t]
+        \small $\chi^2_k$: the distribution of $Z_1^2 + \cdots + Z_k^2$; \ $t_k$: of $\frac{Z}{\sqrt{V/k}}$ with independent $Z \sim \mathcal{N}(0, 1)$, $V \sim \chi^2_k$. Heavier tails than $\mathcal{N}(0, 1)$; $t_k \to \mathcal{N}(0, 1)$.
+    \end{definition}
+    \small
+    For Gaussian data, $t = \frac{\bar x - \mu_0}{s/\sqrt{N}} \sim t_{N-1}$ under $H_0$: $\mu = \mu_0$, exactly, for every $N$.
+    \begin{example}[A paired $t$-test][ex:t-test]
+        \small Model B minus model A on $8$ benchmarks: $1.2,\ 0.4,\ 2.1,\ -0.3,\ 1.5,\ 0.8,\ 1.1,\ 0.6$. \ $\bar d = 0.925$, $s = 0.729$, $t = \frac{\bar d}{s/\sqrt{8}} \approx 3.59$; with $7$ degrees of freedom the two-sided p-value is $0.009$.
+    \end{example}
+    Pairing removes the large variation between data sets: analyze the differences.
+\end{frame}
+
+\begin{frame}{Worked example: the paired $t$-test step by step}
+    \small
+    Differences $d_i$: $1.2,\ 0.4,\ 2.1,\ -0.3,\ 1.5,\ 0.8,\ 1.1,\ 0.6$ \ ($N = 8$).
+    \\[0.3em]
+    \textbf{Mean:} $\sum_id_i = 7.4$, \ $\bar d = 0.925$.
+    \\[0.2em]
+    \textbf{Deviations} $d_i - \bar d$: $0.275, -0.525, 1.175, -1.225, 0.575, -0.125, 0.175, -0.325$; \ squares sum to $3.715$:
+    \[s^2 = \frac{3.715}{8 - 1} \approx 0.531, \qquad s \approx 0.729, \qquad \mathrm{SE} = \frac{s}{\sqrt8} \approx \frac{0.729}{2.828} \approx 0.258.\]
+    \textbf{Statistic:} $t = \frac{\bar d - 0}{\mathrm{SE}} \approx \frac{0.925}{0.258} \approx 3.59$, with $N - 1 = 7$ degrees of freedom.
+    \\[0.2em]
+    \textbf{p-value:} $2P(t_7 \geq 3.59) \approx 0.009 < 0.05$ (the $t_7$ quantile $2.36$ is the $5\%$ two-sided cutoff; with $\mathcal{N}(0, 1)$ it would be $1.96$).
+    \\[0.2em]
+    \textbf{Confidence interval:} $0.925 \pm 2.36 \cdot 0.258 = [0.32, 1.53]$ percentage points: B is better, by somewhere between $0.3$ and $1.5$ points.
+    \\[0.4em]
+    \textbf{Unpaired} (comparing the two lists of accuracies) would add the large differences between benchmarks to the noise, and could miss this effect.
+\end{frame}
+
+\begin{frame}{Inference for linear regression}
+    \small
+    $\by = X\bw + \boldsymbol\varepsilon$, $X$ ($N \times n$) of rank $n$, $\E\boldsymbol\varepsilon = \mathbf{0}$, $\Cov(\boldsymbol\varepsilon) = \sigma^2I$; \ $\hat\bw = (X^\top X)^{-1}X^\top\by$, $\mathrm{RSS} = \norm{\by - X\hat\bw}^2$.
+    \begin{theorem}[][thm:regression-inference]
+        \small
+        \begin{enumerate}
+            \item $\E\hat\bw = \bw$, \ $\Cov(\hat\bw) = \sigma^2(X^\top X)^{-1}$;
+            \item $s^2 = \frac{\mathrm{RSS}}{N - n}$ is unbiased for $\sigma^2$;
+            \item Gaussian noise: $\frac{\hat w_j - w_j}{\mathrm{SE}_j} \sim t_{N-n}$ with $\mathrm{SE}_j = s\sqrt{((X^\top X)^{-1})_{jj}}$.
+        \end{enumerate}
+    \end{theorem}
+    (1) is $\Cov(A\by) = A\Sigma A^\top$ from Lecture~9; the proofs of (2) and (3), Gauss--Markov (least squares is the best linear unbiased estimator) and heteroscedasticity (robust standard errors): self-study.
+\end{frame}
+
+\board{Example: standard errors of a regression line}{$x = -2, -1, 0, 1, 2$, \ $y = 0.8, 2.3, 2.9, 4.4, 5.6$. Find $\hat w_0$, $\hat w_1$, RSS, $s^2$, $\mathrm{SE}(\hat w_1)$, the $t$-statistic, and a $95\%$ interval for the slope ($t_{3, 0.975} = 3.18$).}
+
+\checkslide{a regression line}{
+    \small
+    Columns $\mathbf{1}$ and $\bx$: $X^\top X = \begin{pmatrix} 5 & \sum x_i \\ \sum x_i & \sum x_i^2 \end{pmatrix} = \begin{pmatrix} 5 & 0 \\ 0 & 10 \end{pmatrix}$, \ $X^\top\by = (\sum y_i, \sum x_iy_i)^\top = (16, 11.7)^\top$,
+    \\[0.2em]
+    since $\sum x_iy_i = -1.6 - 2.3 + 0 + 4.4 + 11.2 = 11.7$. \ Hence $\hat w_0 = \frac{16}{5} = 3.2$, \ $\hat w_1 = \frac{11.7}{10} = 1.17$.
+    \\[0.3em]
+    Fitted $3.2 + 1.17x$: $0.86, 2.03, 3.20, 4.37, 5.54$; residuals $-0.06,\ 0.27,\ -0.30,\ 0.03,\ 0.06$;
+    \[\mathrm{RSS} = 0.0036 + 0.0729 + 0.09 + 0.0009 + 0.0036 = 0.171, \qquad s^2 = \tfrac{0.171}{5 - 2} = 0.057.\]
+    $\Cov(\hat\bw) \approx s^2(X^\top X)^{-1} = \diag(\frac{0.057}{5}, \frac{0.057}{10})$: \ $\mathrm{SE}(\hat w_1) = \sqrt{0.0057} \approx 0.0755$, \ $t = \frac{1.17}{0.0755} \approx 15.5$, p-value $0.0006$ ($3$ d.f.);
+    \[95\% \text{ interval: } 1.17 \pm 3.18 \cdot 0.0755 = 1.17 \pm 0.24 = [0.93, 1.41].\]
+    \textcolor{mlcolor}{This is the table that \py{statsmodels} prints for every regression (ML course).}
+}
+
+\begin{frame}{Self-study: more testing (\S4.10--4.11)}
+    \small
+    \begin{itemize}
+        \item \textbf{Neyman--Pearson}: the likelihood ratio test is most powerful; $\chi^2$ tests for counts.
+        \item \textbf{Multiple testing}: $20$ tests at level $0.05$ give one false positive on average. Bonferroni ($\frac{\alpha}{m}$) controls the family-wise error, Benjamini--Hochberg the false discovery rate.
+        \item \textbf{Bootstrap and permutation tests}: resample the data instead of using formulas.
+        \item \textbf{\S4.11}: cross-validation and its pitfalls, precision/recall, ROC and AUC, generalization bounds (Hoeffding $+$ union bound), A/B tests, sample sizes, Simpson's paradox.
+    \end{itemize}
+    \textcolor{mlcolor}{The ML course returns to cross-validation, classification metrics and A/B testing.}
+\end{frame}
+
+% ------------------------------------------------------------------ Bayesian
+\topic{\secref{sec:bayesian}}{Bayesian inference}
+
+\begin{frame}{Bayesian inference and conjugate priors}
+    \small
+    Parameters are random: $p(\theta \mid \mathcal{D}) = \dfrac{p(\mathcal{D} \mid \theta)\,p(\theta)}{p(\mathcal{D})} \propto \text{likelihood} \times \text{prior}$.
+    \sidebyside{0.52}{%
+        \begin{definition}[Beta distribution][def:beta]
+            \small $p(\theta) = \frac{\theta^{a-1}(1 - \theta)^{b-1}}{B(a, b)}$ on $[0, 1]$, mean $\frac{a}{a + b}$.
+        \end{definition}
+        \begin{theorem}[Beta--Bernoulli][thm:beta-bernoulli]
+            \small Prior Beta$(a, b)$, $k$ ones in $N$ trials: posterior Beta$(a + k, b + N - k)$.
+        \end{theorem}
+        \small The prior acts like $a$ earlier heads and $b$ earlier tails.
+    }{%
+        \centering\notesfig[1]{L4-beta}
+    }
+    \begin{example}[][ex:beta-coin]
+        \small Prior Beta$(2, 2)$, $3$ heads in $3$: Beta$(5, 2)$, mean $0.71$, mode $0.8$ (MLE: $1$). $20$ heads in $30$: Beta$(22, 12)$, mean $0.65$, sd $0.08$.
+    \end{example}
+\end{frame}
+
+\board{Derive Beta--Bernoulli conjugacy}{$p(\theta \mid \mathcal{D}) \propto \theta^k(1 - \theta)^{N-k} \cdot \theta^{a-1}(1 - \theta)^{b-1}$. Then: mean and mode of the posterior; how does it compare with the MLE $\frac{k}{N}$ as $N \to \infty$?}
+
+\checkslide{conjugate updates with numbers}{
+    \small
+    \textbf{Beta--Bernoulli.} $\theta^k(1 - \theta)^{N-k}\theta^{a-1}(1 - \theta)^{b-1} = \theta^{a + k - 1}(1 - \theta)^{b + N - k - 1}$: Beta$(a + k, b + N - k)$. Mean $\frac{a + k}{a + b + N}$, mode $\frac{a + k - 1}{a + b + N - 2}$, both $\to \frac{k}{N}$ as $N \to \infty$.
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{@{}lcccc@{}}
+            \toprule
+            data & posterior & mean & mode & MLE \\
+            \midrule
+            none & Beta$(2, 2)$ & $0.5$ & $0.5$ & -- \\
+            $3$ heads in $3$ & Beta$(5, 2)$ & $\frac{5}{7} \approx 0.71$ & $\frac{4}{5} = 0.8$ & $1$ \\
+            $20$ heads in $30$ & Beta$(22, 12)$ & $\frac{22}{34} \approx 0.65$ & $\frac{21}{32} \approx 0.66$ & $0.67$ \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    sd of Beta$(22, 12)$: $\sqrt{\frac{22 \cdot 12}{34^2 \cdot 35}} \approx 0.081$.
+    \\[0.3em]
+    \textbf{Gamma--Poisson.} Counts $3, 5, 4, 6, 2$: $S = 20$, $N = 5$; prior Gamma$(2, 1)$:
+    \[p(\lambda \mid \mathcal{D}) \propto \underbrace{e^{-5\lambda}\lambda^{20}}_{\text{likelihood}}\cdot\underbrace{\lambda e^{-\lambda}}_{\text{prior}} = \lambda^{21}e^{-6\lambda}: \ \text{Gamma}(22, 6), \ \text{mean } \tfrac{22}{6} \approx 3.67, \ \text{sd } \tfrac{\sqrt{22}}{6} \approx 0.78.\]
+    Predictive: $P(\text{no clicks}) = \int e^{-\lambda}\frac{6^{22}}{\Gamma(22)}\lambda^{21}e^{-6\lambda}\,d\lambda = \big(\frac{6}{7}\big)^{22} \approx 0.034$ (the MLE plug-in gives $e^{-4} \approx 0.018$).
+}
+
+\begin{frame}{Credible intervals and the Gamma--Poisson model}
+    \begin{example}[Credible intervals][ex:credible]
+        \small The $2.5\%$ and $97.5\%$ quantiles of Beta$(22, 12)$: $[0.48, 0.80]$; the confidence interval $\frac{2}{3} \pm 1.96\sqrt{\frac{2}{9}/30} = [0.50, 0.84]$. A credible interval is a statement about $\theta$ given the data; a confidence interval about the random interval for fixed $\theta$. They agree for large $N$.
+    \end{example}
+    \begin{example}[Gamma--Poisson][ex:gamma-poisson]
+        \small Clicks per hour Poisson$(\lambda)$, prior Gamma$(a, b)$ (mean $\frac{a}{b}$): posterior Gamma$(a + S, b + N)$; the prior acts like $b$ earlier hours with $a$ clicks. Prior Gamma$(2, 1)$, counts $3, 5, 4, 6, 2$: posterior Gamma$(22, 6)$, mean $3.67$ (MLE $4$), sd $0.78$. Predictive $P(\text{no clicks}) = (\frac{6}{7})^{22} \approx 0.034$ vs $e^{-4} \approx 0.018$ with the MLE.
+    \end{example}
+    \small \textcolor{mlcolor}{Thompson sampling (RL): sample $\theta$ from each arm's posterior and play the best: exploration for free.}
+\end{frame}
+
+\begin{frame}{MAP estimation is regularization}
+    \small
+    $\hat\theta_{\mathrm{MAP}} = \argmax_\theta p(\theta \mid \mathcal{D}) = \argmin_\theta\big(-\log p(\mathcal{D} \mid \theta) - \log p(\theta)\big)$: \ loss $+$ penalty.
+    \begin{proposition}[Ridge regression as MAP][prop:ridge-map]
+        \small Gaussian noise $\sigma^2$ and prior $\bw \sim \mathcal{N}(\mathbf{0}, \alpha^{-1}I)$: the MAP estimate minimizes $\norm{\by - X\bw}^2 + \lambda\norm{\bw}^2$ with $\lambda = \alpha\sigma^2$: $\hat\bw = (X^\top X + \lambda I)^{-1}X^\top\by$.
+    \end{proposition}
+    \begin{itemize}
+        \item Laplace prior $e^{-\norm{\bw}_1/b}$ $\Rightarrow$ the lasso (Lecture~8: sparse weights).
+        \item Strong prior belief in small weights (large $\alpha$) $=$ strong regularization.
+        \item Weight decay in neural networks $=$ a Gaussian prior on the weights.
+    \end{itemize}
+    \begin{mlbox}
+        \small Every regularized loss is a negative log-posterior: the loss is the noise model, the penalty is the prior.
+    \end{mlbox}
+\end{frame}
+
+\board{Derive ridge regression as MAP}{$-\log p(\mathcal{D} \mid \bw) - \log p(\bw) = \frac{1}{2\sigma^2}\norm{\by - X\bw}^2 + \frac{\alpha}{2}\norm{\bw}^2 + \text{const}$. Set the gradient to $\mathbf{0}$ (Lecture~7).}
+
+\checkslide{MAP and Bayesian linear regression with numbers}{
+    \small
+    \textbf{Gradient:} $-\frac{1}{\sigma^2}X^\top(\by - X\bw) + \alpha\bw = \mathbf{0} \iff (X^\top X + \alpha\sigma^2I)\bw = X^\top\by$: ridge with $\lambda = \alpha\sigma^2$.
+    \\[0.4em]
+    \textbf{Data} $(1, 2), (2, 3), (3, 5)$, model $y = wx + \varepsilon$, $\alpha = \sigma^2 = 1$: \ $X^\top X = \sum x_i^2 = 14$, $X^\top\by = \sum x_iy_i = 23$.
+    \[\hat w_{\text{LS}} = \tfrac{23}{14} \approx 1.643, \qquad \hat w_{\text{MAP}} = \tfrac{23}{14 + 1} = \tfrac{23}{15} \approx 1.533 \ \ (\text{shrunk towards } 0).\]
+    \textbf{Posterior:} $S = (\alpha + \sigma^{-2} \cdot 14)^{-1} = \frac{1}{15}$, \ $m = \sigma^{-2}S \cdot 23 = \frac{23}{15}$: \ $w \mid \mathcal{D} \sim \mathcal{N}(1.533, 0.067)$, sd $0.26$.
+    \\[0.3em]
+    \textbf{Prediction} at $x_* = 4$:
+    \[\text{mean } m\,x_* = \tfrac{92}{15} \approx 6.13, \qquad \text{variance } x_*^2S + \sigma^2 = \tfrac{16}{15} + 1 \approx 2.07:\]
+    uncertainty about $w$ ($1.07$) plus noise ($1$). At $x_* = 1$: $\frac{1}{15} + 1 \approx 1.07$: less uncertain near the data.
+}
+
+\begin{frame}{Bayesian linear regression}
+    \begin{theorem}[][thm:blr]
+        \small Prior $\bw \sim \mathcal{N}(\mathbf{0}, \alpha^{-1}I)$, noise $\sigma^2$: posterior $\mathcal{N}(\mathbf{m}, S)$ with
+        \[S = (\alpha I + \sigma^{-2}X^\top X)^{-1}, \qquad \mathbf{m} = \sigma^{-2}SX^\top\by,\]
+        and predictive $y_* \sim \mathcal{N}(\mathbf{m}^\top\bx_*, \ \bx_*^\top S\bx_* + \sigma^2)$.
+    \end{theorem}
+    \begin{example}[][ex:blr]
+        \small $(1, 2), (2, 3), (3, 5)$, $y = wx + \varepsilon$, $\alpha = \sigma^2 = 1$: $S = \frac{1}{15}$, $m = \frac{23}{15} \approx 1.53$ (ridge, not the least squares $\frac{23}{14}$). At $x_* = 4$: $\mathcal{N}(6.13, 2.07)$.
+    \end{example}
+    \small
+    The posterior mean is the MAP (ridge) estimate; the posterior covariance adds \emph{uncertainty}: larger far from the data. Proof: a Gaussian computation (Lecture~9: complete the square).
+\end{frame}
+
+\begin{frame}{Self-study: Gaussian processes (\S4.12.4)}
+    \sidebyside{0.48}{%
+        \small
+        A random function with Gaussian finite-dimensional distributions, $K_{ij} = k(\bx_i, \bx_j)$.
+        \begin{proposition}[GP regression][prop:gp-regression]
+            \scriptsize $f(\bx_*) \mid \mathcal{D} \sim \mathcal{N}\big(\mathbf{k}_*^\top(K + \sigma^2I)^{-1}\by,\ k_{**} - \mathbf{k}_*^\top(K + \sigma^2I)^{-1}\mathbf{k}_*\big)$.
+        \end{proposition}
+        \small Gaussian conditioning (Lecture~9) on a big vector. Linear kernel $=$ Bayesian linear regression.
+    }{%
+        \centering\notesfig[1]{L4-gp}
+    }
+    \small \textcolor{mlcolor}{Beyond conjugate models (neural networks): MCMC (Lecture~10), variational inference, Laplace approximations; PyMC in the ML course.}
+\end{frame}
+
+% ------------------------------------------------------------------ EM
+\topic{\secref{sec:latent}}{Latent variables and the EM algorithm}
+
+\begin{frame}{Gaussian mixtures and the evidence lower bound}
+    \begin{definition}[Gaussian mixture][def:gmm]
+        \small Draw $z \in \{1, \ldots, K\}$ with probabilities $\pi_k$, then $\bx \sim \mathcal{N}(\boldsymbol\mu_z, \Sigma_z)$: \ $p(\bx \mid \theta) = \sum_k\pi_k\,\varphi(\bx; \boldsymbol\mu_k, \Sigma_k)$.
+    \end{definition}
+    \small The log of a sum: no closed-form MLE. If we knew $z$, it would be easy.
+    \begin{theorem}[Evidence lower bound][thm:elbo]
+        \small For every distribution $q$ on $z$:
+        \[\log p(\bx \mid \theta) = \underbrace{\sum_zq(z)\log\frac{p(\bx, z \mid \theta)}{q(z)}}_{\mathrm{ELBO}(q, \theta)} + \KL\big(q \,\|\, p(\cdot \mid \bx, \theta)\big) \ \geq\ \mathrm{ELBO}(q, \theta),\]
+        with equality iff $q$ is the posterior $p(z \mid \bx, \theta)$.
+    \end{theorem}
+\end{frame}
+
+\board{Proof of the ELBO identity}{$p(\bx, z \mid \theta) = p(z \mid \bx, \theta)\,p(\bx \mid \theta)$, so $\log\frac{p(\bx, z \mid \theta)}{q(z)} = \log p(\bx \mid \theta) - \log\frac{q(z)}{p(z \mid \bx, \theta)}$. Average over $q$; then Gibbs' inequality (Lecture~10).}
+
+\begin{frame}{The EM algorithm}
+    \begin{definition}[EM][def:em]
+        \small \textbf{E-step}: $q_i = p(\cdot \mid \bx_i, \theta_t)$, the posterior of each latent variable. \textbf{M-step}: $\theta_{t+1}$ maximizes $\sum_i\mathrm{ELBO}(q_i, \theta)$, i.e., the expected complete-data log-likelihood.
+    \end{definition}
+    \begin{theorem}[][thm:em-monotone]
+        \small EM never decreases the log-likelihood: $\ell(\theta_{t+1}) \geq \mathrm{ELBO}(q, \theta_{t+1}) \geq \mathrm{ELBO}(q, \theta_t) = \ell(\theta_t)$.
+    \end{theorem}
+    \small Each E-step closes the gap ($\KL = 0$); each M-step pushes the lower bound up.
+\end{frame}
+
+\begin{frame}{EM for Gaussian mixtures}
+    \begin{theorem}[EM for Gaussian mixtures][thm:em-gmm]
+        \small Responsibilities $r_{ik} = P(z_i = k \mid \bx_i, \theta_t)$, $N_k = \sum_ir_{ik}$. The M-step:
+        \[\pi_k = \frac{N_k}{N}, \qquad \boldsymbol\mu_k = \frac{1}{N_k}\sum_ir_{ik}\bx_i, \qquad \Sigma_k = \frac{1}{N_k}\sum_ir_{ik}(\bx_i - \boldsymbol\mu_k)(\bx_i - \boldsymbol\mu_k)^\top.\]
+    \end{theorem}
+    \small Soft assignments, then weighted maximum likelihood estimates (as for one Gaussian, with weights).
+    \\[0.3em]
+    \centering\fig[0.62]{s11_em}
+    \\[0.1em]
+    \raggedright\small Colors: responsibilities. EM can stop at a local maximum: use several starts.
+\end{frame}
+
+\board[2]{Example: one EM step by hand}{Mixture of two Gaussians with variance $1$ and equal weights for the data $1, 2, 4, 5$; fit only the means, starting from $\mu_1 = 0$, $\mu_2 = 3$. Compute the responsibilities $r_{i1}$ and the new means.}
+
+\checkslide{one EM step}{
+    \small
+    \textbf{E-step.} $r_{i1} = \frac{e^{-(x_i - \mu_1)^2/2}}{e^{-(x_i - \mu_1)^2/2} + e^{-(x_i - \mu_2)^2/2}} = \frac{1}{1 + e^{((x_i - \mu_1)^2 - (x_i - \mu_2)^2)/2}}$ with $\mu_1 = 0$, $\mu_2 = 3$:
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{@{}lcccc@{}}
+            \toprule
+            $x_i$ & $1$ & $2$ & $4$ & $5$ \\
+            \midrule
+            $\frac{1}{2}\big((x - 0)^2 - (x - 3)^2\big)$ & $\frac{1 - 4}{2} = -1.5$ & $\frac{4 - 1}{2} = 1.5$ & $\frac{16 - 1}{2} = 7.5$ & $\frac{25 - 4}{2} = 10.5$ \\
+            $r_{i1}$ & $0.818$ & $0.182$ & $0.0006$ & $0.00003$ \\
+            $r_{i2} = 1 - r_{i1}$ & $0.182$ & $0.818$ & $0.9994$ & $0.99997$ \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    \textbf{M-step} (weighted means): $N_1 \approx 1.0006$, $N_2 \approx 2.9994$,
+    \[\mu_1 = \tfrac{0.818 \cdot 1 + 0.182 \cdot 2 + 0.0006 \cdot 4 + 0.00003 \cdot 5}{1.0006} \approx 1.18, \qquad \mu_2 = \tfrac{0.182 \cdot 1 + 0.818 \cdot 2 + 0.9994 \cdot 4 + 0.99997 \cdot 5}{2.9994} \approx 3.61.\]
+    Log-likelihood $-9.54 \to -7.47$; converges to $\mu_1 \approx 1.56$, $\mu_2 \approx 4.44$, $\ell = -6.84$ (not $1.5$, $4.5$: the Gaussians overlap).
+    \begin{mlbox}
+        \small
+        \begin{itemize}
+            \item $k$-means: the hard-assignment limit of EM (self-study \S4.14.3).
+            \item Probabilistic PCA: $\bx = W\mathbf{z} + \boldsymbol\mu + \boldsymbol\varepsilon$; the MLE spans the top principal components (\S4.14.4).
+            \item VAEs: maximize the ELBO with a neural encoder $q_\phi(\mathbf{z} \mid \bx)$ and the reparameterization trick (\S4.14.5).
+        \end{itemize}
+    \end{mlbox}
+}
+
+% ------------------------------------------------------------------ Wrap-up
+\begin{frame}{Key takeaways}
+    \small
+    \begin{itemize}
+        \item MSE $=$ bias$^2$ $+$ variance; some bias can pay off. $s^2$ uses $\frac{1}{N - 1}$.
+        \item Maximum likelihood: least squares $=$ Gaussian noise, cross-entropy $=$ categorical labels. Cram\'er--Rao: $\Var \geq \frac{1}{NI(\theta)}$; the MLE attains it asymptotically.
+        \item Confidence interval $\bar x \pm 1.96\frac{s}{\sqrt N}$: the interval is random, $\mu$ is not.
+        \item p-value $= P_{H_0}(\text{data at least this extreme})$, not $P(H_0 \mid \text{data})$; power matters. $t$-tests; regression: $\Cov(\hat\bw) = \sigma^2(X^\top X)^{-1}$, $\frac{\hat w_j - w_j}{\mathrm{SE}_j} \sim t_{N-n}$.
+        \item Posterior $\propto$ likelihood $\times$ prior; conjugate priors (Beta, Gamma, Gaussian); MAP $=$ regularized loss (Gaussian prior $=$ ridge, Laplace $=$ lasso).
+        \item $\log p(\bx) = \mathrm{ELBO} + \KL$; EM alternates posterior responsibilities and weighted MLEs, and never decreases the likelihood.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Homework and the final exam}
+    \small
+    \begin{itemize}
+        \item \textbf{Homework:} Lecture 4, Exercises 28, 29, 36, 38, 45 and 49; Programming Exercises P5 and P8.
+        \item \textbf{Practice:} Practice 4, sections 9, 10, 12 and 14 (survival analysis and heteroscedasticity optional).
+        \item \textbf{Self-study:} see the title page; the ML course returns to GLMs, survival analysis, heteroscedasticity, cross-validation and classification metrics.
+    \end{itemize}
+    \vskip0.5em
+    \begin{block}{Next: the final exam}
+        90 minutes, on Lectures 7--11, using the linear algebra of Lectures 1--6 where needed. Five problems of 20 points and a bonus problem; the cheatsheet is handed out with the exam. Prepare with the sample final and the approximate final cheatsheet.
+    \end{block}
+\end{frame}
+
+\end{document}

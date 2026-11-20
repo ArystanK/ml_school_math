@@ -162,3 +162,14 @@ Syllabus/syllabus.synctex.gz
 
 # Real exams and their solutions stay on this computer: never commit them.
 Exams/real/
+
+# Lecture slides: auxiliary files of the beamer decks
+Slides/*.aux
+Slides/*.log
+Slides/*.out
+Slides/*.fdb_latexmk
+Slides/*.fls
+Slides/*.synctex.gz
+Slides/*.nav
+Slides/*.snm
+Slides/*.toc
