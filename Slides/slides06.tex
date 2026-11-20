@@ -1,0 +1,914 @@
+\documentclass[aspectratio=1610,11pt]{beamer}
+\input{slides_preamble}
+\externaldocument[L2-]{../Lecture2/lecture2}
+\setnotes{2}
+
+\title[Lecture 6 · Linear Algebra II]{Lecture 6. Linear Algebra II:\\ Geometry, the Spectral Theorem, SVD and PCA}
+\subtitle{Notes: Lecture 2, \S2.1--2.8, \S2.10, \S2.11\\ Self-study: \S2.9 rotations, \S2.10.1 graph Laplacian}
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+\begin{frame}{Today}
+    \begin{columns}[T]
+        \begin{column}{0.52\linewidth}
+            \begin{enumerate}\small
+                \item Norms and inner products
+                \item SPD matrices and Cholesky
+                \item Orthonormal bases, Gram--Schmidt, QR
+                \item Orthogonal complements, four subspaces
+                \item Projections and least squares
+                \item The spectral theorem
+                \item The SVD: norms, low rank, pseudo-inverse, condition number
+                \item PCA
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.44\linewidth}
+            \begin{mlbox}[Used in]
+                \small
+                \begin{itemize}
+                    \item linear regression (ML)
+                    \item PCA, t-SNE, UMAP (ML)
+                    \item spectral clustering (ML)
+                    \item LoRA: low-rank fine-tuning (DL)
+                    \item conditioning and optimizers (DL)
+                \end{itemize}
+            \end{mlbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{From vector spaces to geometry}
+    Lecture 1: we can add vectors and multiply them by scalars. \\
+    Today: one extra structure, an \alert{inner product} $\ip{x}{y}$, gives
+    \[\text{length } \norm{x} = \sqrt{\ip{x}{x}}, \qquad \text{distance } \norm{x - y},\]
+    \[\text{angle } \cos\omega = \frac{\ip{x}{y}}{\norm{x}\norm{y}}, \qquad \text{orthogonality } \ip{x}{y} = 0.\]
+    \begin{mlbox}
+        \small
+        \begin{itemize}
+            \item $k$-nearest neighbors and clustering use distances between data points;
+            \item embeddings of words and documents are compared by angles (cosine similarity);
+            \item linear regression and PCA are orthogonal projections;
+            \item regularization penalizes the norm of the weight vector.
+        \end{itemize}
+    \end{mlbox}
+\end{frame}
+
+% ------------------------------------------------------------------ Norms and inner products
+\topic{\S2.1--2.3}{Norms and inner products}
+
+\begin{frame}{Norms}
+    \sidebyside{0.56}{%
+        \begin{definition}[Norm][def:norm]
+            \small A function $\norm{\cdot}: V \to \R$ such that
+            \begin{enumerate}
+                \item $\norm{v} \geq 0$, and $\norm{v} = 0 \iff v = 0$;
+                \item $\norm{\lambda v} = |\lambda|\,\norm{v}$;
+                \item $\norm{u + v} \leq \norm{u} + \norm{v}$.
+            \end{enumerate}
+        \end{definition}
+        \small
+        $\norm{\bx}_1 = \sum_i |x_i|$, \ $\norm{\bx}_2 = \sqrt{\bx^\top \bx}$, \ $\norm{\bx}_\infty = \max_i |x_i|$, \\[0.2em]
+        $\norm{\bx}_\infty \leq \norm{\bx}_2 \leq \norm{\bx}_1 \leq n\norm{\bx}_\infty$.
+    }{%
+        \centering\notesfig[0.8]{L2-unit-balls}\\[0.1em]
+        {\scriptsize unit balls $\{\bx : \norm{\bx} \leq 1\}$}
+    }
+    \begin{mlbox}
+        \small Ridge regression penalizes $\lambda\norm{\bw}_2^2$ and shrinks all weights; the lasso penalizes $\lambda\norm{\bw}_1$: many weights become exactly $0$ (corners of the $\ell_1$ ball).
+    \end{mlbox}
+\end{frame}
+
+\begin{frame}{Inner products}
+    \begin{definition}[Inner product][def:inner-product]
+        A function $\ip{\cdot}{\cdot}: V \times V \to \R$ that is
+        \textbf{bilinear}, \textbf{symmetric} ($\ip{x}{y} = \ip{y}{x}$) and \textbf{positive definite} ($\ip{x}{x} > 0$ for $x \neq 0$).
+    \end{definition}
+    \small
+    \begin{itemize}
+        \item dot product $\ip{\bx}{\by} = \bx^\top\by$; \quad weighted $\sum_i w_i x_i y_i$ with $w_i > 0$;
+        \item $\ip{\bx}{\by}_A = \bx^\top A \by$ for a symmetric positive definite matrix $A$;
+        \item Frobenius $\ip{A}{B} = \tr(A^\top B) = \sum_{i,j} A_{ij}B_{ij}$ on $\R^{m \times n}$;
+        \item functions: $\ip{f}{g} = \int_a^b f(x)g(x)\,dx$ on $C[a, b]$;
+        \item \emph{not} an inner product: $x_1y_1 - x_2y_2$, since $\ip{\be_2}{\be_2} = -1$.
+    \end{itemize}
+    \begin{example}[][ex:ip-A]
+        \small $\ip{\bx}{\by} = x_1y_1 - (x_1y_2 + x_2y_1) + 2x_2y_2$: \ \ $\ip{\bx}{\bx} = (x_1 - x_2)^2 + x_2^2$. For $\bx = (1, 1)^\top$: $\norm{\bx} = 1$, not $\sqrt{2}$.
+    \end{example}
+\end{frame}
+
+\begin{frame}{Worked examples: norms, distances, angles}
+    \small
+    \textbf{Norms} of $\bx = (3, -4, 1)^\top$:
+    \[\norm{\bx}_1 = 3 + 4 + 1 = 8, \qquad \norm{\bx}_2 = \sqrt{9 + 16 + 1} = \sqrt{26} \approx 5.10, \qquad \norm{\bx}_\infty = \max\{3, 4, 1\} = 4.\]
+    Comparison: $4 \leq 5.10 \leq 8 \leq 3 \cdot 4 = 12$ \checkmark; \ Cauchy--Schwarz: $\norm{\bx}_1 \leq \sqrt{3}\,\norm{\bx}_2 \approx 8.83$ \checkmark.
+    \\[0.4em]
+    \textbf{Distances} between $\bx = (1, 2)^\top$ and $\by = (4, 6)^\top$: \ $\bx - \by = (-3, -4)^\top$,
+    \[\norm{\bx - \by}_2 = \sqrt{9 + 16} = 5, \qquad \norm{\bx - \by}_1 = 7, \qquad \norm{\bx - \by}_\infty = 4.\]
+    \textbf{Angle} between $\bx = (3, 1)^\top$ and $\by = (1, 2)^\top$:
+    \[\cos\omega = \frac{3 \cdot 1 + 1 \cdot 2}{\sqrt{10}\,\sqrt{5}} = \frac{5}{\sqrt{50}} = \frac{1}{\sqrt{2}}, \qquad \omega = 45^\circ.\]
+    \textbf{Orthogonality depends on the inner product.} $\bx = (1, 1)^\top$, $\by = (-1, 1)^\top$: $\bx^\top\by = -1 + 1 = 0$; but with $\ip{\bx}{\by} = x_1y_1 - (x_1y_2 + x_2y_1) + 2x_2y_2$:
+    \[\ip{\bx}{\by} = -1 - (1 - 1) + 2 = 1 \neq 0, \qquad \ip{\bx}{\bx} = 1 - 2 + 2 = 1 = (x_1 - x_2)^2 + x_2^2.\]
+\end{frame}
+
+\begin{frame}{Every inner product is a Gram matrix}
+    \begin{theorem}[][thm:spd]
+        \small
+        \begin{enumerate}
+            \item If $A$ is symmetric positive definite, then $\ip{\bx}{\by}_A = \bx^\top A \by$ is an inner product on $\R^n$.
+            \item Let $\ip{\cdot}{\cdot}$ be an inner product on $V$ and $b_1, \ldots, b_n$ a basis. The \emph{Gram matrix} $G_{ij} = \ip{b_i}{b_j}$ is symmetric positive definite, and
+            \(\ip{x}{y} = [x]^\top G\, [y].\)
+        \end{enumerate}
+    \end{theorem}
+    \begin{remark}[An inner product identifies $V$ with $V^*$]
+        \small
+        $v \mapsto \ip{v}{\cdot}$ is an isomorphism $V \to V^*$: it is injective since $\ip{v}{v} > 0$ for $v \neq 0$, and $\dim V^* = \dim V$ (Lecture~1). So every linear functional is $\varphi = \ip{v}{\cdot}$ for exactly one $v$ (Riesz); in coordinates, $\varphi$ is the row vector $[v]^\top G$.
+        \\[0.3em]
+        \textbf{Lecture 7:} the derivative $Df(\bx)$ is a functional, the gradient is the vector that represents it. With $\ip{\bx}{\by}_G$, the gradient is $G^{-1}\nabla f$: preconditioning, Newton, natural gradient.
+    \end{remark}
+\end{frame}
+
+\begin{frame}{Symmetric positive definite matrices}
+    \begin{definition}[][def:spd]
+        \small Symmetric $A$ is positive definite (SPD) if $\bx^\top A\bx > 0$ for all $\bx \neq \mathbf{0}$, and positive semidefinite if $\bx^\top A\bx \geq 0$.
+    \end{definition}
+    \begin{proposition}[][prop:spd-properties]
+        \small If $A$ is SPD: diagonal entries $> 0$; $A$ is invertible; for $n = 2$, $\begin{pmatrix} a & b \\ b & c\end{pmatrix}$ is SPD $\iff a > 0$ and $ac - b^2 > 0$.
+    \end{proposition}
+    \begin{theorem}[Cholesky decomposition][thm:cholesky]
+        \small Symmetric $A$ is positive definite $\iff A = LL^\top$, with $L$ lower triangular with positive diagonal. Then $L$ is unique.
+    \end{theorem}
+    \small $B^\top B$ is SPD if $B$ has independent columns: $\bx^\top B^\top B\bx = \norm{B\bx}^2 > 0$. \\
+    \textcolor{mlcolor}{Covariance matrices, Hessians at a strict minimum, kernel matrices $k(\bx_i, \bx_j)$.}
+\end{frame}
+
+\board{Example: SPD and Cholesky}{Is $A = \begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$ positive definite? Write $\bx^\top A\bx$ as a sum of squares, and find $L$ with $A = LL^\top$. \quad What about $\begin{pmatrix} 9 & 6 \\ 6 & 3\end{pmatrix}$?}
+
+\checkslide{Cholesky = completing the square}{
+    \[A = \begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix} = \underbrace{\begin{pmatrix} 3 & 0 \\ 2 & 1 \end{pmatrix}}_{L}\underbrace{\begin{pmatrix} 3 & 2 \\ 0 & 1 \end{pmatrix}}_{L^\top}, \qquad \bx^\top A\bx = \norm{L^\top\bx}^2 = (3x_1 + 2x_2)^2 + x_2^2.\]
+    Algorithm: $L_{11} = \sqrt{9} = 3$, \ $L_{21} = 6/3 = 2$, \ $L_{22} = \sqrt{5 - 2^2} = 1$.
+    \\[0.8em]
+    $\begin{pmatrix} 9 & 6 \\ 6 & 3\end{pmatrix}$ is not positive definite: $\det = 27 - 36 = -9 < 0$, and $\bx = (2, -3)^\top$ gives $\bx^\top A \bx = -9$.
+    \begin{mlbox}
+        \small Cholesky is the standard way to solve $A\bx = \mathbf{b}$ for SPD $A$, to compute $\det A = \prod_i L_{ii}^2$, and to sample Gaussians: $\bx = \boldsymbol{\mu} + L\mathbf{z}$ (Lecture~9).
+    \end{mlbox}
+}
+
+\begin{frame}{Lengths, the Cauchy--Schwarz inequality and angles}
+    \small
+    Induced norm $\norm{x} = \sqrt{\ip{x}{x}}$, distance $d(x, y) = \norm{x - y}$.
+    \begin{theorem}[Cauchy--Schwarz][thm:cauchy-schwarz]
+        For all $x, y$ in an inner product space,
+        \[|\ip{x}{y}| \leq \norm{x}\,\norm{y},\]
+        with equality if and only if $x$ and $y$ are linearly dependent.
+    \end{theorem}
+    Consequences: $\norm{x} = \sqrt{\ip{x}{x}}$ satisfies the triangle inequality, so it is a norm; the angle $\cos\omega = \frac{\ip{x}{y}}{\norm{x}\norm{y}} \in [-1, 1]$ is well defined; $\norm{\bx}_1 = \sum_i |x_i| \cdot 1 \leq \sqrt{n}\,\norm{\bx}_2$.
+    \begin{mlbox}
+        \small Cosine similarity compares documents and embeddings, independently of their lengths. Cauchy--Schwarz is the basic tool of every convergence proof in optimization.
+    \end{mlbox}
+\end{frame}
+
+\board[2]{Proof of Cauchy--Schwarz, and the triangle inequality}{Idea: $0 \leq \norm{x - ty}^2$ for every $t \in \R$; expand and choose $t$ (or: a quadratic in $t$ that is $\geq 0$ has discriminant $\leq 0$). \\ Then: $\norm{x + y}^2 \leq (\norm{x} + \norm{y})^2$.}
+
+\begin{frame}{Which norms come from an inner product?}
+    \begin{proposition}[Parallelogram law and polarization][prop:parallelogram]
+        In an inner product space with the induced norm,
+        \[\norm{x + y}^2 + \norm{x - y}^2 = 2\norm{x}^2 + 2\norm{y}^2, \qquad \ip{x}{y} = \tfrac{1}{4}\big(\norm{x + y}^2 - \norm{x - y}^2\big).\]
+    \end{proposition}
+    \begin{example}
+        The $\ell_1$ norm on $\R^2$ does not come from an inner product: for $\be_1$, $\be_2$,
+        \[\norm{\be_1 + \be_2}_1^2 + \norm{\be_1 - \be_2}_1^2 = 8 \neq 4 = 2\norm{\be_1}_1^2 + 2\norm{\be_2}_1^2.\]
+    \end{example}
+    \small So $\ell_1$ and $\ell_\infty$ have no angles and no orthogonal projections; this is why the lasso has no closed-form solution, unlike ridge regression.
+\end{frame}
+
+% ------------------------------------------------------------------ Orthonormal bases
+\topic{\S2.4--2.5}{Orthogonality and orthonormal bases}
+
+\begin{frame}{Orthogonality and orthogonal matrices}
+    \small
+    $x \perp y$ if $\ip{x}{y} = 0$. \quad \textbf{Pythagoras:} if $x \perp y$, then $\norm{x + y}^2 = \norm{x}^2 + \norm{y}^2$.
+    \begin{theorem}[][thm:orthogonal]
+        For an $n \times n$ matrix $Q$, the following are equivalent:
+        \begin{enumerate}
+            \item $Q^\top Q = I_n$ ($Q$ is orthogonal, $Q^{-1} = Q^\top$);
+            \item $(Q\bx)^\top(Q\by) = \bx^\top\by$ for all $\bx, \by$;
+            \item $\norm{Q\bx}_2 = \norm{\bx}_2$ for all $\bx$;
+            \item the columns of $Q$ are orthonormal.
+        \end{enumerate}
+        Orthogonal matrices preserve lengths, distances and angles.
+    \end{theorem}
+    (3)~$\Rightarrow$~(2) is polarization: $\bx^\top\by = \frac{1}{4}(\norm{\bx + \by}^2 - \norm{\bx - \by}^2)$. \\
+    Examples: rotations, reflections $I - 2\bu\bu^\top$ ($\norm{\bu} = 1$), permutation matrices.
+\end{frame}
+
+\begin{frame}{Orthonormal bases: coordinates are inner products}
+    \begin{proposition}[][prop:onb-coordinates]
+        Let $b_1, \ldots, b_n$ be an orthonormal basis of $V$. Then
+        \[v = \sum_{i=1}^n \ip{v}{b_i}\, b_i, \qquad \ip{u}{v} = \sum_{i=1}^n \ip{u}{b_i}\ip{v}{b_i}, \qquad \norm{v}^2 = \sum_{i=1}^n \ip{v}{b_i}^2.\]
+    \end{proposition}
+    \small
+    \begin{itemize}
+        \item Orthogonal nonzero vectors are linearly independent.
+        \item No linear system to solve: in $\R^n$ with $Q = (\bb_1 \cdots \bb_n)$, $[\bv] = Q^\top\bv$.
+        \item In an orthonormal basis, every inner product becomes the dot product of coordinates (Parseval).
+    \end{itemize}
+    \begin{example}
+        $\bb_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$, $\bb_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$, $\bv = (3, 1)^\top$: \ $\ip{\bv}{\bb_1} = \frac{3 + 1}{\sqrt2} = \frac{4}{\sqrt2}$, $\ip{\bv}{\bb_2} = \frac{3 - 1}{\sqrt2} = \frac{2}{\sqrt2}$, so $\bv = \frac{4}{\sqrt{2}}\bb_1 + \frac{2}{\sqrt{2}}\bb_2 = 2(1, 1)^\top + (1, -1)^\top = (3, 1)^\top$ \checkmark. Parseval: $\frac{16}{2} + \frac{4}{2} = 10 = \norm{\bv}^2$.
+    \end{example}
+\end{frame}
+
+\begin{frame}{The Gram--Schmidt process}
+    \sidebyside{0.6}{%
+        \begin{theorem}[Gram--Schmidt][thm:gram-schmidt]
+            \small Let $v_1, \ldots, v_k$ be linearly independent. For $j = 1, \ldots, k$:
+            \[u_j = v_j - \sum_{i < j}\ip{v_j}{e_i}\,e_i, \qquad e_j = \frac{u_j}{\norm{u_j}}.\]
+            Then $e_1, \ldots, e_k$ are orthonormal, and $\Span\{e_1, \ldots, e_j\} = \Span\{v_1, \ldots, v_j\}$ for every $j$.
+        \end{theorem}
+        \small
+        Subtract from $v_j$ its projection onto the span of the previous vectors. \\[0.3em]
+        \textbf{Corollary.} Every finite-dimensional inner product space has an orthonormal basis.
+    }{%
+        \centering\notesfig[0.98]{L2-gram-schmidt}
+    }
+\end{frame}
+
+\board[2]{Example: Gram--Schmidt in $\R^3$}{Orthonormalize $\bv_1 = (1, 1, 0)^\top$, $\bv_2 = (1, 0, 1)^\top$, $\bv_3 = (0, 1, 1)^\top$. Then write $A = (\bv_1\ \bv_2\ \bv_3) = QR$.}
+
+\checkslide{Gram--Schmidt step by step}{
+    \small
+    Unnormalized version: $\bu_j = \bv_j - \sum_{i<j}\frac{\bv_j^\top\bu_i}{\bu_i^\top\bu_i}\bu_i$, normalize at the end.
+    \\[0.3em]
+    \textbf{Step 1.} $\bu_1 = \bv_1 = (1, 1, 0)^\top$, \ $\bu_1^\top\bu_1 = 2$.
+    \\[0.3em]
+    \textbf{Step 2.} $\bv_2^\top\bu_1 = 1 + 0 + 0 = 1$:
+    \[\bu_2 = (1, 0, 1)^\top - \tfrac{1}{2}(1, 1, 0)^\top = \big(\tfrac{1}{2}, -\tfrac{1}{2}, 1\big)^\top, \qquad \bu_2^\top\bu_2 = \tfrac{1}{4} + \tfrac{1}{4} + 1 = \tfrac{3}{2}.\]
+    \textbf{Step 3.} $\bv_3^\top\bu_1 = 0 + 1 + 0 = 1$, \ $\bv_3^\top\bu_2 = 0 - \frac{1}{2} + 1 = \frac{1}{2}$, \ coefficient $\frac{1/2}{3/2} = \frac{1}{3}$:
+    \[\bu_3 = (0, 1, 1)^\top - \tfrac{1}{2}(1, 1, 0)^\top - \tfrac{1}{3}\big(\tfrac{1}{2}, -\tfrac{1}{2}, 1\big)^\top = \big(-\tfrac{1}{2} - \tfrac{1}{6},\ \tfrac{1}{2} + \tfrac{1}{6},\ 1 - \tfrac{1}{3}\big)^\top = \big(-\tfrac{2}{3}, \tfrac{2}{3}, \tfrac{2}{3}\big)^\top.\]
+    \textbf{Check:} $\bu_1^\top\bu_2 = \frac{1}{2} - \frac{1}{2} + 0 = 0$, \ $\bu_1^\top\bu_3 = -\frac{2}{3} + \frac{2}{3} = 0$, \ $\bu_2^\top\bu_3 = -\frac{1}{3} - \frac{1}{3} + \frac{2}{3} = 0$.
+    \\[0.3em]
+    \textbf{Normalize:} $\norm{\bu_1} = \sqrt{2}$, $\norm{\bu_2} = \sqrt{3/2}$, $\norm{\bu_3} = \frac{2}{3}\sqrt{3}$:
+    \[\be_1 = \tfrac{1}{\sqrt{2}}(1, 1, 0)^\top, \qquad \be_2 = \tfrac{1}{\sqrt{6}}(1, -1, 2)^\top, \qquad \be_3 = \tfrac{1}{\sqrt{3}}(-1, 1, 1)^\top.\]
+}
+
+\checkslide{Gram--Schmidt gives the QR decomposition}{
+    \small
+    $Q = (\be_1\ \be_2\ \be_3)$ and $R = Q^\top A$, i.e., $R_{ij} = \be_i^\top\bv_j$:
+    \[R_{11} = \tfrac{1 + 1}{\sqrt2} = \sqrt2, \qquad R_{12} = \tfrac{1 + 0 + 0}{\sqrt2} = \tfrac{1}{\sqrt2}, \qquad R_{13} = \tfrac{0 + 1 + 0}{\sqrt2} = \tfrac{1}{\sqrt2},\]
+    \[R_{22} = \tfrac{1 + 0 + 2}{\sqrt6} = \tfrac{\sqrt6}{2}, \qquad R_{23} = \tfrac{0 - 1 + 2}{\sqrt6} = \tfrac{1}{\sqrt6}, \qquad R_{33} = \tfrac{0 + 1 + 1}{\sqrt3} = \tfrac{2}{\sqrt3},\]
+    and $R_{21} = \be_2^\top\bv_1 = 0$, $R_{31} = R_{32} = 0$, since $\bv_1 \in \Span\{\be_1\}$, $\bv_2 \in \Span\{\be_1, \be_2\}$:
+    \[R = \begin{pmatrix} \sqrt{2} & \frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} \\[0.2em] 0 & \frac{\sqrt{6}}{2} & \frac{1}{\sqrt{6}} \\[0.2em] 0 & 0 & \frac{2}{\sqrt{3}} \end{pmatrix}. \qquad \text{Check column 3: } \tfrac{1}{\sqrt2}\be_1 + \tfrac{1}{\sqrt6}\be_2 + \tfrac{2}{\sqrt3}\be_3 = \big(\tfrac{1}{2} + \tfrac{1}{6} - \tfrac{2}{3}, \ \ldots\big) = (0, 1, 1)^\top.\]
+    \begin{proposition}[QR decomposition][prop:qr]
+        If $A$ ($m \times n$) has independent columns, then $A = QR$ with $Q^\top Q = I_n$ and $R$ upper triangular with positive diagonal.
+    \end{proposition}
+    \py{np.linalg.qr} uses Householder reflections instead: Gram--Schmidt loses orthogonality in floating point.
+}
+
+% ------------------------------------------------------------------ Complements
+\topic{\S2.6--2.7}{Orthogonal complements}
+
+\begin{frame}{Orthogonal complements}
+    \small
+    $U^\perp = \{v \in V : \ip{v}{u} = 0 \text{ for all } u \in U\}$; \ it suffices to check $\ip{v}{u_i} = 0$ for a spanning set.
+    \begin{theorem}[Orthogonal decomposition][thm:orth-decomposition]
+        Let $U$ be a subspace of a finite-dimensional inner product space $V$. Then
+        \[V = U \oplus U^\perp, \qquad \dim U^\perp = \dim V - \dim U, \qquad (U^\perp)^\perp = U.\]
+    \end{theorem}
+    Proof idea: extend an orthonormal basis $e_1, \ldots, e_k$ of $U$ to one of $V$ (Gram--Schmidt); then $U^\perp = \Span\{e_{k+1}, \ldots, e_n\}$, and $v = \underbrace{\textstyle\sum_{i \leq k}\ip{v}{e_i}e_i}_{\in U} + \underbrace{\textstyle\sum_{i > k}\ip{v}{e_i}e_i}_{\in U^\perp}$.
+    \begin{example}
+        $U = \Span\{(1, 1, 1)^\top\}$: \ $\bx \perp (1, 1, 1)^\top \iff x_1 + x_2 + x_3 = 0$, so $U^\perp = \Span\{(1, -1, 0)^\top, (1, 0, -1)^\top\}$, and $1 + 2 = 3$. \ Decomposing $\bv = (3, 0, 0)^\top$: $\pi_U(\bv) = \frac{\bv^\top(1, 1, 1)^\top}{3}(1, 1, 1)^\top = (1, 1, 1)^\top$, and
+        \[\bv = \underbrace{(1, 1, 1)^\top}_{\in U} + \underbrace{(2, -1, -1)^\top}_{\in U^\perp \ (2 - 1 - 1 = 0)}.\]
+    \end{example}
+\end{frame}
+
+\begin{frame}{The four fundamental subspaces}
+    \begin{theorem}[][thm:fundamental-subspaces]
+        For an $m \times n$ matrix $A$:
+        \quad $\Null(A) = \row(A)^\perp$ in $\R^n$ \quad and \quad $\Null(A^\top) = \col(A)^\perp$ in $\R^m$.
+    \end{theorem}
+    \centering
+    \begin{tikzpicture}[x=1cm, y=1cm, >=Stealth,
+            box/.style={draw, rounded corners=2pt, minimum width=2.7cm, minimum height=0.85cm, align=center, font=\small}]
+        \node[box, fill=accent!12] (row) at (0, 0.45) {$\row(A)$, \ dim $r$};
+        \node[box, fill=gray!12] (null) at (0, -0.45) {$\Null(A)$, \ dim $n - r$};
+        \node[box, fill=accent!12] (col) at (6.4, 0.45) {$\col(A)$, \ dim $r$};
+        \node[box, fill=gray!12] (lnull) at (6.4, -0.45) {$\Null(A^\top)$, \ dim $m - r$};
+        \node[font=\small] at (0, 1.2) {$\R^n = \row(A) \oplus \Null(A)$};
+        \node[font=\small] at (6.4, 1.2) {$\R^m = \col(A) \oplus \Null(A^\top)$};
+        \node (zero) at (3.2, -0.45) {$\mathbf{0}$};
+        \draw[->, thick, accent] (row.east) -- node[above, font=\footnotesize] {$A$, bijective} (col.west);
+        \draw[->, thick, gray] (null.east) -- node[below, font=\footnotesize] {$A$} (zero);
+        \node[font=\small] at (-1.65, 0) {$\perp$};
+        \node[font=\small] at (8.05, 0) {$\perp$};
+    \end{tikzpicture}
+    \\[0.5em]
+    \raggedright\small
+    $A\bx = \mathbf{b}$ is solvable $\iff \mathbf{b} \in \col(A) = \Null(A^\top)^\perp \iff \by^\top\mathbf{b} = 0$ whenever $A^\top\by = \mathbf{0}$ (Fredholm, Lecture~1).
+\end{frame}
+
+\board{Proof: $\Null(A) = \row(A)^\perp$}{$A\bx = \mathbf{0}$ means: each row of $A$ times $\bx$ is $0$. \quad Example: $A = \begin{pmatrix} 1 & 2 & -1 \\ 3 & -1 & 4 \end{pmatrix}$, $\Null(A) = \Span\{(-1, 1, 1)^\top\}$.}
+
+\checkslide{the four subspaces of a $2 \times 3$ matrix}{
+    \small
+    Row reduction of $A = \begin{pmatrix} 1 & 2 & -1 \\ 3 & -1 & 4 \end{pmatrix}$:
+    \[\xrightarrow{R_2 - 3R_1} \begin{pmatrix} 1 & 2 & -1 \\ 0 & -7 & 7 \end{pmatrix} \xrightarrow{-\frac{1}{7}R_2} \begin{pmatrix} 1 & 2 & -1 \\ 0 & 1 & -1 \end{pmatrix} \xrightarrow{R_1 - 2R_2} \begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & -1 \end{pmatrix}.\]
+    Free variable $x_3 = t$: $x_1 = -t$, $x_2 = t$, so $\Null(A) = \Span\{(-1, 1, 1)^\top\}$.
+    \\[0.3em]
+    \textbf{Orthogonal to the rows:} $(1, 2, -1) \cdot (-1, 1, 1) = -1 + 2 - 1 = 0$, \ $(3, -1, 4) \cdot (-1, 1, 1) = -3 - 1 + 4 = 0$.
+    \\[0.3em]
+    \textbf{Dimensions} ($m = 2$, $n = 3$, $r = 2$):
+    \begin{itemize}
+        \item $\row(A) \subset \R^3$: dimension $2$; \ $\Null(A)$: dimension $3 - 2 = 1$; \ $2 + 1 = 3$ \checkmark;
+        \item $\col(A) = \R^2$ (two pivots): dimension $2$; \ $\Null(A^\top) = \{\mathbf{0}\}$: dimension $2 - 2 = 0$.
+    \end{itemize}
+    So $A\bx = \mathbf{b}$ is solvable for every $\mathbf{b} \in \R^2$ (Fredholm: the condition $\by^\top\mathbf{b} = 0$ for $\by \in \Null(A^\top)$ is empty), with a one-parameter family of solutions.
+}
+
+\begin{frame}{Hyperplanes and linear classifiers}
+    \sidebyside{0.52}{%
+        \small
+        A \textbf{hyperplane} $H = \{\bx : \bw^\top\bx = c\}$, $\bw \neq \mathbf{0}$ the normal vector. For $c = 0$, $H = \Span\{\bw\}^\perp$ has dimension $n - 1$; otherwise $H = \bx_0 + \Span\{\bw\}^\perp$.
+        \\[0.6em]
+        A \textbf{linear classifier}
+        \[f(\bx) = \sign(\bw^\top\bx + b)\]
+        predicts $+1$ on the side into which $\bw$ points.
+        \\[0.4em]
+        \textcolor{mlcolor}{Perceptron, logistic regression and SVMs learn such $\bw$, $b$; one neuron is $\sigma(\bw^\top\bx + b)$.}
+    }{%
+        \centering\notesfig[0.98]{L2-classifier}
+    }
+\end{frame}
+
+\begin{frame}{Inner products of functions}
+    \sidebyside{0.55}{%
+        \small
+        $\ip{f}{g} = \int_a^b f(x)g(x)\,dx$ is an inner product on $C[a, b]$.
+        \begin{itemize}
+            \item $\sin \perp \cos$ on $[-\pi, \pi]$: the integrand is odd. Fourier series are expansions in an orthogonal basis.
+            \item Gram--Schmidt on $1, x, x^2, x^3$ in $C[-1, 1]$ gives the \textbf{Legendre polynomials} $1,\ x,\ x^2 - \frac{1}{3},\ x^3 - \frac{3}{5}x$.
+        \end{itemize}
+    }{%
+        \centering\notesfig[0.95]{L2-legendre}
+    }
+    \begin{remark}[Random variables (Lecture 9)]
+        \small For random variables with mean $0$, $\Cov(X, Y) = \E[XY]$ behaves like an inner product: $\Var(X) = \norm{X}^2$, and the correlation is the cosine of the angle between $X$ and $Y$. Expectation is a linear functional, variance a quadratic form, and a covariance matrix is a Gram matrix.
+    \end{remark}
+\end{frame}
+
+\begin{frame}{Worked example: the Legendre polynomials}
+    \small
+    $\ip{f}{g} = \int_{-1}^1f(x)g(x)\,dx$; we need $\int_{-1}^1x^k\,dx = \frac{2}{k + 1}$ for even $k$ and $0$ for odd $k$.
+    \\[0.3em]
+    Gram--Schmidt (unnormalized) on $1, x, x^2, x^3$:
+    \[\begin{aligned}
+        p_0 &= 1, \qquad \ip{p_0}{p_0} = 2,\\
+        p_1 &= x - \tfrac{\ip{x}{1}}{2}\cdot 1 = x \quad (\ip{x}{1} = 0), \qquad \ip{p_1}{p_1} = \tfrac{2}{3},\\
+        p_2 &= x^2 - \tfrac{\ip{x^2}{1}}{2}\cdot 1 - \tfrac{\ip{x^2}{x}}{2/3}\,x = x^2 - \tfrac{2/3}{2} - 0 = x^2 - \tfrac{1}{3}, \\
+        p_3 &= x^3 - \tfrac{\ip{x^3}{1}}{2} - \tfrac{\ip{x^3}{x}}{2/3}\,x - \tfrac{\ip{x^3}{p_2}}{\ip{p_2}{p_2}}\,p_2 = x^3 - \tfrac{2/5}{2/3}\,x = x^3 - \tfrac{3}{5}x,
+    \end{aligned}\]
+    since $\ip{x^3}{1} = 0$ and $\ip{x^3}{x^2 - \frac{1}{3}} = \int(x^5 - \frac{1}{3}x^3) = 0$ (odd integrands).
+    \\[0.3em]
+    \textbf{Check} $p_2 \perp 1$: $\int_{-1}^1(x^2 - \frac{1}{3})\,dx = \frac{2}{3} - \frac{2}{3} = 0$ \checkmark. \ Also $\ip{\sin}{\cos} = \int_{-\pi}^\pi\sin x\cos x\,dx = 0$ (odd), $\norm{\sin}^2 = \int_{-\pi}^\pi\sin^2x\,dx = \pi$.
+\end{frame}
+
+% ------------------------------------------------------------------ Projections
+\topic{\secref{sec:projections}}{Orthogonal projections and least squares}
+
+\begin{frame}{Orthogonal projections}
+    \small
+    $V = U \oplus U^\perp$, \ $v = u + w$: \ the \textbf{orthogonal projection} is $\pi_U(v) = u$, i.e.,
+    \[\pi_U(v) \in U \qquad \text{and} \qquad v - \pi_U(v) \in U^\perp.\]
+    \begin{proposition}[][prop:projection-properties]
+        If $e_1, \ldots, e_k$ is an orthonormal basis of $U$, then $\pi_U(v) = \sum_{i=1}^k\ip{v}{e_i}e_i$. \ $\pi_U$ is linear with image $U$ and kernel $U^\perp$, and $\pi_U \circ \pi_U = \pi_U$.
+    \end{proposition}
+    \sidebyside{0.55}{%
+        \begin{proposition}[Onto a line][prop:projection-line]
+            For $U = \Span\{\bb\}$:
+            \[\pi_U(\bx) = \frac{\ip{\bx}{\bb}}{\ip{\bb}{\bb}}\,\bb, \qquad P = \frac{\bb\bb^\top}{\bb^\top\bb}.\]
+        \end{proposition}
+    }{%
+        \centering\notesfig[0.9]{L2-projection-line}
+    }
+\end{frame}
+
+\begin{frame}{Worked example: projection onto a line}
+    \small
+    $\bb = (1, 2, 2)^\top$, $\bx = (1, 1, 1)^\top$: \ $\bb^\top\bx = 1 + 2 + 2 = 5$, \ $\bb^\top\bb = 1 + 4 + 4 = 9$.
+    \[\pi_U(\bx) = \frac{5}{9}\begin{pmatrix} 1 \\ 2 \\ 2 \end{pmatrix}, \qquad \bx - \pi_U(\bx) = \frac{1}{9}\begin{pmatrix} 9 - 5 \\ 9 - 10 \\ 9 - 10 \end{pmatrix} = \frac{1}{9}\begin{pmatrix} 4 \\ -1 \\ -1 \end{pmatrix}.\]
+    \textbf{Check} the residual is orthogonal to the line: $\bb^\top(\bx - \pi_U(\bx)) = \frac{1}{9}(4 - 2 - 2) = 0$ \checkmark.
+    \\[0.4em]
+    \textbf{Projection matrix:}
+    \[P = \frac{\bb\bb^\top}{\bb^\top\bb} = \frac{1}{9}\begin{pmatrix} 1 \\ 2 \\ 2 \end{pmatrix}\begin{pmatrix} 1 & 2 & 2 \end{pmatrix} = \frac{1}{9}\begin{pmatrix} 1 & 2 & 2 \\ 2 & 4 & 4 \\ 2 & 4 & 4 \end{pmatrix}, \qquad P\bx = \frac{1}{9}\begin{pmatrix} 5 \\ 10 \\ 10 \end{pmatrix} \checkmark.\]
+    $P$ is symmetric, has rank $1$ (all rows are multiples of $(1, 2, 2)$), $\tr P = \frac{9}{9} = 1 = \dim U$, and $P^2 = \frac{\bb(\bb^\top\bb)\bb^\top}{(\bb^\top\bb)^2} = P$.
+    \\[0.4em]
+    Distance from $\bx$ to the line: $\norm{\bx - \pi_U(\bx)} = \frac{1}{9}\sqrt{16 + 1 + 1} = \frac{\sqrt{18}}{9} = \frac{\sqrt2}{3}$. \ Pythagoras: $\frac{25}{9} + \frac{2}{9} = 3 = \norm{\bx}^2$ \checkmark.
+\end{frame}
+
+\begin{frame}{Projection onto a subspace: the normal equations}
+    \sidebyside{0.6}{%
+        \begin{theorem}[Normal equations][thm:projection-subspace]
+            \small Let $B$ ($n \times m$) have independent columns, $U = \col(B)$. Then $\pi_U(\bx) = B\boldsymbol{\lambda}$, where
+            \[B^\top B\,\boldsymbol{\lambda} = B^\top\bx,\]
+            so $\pi_U(\bx) = P\bx$ with
+            \[P = B(B^\top B)^{-1}B^\top.\]
+            $P$ is symmetric and $P^2 = P$.
+        \end{theorem}
+    }{%
+        \centering\fig[1]{s06_projection3d}
+    }
+    \begin{theorem}[Best approximation][thm:best-approximation]
+        \small $\pi_U(v)$ is the point of $U$ closest to $v$: $\norm{v - \pi_U(v)} < \norm{v - u}$ for all $u \in U$, $u \neq \pi_U(v)$.
+    \end{theorem}
+\end{frame}
+
+\board[2]{Derive the normal equations and the best approximation}{(1) $\bx - B\boldsymbol{\lambda} \perp$ every column of $B$ $\Rightarrow$ $B^\top B\boldsymbol{\lambda} = B^\top\bx$. Why is $B^\top B$ invertible? \quad (2) $P^\top = P$, $P^2 = P$. \quad (3) For $u \in U$: $v - u = (v - \pi_U(v)) + (\pi_U(v) - u)$, Pythagoras.}
+
+\board{Example: projection onto a plane}{Project $\bx = (6, 0, 0)^\top$ onto $U = \Span\{(1, 1, 1)^\top, (0, 1, 2)^\top\}$, and find $P$.}
+
+\checkslide{projection onto a plane}{
+    \small
+    \[B = \begin{pmatrix} 1 & 0 \\ 1 & 1 \\ 1 & 2 \end{pmatrix}, \quad B^\top B = \begin{pmatrix} 1 + 1 + 1 & 0 + 1 + 2 \\ 0 + 1 + 2 & 0 + 1 + 4 \end{pmatrix} = \begin{pmatrix} 3 & 3 \\ 3 & 5 \end{pmatrix}, \quad B^\top\bx = \begin{pmatrix} 6 \\ 0 \end{pmatrix}.\]
+    \textbf{Normal equations:} $3\lambda_1 + 3\lambda_2 = 6$, $3\lambda_1 + 5\lambda_2 = 0$. Subtracting: $2\lambda_2 = -6$, so $\lambda_2 = -3$, $\lambda_1 = 2 - \lambda_2 = 5$.
+    \[\pi_U(\bx) = 5\begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix} - 3\begin{pmatrix} 0 \\ 1 \\ 2 \end{pmatrix} = \begin{pmatrix} 5 \\ 2 \\ -1 \end{pmatrix}, \qquad \bx - \pi_U(\bx) = \begin{pmatrix} 1 \\ -2 \\ 1 \end{pmatrix}: \ 1 - 2 + 1 = 0, \ 0 - 2 + 2 = 0 \ \checkmark.\]
+    \textbf{Projection matrix:} $\det(B^\top B) = 15 - 9 = 6$, \ $(B^\top B)^{-1} = \frac{1}{6}\begin{pmatrix} 5 & -3 \\ -3 & 3 \end{pmatrix}$,
+    \[B(B^\top B)^{-1} = \frac{1}{6}\begin{pmatrix} 5 & -3 \\ 2 & 0 \\ -1 & 3 \end{pmatrix}, \qquad P = B(B^\top B)^{-1}B^\top = \frac{1}{6}\begin{pmatrix} 5 & 2 & -1 \\ 2 & 2 & 2 \\ -1 & 2 & 5 \end{pmatrix}.\]
+    Check: $P\bx = \frac{1}{6}(30, 12, -6)^\top = (5, 2, -1)^\top$ \checkmark; \ $P$ symmetric, $\tr P = \frac{12}{6} = 2 = \dim U$, $P(1, -2, 1)^\top = \mathbf{0}$.
+}
+
+\begin{frame}{Least squares and linear regression}
+    \begin{theorem}[Least squares][thm:least-squares]
+        Let $A$ ($N \times n$) have independent columns, $\by \in \R^N$. The unique minimizer of $\norm{\by - A\bw}$ solves the normal equations
+        \[A^\top A\,\bw^* = A^\top\by, \qquad \bw^* = (A^\top A)^{-1}A^\top\by,\]
+        and $A\bw^* = \pi_{\col(A)}(\by)$.
+    \end{theorem}
+    \small
+    \begin{itemize}
+        \item Rows of the design matrix $A$: the features of one data point, and a $1$ for the intercept.
+        \item The residual $\by - A\bw^*$ is orthogonal to every column (every feature).
+        \item Columns $1, x, \ldots, x^d$: polynomial regression. \ In practice: QR or \py{np.linalg.lstsq}.
+    \end{itemize}
+\end{frame}
+
+\board{Example: fitting a line}{Fit $y = w_0 + w_1x$ to the points $(-1, 0)$, $(0, 1)$, $(1, 3)$ by least squares. Check that the residual is orthogonal to the columns of $A$.}
+
+\checkslide{the regression line}{
+    \sidebyside{0.6}{%
+        \small
+        Rows of $A$: $(1, x_i)$; \ $\by$: the $y_i$.
+        \[A = \begin{pmatrix} 1 & -1 \\ 1 & 0 \\ 1 & 1 \end{pmatrix}, \quad \by = \begin{pmatrix} 0 \\ 1 \\ 3 \end{pmatrix},\]
+        \[A^\top A = \begin{pmatrix} N & \sum x_i \\ \sum x_i & \sum x_i^2 \end{pmatrix} = \begin{pmatrix} 3 & 0 \\ 0 & 2 \end{pmatrix},\]
+        \[A^\top\by = \begin{pmatrix} \sum y_i \\ \sum x_iy_i \end{pmatrix} = \begin{pmatrix} 0 + 1 + 3 \\ 0 + 0 + 3 \end{pmatrix} = \begin{pmatrix} 4 \\ 3 \end{pmatrix}.\]
+        $A^\top A$ is diagonal: $w_0^* = \frac{4}{3}$, $w_1^* = \frac{3}{2}$: \ $y = \frac{4}{3} + \frac{3}{2}x$.
+        \\[0.3em]
+        Fitted values $A\bw^* = \big(\frac{4}{3} - \frac{3}{2}, \frac{4}{3}, \frac{4}{3} + \frac{3}{2}\big) = \big(-\frac{1}{6}, \frac{4}{3}, \frac{17}{6}\big)$;
+        \\
+        residual $\by - A\bw^* = \big(\frac{1}{6}, -\frac{1}{3}, \frac{1}{6}\big)$.
+        \\[0.3em]
+        Check: $\frac{1}{6} - \frac{1}{3} + \frac{1}{6} = 0$ (column $\mathbf{1}$), $-\frac{1}{6} + 0 + \frac{1}{6} = 0$ (column $\bx$).
+        \\[0.3em]
+        SSE $= \frac{1}{36} + \frac{1}{9} + \frac{1}{36} = \frac{1}{6}$.
+    }{%
+        \centering\notesfig[0.95]{L2-regression}
+    }
+}
+
+\begin{frame}{Distance to a hyperplane}
+    \begin{theorem}[][thm:distance-hyperplane]
+        For $H = \{\mathbf{z} : \bw^\top\mathbf{z} = c\}$, the closest point of $H$ to $\bx$ and the distance are
+        \[\pi_H(\bx) = \bx - \frac{\bw^\top\bx - c}{\norm{\bw}^2}\,\bw, \qquad d(\bx, H) = \frac{|\bw^\top\bx - c|}{\norm{\bw}}.\]
+    \end{theorem}
+    \small
+    \begin{example}
+        Distance from $(1, 2, 3)^\top$ to $x + 2y + 2z = 2$: \ $\frac{|1 + 4 + 6 - 2|}{3} = 3$, closest point $(0, 0, 1)^\top$.
+    \end{example}
+    \begin{mlbox}
+        \small The signed distance $\frac{\bw^\top\bx + b}{\norm{\bw}}$ of a data point to the decision boundary is the \emph{margin}: a measure of confidence. Support vector machines maximize the smallest margin (Lecture~8: duality).
+    \end{mlbox}
+\end{frame}
+
+\board{Derive the distance formula}{Move from $\bx$ along the normal: $\bx - t\bw \in H$. Solve for $t$; why is this the closest point?}
+
+\checkslide{distances to hyperplanes}{
+    \small
+    \textbf{Derivation:} $\bw^\top(\bx - t\bw) = c \iff t = \frac{\bw^\top\bx - c}{\norm{\bw}^2}$. The step $t\bw$ is normal to $H$, so for every $\mathbf{z} \in H$: $\norm{\bx - \mathbf{z}}^2 = \norm{t\bw}^2 + \norm{\pi_H(\bx) - \mathbf{z}}^2 \geq \norm{t\bw}^2$ (Pythagoras), and $\norm{t\bw} = \frac{|\bw^\top\bx - c|}{\norm{\bw}}$.
+    \\[0.5em]
+    \textbf{Example 1.} $\bx = (1, 2, 3)^\top$, $H$: $x + 2y + 2z = 2$, \ $\bw = (1, 2, 2)^\top$, $\norm{\bw} = 3$:
+    \[\bw^\top\bx - c = 1 + 4 + 6 - 2 = 9, \qquad d = \frac{9}{3} = 3, \qquad \pi_H(\bx) = (1, 2, 3)^\top - \frac{9}{9}(1, 2, 2)^\top = (0, 0, 1)^\top.\]
+    Check: $0 + 0 + 2 \cdot 1 = 2$, so $(0, 0, 1)^\top \in H$; \ $\norm{\bx - \pi_H(\bx)} = \norm{(1, 2, 2)} = 3$ \checkmark.
+    \\[0.5em]
+    \textbf{Example 2} (a classifier). $\bw = (1, 1)^\top$, $b = -2$, boundary $x_1 + x_2 = 2$, point $\bx = (2.5, 1.5)^\top$:
+    \[\text{signed distance} = \frac{\bw^\top\bx + b}{\norm{\bw}} = \frac{4 - 2}{\sqrt2} = \sqrt2 > 0 \ (\text{class } +1),\]
+    \[\text{closest point on the boundary: } (2.5, 1.5) - \tfrac{4 - 2}{2}(1, 1) = (1.5, 0.5), \qquad 1.5 + 0.5 = 2 \ \checkmark.\]
+}
+
+\begin{frame}{Self-study: rotations (\S2.9)}
+    \small
+    A \textbf{rotation} is an orthogonal matrix with $\det R = 1$; they form the group $\mathrm{SO}(n)$.
+    \begin{itemize}
+        \item Plane: $R(\theta) = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}$, and $R(\alpha)R(\beta) = R(\alpha + \beta)$: rotations of $\R^2$ commute.
+        \item Space: every $R \in \mathrm{SO}(3)$ is a rotation about an axis, $R = QR_3(\theta)Q^\top$, and a product of three rotations about coordinate axes (Euler angles). Rotations of $\R^3$ do \emph{not} commute.
+        \item $\R^n$: Givens rotations $G_{ij}(\theta)$ rotate the $(i, j)$-plane.
+    \end{itemize}
+    \begin{mlbox}
+        \small Methods that only use distances and dot products (k-NN, kernels, PCA) give the same answer after rotating the data. Data augmentation rotates images; rotary position embeddings (RoPE) in transformers rotate pairs of coordinates.
+    \end{mlbox}
+\end{frame}
+
+% ------------------------------------------------------------------ Spectral theorem
+\topic{\secref{sec:spectral}}{The spectral theorem}
+
+\begin{frame}{The spectral theorem}
+    \begin{theorem}[Spectral theorem][thm:spectral]
+        Let $A$ be a real symmetric $n \times n$ matrix. Then
+        \begin{enumerate}
+            \item all complex eigenvalues of $A$ are real;
+            \item eigenvectors for distinct eigenvalues are orthogonal;
+            \item there is an orthonormal basis $\bq_1, \ldots, \bq_n$ of eigenvectors:
+            \[A = Q\Lambda Q^\top = \lambda_1\bq_1\bq_1^\top + \cdots + \lambda_n\bq_n\bq_n^\top.\]
+        \end{enumerate}
+    \end{theorem}
+    \small
+    \begin{itemize}
+        \item Each $\bq_i\bq_i^\top$ is the projection onto $\Span\{\bq_i\}$: a symmetric matrix projects onto $n$ orthogonal directions, scales, and adds up.
+        \item Lecture~1: not every matrix is diagonalizable. Symmetric matrices always are, and by an \emph{orthogonal} $Q$: $Q^{-1} = Q^\top$.
+    \end{itemize}
+\end{frame}
+
+\board[2]{Proof of the spectral theorem}{(1) For $A\bv = \lambda\bv$, $\bv \in \mathbb{C}^n$: the number $z = \bar{\bv}^\top A\bv$ is real. \quad (2) $\lambda\,\bv^\top\bw = (A\bv)^\top\bw = \bv^\top A\bw = \mu\,\bv^\top\bw$. \quad (3) Induction: $W = \Span\{\bq_1\}^\perp$ is mapped into itself by $A$.}
+
+\begin{frame}{Worked example: an orthogonal diagonalization}
+    \begin{example}[][ex:spectral]
+        \small $A = \begin{pmatrix} 2 & 1 & 1 \\ 1 & 2 & 1 \\ 1 & 1 & 2 \end{pmatrix} = J + 2I_3$, with $J$ from Lecture~5 (eigenvalues $2, -1, -1$).
+    \end{example}
+    \small
+    \textbf{Eigenvalues:} $J$'s eigenvalues shifted by $2$: \ $4$ with $E_4 = \Span\{(1, 1, 1)^\top\}$, and $1$ (twice) with $E_1 = \{x + y + z = 0\}$. The two eigenspaces are orthogonal, as the spectral theorem predicts.
+    \\[0.3em]
+    \textbf{Orthonormal basis of $E_1$} by Gram--Schmidt on $\bw_1 = (1, -1, 0)^\top$, $\bw_2 = (1, 0, -1)^\top$:
+    \[\bu_2 = \bw_2 - \tfrac{\bw_2^\top\bw_1}{\bw_1^\top\bw_1}\bw_1 = (1, 0, -1)^\top - \tfrac{1}{2}(1, -1, 0)^\top = \big(\tfrac{1}{2}, \tfrac{1}{2}, -1\big)^\top \ \to\ \tfrac{1}{\sqrt6}(1, 1, -2)^\top.\]
+    \[Q = \begin{pmatrix} \frac{1}{\sqrt{3}} & \frac{1}{\sqrt{2}} & \frac{1}{\sqrt{6}} \\ \frac{1}{\sqrt{3}} & -\frac{1}{\sqrt{2}} & \frac{1}{\sqrt{6}} \\ \frac{1}{\sqrt{3}} & 0 & -\frac{2}{\sqrt{6}} \end{pmatrix}, \qquad \Lambda = \diag(4, 1, 1), \qquad A = Q\Lambda Q^\top.\]
+    \textbf{Check:} $A(1, 1, -2)^\top = (2 + 1 - 2,\ 1 + 2 - 2,\ 1 + 1 - 4)^\top = (1, 1, -2)^\top$ \checkmark; the columns of $Q$ are orthonormal. \ As a sum of projections:
+    With $E$ the all-ones matrix, $\bq_1\bq_1^\top = \frac{1}{3}E$ and $\bq_2\bq_2^\top + \bq_3\bq_3^\top = I - \frac{1}{3}E$ (the projection onto $E_1$):
+    \[A = 4 \cdot \tfrac{1}{3}E + 1 \cdot \big(I - \tfrac{1}{3}E\big) = I + E \ \checkmark. \qquad \text{($Q$ is not unique inside } E_1\text{.)}\]
+\end{frame}
+
+\begin{frame}{Consequences: definiteness, square roots, ellipsoids}
+    \small
+    \begin{corollary}[][cor:spd-eigenvalues]
+        Symmetric $A$ is positive definite $\iff$ all eigenvalues are $> 0$; \ semidefinite $\iff$ all are $\geq 0$.
+    \end{corollary}
+    \begin{corollary}[Sylvester's criterion][cor:sylvester]
+        $A$ is positive definite $\iff \det(A_k) > 0$ for the upper left $k \times k$ submatrices, $k = 1, \ldots, n$.
+    \end{corollary}
+    \begin{proposition}[Square root][prop:sqrt]
+        For $A = Q\Lambda Q^\top \succeq 0$: \ $A^{1/2} = Q\Lambda^{1/2}Q^\top$ is the only PSD matrix with $(A^{1/2})^2 = A$.
+    \end{proposition}
+    \textbf{Geometry.} For SPD $A$, $\{\bx : \bx^\top A\bx = 1\}$ is an ellipsoid with axes along $\bq_i$ and semi-axes $1/\sqrt{\lambda_i}$: in $\by = Q^\top\bx$ it reads $\lambda_1y_1^2 + \cdots + \lambda_ny_n^2 = 1$.\\
+    \textcolor{mlcolor}{Level sets of Gaussian densities ($A = \Sigma^{-1}$) and of quadratic losses; very different $\lambda_i$ make gradient descent zig-zag (Lecture~8).}
+\end{frame}
+
+\begin{frame}{The Rayleigh quotient}
+    \begin{proposition}[Rayleigh quotient][prop:rayleigh]
+        Let $A$ be symmetric with eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n$ and orthonormal eigenvectors $\bq_i$. For $\bx \neq \mathbf{0}$,
+        \[\lambda_n \leq R_A(\bx) = \frac{\bx^\top A\bx}{\bx^\top\bx} \leq \lambda_1,\]
+        with equality on the right for $\bx = \bq_1$ and on the left for $\bx = \bq_n$.
+    \end{proposition}
+    \centering\fig[0.7]{s06_rayleigh}
+\end{frame}
+
+\begin{frame}{Worked example: three tests for definiteness, and a square root}
+    \small
+    $A = \begin{pmatrix} 9 & 6 \\ 6 & 5 \end{pmatrix}$ and $A_2 = \begin{pmatrix} 9 & 6 \\ 6 & 3 \end{pmatrix}$.
+    \\[0.3em]
+    \textbf{1. Eigenvalues.} $A$: $\tr = 14$, $\det = 45 - 36 = 9$, \ $\lambda = \frac{14 \pm \sqrt{196 - 36}}{2} = 7 \pm 2\sqrt{10} \approx 13.32,\ 0.68$: both $> 0$, positive definite. \\
+    $A_2$: $\tr = 12$, $\det = 27 - 36 = -9$, \ $\lambda = 6 \pm \sqrt{45} \approx 12.71,\ -0.71$: indefinite.
+    \\[0.3em]
+    \textbf{2. Sylvester.} $A$: $\det(9) = 9 > 0$, $\det A = 9 > 0$ \checkmark. \ $A_2$: $\det A_2 = -9 < 0$ \texttimes. \ ($\lambda_1\lambda_2 = \det$: a negative determinant means one negative eigenvalue.)
+    \\[0.3em]
+    \textbf{3. A vector with $\bx^\top A_2\bx < 0$:} $\bx = (2, -3)^\top$: $9 \cdot 4 + 2 \cdot 6 \cdot 2 \cdot (-3) + 3 \cdot 9 = 36 - 72 + 27 = -9$.
+    \\[0.4em]
+    \textbf{Square root} of $B = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix} = Q\diag(3, 1)Q^\top$, $Q = \frac{1}{\sqrt2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$:
+    \[B^{1/2} = Q\diag(\sqrt3, 1)Q^\top = \frac{1}{2}\begin{pmatrix} \sqrt3 + 1 & \sqrt3 - 1 \\ \sqrt3 - 1 & \sqrt3 + 1 \end{pmatrix} \approx \begin{pmatrix} 1.366 & 0.366 \\ 0.366 & 1.366 \end{pmatrix}.\]
+    Check: diagonal of $(B^{1/2})^2$: $\frac{1}{4}\big((\sqrt3 + 1)^2 + (\sqrt3 - 1)^2\big) = \frac{1}{4}(4 + 2\sqrt3 + 4 - 2\sqrt3) = 2$; off-diagonal: $\frac{1}{4} \cdot 2(\sqrt3 + 1)(\sqrt3 - 1) = \frac{1}{4} \cdot 2 \cdot 2 = 1$ \checkmark.
+\end{frame}
+
+\board{Proof of the Rayleigh bounds}{Write $\bx = \sum_i c_i\bq_i$. Then $\bx^\top A\bx = \sum_i \lambda_i c_i^2$ and $\bx^\top\bx = \sum_i c_i^2$. \quad Example: $A = \begin{pmatrix} 2.5 & 1.5 \\ 1.5 & 2.5 \end{pmatrix}$ on the unit circle $\bx = (\cos\theta, \sin\theta)^\top$.}
+
+\checkslide{the Rayleigh quotient on the unit circle}{
+    \small
+    \textbf{Proof.} $\bx = \sum_ic_i\bq_i$ with orthonormal $\bq_i$: \ $A\bx = \sum_i\lambda_ic_i\bq_i$, so by Parseval
+    \[\frac{\bx^\top A\bx}{\bx^\top\bx} = \frac{\sum_i\lambda_ic_i^2}{\sum_ic_i^2}, \qquad \lambda_n\sum_ic_i^2 \leq \sum_i\lambda_ic_i^2 \leq \lambda_1\sum_ic_i^2,\]
+    a weighted average of the eigenvalues, with weights $\frac{c_i^2}{\sum c_j^2}$. Equality on the right iff all weight is on eigenvalues equal to $\lambda_1$.
+    \\[0.5em]
+    \textbf{Example.} $A = \begin{pmatrix} 2.5 & 1.5 \\ 1.5 & 2.5 \end{pmatrix}$, $\bx = (\cos\theta, \sin\theta)^\top$:
+    \[\bx^\top A\bx = 2.5\cos^2\theta + 2 \cdot 1.5\cos\theta\sin\theta + 2.5\sin^2\theta = 2.5 + 1.5\sin 2\theta \in [1, 4].\]
+    Maximum $4$ at $\theta = 45^\circ$, $\bx = \frac{1}{\sqrt2}(1, 1)^\top$; minimum $1$ at $\theta = 135^\circ$, $\bx = \frac{1}{\sqrt2}(-1, 1)^\top$: the eigenvalues and eigenvectors ($\tr = 5 = 4 + 1$, $\det = 6.25 - 2.25 = 4 = 4 \cdot 1$ \checkmark).
+}
+
+\begin{frame}{Eigenvalues as optimization problems}
+    \small
+    \begin{proposition}[Ky Fan][prop:ky-fan]
+        For every $n \times k$ matrix $B$ with orthonormal columns $\bb_1, \ldots, \bb_k$:
+        \(\tr(B^\top AB) = \sum_j \bb_j^\top A\bb_j \leq \lambda_1 + \cdots + \lambda_k,\)
+        with equality for $\bb_j = \bq_j$. \hfill \textcolor{mlcolor}{$\to$ PCA}
+    \end{proposition}
+    \begin{theorem}[Courant--Fischer][thm:courant-fischer]
+        \(\displaystyle\lambda_k = \max_{\dim U = k}\ \min_{\bx \in U,\, \bx \neq \mathbf{0}} R_A(\bx),\)
+        attained for $U = \Span\{\bq_1, \ldots, \bq_k\}$.
+    \end{theorem}
+    \begin{corollary}[Weyl][cor:weyl]
+        If all eigenvalues of the symmetric matrix $E$ lie in $[-\varepsilon, \varepsilon]$, then $|\lambda_k(A + E) - \lambda_k(A)| \leq \varepsilon$ for every $k$.
+    \end{corollary}
+    Eigenvalues of symmetric matrices are \emph{stable}: noise of size $\varepsilon$ moves them by at most $\varepsilon$. (Eigenvectors can move a lot when eigenvalues are close.)
+\end{frame}
+
+\board{Idea of the proof of Courant--Fischer}{For $\dim U = k$: \ $U \cap \Span\{\bq_k, \ldots, \bq_n\} \neq \{\mathbf{0}\}$ (dimensions $k + (n - k + 1) > n$). On that intersection, $R_A \leq \lambda_k$.}
+
+\begin{frame}{Self-study: the graph Laplacian and spectral clustering (\S2.10.1)}
+    \small
+    Weighted graph $W = W^\top \geq 0$, degrees $d_i = \sum_j w_{ij}$, \ Laplacian $L = D - W$:
+    \[\bx^\top L\bx = \sum_{i < j} w_{ij}(x_i - x_j)^2 \geq 0, \qquad L\mathbf{1} = \mathbf{0}.\]
+    Multiplicity of the eigenvalue $0$ = number of connected components; \ $\mathrm{RatioCut}(A) \geq \lambda_2$ for every split of the vertices; spectral clustering splits by the signs of the \emph{Fiedler vector} $\bq_2$.
+    \\[0.3em]
+    \centering\fig[0.64]{s06_spectral_clustering}
+\end{frame}
+
+% ------------------------------------------------------------------ SVD
+\topic{\secref{sec:svd}}{The singular value decomposition}
+
+\begin{frame}{The singular value decomposition}
+    \begin{theorem}[SVD][thm:svd]
+        \small Every real $m \times n$ matrix is $A = U\Sigma V^\top$ with $U$ ($m \times m$) and $V$ ($n \times n$) orthogonal, and $\Sigma$ ($m \times n$) with diagonal $\sigma_1 \geq \cdots \geq \sigma_r > 0$ and all other entries $0$. Here $r = \rank A$.
+    \end{theorem}
+    \centering
+    \begin{tikzpicture}[x=0.42cm, y=0.42cm]
+        \draw[fill=accent!15] (0, 0) rectangle (3, 5); \node at (1.5, 2.5) {$A$};
+        \node at (4, 2.5) {$=$};
+        \draw[fill=defcolor!15] (5, 0) rectangle (10, 5); \node at (7.5, 2.5) {$U$};
+        \draw[fill=excolor!10] (10.6, 0) rectangle (13.6, 5);
+        \draw[excolor, thick] (10.6, 5) -- (13.6, 2); \node at (12.8, 1) {$\Sigma$};
+        \draw[fill=defcolor!15] (14.2, 2) rectangle (17.2, 5); \node at (15.7, 3.5) {$V^\top$};
+        \node[font=\scriptsize, below] at (1.5, 0) {$m \times n$};
+        \node[font=\scriptsize, below] at (7.5, 0) {$m \times m$};
+        \node[font=\scriptsize, below] at (12.1, 0) {$m \times n$};
+        \node[font=\scriptsize, below] at (15.7, 2) {$n \times n$};
+    \end{tikzpicture}
+    \\[0.4em]
+    \raggedright\small
+    Column by column: $A\bv_i = \sigma_i\bu_i$ \ ($i \leq r$), \ $A\bv_i = \mathbf{0}$ \ ($i > r$). \quad Sum of rank-one matrices:
+    \[A = \sigma_1\bu_1\bv_1^\top + \sigma_2\bu_2\bv_2^\top + \cdots + \sigma_r\bu_r\bv_r^\top.\]
+    Unlike $A = Q\Lambda Q^\top$, this works for \emph{every} matrix, also non-square.
+\end{frame}
+
+\board[2]{Proof of the SVD (it is an algorithm)}{$A^\top A$ is symmetric PSD: orthonormal eigenvectors $\bv_i$, eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n \geq 0$. Set $\sigma_i = \sqrt{\lambda_i}$, $\bu_i = \frac{1}{\sigma_i}A\bv_i$ for $\lambda_i > 0$. Show: the $\bu_i$ are orthonormal; complete them to a basis; $AV = U\Sigma$.}
+
+\board{Example: an SVD by hand}{Compute the SVD of $A = \begin{pmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 0 \end{pmatrix}$.}
+
+\checkslide{the SVD of a $3 \times 2$ matrix}{
+    \small
+    \textbf{Step 1.} $A^\top A = \begin{pmatrix} 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix}\begin{pmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 0 \end{pmatrix} = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$: eigenvalues $3, 1$ (Lecture~5), $\bv_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$, $\bv_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$.
+    \\[0.2em]
+    \textbf{Step 2.} $\sigma_1 = \sqrt3$, $\sigma_2 = 1$; \ $A\bv_1 = \frac{1}{\sqrt2}(1 + 1, 0 + 1, 1 + 0)^\top = \frac{1}{\sqrt2}(2, 1, 1)^\top$, \ $A\bv_2 = \frac{1}{\sqrt2}(0, -1, 1)^\top$:
+    \[\bu_1 = \tfrac{1}{\sqrt{3}}A\bv_1 = \tfrac{1}{\sqrt{6}}(2, 1, 1)^\top, \quad \bu_2 = \tfrac{1}{1}A\bv_2 = \tfrac{1}{\sqrt{2}}(0, -1, 1)^\top, \quad \bu_1^\top\bu_2 = \tfrac{0 - 1 + 1}{\sqrt{12}} = 0 \ \checkmark.\]
+    \textbf{Step 3.} Complete: $(2, 1, 1) \times (0, -1, 1) = (1 \cdot 1 - 1 \cdot (-1),\ 1 \cdot 0 - 2 \cdot 1,\ 2 \cdot (-1) - 1 \cdot 0) = (2, -2, -2)$, \ $\bu_3 = \tfrac{1}{\sqrt{3}}(1, -1, -1)^\top$.
+    \[\begin{pmatrix} 1 & 1 \\ 0 & 1 \\ 1 & 0 \end{pmatrix} = \underbrace{\begin{pmatrix} \frac{2}{\sqrt{6}} & 0 & \frac{1}{\sqrt{3}} \\ \frac{1}{\sqrt{6}} & -\frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{3}} \\ \frac{1}{\sqrt{6}} & \frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{3}} \end{pmatrix}}_{U}\underbrace{\begin{pmatrix} \sqrt{3} & 0 \\ 0 & 1 \\ 0 & 0 \end{pmatrix}}_{\Sigma}\underbrace{\tfrac{1}{\sqrt{2}}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}}_{V^\top}\]
+    $\bu_3$ spans $\Null(A^\top) = \col(A)^\perp$; any unit vector orthogonal to $\bu_1, \bu_2$ works.
+}
+
+\begin{frame}{The geometry of the SVD}
+    \centering\notesfig[1]{L2-svd}
+    \\[0.6em]
+    \raggedright\small
+    Every linear map is: rotate (or reflect) by $V^\top$, stretch the axes by $\sigma_i$, rotate by $U$. The unit sphere goes to an ellipsoid with semi-axes $\sigma_i\bu_i = A\bv_i$.
+    \begin{example}[The shear][ex:svd-shear]
+        \small $A = \begin{pmatrix} 1 & 1 \\ 0 & 1\end{pmatrix}$: \ $\sigma_1 = \varphi \approx 1.618$, $\sigma_2 = 1/\varphi \approx 0.618$ (golden ratio): rotate by $-58.3^\circ$, stretch by $\varphi$ and $1/\varphi$, rotate by $31.7^\circ$. Computation on the next slide.
+    \end{example}
+\end{frame}
+
+\begin{frame}{Worked example: the SVD of the shear}
+    \small
+    $A^\top A = \begin{pmatrix} 1 & 0 \\ 1 & 1 \end{pmatrix}\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix} = \begin{pmatrix} 1 & 1 \\ 1 & 2 \end{pmatrix}$: \ $\tr = 3$, $\det = 1$, \ $\lambda^2 - 3\lambda + 1 = 0$, \ $\lambda = \frac{3 \pm \sqrt5}{2}$.
+    \\[0.3em]
+    With $\varphi = \frac{1 + \sqrt5}{2}$: \ $\varphi^2 = \varphi + 1 = \frac{3 + \sqrt5}{2}$ and $\varphi^{-2} = \frac{3 - \sqrt5}{2}$ (their product is $1$). So $\sigma_1 = \varphi \approx 1.618$, $\sigma_2 = \varphi^{-1} \approx 0.618$, and $\sigma_1\sigma_2 = 1 = |\det A|$ (a shear preserves area).
+    \\[0.3em]
+    \textbf{Right singular vectors.} $(A^\top A - \varphi^2I)\bv = \mathbf{0}$: first row $(1 - \varphi^2)v_1 + v_2 = -\varphi v_1 + v_2 = 0$, so $\bv_1 \propto (1, \varphi)^\top$; \ $\bv_2 \perp \bv_1$: $\bv_2 \propto (-\varphi, 1)^\top$. With $c = \sqrt{1 + \varphi^2}$:
+    \[\bv_1 = \tfrac{1}{c}(1, \varphi)^\top, \qquad \bv_2 = \tfrac{1}{c}(-\varphi, 1)^\top.\]
+    \textbf{Left singular vectors.} $A\bv_1 = \frac{1}{c}(1 + \varphi, \varphi)^\top = \frac{1}{c}(\varphi^2, \varphi)^\top = \varphi\cdot\frac{1}{c}(\varphi, 1)^\top$, so $\bu_1 = \frac{1}{c}(\varphi, 1)^\top$; \ $A\bv_2 = \frac{1}{c}(1 - \varphi, 1)^\top = \frac{1}{\varphi}\cdot\frac{1}{c}(-1, \varphi)^\top$ (using $1 - \varphi = -\frac{1}{\varphi}$), so $\bu_2 = \frac{1}{c}(-1, \varphi)^\top$.
+    \\[0.3em]
+    \textbf{Angles.} $\bv_1$ is at $\arctan\varphi \approx 58.3^\circ$, $\bu_1$ at $\arctan\frac{1}{\varphi} \approx 31.7^\circ$: $V^\top$ rotates by $-58.3^\circ$ and $U$ by $31.7^\circ$; both $\det U = \det V = 1$.
+\end{frame}
+
+\begin{frame}{The SVD sees the four subspaces}
+    \begin{proposition}[][prop:svd-subspaces]
+        If $A = U\Sigma V^\top$ has rank $r$, then
+        \[\begin{aligned}
+            \col(A) &= \Span\{\bu_1, \ldots, \bu_r\}, & \Null(A^\top) &= \Span\{\bu_{r+1}, \ldots, \bu_m\}, \\
+            \row(A) &= \Span\{\bv_1, \ldots, \bv_r\}, & \Null(A) &= \Span\{\bv_{r+1}, \ldots, \bv_n\}.
+        \end{aligned}\]
+    \end{proposition}
+    \small
+    \begin{itemize}
+        \item The SVD gives orthonormal bases of all four subspaces at once, and $A$ maps $\bv_i \mapsto \sigma_i\bu_i$: the bijection $\row(A) \to \col(A)$ is diagonal in these bases.
+        \item $AA^\top = U\Sigma\Sigma^\top U^\top$: the $\bu_i$ are eigenvectors of $AA^\top$, with the same nonzero eigenvalues $\sigma_i^2$.
+        \item Numerical rank = number of $\sigma_i$ above a tolerance (\py{np.linalg.matrix_rank}).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Matrix norms}
+    \begin{definition}[Spectral norm]
+        \(\displaystyle\norm{A}_2 = \max_{\bx \neq \mathbf{0}}\frac{\norm{A\bx}}{\norm{\bx}}\), \ the largest factor by which $A$ stretches a vector.
+    \end{definition}
+    \begin{proposition}[][prop:matrix-norms]
+        \[\norm{A}_2 = \sigma_1, \qquad \norm{A}_F = \sqrt{\textstyle\sum_{i,j}A_{ij}^2} = \sqrt{\sigma_1^2 + \cdots + \sigma_r^2}.\]
+    \end{proposition}
+    \small
+    Both norms are unchanged by orthogonal matrices: $\norm{QAQ'}_2 = \norm{A}_2$. Also $\norm{AB}_2 \leq \norm{A}_2\norm{B}_2$.
+    \begin{mlbox}
+        \small Spectral normalization divides the weights of a layer by $\sigma_1$ to control how much it can stretch its inputs (GANs, Lipschitz networks); the Muon optimizer orthogonalizes updates, setting all $\sigma_i$ to $1$.
+    \end{mlbox}
+\end{frame}
+
+\board{Proof: $\norm{A}_2 = \sigma_1$ and $\norm{A}_F^2 = \sum_i \sigma_i^2$}{$\norm{A\bx}^2 = \bx^\top A^\top A\bx$: Rayleigh quotient of $A^\top A$. \quad $\norm{A}_F^2 = \tr(A^\top A) = $ sum of the eigenvalues of $A^\top A$.}
+
+\begin{frame}{Low-rank approximation: Eckart--Young}
+    \begin{theorem}[Eckart--Young][thm:eckart-young]
+        \small Let $A_k = \sigma_1\bu_1\bv_1^\top + \cdots + \sigma_k\bu_k\bv_k^\top$. For every $B$ with $\rank B \leq k$:
+        \[\norm{A - A_k}_2 = \sigma_{k+1} \leq \norm{A - B}_2, \qquad \norm{A - A_k}_F = \sqrt{\sigma_{k+1}^2 + \cdots + \sigma_r^2} \leq \norm{A - B}_F.\]
+    \end{theorem}
+    \centering\fig[0.86]{s06_lowrank}
+    \\[-0.1em]
+    \raggedright\scriptsize Terrain elevation map, $344 \times 403$: storing $A_k$ takes $k(m + n + 1)$ numbers instead of $mn$.
+\end{frame}
+
+\board[2]{Proof of Eckart--Young (spectral norm)}{Let $\rank B \leq k$. Then $\dim\Null(B) \geq n - k$, so $\Null(B) \cap \Span\{\bv_1, \ldots, \bv_{k+1}\}$ contains a unit vector $\bx$. Show $\norm{(A - B)\bx} \geq \sigma_{k+1}$. \\ Example: the best rank-$1$ approximation of $A = \begin{pmatrix} 3 & 0 \\ 4 & 5 \end{pmatrix}$.}
+
+\checkslide{best rank-one approximation}{
+    \small
+    $A = \begin{pmatrix} 3 & 0 \\ 4 & 5 \end{pmatrix}$, columns $(3, 4)$ and $(0, 5)$: \ $A^\top A = \begin{pmatrix} 9 + 16 & 0 + 20 \\ 20 & 0 + 25 \end{pmatrix} = \begin{pmatrix} 25 & 20 \\ 20 & 25 \end{pmatrix}$, eigenvalues $25 \pm 20 = 45, 5$, with $\bv_1 = \frac{1}{\sqrt{2}}(1, 1)^\top$, $\bv_2 = \frac{1}{\sqrt{2}}(1, -1)^\top$; \ $\sigma_1 = \sqrt{45} = 3\sqrt{5}$, $\sigma_2 = \sqrt{5}$.
+    \\[0.3em]
+    $A\bv_1 = \frac{1}{\sqrt2}(3, 9)^\top$, so $\bu_1 = \frac{1}{3\sqrt5}\cdot\frac{1}{\sqrt2}(3, 9)^\top = \frac{1}{\sqrt{10}}(1, 3)^\top$.
+    \[A_1 = \sigma_1\bu_1\bv_1^\top = 3\sqrt5\cdot\tfrac{1}{\sqrt{10}}\cdot\tfrac{1}{\sqrt2}\begin{pmatrix} 1 \\ 3 \end{pmatrix}\begin{pmatrix} 1 & 1 \end{pmatrix} = \tfrac{3}{2}\begin{pmatrix} 1 & 1 \\ 3 & 3 \end{pmatrix} = \begin{pmatrix} 1.5 & 1.5 \\ 4.5 & 4.5 \end{pmatrix}.\]
+    \textbf{Error:} $A - A_1 = \begin{pmatrix} 1.5 & -1.5 \\ -0.5 & 0.5 \end{pmatrix}$ (rank $1$, $= \sigma_2\bu_2\bv_2^\top$): \ $\norm{A - A_1}_F^2 = 2.25 + 2.25 + 0.25 + 0.25 = 5$, so $\norm{A - A_1}_F = \norm{A - A_1}_2 = \sqrt5 = \sigma_2$ \checkmark.
+    \\[0.3em]
+    \textbf{Norms of $A$:} $\norm{A}_2 = \sigma_1 = 3\sqrt5 \approx 6.71$, \ $\norm{A}_F = \sqrt{9 + 16 + 25} = \sqrt{50} = \sqrt{45 + 5}$ \checkmark.
+    \begin{mlbox}
+        \small Compression of images and networks; recommender systems (low-rank rating matrices); LoRA fine-tunes with a low-rank update $W + BA$, $B \in \R^{d \times k}$, $A \in \R^{k \times d}$, $k \ll d$; latent semantic analysis.
+    \end{mlbox}
+}
+
+\begin{frame}{The pseudo-inverse}
+    \begin{definition}[Pseudo-inverse]
+        \small $A^+ = V\Sigma^+U^\top$, where $\Sigma^+$ ($n \times m$) has the entries $1/\sigma_i$ for $i \leq r$, and $0$ elsewhere.
+    \end{definition}
+    \begin{proposition}[][prop:pinv]
+        \small If $A$ has independent columns, then $A^+ = (A^\top A)^{-1}A^\top$, and $A^+\by$ is the least squares solution.
+    \end{proposition}
+    \begin{proposition}[][prop:pinv-min-norm]
+        \small The minimizers of $\norm{A\bw - \by}$ are $\bw = A^+\by + \bv$ with $\bv \in \Null(A)$; among them, $A^+\by$ has the smallest norm.
+    \end{proposition}
+    \small
+    $A^+$ inverts the bijection $\row(A) \to \col(A)$ and sends $\Null(A^\top)$ to $\mathbf{0}$. \\
+    \textcolor{mlcolor}{More parameters than data points ($n > N$): infinitely many perfect fits; gradient descent started at $\mathbf{0}$ finds the minimum-norm one, $A^+\by$.}
+\end{frame}
+
+\begin{frame}{Worked example: the minimum-norm solution}
+    \small
+    One equation, two unknowns: $w_1 + w_2 = 2$, i.e., $A = \begin{pmatrix} 1 & 1 \end{pmatrix}$, $y = 2$. Every $\bw = (1, 1)^\top + t(1, -1)^\top$ fits exactly.
+    \\[0.4em]
+    \textbf{SVD.} $AA^\top = 2$: $\sigma_1 = \sqrt2$, $U = (1)$, $\bv_1 = A^\top\bu_1/\sigma_1 = \frac{1}{\sqrt2}(1, 1)^\top$, \ $\bv_2 = \frac{1}{\sqrt2}(1, -1)^\top$ spans $\Null(A)$:
+    \[A = \underbrace{(1)}_{U}\underbrace{\begin{pmatrix} \sqrt2 & 0 \end{pmatrix}}_{\Sigma}\underbrace{\tfrac{1}{\sqrt2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}}_{V^\top}, \qquad A^+ = V\Sigma^+U^\top = \tfrac{1}{\sqrt2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} 1/\sqrt2 \\ 0 \end{pmatrix} = \begin{pmatrix} 1/2 \\ 1/2 \end{pmatrix}.\]
+    \textbf{Minimum norm.} $A^+y = (1, 1)^\top$, and $\norm{(1, 1)^\top + t(1, -1)^\top}^2 = (1 + t)^2 + (1 - t)^2 = 2 + 2t^2$ is smallest at $t = 0$ \checkmark. The solution lies in $\row(A) = \Span\{(1, 1)^\top\}$.
+    \\[0.4em]
+    \textbf{Same answer from the formula} for independent rows: $A^\top(AA^\top)^{-1} = \frac{1}{2}(1, 1)^\top$ (Lecture~8: Lagrange multipliers).
+\end{frame}
+
+\begin{frame}{The condition number}
+    \sidebyside{0.6}{%
+        \small
+        For $A$ with independent columns: $\kappa(A) = \sigma_1/\sigma_n \geq 1$.
+        \begin{theorem}[Sensitivity][thm:condition]
+            \small If $A\bx = \mathbf{b} \neq \mathbf{0}$ and $A(\bx + \boldsymbol{\delta}\bx) = \mathbf{b} + \boldsymbol{\delta}\mathbf{b}$, then
+            \[\frac{\norm{\boldsymbol{\delta}\bx}}{\norm{\bx}} \leq \kappa(A)\,\frac{\norm{\boldsymbol{\delta}\mathbf{b}}}{\norm{\mathbf{b}}}.\]
+        \end{theorem}
+        \begin{example}[][ex:ill-conditioned]
+            \small $A = \begin{pmatrix} 1 & 1 \\ 1 & 1.001 \end{pmatrix}$, $\kappa \approx 4002$: changing $\mathbf{b}$ by $0.035\%$ changes $\bx$ by $100\%$.
+        \end{example}
+    }{%
+        \centering\fig[1]{s06_condition}\\
+        {\scriptsize the same with $1.1$: $\kappa \approx 42$}
+    }
+    \small
+    $\kappa(A^\top A) = \kappa(A)^2$: solve least squares by QR or the SVD, not the normal equations.
+    \textcolor{mlcolor}{Large $\kappa$ of the Hessian slows gradient descent (Lecture~8); normalization and Adam improve conditioning.}
+\end{frame}
+
+\board{Proof of the sensitivity bound}{$\boldsymbol{\delta}\bx = A^{-1}\boldsymbol{\delta}\mathbf{b}$, so $\norm{\boldsymbol{\delta}\bx} \leq \norm{\boldsymbol{\delta}\mathbf{b}}/\sigma_n$; \ and $\norm{\mathbf{b}} = \norm{A\bx} \leq \sigma_1\norm{\bx}$. When is it sharp?}
+
+\checkslide{an ill-conditioned system}{
+    \small
+    $A = \begin{pmatrix} 1 & 1 \\ 1 & 1.001 \end{pmatrix}$ is symmetric, so $\sigma_i = |\lambda_i|$: \ $\tr = 2.001$, $\det = 0.001$,
+    \[\lambda = \frac{2.001 \pm \sqrt{2.001^2 - 0.004}}{2} \approx 2.0005,\ 0.0005, \qquad \kappa(A) = \frac{\sigma_1}{\sigma_2} \approx 4002.\]
+    \textbf{Original system} $A\bx = (2, 2.001)^\top$: $\bx = (1, 1)^\top$ (check: $1 + 1 = 2$, $1 + 1.001 = 2.001$).
+    \\[0.2em]
+    \textbf{Perturbed} $\mathbf{b} + \boldsymbol{\delta}\mathbf{b} = (2, 2.002)^\top$: subtracting the equations, $0.001\,x_2 = 0.002$, so $x_2 = 2$, $x_1 = 0$.
+    \\[0.3em]
+    \textbf{Relative changes:}
+    \[\frac{\norm{\boldsymbol{\delta}\mathbf{b}}}{\norm{\mathbf{b}}} = \frac{0.001}{\sqrt{4 + 4.004}} \approx 0.035\%, \qquad \frac{\norm{\boldsymbol{\delta}\bx}}{\norm{\bx}} = \frac{\norm{(-1, 1)}}{\norm{(1, 1)}} = 100\%,\]
+    an amplification by $\approx 2830 \leq \kappa \approx 4002$, as the theorem allows. \ In floating point with $16$ digits, we lose about $\log_{10}\kappa \approx 3.6$ digits.
+}
+
+% ------------------------------------------------------------------ PCA
+\topic{\secref{sec:pca}}{Principal component analysis}
+
+\begin{frame}{PCA: the best $k$-dimensional subspace}
+    \small
+    Centered data $\bx_1, \ldots, \bx_N \in \R^d$ ($\sum_i\bx_i = \mathbf{0}$), rows of $X$ ($N \times d$), covariance matrix
+    \[S = \frac{1}{N}X^\top X = \frac{1}{N}\sum_{i=1}^N\bx_i\bx_i^\top \qquad \text{(symmetric PSD).}\]
+    Find a $k$-dimensional $U$ with the smallest reconstruction error $\sum_i\norm{\bx_i - \pi_U(\bx_i)}^2$; \\
+    by Pythagoras: equivalently, the largest projected variance $\sum_i\norm{\pi_U(\bx_i)}^2$.
+    \begin{theorem}[PCA][thm:pca]
+        \small Let $\bq_1, \ldots, \bq_d$ be orthonormal eigenvectors of $S$, $\lambda_1 \geq \cdots \geq \lambda_d \geq 0$. The best $U$ is $\Span\{\bq_1, \ldots, \bq_k\}$, and
+        \[\frac{1}{N}\sum_{i=1}^N\norm{\bx_i - \pi_U(\bx_i)}^2 = \lambda_{k+1} + \cdots + \lambda_d.\]
+    \end{theorem}
+\end{frame}
+
+\board{Proof of the PCA theorem}{For an orthonormal basis $\bb_1, \ldots, \bb_k$ of $U$: $\frac{1}{N}\sum_i\norm{\pi_U(\bx_i)}^2 = \sum_j \bb_j^\top S\bb_j$. Then Ky Fan ($k = 1$: Rayleigh). Error: $\frac{1}{N}\sum_i\norm{\bx_i}^2 = \tr S = \sum_i\lambda_i$.}
+
+\begin{frame}{PCA in practice}
+    \centering\fig[0.88]{s06_pca}
+    \\[0.1em]
+    \raggedright\small
+    \begin{itemize}
+        \item Compute it with the SVD of the data: $X = \tilde U\tilde\Sigma\tilde V^\top$ gives $S = \tilde V\,\frac{\tilde\Sigma^\top\tilde\Sigma}{N}\,\tilde V^\top$: principal components = right singular vectors, $\lambda_i = \sigma_i^2/N$, coordinates $X\tilde V$.
+        \item Explained variance of $k$ components: $\frac{\lambda_1 + \cdots + \lambda_k}{\lambda_1 + \cdots + \lambda_d}$.
+        \item \textcolor{mlcolor}{Preprocessing, visualization, denoising; t-SNE and UMAP are nonlinear alternatives (ML); probabilistic PCA (Lecture~11, self-study).}
+    \end{itemize}
+\end{frame}
+
+\board{Example: PCA by hand}{Centered data $(2, 2)$, $(-2, -2)$, $(1, -1)$, $(-1, 1)$. Find $S$, the principal components, the explained variance of $\bq_1$, and the reconstruction error.}
+
+\checkslide{PCA of four points}{
+    \small
+    The mean is $\mathbf{0}$ already. $X$ has the rows $(2, 2), (-2, -2), (1, -1), (-1, 1)$:
+    \[X^\top X = \begin{pmatrix} \sum x_{i1}^2 & \sum x_{i1}x_{i2} \\ \sum x_{i1}x_{i2} & \sum x_{i2}^2 \end{pmatrix} = \begin{pmatrix} 4 + 4 + 1 + 1 & 4 + 4 - 1 - 1 \\ 6 & 10 \end{pmatrix} = \begin{pmatrix} 10 & 6 \\ 6 & 10 \end{pmatrix},\]
+    \[S = \tfrac{1}{4}X^\top X = \begin{pmatrix} 2.5 & 1.5 \\ 1.5 & 2.5 \end{pmatrix}.\]
+    Eigenvalues $2.5 \pm 1.5 = 4, 1$, \ $\bq_1 = \tfrac{1}{\sqrt{2}}(1, 1)^\top$, $\bq_2 = \tfrac{1}{\sqrt{2}}(1, -1)^\top$. \ Total variance $\tr S = 5 = 4 + 1$.
+    \\[0.3em]
+    \textbf{Scores} $\bq_1^\top\bx_i$: $\frac{4}{\sqrt2}, -\frac{4}{\sqrt2}, 0, 0$; their mean square is $\frac{1}{4}(8 + 8 + 0 + 0) = 4 = \lambda_1$ \checkmark.
+    \\[0.3em]
+    \textbf{Projections} $(\bq_1^\top\bx_i)\bq_1$: $(2, 2)$, $(-2, -2)$, $(0, 0)$, $(0, 0)$; \ errors $\norm{\bx_i - \pi(\bx_i)}^2 = 0, 0, 2, 2$.
+    \begin{itemize}
+        \item $\bq_1$ explains $\frac{4}{4 + 1} = 80\%$ of the variance;
+        \item mean reconstruction error $\frac{1}{4}(0 + 0 + 2 + 2) = 1 = \lambda_2$, as the theorem says.
+    \end{itemize}
+}
+
+% ------------------------------------------------------------------ Wrap-up
+\begin{frame}{Matrix factorizations so far}
+    \small
+    \renewcommand{\arraystretch}{1.25}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        factorization & for & used for \\
+        \midrule
+        $PA = LU$ & invertible $A$ & solving $A\bx = \mathbf{b}$, $\det A$ (Lecture 1) \\
+        $A = PDP^{-1}$ & diagonalizable $A$ & powers $A^k$, dynamics, Markov chains \\
+        $A = LL^\top$ (Cholesky) & SPD $A$ & SPD systems, $\det$, sampling Gaussians \\
+        $A = QR$ & independent columns & least squares, orthonormal bases \\
+        $A = Q\Lambda Q^\top$ & symmetric $A$ & quadratic forms, definiteness, PCA \\
+        $A = U\Sigma V^\top$ & \emph{every} $A$ & rank, norms, low rank, $A^+$, $\kappa(A)$ \\
+        \bottomrule
+    \end{tabular}
+    \\[1em]
+    NumPy: \py{scipy.linalg.lu}, \py{np.linalg.eig}, \py{np.linalg.cholesky}, \py{np.linalg.qr}, \py{np.linalg.eigh}, \py{np.linalg.svd}.
+\end{frame}
+
+\begin{frame}{Key takeaways}
+    \small
+    \begin{itemize}
+        \item An inner product gives lengths, angles and orthogonality; on $\R^n$ every inner product is $\bx^\top G\by$ with SPD $G$.
+        \item Cauchy--Schwarz: $|\ip{x}{y}| \leq \norm{x}\norm{y}$. Orthogonal matrices preserve all of the geometry.
+        \item Gram--Schmidt $=$ QR. \ $\Null(A) = \row(A)^\perp$, \ $\Null(A^\top) = \col(A)^\perp$.
+        \item Projection onto $\col(B)$: $P = B(B^\top B)^{-1}B^\top$; least squares $A^\top A\bw = A^\top\by$.
+        \item Spectral theorem: $A = A^\top \Rightarrow A = Q\Lambda Q^\top$; \ $\max_{\norm{\bx} = 1}\bx^\top A\bx = \lambda_1$.
+        \item SVD: $A = U\Sigma V^\top = \sum_i\sigma_i\bu_i\bv_i^\top$: rotate, stretch, rotate. $\norm{A}_2 = \sigma_1$, $\kappa = \sigma_1/\sigma_n$.
+        \item Truncating the SVD gives the best rank-$k$ approximation; PCA projects centered data onto the top eigenvectors of $S$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Homework and next time}
+    \small
+    \begin{itemize}
+        \item \textbf{Homework:} Lecture 2, Exercises 7, 9, 14, 17, 22 and 25; Programming Exercises P10 and P11.
+        \item \textbf{Practice:} Practice 2, all sections except 9 (Rotations).
+        \item \textbf{Self-study:} \S2.9 rotations; \S2.10.1 the graph Laplacian and spectral clustering.
+    \end{itemize}
+    \vskip0.6em
+    \begin{block}{Next: the midterm exam}
+        90 minutes, on Lectures 1--6 (linear algebra and analytic geometry). Five problems of 20 points and a bonus problem; the cheatsheet is handed out with the exam. Prepare with the sample midterm and the approximate cheatsheet.
+    \end{block}
+\end{frame}
+
+\end{document}

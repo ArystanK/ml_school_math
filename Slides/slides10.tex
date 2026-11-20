@@ -1,0 +1,465 @@
+\documentclass[aspectratio=1610,11pt]{beamer}
+\input{slides_preamble}
+\externaldocument[L4-]{../Lecture4/lecture4}
+\externaldocument[L3-]{../Lecture3/lecture3}
+\setnotes{4}
+
+\title[Lecture 10 · Probability III]{Lecture 10. Probability III:\\ Limit Theorems, Markov Chains and Information}
+\subtitle{Notes: Lecture 4, \S4.7, \S4.8, \S4.13; Lecture 3, \S3.14.3\\ Self-study: proofs of the limit theorems, Slutsky, rejection sampling, SGD convergence, Gibbs sampling, \S4.8.3 time series, \S4.15 SDEs}
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+\begin{frame}{Today}
+    \begin{columns}[T]
+        \begin{column}{0.5\linewidth}
+            \begin{enumerate}\small
+                \item The law of large numbers, the central limit theorem, Hoeffding
+                \item Convergence in distribution, the delta method
+                \item Monte Carlo, importance sampling, the score-function estimator
+                \item Markov chains, stationary distributions, Metropolis
+                \item Bellman equations, policy evaluation, value iteration
+                \item Entropy, cross-entropy, KL divergence, mutual information
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.46\linewidth}
+            \begin{mlbox}[Used in]
+                \scriptsize
+                \begin{itemize}
+                    \item MDPs, Bellman, Q-learning (RL)
+                    \item UCB and MCTS via Hoeffding (RL)
+                    \item policy gradients: the score function (RL)
+                    \item off-policy learning, PPO: importance sampling (RL)
+                    \item MCMC in PyMC (ML)
+                    \item cross-entropy loss, KL in VAEs and RLHF, contrastive learning (DL, RL)
+                \end{itemize}
+            \end{mlbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------ Limit theorems
+\topic{\secref{sec:limits}}{Limit theorems}
+
+\begin{frame}{The sample mean}
+    \begin{proposition}[][prop:sample-mean]
+        \small $X_1, \ldots, X_N$ i.i.d.\ with mean $\mu$ and variance $\sigma^2$, \ $\bar X_N = \frac{1}{N}\sum_iX_i$:
+        \[\E[\bar X_N] = \mu, \qquad \Var(\bar X_N) = \frac{\sigma^2}{N}.\]
+    \end{proposition}
+    \small
+    The \textbf{standard error} $\sigma/\sqrt{N}$: four times more data halves the error.
+    \begin{theorem}[Weak law of large numbers][thm:lln]
+        \small $P(|\bar X_N - \mu| \geq \varepsilon) \leq \dfrac{\sigma^2}{N\varepsilon^2} \to 0$.
+    \end{theorem}
+    \begin{theorem}[Central limit theorem][thm:clt]
+        \small For $\sigma > 0$ and every $z$: \ $P\Big(\dfrac{\sqrt{N}(\bar X_N - \mu)}{\sigma} \leq z\Big) \to \Phi(z)$.
+    \end{theorem}
+    LLN: \emph{where} $\bar X_N$ goes. CLT: \emph{how} it fluctuates: $\approx \mathcal{N}(\mu, \sigma^2/N)$, whatever the $X_i$ are.
+\end{frame}
+
+\board{Proofs: the sample mean and the law of large numbers}{Linearity, and variances of independent variables add (Lecture~9). Then Chebyshev for $\bar X_N$. (The CLT proof, via Lindeberg's replacement trick: self-study.)}
+
+\checkslide{the sample mean of coin flips}{
+    \small
+    \textbf{Proof.} $\E\bar X_N = \frac{1}{N}\sum_i\E X_i = \mu$; \ $\Var\bar X_N = \frac{1}{N^2}\sum_i\Var X_i = \frac{N\sigma^2}{N^2} = \frac{\sigma^2}{N}$; \ Chebyshev for $\bar X_N$ gives the LLN.
+    \\[0.4em]
+    \textbf{Fair coins} ($\mu = \frac{1}{2}$, $\sigma = \frac{1}{2}$), $N = 100$: \ $\mathrm{SE} = \frac{0.5}{\sqrt{100}} = 0.05$.
+    \begin{itemize}
+        \item LLN/Chebyshev: $P(|\bar X - 0.5| \geq 0.1) \leq \frac{0.25}{100 \cdot 0.01} = 0.25$.
+        \item CLT: $\bar X \approx \mathcal{N}(0.5, 0.05^2)$, so $P(|\bar X - 0.5| \geq 0.1) \approx P(|Z| \geq 2) \approx 0.046$.
+    \end{itemize}
+    \textbf{The number of heads} $S = 100\bar X$: mean $50$, sd $5$.
+    \[P(S \geq 60) \approx 1 - \Phi\Big(\frac{60 - 50}{5}\Big) = 1 - \Phi(2) \approx 0.023;\]
+    \[\text{with continuity correction: } \ 1 - \Phi\Big(\frac{59.5 - 50}{5}\Big) = 1 - \Phi(1.9) \approx 0.0287; \qquad \text{exact } 0.0284.\]
+    The correction spreads each integer $k$ over $[k - \frac{1}{2}, k + \frac{1}{2}]$.
+}
+
+\begin{frame}{The central limit theorem in pictures}
+    \centering\fig[0.76]{s10_lln_clt}
+    \\[0.2em]
+    \raggedright
+    \begin{example}[][ex:clt-coins]
+        \small $100$ fair coins: $S$ has mean $50$ and standard deviation $5$; \ $P(S \geq 60) = P(S \geq 59.5) \approx 1 - \Phi(1.9) \approx 0.0287$; exact $0.0284$ (continuity correction: $59.5$ instead of $60$).
+    \end{example}
+\end{frame}
+
+\begin{frame}{Hoeffding's inequality}
+    \sidebyside{0.52}{%
+        \begin{theorem}[Hoeffding][thm:hoeffding]
+            \small i.i.d.\ $X_i \in [a, b]$ with mean $\mu$:
+            \[P(|\bar X_N - \mu| \geq \varepsilon) \leq 2\exp\Big(-\frac{2N\varepsilon^2}{(b - a)^2}\Big).\]
+        \end{theorem}
+        \small
+        Proof (self-study): Chernoff bound $+$ Hoeffding's lemma $\E[e^{tX}] \leq e^{t^2(b - a)^2/8}$ for $\E X = 0$. \\[0.3em]
+        Unlike the CLT, a bound valid for \emph{every} $N$; unlike Chebyshev, exponentially small.
+    }{%
+        \centering\fig[1]{s10_hoeffding}
+    }
+    \begin{mlbox}
+        \small UCB and MCTS add the Hoeffding width $\sqrt{\log(\cdot)/N}$ to the mean reward of each arm (RL). Generalization bounds: Hoeffding $+$ the union bound over all models (self-study \S4.11.3).
+    \end{mlbox}
+\end{frame}
+
+\board{How many samples?}{We estimate a probability $p$ by the fraction $\bar X_N$ of successes, and want $|\bar X_N - p| < 0.01$ with probability at least $95\%$. How large must $N$ be, by Chebyshev ($\sigma^2 \leq \frac{1}{4}$), by Hoeffding, and by the CLT?}
+
+\checkslide{sample sizes for $\pm 0.01$ at $95\%$}{
+    \begin{itemize}
+        \item Chebyshev: $\frac{1}{4N\varepsilon^2} \leq 0.05 \iff N \geq 50\,000$.
+        \item Hoeffding: $2e^{-2N\varepsilon^2} \leq 0.05 \iff N \geq \frac{\log 40}{2\varepsilon^2} \approx 18\,445$.
+        \item CLT: $1.96 \cdot \frac{0.5}{\sqrt{N}} \leq 0.01 \iff N \geq 9604$ (approximate, but the usual answer).
+    \end{itemize}
+    \vskip0.5em
+    The error scales like $1/\sqrt{N}$: one more digit of accuracy costs $100$ times more data.
+    \begin{mlbox}
+        \small The test-set error of a classifier is such a fraction: with $10\,000$ test examples, an accuracy of $90\%$ is known only to about $\pm 0.6\%$. The training loss of a \emph{trained} model is not a fair sample mean: it is optimistic (overfitting).
+    \end{mlbox}
+}
+
+\begin{frame}{Convergence in distribution and the delta method}
+    \begin{definition}[][def:convergence]
+        \small $Y_n \to Y$ \textbf{in probability}: $P(|Y_n - Y| > \varepsilon) \to 0$; \ \textbf{in distribution}: $P(Y_n \leq y) \to P(Y \leq y)$ at continuity points.
+    \end{definition}
+    \begin{theorem}[Continuous mapping and Slutsky][thm:slutsky]
+        \small $X_n \to X$ in distribution, $Y_n \to c$ in probability: \ $g(X_n) \to g(X)$, \ $X_n + Y_n \to X + c$, \ $X_nY_n \to cX$ (proof: self-study).
+    \end{theorem}
+    \small So $\frac{\sqrt{N}(\bar X_N - \mu)}{s} \to \mathcal{N}(0, 1)$ with the \emph{sample} standard deviation $s$: confidence intervals $\bar x \pm 1.96\frac{s}{\sqrt{N}}$.
+    \begin{proposition}[Delta method][prop:delta-method]
+        \small If $\sqrt{N}(T_N - \theta) \to \mathcal{N}(0, \tau^2)$ and $g$ is $C^1$, then $\sqrt{N}\big(g(T_N) - g(\theta)\big) \to \mathcal{N}\big(0, g'(\theta)^2\tau^2\big)$.
+    \end{proposition}
+    \small Standard error of $g(T_N)$: $\approx |g'(\theta)| \cdot \mathrm{SE}(T_N)$. Linearization (Taylor, Lecture~7), applied to random fluctuations.
+\end{frame}
+
+\board[2]{The delta method: idea and an example}{Idea: $g(T_N) - g(\theta) = g'(\xi_N)(T_N - \theta)$ with $\xi_N$ between $T_N$ and $\theta$ (mean value theorem); $g'(\xi_N) \to g'(\theta)$ in probability; Slutsky. \\ Example: $30$ successes in $100$ trials. A $95\%$ confidence interval for the log-odds $\log\frac{p}{1 - p}$, and back for $p$.}
+
+\checkslide{a confidence interval on the log-odds scale}{
+    \small
+    $g(p) = \log p - \log(1 - p)$, \ $g'(p) = \frac{1}{p} + \frac{1}{1 - p} = \frac{1}{p(1 - p)}$; \ CLT: $\sqrt{N}(\hat p - p) \to \mathcal{N}(0, p(1 - p))$. Delta method:
+    \[\mathrm{SE}(g(\hat p)) \approx g'(p)\sqrt{\tfrac{p(1 - p)}{N}} = \tfrac{1}{\sqrt{Np(1 - p)}}.\]
+    \begin{itemize}
+        \item $\hat p = 0.3$: log-odds $\log\frac{0.3}{0.7} \approx -0.847$; \ SE $\approx \frac{1}{\sqrt{100 \cdot 0.3 \cdot 0.7}} = \frac{1}{\sqrt{21}} \approx 0.218$;
+        \item $95\%$ interval: $-0.847 \pm 1.96 \cdot 0.218 = -0.847 \pm 0.427 \approx [-1.275, -0.420]$;
+        \item back with the sigmoid: $\frac{1}{1 + e^{1.275}} = \frac{1}{4.58} \approx 0.218$, \ $\frac{1}{1 + e^{0.420}} = \frac{1}{2.52} \approx 0.397$: \ $p \in [0.218, 0.397]$.
+    \end{itemize}
+    Compare $\hat p \pm 1.96\sqrt{\hat p(1 - \hat p)/N} = [0.210, 0.390]$: the delta-method interval is not symmetric around $\hat p$ and never leaves $[0, 1]$. \textcolor{mlcolor}{Logistic regression reports standard errors on this scale.}
+}
+
+% ------------------------------------------------------------------ Monte Carlo
+\topic{\secref{sec:monte-carlo}}{Monte Carlo methods}
+
+\begin{frame}{Monte Carlo integration}
+    \small
+    Write the quantity as an expectation and average samples:
+    \[\E[f(X)] = \int f(x)p(x)\,dx \approx \frac{1}{N}\sum_{i=1}^Nf(x_i), \qquad x_i \sim p \text{ i.i.d.}\]
+    Unbiased, error $\approx \sigma_f/\sqrt{N}$ by the CLT, \emph{independent of the dimension}: grids need $m^d$ points.
+    \\[0.3em]
+    \centering\fig[0.62]{s10_monte_carlo}
+    \\[0.1em]
+    \raggedright Sampling: inverse transform, rejection sampling, MCMC (below).
+\end{frame}
+
+\begin{frame}{Importance sampling}
+    \begin{proposition}[Importance sampling][prop:importance]
+        \small If $q > 0$ wherever $fp \neq 0$ and $w = p/q$: \ $\E_p[f(X)] = \E_q[f(Y)w(Y)]$, so
+        \[\hat I = \frac{1}{N}\sum_{i=1}^Nf(y_i)w(y_i), \quad y_i \sim q,\]
+        is unbiased with variance $\frac{1}{N}\Var_q(f(Y)w(Y))$.
+    \end{proposition}
+    \begin{example}[A rare event][ex:importance]
+        \small $P(Z > 4) = 3.17 \cdot 10^{-5}$, $N = 10\,000$. Plain Monte Carlo: $0.32$ samples above $4$ on average, relative error $\approx 178\%$. With $q = \mathcal{N}(4, 1)$, $w(y) = e^{8 - 4y}$: $\approx 2\%$.
+    \end{example}
+    \begin{mlbox}
+        \small Off-policy RL reweights data from an old policy by $\frac{\pi_{\text{new}}(a \mid s)}{\pi_{\text{old}}(a \mid s)}$; PPO clips this ratio to keep the variance under control.
+    \end{mlbox}
+\end{frame}
+
+\board{Derive importance sampling}{$\E_p[f(X)] = \int f(x)p(x)\,dx = \int f(x)\frac{p(x)}{q(x)}q(x)\,dx$. Which $q$ minimizes the variance when $f \geq 0$? (Answer: $q \propto fp$, which is why a good $q$ looks like the integrand.)}
+
+\checkslide{Monte Carlo and importance sampling with numbers}{
+    \small
+    \textbf{Estimating $\pi$.} $f = 4 \cdot \mathbf{1}\{\text{inside the circle}\}$ for uniform points in $[-1, 1]^2$: $\E f = 4 \cdot \frac{\pi}{4} = \pi$, \ $\sigma_f = 4\sqrt{\frac{\pi}{4}(1 - \frac{\pi}{4})} \approx 1.64$. With $N = 1500$: SE $\approx \frac{1.64}{\sqrt{1500}} \approx 0.042$; our run gave $3.16$, within one SE.
+    \\[0.4em]
+    \textbf{A rare event, plain.} $f = \mathbf{1}\{Z > 4\}$, $p = 3.17 \cdot 10^{-5}$. With $N = 10^4$:
+    \[\mathrm{SE} = \sqrt{\tfrac{p(1 - p)}{N}} \approx \sqrt{3.17 \cdot 10^{-9}} \approx 5.6 \cdot 10^{-5}, \qquad \text{relative error} \approx \tfrac{5.6 \cdot 10^{-5}}{3.17 \cdot 10^{-5}} \approx 178\%.\]
+    \textbf{With importance sampling}, $q = \mathcal{N}(4, 1)$:
+    \[w(y) = \frac{\varphi(y)}{\varphi(y - 4)} = \exp\Big(-\frac{y^2}{2} + \frac{(y - 4)^2}{2}\Big) = e^{8 - 4y}, \qquad \hat p = \frac{1}{N}\sum_{i=1}^N\mathbf{1}\{y_i > 4\}\,e^{8 - 4y_i}.\]
+    Half of the samples land above $4$, each with a tiny weight ($y = 4$: $w = e^{-8} \approx 3.4 \cdot 10^{-4}$): relative error $\approx 2\%$, about $8000$ times fewer samples for the same accuracy.
+}
+
+\begin{frame}{Gradients of expectations: the score-function estimator}
+    \setnotes{3}
+    \begin{proposition}[Leibniz rule][prop:leibniz]
+        \small If $f$ and $\frac{\partial f}{\partial\theta}$ are continuous: \ $\frac{d}{d\theta}\int_a^bf(x, \theta)\,dx = \int_a^b\frac{\partial f}{\partial\theta}(x, \theta)\,dx$.
+    \end{proposition}
+    \small
+    For $\R^n$ we need a domination condition (Appendix~B: dominated convergence). With $\nabla_{\boldsymbol\theta}p_{\boldsymbol\theta} = p_{\boldsymbol\theta}\nabla_{\boldsymbol\theta}\log p_{\boldsymbol\theta}$:
+    \[\nabla_{\boldsymbol\theta}\,\E_{\bx \sim p_{\boldsymbol\theta}}[g(\bx)] = \E_{\bx \sim p_{\boldsymbol\theta}}\big[g(\bx)\,\nabla_{\boldsymbol\theta}\log p_{\boldsymbol\theta}(\bx)\big] \approx \frac{1}{N}\sum_ig(\bx_i)\nabla_{\boldsymbol\theta}\log p_{\boldsymbol\theta}(\bx_i).\]
+    \begin{itemize}
+        \item The \textbf{score-function} (REINFORCE) estimator: $g$ need not be differentiable (rewards!). Basis of policy gradients.
+        \item High variance; subtracting a baseline $b$ keeps it unbiased, since $\E[\nabla\log p_{\boldsymbol\theta}] = \mathbf{0}$.
+        \item Alternative when $\bx = \boldsymbol\mu + \boldsymbol\sigma \odot \mathbf{z}$: the reparameterization trick (Lecture~9), $\nabla\E[g] = \E[\nabla_{\boldsymbol\theta}g(\boldsymbol\mu + \boldsymbol\sigma \odot \mathbf{z})]$, usually lower variance.
+    \end{itemize}
+\end{frame}
+
+\board{The score function: derivation and an example}{Derive the formula; show $\E[\nabla_{\boldsymbol\theta}\log p_{\boldsymbol\theta}(\bx)] = \mathbf{0}$. \quad Example: $x \sim$ Bernoulli$(\theta)$, reward $g(1) = 1$, $g(0) = 0$: compute $\frac{d}{d\theta}\E[g]$ directly and with the estimator.}
+
+\checkslide{the score-function estimator for a coin}{
+    \small
+    \textbf{Derivation.} $\nabla\int gp_{\boldsymbol\theta} = \int g\nabla p_{\boldsymbol\theta} = \int g\,(\nabla\log p_{\boldsymbol\theta})\,p_{\boldsymbol\theta} = \E[g\nabla\log p_{\boldsymbol\theta}]$. With $g = 1$: $\E[\nabla\log p_{\boldsymbol\theta}] = \nabla 1 = \mathbf{0}$.
+    \\[0.4em]
+    \textbf{Coin.} $p_\theta(x) = \theta^x(1 - \theta)^{1 - x}$, $\log p_\theta = x\log\theta + (1 - x)\log(1 - \theta)$, \ score $s(x) = \frac{x}{\theta} - \frac{1 - x}{1 - \theta}$:
+    \[s(1) = \tfrac{1}{\theta}, \quad s(0) = -\tfrac{1}{1 - \theta}, \quad \E s = \theta\cdot\tfrac{1}{\theta} - (1 - \theta)\tfrac{1}{1 - \theta} = 0 \ \checkmark.\]
+    Reward $g(x) = x$: \ $\E g = \theta$, so $\frac{d}{d\theta}\E g = 1$. Estimator $g(x)s(x)$: equals $\frac{1}{\theta}$ if $x = 1$ and $0$ if $x = 0$:
+    \[\E[g\,s] = \theta \cdot \tfrac{1}{\theta} = 1 \ \checkmark, \qquad \Var(g\,s) = \theta\cdot\tfrac{1}{\theta^2} - 1 = \tfrac{1 - \theta}{\theta}.\]
+    $\theta = 0.1$: variance $9$, so about $900$ samples for an error of $0.1$. \textbf{Baseline} $b$: $(g - b)s$ is still unbiased ($\E s = 0$) and takes the values $\frac{1 - b}{\theta}$ ($x = 1$) and $\frac{b}{1 - \theta}$ ($x = 0$). The common choice $b = \E g = \theta$ gives variance $\approx 7.1$; the best $b = 1 - \theta = 0.9$ makes both values equal to $1$: variance $0$.
+}
+
+% ------------------------------------------------------------------ Markov chains
+\topic{\secref{sec:markov}}{Markov chains}
+
+\begin{frame}{Markov chains}
+    \begin{definition}[][def:markov]
+        \small $P(X_{t+1} = j \mid X_t = i, X_{t-1}, \ldots, X_0) = P_{ij}$: the future depends on the past only through the present. $P$ is a stochastic matrix: rows sum to $1$.
+    \end{definition}
+    \begin{proposition}[][prop:markov-evolution]
+        \small Distributions as row vectors: $\boldsymbol{\pi}_{t+1} = \boldsymbol{\pi}_tP$, \ $\boldsymbol{\pi}_t = \boldsymbol{\pi}_0P^t$, \ $P(X_{t+k} = j \mid X_t = i) = (P^k)_{ij}$.
+    \end{proposition}
+    \sidebyside{0.3}{%
+        \small Weather (sunny, rainy):
+        \[P = \begin{pmatrix} 0.9 & 0.1 \\ 0.5 & 0.5 \end{pmatrix}.\]
+        Both curves tend to $\frac{5}{6}$; the gap shrinks by $0.4$ per day.
+    }{%
+        \centering\notesfig[0.95]{L4-markov}
+    }
+\end{frame}
+
+\begin{frame}{Stationary distributions and convergence}
+    \small
+    $\boldsymbol{\pi}$ is \textbf{stationary} if $\boldsymbol{\pi}P = \boldsymbol{\pi}$: a left eigenvector for the eigenvalue $1$.
+    \begin{proposition}[][prop:stochastic-eigenvalues]
+        \small $1$ is an eigenvalue of $P$ and $P^\top$ ($P\mathbf{1} = \mathbf{1}$), and every eigenvalue has $|\lambda| \leq 1$.
+    \end{proposition}
+    \begin{theorem}[Convergence][thm:markov-convergence]
+        \small Irreducible $\Rightarrow$ a unique stationary $\boldsymbol\pi$, all $\pi_i > 0$. Irreducible and aperiodic $\Rightarrow$ $\boldsymbol{\pi}_0P^t \to \boldsymbol{\pi}$ for every $\boldsymbol{\pi}_0$.
+    \end{theorem}
+    \begin{theorem}[Ergodic theorem][thm:ergodic]
+        \small Irreducible: $\frac{1}{T}\sum_{t<T}f(X_t) \to \sum_i\pi_if(i)$ in probability: time averages $=$ averages over $\boldsymbol\pi$.
+    \end{theorem}
+    The speed is governed by the second largest $|\lambda|$ (Lecture~5: powers of matrices). \textcolor{mlcolor}{PageRank: the stationary distribution of a random surfer, by power iteration.}
+\end{frame}
+
+\board{Two-state chains}{$P = \begin{pmatrix} 1 - a & a \\ b & 1 - b \end{pmatrix}$, $a + b > 0$. Find $\boldsymbol{\pi}$ and show $\boldsymbol{\pi}_t - \boldsymbol{\pi} = (1 - a - b)^t(\boldsymbol{\pi}_0 - \boldsymbol{\pi})$. Weather: $a = 0.1$, $b = 0.5$.}
+
+\checkslide{two-state chains}{
+    \small
+    \textbf{Stationary distribution.} $\boldsymbol\pi P = \boldsymbol\pi$: first entry $\pi_1(1 - a) + \pi_2b = \pi_1$, i.e., $\pi_1a = \pi_2b$ (flow $1 \to 2$ $=$ flow $2 \to 1$). With $\pi_1 + \pi_2 = 1$:
+    \[\boldsymbol\pi = \Big(\frac{b}{a + b}, \frac{a}{a + b}\Big).\]
+    \textbf{Convergence.} $\mathbf{d} = \boldsymbol\pi_0 - \boldsymbol\pi$ has entries summing to $0$: $\mathbf{d} = c(1, -1)$, and
+    \[(1, -1)P = (1 - a - b,\ a - 1 + b) = (1 - a - b)(1, -1):\]
+    a left eigenvector with eigenvalue $1 - a - b$. Hence $\boldsymbol\pi_t - \boldsymbol\pi = \mathbf{d}P^t = (1 - a - b)^t\,\mathbf{d}$.
+    \\[0.4em]
+    \textbf{Weather} $a = 0.1$, $b = 0.5$: $\boldsymbol\pi = (\frac{0.5}{0.6}, \frac{0.1}{0.6}) = (\frac{5}{6}, \frac{1}{6})$, rate $1 - 0.6 = 0.4$. Start rainy, $\boldsymbol\pi_0 = (0, 1)$:
+    \[\boldsymbol\pi_t = \big(\tfrac{5}{6}, \tfrac{1}{6}\big) - 0.4^t\big(\tfrac{5}{6}, -\tfrac{5}{6}\big): \quad \boldsymbol\pi_1 = (0.5, 0.5), \ \boldsymbol\pi_2 = (0.7, 0.3), \ \boldsymbol\pi_3 = (0.78, 0.22).\]
+    Check $\boldsymbol\pi_1 = (0, 1)P = (0.5, 0.5)$ \checkmark. After $10$ days the gap is $\frac{5}{6} \cdot 0.4^{10} \approx 10^{-4}$.
+}
+
+\begin{frame}{Detailed balance and Markov chain Monte Carlo}
+    \begin{proposition}[Detailed balance][prop:detailed-balance]
+        \small If $\pi_iP_{ij} = \pi_jP_{ji}$ for all $i, j$, then $\boldsymbol\pi$ is stationary.
+    \end{proposition}
+    \small Random walk on a graph: $\pi_i = \frac{\deg(i)}{2|E|}$.
+    \begin{theorem}[Metropolis][thm:metropolis]
+        \small Symmetric proposal $Q$; from $i$ propose $j$, accept with probability $\min(1, \frac{\pi_j}{\pi_i})$, otherwise stay. Then detailed balance holds for $\boldsymbol\pi$.
+    \end{theorem}
+    \centering\fig[0.56]{s10_metropolis}
+    \\[0.1em]
+    \raggedright\small Only \emph{ratios} $\frac{\pi_j}{\pi_i}$ are needed. \textcolor{mlcolor}{Bayesian posteriors (PyMC, Lecture~11).}
+\end{frame}
+
+\board{Proof: Metropolis satisfies detailed balance}{For $i \neq j$: $\pi_iP_{ij} = \pi_iQ_{ij}\min(1, \pi_j/\pi_i) = Q_{ij}\min(\pi_i, \pi_j)$, symmetric in $i, j$. Then detailed balance $\Rightarrow$ stationary: $\sum_i\pi_iP_{ij} = \sum_i\pi_jP_{ji} = \pi_j$. \\ Example: states $1, 2, 3, 4$ on a cycle, $\boldsymbol\pi = (0.1, 0.2, 0.3, 0.4)$: find $P_{32}$.}
+
+\checkslide{a Metropolis chain on four states}{
+    \small
+    Cycle $1 - 2 - 3 - 4 - 1$; propose each neighbor with probability $\frac{1}{2}$; accept $j$ with $\min(1, \frac{\pi_j}{\pi_i})$. \textbf{Row $3$} ($\pi_3 = 0.3$, neighbors $2$ and $4$):
+    \[P_{32} = \tfrac{1}{2}\min\big(1, \tfrac{0.2}{0.3}\big) = \tfrac{1}{3}, \qquad P_{34} = \tfrac{1}{2}\min\big(1, \tfrac{0.4}{0.3}\big) = \tfrac{1}{2}, \qquad P_{33} = 1 - \tfrac{1}{3} - \tfrac{1}{2} = \tfrac{1}{6}.\]
+    All rows:
+    \[P = \begin{pmatrix} 0 & 0.5 & 0 & 0.5 \\ 0.25 & 0.25 & 0.5 & 0 \\ 0 & 1/3 & 1/6 & 0.5 \\ 0.125 & 0 & 0.375 & 0.5 \end{pmatrix}.\]
+    \textbf{Detailed balance}, edge $2$--$3$: $\pi_2P_{23} = 0.2 \cdot 0.5 = 0.1$ and $\pi_3P_{32} = 0.3 \cdot \frac{1}{3} = 0.1$ \checkmark.
+    \\[0.2em]
+    \textbf{Stationarity}, column $3$: $\sum_i\pi_iP_{i3} = 0.2 \cdot 0.5 + 0.3 \cdot \frac{1}{6} + 0.4 \cdot 0.375 = 0.1 + 0.05 + 0.15 = 0.3 = \pi_3$ \checkmark.
+    \\[0.2em]
+    \textbf{Random walk on a graph} (edges $12, 13, 23, 34$, degrees $2, 2, 3, 1$, $|E| = 4$): $\boldsymbol\pi = \frac{1}{8}(2, 2, 3, 1)$.
+}
+
+% ------------------------------------------------------------------ Bellman
+\topic{\secref{sec:bellman}}{The Bellman equations}
+
+\begin{frame}{Markov reward processes and the Bellman equation}
+    \begin{definition}[][def:mrp]
+        \small A Markov chain with a reward $r_i$ per step in state $i$ and a discount $\gamma \in [0, 1)$. The value of $i$ is $V_i = \E\big[\sum_{t \geq 0}\gamma^tr_{X_t} \bigm| X_0 = i\big]$.
+    \end{definition}
+    \begin{theorem}[Bellman equation][thm:bellman]
+        \small $\mathbf{V} = \mathbf{r} + \gamma P\mathbf{V}$; \ $I - \gamma P$ is invertible, $(I - \gamma P)^{-1} = \sum_{k \geq 0}\gamma^kP^k$, and $\mathbf{V} = (I - \gamma P)^{-1}\mathbf{r}$ is the only solution.
+    \end{theorem}
+    \begin{proposition}[Policy evaluation][prop:policy-evaluation]
+        \small $\mathbf{V}_{k+1} = \mathbf{r} + \gamma P\mathbf{V}_k$: \ $\norm{\mathbf{V}_k - \mathbf{V}}_\infty \leq \gamma^k\norm{\mathbf{V}_0 - \mathbf{V}}_\infty$.
+    \end{proposition}
+    \small The key fact: $\norm{P\bx}_\infty \leq \norm{\bx}_\infty$ for a stochastic $P$ (each entry of $P\bx$ is an average of entries of $\bx$). So the map $\mathbf{V} \mapsto \mathbf{r} + \gamma P\mathbf{V}$ is a $\gamma$-contraction.
+\end{frame}
+
+\board[2]{Derive the Bellman equation}{Condition on the first step: $V_i = r_i + \gamma\sum_jP_{ij}V_j$. Neumann series: $\norm{\gamma^kP^k}_\infty \leq \gamma^k$. \\ Example: weather, $\mathbf{r} = (1, 0)^\top$ (sunny days count), $\gamma = 0.9$. Solve, and check.}
+
+\checkslide{the value of sunny days}{
+    \small
+    $P = \begin{pmatrix} 0.9 & 0.1 \\ 0.5 & 0.5 \end{pmatrix}$, $\gamma P = \begin{pmatrix} 0.81 & 0.09 \\ 0.45 & 0.45 \end{pmatrix}$:
+    \[I - \gamma P = \begin{pmatrix} 0.19 & -0.09 \\ -0.45 & 0.55 \end{pmatrix}, \quad \det = 0.1045 - 0.0405 = 0.064, \quad (I - \gamma P)^{-1} = \frac{1}{0.064}\begin{pmatrix} 0.55 & 0.09 \\ 0.45 & 0.19 \end{pmatrix},\]
+    \[\mathbf{V} = (I - \gamma P)^{-1}\begin{pmatrix} 1 \\ 0 \end{pmatrix} = \frac{1}{0.064}\begin{pmatrix} 0.55 \\ 0.45 \end{pmatrix} = \begin{pmatrix} 8.59375 \\ 7.03125 \end{pmatrix}.\]
+    \textbf{Check} the Bellman equation: $1 + 0.9(0.9 \cdot 8.59375 + 0.1 \cdot 7.03125) = 1 + 0.9 \cdot 8.4375 = 8.59375$ \checkmark.
+    \\[0.3em]
+    \textbf{Policy evaluation} $\mathbf{V}_{k+1} = \mathbf{r} + \gamma P\mathbf{V}_k$ from $\mathbf{0}$:
+    \[\mathbf{V}_1 = (1, 0), \qquad \mathbf{V}_2 = (1 + 0.81,\ 0.45) = (1.81, 0.45),\]
+    \[\mathbf{V}_3 = (1 + 0.81 \cdot 1.81 + 0.09 \cdot 0.45,\ \ 0.45 \cdot 1.81 + 0.45 \cdot 0.45) \approx (2.51, 1.02);\]
+    error $\leq 0.9^k \cdot 8.6$, below $0.01$ after $65$ steps. \ Horizon $\frac{1}{1 - \gamma} = 10$ days; $(1 - \gamma)\mathbf{V} = (0.859, 0.703)$ are discounted fractions of sunny days; as $\gamma \to 1$, both tend to $\pi_1 = \frac{5}{6}$.
+}
+
+\begin{frame}{Markov decision processes and value iteration}
+    \small
+    Actions $a$, rewards $r(s, a)$, transitions $P(s' \mid s, a)$, policy $\pi(s)$. \ Bellman optimality operator:
+    \[(T\mathbf{V})_s = \max_a\Big(r(s, a) + \gamma\sum_{s'}P(s' \mid s, a)V_{s'}\Big).\]
+    \sidebyside{0.58}{%
+        \begin{theorem}[Value iteration][thm:value-iteration]
+            \small $T$ is a $\gamma$-contraction in $\norm{\cdot}_\infty$: one fixed point $\mathbf{V}^*$, and $\mathbf{V}_{k+1} = T\mathbf{V}_k$ converges like $\gamma^k$. $\mathbf{V}^\pi \leq \mathbf{V}^*$ for every policy, and the greedy policy for $\mathbf{V}^*$ is optimal.
+        \end{theorem}
+        \small
+        $Q^*(s, a) = r(s, a) + \gamma\sum_{s'}P(s' \mid s, a)V^*_{s'}$. \\
+        \textbf{Q-learning}: from samples $(s, a, r, s')$,
+        \[Q(s, a) \mathrel{+}= \eta\big(r + \gamma\max_{a'}Q(s', a') - Q(s, a)\big):\]
+        value iteration with one sample, like SGD.
+    }{%
+        \centering\fig[0.86]{s10_gridworld}\\
+        {\scriptsize moves succeed w.p.\ $0.8$; step cost $0.04$}
+    }
+\end{frame}
+
+\board{Proof: $T$ is a contraction}{$|\max_aA_a - \max_aB_a| \leq \max_a|A_a - B_a|$, and $\sum_{s'}P(s' \mid s, a)|U_{s'} - V_{s'}| \leq \norm{\mathbf{U} - \mathbf{V}}_\infty$. Then the Banach fixed-point theorem (or: the iterates form a Cauchy sequence).}
+
+\checkslide{value iteration on a two-state MDP}{
+    \small
+    State $1$: action \emph{stay} (reward $1$, back to $1$) or \emph{go} (reward $0$, to state $2$). State $2$: one action (reward $2$, back to $1$). $\gamma = 0.9$:
+    \[(T\mathbf{V})_1 = \max\big(1 + 0.9V_1,\ 0 + 0.9V_2\big), \qquad (T\mathbf{V})_2 = 2 + 0.9V_1.\]
+    \textbf{Iterates} from $\mathbf{V}_0 = \mathbf{0}$:
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{@{}lccccccc@{}}
+            \toprule
+            $k$ & $1$ & $2$ & $3$ & $4$ & $5$ & $\cdots$ & $\infty$ \\
+            \midrule
+            $V_1$ & $\max(1, 0) = 1$ & $\max(1.9, 1.8) = 1.9$ & $2.71$ & $3.44$ & $4.10$ & & $10$ \\
+            $V_2$ & $2$ & $2.9$ & $3.71$ & $4.44$ & $5.10$ & & $11$ \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    \textbf{Fixed point.} If the optimal policy stays: $V_1 = 1 + 0.9V_1$, so $V_1 = 10$, $V_2 = 2 + 9 = 11$. Check optimality: stay gives $1 + 9 = 10$, go gives $0.9 \cdot 11 = 9.9 < 10$ \checkmark. (Going pays $2$ once, but costs a step of discounting.)
+    \\[0.3em]
+    The error $10 - V_1 = 10 \cdot 0.9^k$ shrinks exactly by $\gamma$ per step, as the contraction predicts.
+}
+
+\begin{frame}{Self-study: stationary time series (\S4.8.3)}
+    \small
+    Weakly stationary: $\E[X_t] = \mu$ and $c(h) = \Cov(X_t, X_{t+h})$ do not depend on $t$.
+    \begin{proposition}[AR(1)][prop:ar1]
+        \small $X_t = \phi X_{t-1} + \varepsilon_t$: for $|\phi| < 1$ stationary with $\Var X_t = \frac{\sigma^2}{1 - \phi^2}$ and autocorrelations $\rho(h) = \phi^h$; for $|\phi| \geq 1$ the variance grows without bound (random walk; differencing helps).
+    \end{proposition}
+    AR($p$): stationary if the eigenvalues of the companion matrix lie inside the unit circle (Lecture~5: powers of a matrix). \textcolor{mlcolor}{The ML course develops AR/MA/ARIMA; $n$-gram language models are Markov chains.}
+\end{frame}
+
+% ------------------------------------------------------------------ Information
+\topic{\secref{sec:information}}{Information theory}
+
+\begin{frame}{Entropy, cross-entropy and the KL divergence}
+    \begin{definition}[][def:entropy]
+        \small For distributions $p$, $q$ on $\{1, \ldots, K\}$:
+        \[H(p) = -\sum_kp_k\log p_k, \qquad H(p, q) = -\sum_kp_k\log q_k, \qquad \KL(p \,\|\, q) = \sum_kp_k\log\frac{p_k}{q_k}.\]
+    \end{definition}
+    \small
+    $H(p, q) = H(p) + \KL(p \,\|\, q)$. Entropy: the average surprise $-\log p_k$; \ fair coin $\log 2$, a sure outcome $0$.
+    \begin{theorem}[Gibbs' inequality][thm:gibbs]
+        \small $\KL(p \,\|\, q) \geq 0$, with equality iff $p = q$.
+    \end{theorem}
+    Consequences: $H(p, q) \geq H(p)$; \ $H(p) \leq \log K$ (compare with uniform). KL is not symmetric: $p = (\frac{1}{2}, \frac{1}{2})$, $q = (0.9, 0.1)$: $\KL(p \,\|\, q) \approx 0.511$, $\KL(q \,\|\, p) \approx 0.368$.
+\end{frame}
+
+\board{Proof of Gibbs' inequality}{Jensen for the concave $\log$ (Lecture~9) and $R = q_k/p_k$ with probability $p_k$: $-\KL(p \,\|\, q) = \E[\log R] \leq \log\E[R] \leq \log 1 = 0$. Equality case.}
+
+\checkslide{entropies and divergences with numbers}{
+    \small
+    \textbf{Entropy} (in nats): fair coin $H = -2 \cdot \frac{1}{2}\log\frac{1}{2} = \log 2 \approx 0.693$; \ coin $(0.9, 0.1)$: $-0.9\log 0.9 - 0.1\log 0.1 \approx 0.095 + 0.230 = 0.325$; \ fair die $\log 6 \approx 1.79$ (the maximum for $6$ outcomes).
+    \\[0.3em]
+    \textbf{KL is not symmetric.} $p = (\frac{1}{2}, \frac{1}{2})$, $q = (0.9, 0.1)$:
+    \[\KL(p \,\|\, q) = \tfrac{1}{2}\log\tfrac{0.5}{0.9} + \tfrac{1}{2}\log\tfrac{0.5}{0.1} \approx \tfrac{1}{2}(-0.588 + 1.609) \approx 0.511,\]
+    \[\KL(q \,\|\, p) = 0.9\log\tfrac{0.9}{0.5} + 0.1\log\tfrac{0.1}{0.5} \approx 0.529 - 0.161 \approx 0.368.\]
+    Cross-entropy $H(p, q) = H(p) + \KL(p \,\|\, q) \approx 0.693 + 0.511 = 1.204$; directly: $-\frac{1}{2}(\log 0.9 + \log 0.1) \approx 1.204$ \checkmark.
+    \\[0.3em]
+    \textbf{Mutual information} of the table $p(0, 0) = 0.3$, $p(0, 1) = 0.2$, $p(1, 0) = 0.1$, $p(1, 1) = 0.4$ (marginals $0.5, 0.5$ and $0.4, 0.6$):
+    \[I = 0.3\log\tfrac{0.3}{0.2} + 0.2\log\tfrac{0.2}{0.3} + 0.1\log\tfrac{0.1}{0.2} + 0.4\log\tfrac{0.4}{0.3} \approx 0.122 - 0.081 - 0.069 + 0.115 = 0.086.\]
+}
+
+\begin{frame}{Maximum likelihood minimizes the KL divergence}
+    \begin{theorem}[][thm:mle-kl]
+        \small Data with the empirical distribution $\hat p$, model $q_\theta$:
+        \[\frac{1}{N}\sum_i\log q_\theta(x_i) = -H(\hat p, q_\theta) = -H(\hat p) - \KL(\hat p \,\|\, q_\theta).\]
+    \end{theorem}
+    \small
+    Maximum likelihood $=$ minimum cross-entropy $=$ minimum $\KL(\hat p \,\|\, q_\theta)$. The \textbf{cross-entropy loss} of a classifier: one-hot true label vs predicted distribution.
+    \\[0.4em]
+    \textbf{Continuous:} $h(p) = -\int p\log p$; $\mathcal{N}(\mu, \sigma^2)$: $\frac{1}{2}\log(2\pi e\sigma^2)$, maximal for the variance $\sigma^2$.
+    \begin{proposition}[KL between Gaussians][prop:kl-gaussian]
+        \small $\KL\big(\mathcal{N}(\mu_1, \sigma_1^2) \,\|\, \mathcal{N}(\mu_2, \sigma_2^2)\big) = \log\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1 - \mu_2)^2}{2\sigma_2^2} - \frac{1}{2}$.
+    \end{proposition}
+    \textcolor{mlcolor}{VAE: $\KL(\mathcal{N}(\mu, \sigma^2) \,\|\, \mathcal{N}(0, 1)) = \frac{1}{2}(\mu^2 + \sigma^2 - 1 - \log\sigma^2)$; $\mu = 1$, $\sigma = 2$: $\approx 1.31$.}
+\end{frame}
+
+\begin{frame}{Which KL? Mutual information}
+    \sidebyside{0.5}{%
+        \small
+        \textbf{Forward} $\min_q\KL(p \,\|\, q)$ (maximum likelihood): $q$ must cover all of $p$'s mass; for Gaussians, it matches the mean and variance. \\[0.4em]
+        \textbf{Reverse} $\min_q\KL(q \,\|\, p)$ (variational inference, VAEs): $q$ avoids regions where $p \approx 0$, and picks a mode.
+    }{%
+        \centering\fig[1]{s10_kl}
+    }
+    \vskip0.4em
+    \small
+    \textbf{Mutual information} $I(X; Y) = \KL\big(p(x, y) \,\|\, p_X(x)p_Y(y)\big) \geq 0$, $= 0$ iff independent: it detects every kind of dependence, unlike correlation. Lecture~9's table: $I(X; Y) \approx 0.086$ nats.
+    \begin{mlbox}
+        \small RLHF penalizes $\KL(\pi_\theta \,\|\, \pi_{\text{ref}})$ to stay close to the pretrained model; contrastive learning (InfoNCE) maximizes a lower bound on mutual information.
+    \end{mlbox}
+\end{frame}
+
+% ------------------------------------------------------------------ Wrap-up
+\begin{frame}{Key takeaways}
+    \small
+    \begin{itemize}
+        \item Standard error $\sigma/\sqrt{N}$; LLN: $\bar X_N \to \mu$; CLT: fluctuations $\approx \mathcal{N}(0, \sigma^2/N)$; Hoeffding: $2e^{-2N\varepsilon^2/(b - a)^2}$ for every $N$.
+        \item Slutsky lets us plug in $s$ for $\sigma$; delta method: $\mathrm{SE}(g(T)) \approx |g'(\theta)|\,\mathrm{SE}(T)$.
+        \item Monte Carlo error $\propto 1/\sqrt{N}$ in any dimension; importance weights $p/q$; score function $\nabla\E[g] = \E[g\nabla\log p_{\boldsymbol\theta}]$.
+        \item Markov chains: $\boldsymbol\pi_{t+1} = \boldsymbol\pi_tP$; stationary $=$ left eigenvector for $1$; irreducible $+$ aperiodic $\Rightarrow$ convergence; detailed balance $\Rightarrow$ stationary; Metropolis needs only ratios.
+        \item Bellman: $\mathbf{V} = \mathbf{r} + \gamma P\mathbf{V}$; the Bellman maps are $\gamma$-contractions in $\norm{\cdot}_\infty$: policy evaluation and value iteration converge like $\gamma^k$.
+        \item $H(p, q) = H(p) + \KL(p \,\|\, q)$, $\KL \geq 0$; maximum likelihood $=$ minimum cross-entropy $=$ minimum KL.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Homework and next time}
+    \small
+    \begin{itemize}
+        \item \textbf{Homework:} Lecture 4, Exercises 18, 19, 20, 22, 25 and 48; Programming Exercises P12 and P22.
+        \item \textbf{Practice:} Practice 4, sections 7, 8 and 13 (the time series problems are optional).
+        \item \textbf{Self-study:} proofs of the limit theorems, Hoeffding, Slutsky (\S4.7.1); rejection sampling (\S4.7.2); SGD convergence (\S4.7.3); Gibbs sampling (\S4.8.1); time series (\S4.8.3); \S4.15 SDEs, Langevin dynamics, diffusion models.
+    \end{itemize}
+    \vskip0.5em
+    \begin{block}{Next: Statistical inference}
+        Estimators, bias and variance; the method of moments and maximum likelihood; Fisher information and Cram\'er--Rao; confidence intervals; hypothesis tests, p-values and power; $t$-tests and regression; Bayesian inference and conjugate priors; MAP $=$ regularization; the ELBO and EM.
+    \end{block}
+\end{frame}
+
+\end{document}

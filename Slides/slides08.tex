@@ -1,0 +1,570 @@
+\documentclass[aspectratio=1610,11pt]{beamer}
+\input{slides_preamble}
+\externaldocument[L3-]{../Lecture3/lecture3}
+\setnotes{3}
+
+\title[Lecture 8 · Calculus II and Optimization]{Lecture 8. Calculus II and Optimization}
+\subtitle{Notes: Lecture 3, \S3.9--3.12}
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+\begin{frame}{Today}
+    \begin{columns}[T]
+        \begin{column}{0.52\linewidth}
+            \begin{enumerate}\small
+                \item Critical points and the second-order test
+                \item Gradient descent: smooth functions, line search, quadratics and the condition number
+                \item Momentum and Newton's method
+                \item Convexity, strong convexity, convergence rates
+                \item Subgradients, the proximal gradient method, the lasso
+                \item Lagrange multipliers, KKT, duality, convex conjugates
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.44\linewidth}
+            \begin{mlbox}[Used in]
+                \small
+                \begin{itemize}
+                    \item GD and SGD for linear and logistic regression (ML)
+                    \item L1 and L2 regularization as constrained problems (ML)
+                    \item momentum, RMSProp, Adam (DL)
+                    \item trust regions in TRPO (RL)
+                \end{itemize}
+            \end{mlbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------ Critical points
+\topic{\secref{sec:optimization}}{Unconstrained optimization}
+
+\begin{frame}{Minima and critical points}
+    \begin{definition}[][def:minimum]
+        \small $\bx^*$ is a \textbf{global minimum} of $f$ if $f(\bx^*) \leq f(\bx)$ for all $\bx$, a \textbf{local minimum} if this holds for all $\bx$ near $\bx^*$, and \textbf{strict} if $<$ for $\bx \neq \bx^*$. \ A \textbf{critical point} has $\nabla f(\bx^*) = \mathbf{0}$.
+    \end{definition}
+    \begin{theorem}[First-order condition][thm:first-order]
+        \small If $f$ is differentiable and $\bx^*$ is a local minimum, then $\nabla f(\bx^*) = \mathbf{0}$.
+    \end{theorem}
+    \small
+    Proof: $g(t) = f(\bx^* + t\bv)$ has a local minimum at $t = 0$, so $0 = g'(0) = \nabla f(\bx^*)^\top\bv$ for every $\bv$.
+    \\[0.5em]
+    Critical points can be minima, maxima or saddle points. In high dimensions, most critical points of a random-looking function are saddle points.
+\end{frame}
+
+\begin{frame}{The second-order test}
+    \begin{theorem}[Second-order test][thm:second-order]
+        \small Let $\nabla f(\bx^*) = \mathbf{0}$ and let $\lambda_1 \geq \cdots \geq \lambda_n$ be the eigenvalues of $\nabla^2 f(\bx^*)$.
+        \begin{enumerate}
+            \item all $\lambda_i > 0$: strict local minimum; \quad all $\lambda_i < 0$: strict local maximum;
+            \item $\lambda_1 > 0 > \lambda_n$: saddle point ($f$ increases along eigenvectors with $\lambda > 0$, decreases along those with $\lambda < 0$);
+            \item conversely, at a local minimum all $\lambda_i \geq 0$.
+        \end{enumerate}
+    \end{theorem}
+    \centering\notesfig[0.62]{L3-hessian-shapes}
+    \\[0.1em]
+    \raggedright\small In the eigenbasis, $\by = Q^\top(\bx - \bx^*)$: \ $f(\bx) \approx f(\bx^*) + \frac{1}{2}(\lambda_1y_1^2 + \cdots + \lambda_ny_n^2)$. Some $\lambda_i = 0$: inconclusive.
+\end{frame}
+
+\board[2]{Proof of the second-order test}{Taylor: $f(\bx^* + \mathbf{h}) = f(\bx^*) + \frac{1}{2}\mathbf{h}^\top\nabla^2 f(\bx^*)\mathbf{h} + o(\norm{\mathbf{h}}^2)$, and $\mathbf{h}^\top\nabla^2 f(\bx^*)\mathbf{h} \geq \lambda_n\norm{\mathbf{h}}^2$ (Rayleigh, Lecture~6).}
+
+\board{Example: classify the critical points}{$f(x, y) = x^3 + y^3 - 3xy$. Find the critical points and the eigenvalues and eigenvectors of the Hessian there. Is the minimum global?}
+
+\checkslide{$x^3 + y^3 - 3xy$}{
+    \sidebyside{0.6}{%
+        \small
+        \textbf{Critical points.} $\nabla f = (3x^2 - 3y,\ 3y^2 - 3x)^\top = \mathbf{0}$: $y = x^2$ and $x = y^2 = x^4$, so $x(x^3 - 1) = 0$: $x = 0$ or $x = 1$. Critical points $(0, 0)$ and $(1, 1)$.
+        \\[0.3em]
+        \textbf{Hessian} $\nabla^2 f = \begin{pmatrix} 6x & -3 \\ -3 & 6y \end{pmatrix}$.
+        \\[0.3em]
+        \textbf{At $(1, 1)$:} $H = \begin{pmatrix} 6 & -3 \\ -3 & 6 \end{pmatrix}$, \ $H(1, 1)^\top = (3, 3)^\top$, $H(1, -1)^\top = (9, -9)^\top$: eigenvalues $3$ and $9$, both $> 0$: strict local minimum, $f(1, 1) = 1 + 1 - 3 = -1$. Not global: $f(x, 0) = x^3 \to -\infty$.
+        \\[0.3em]
+        \textbf{At $(0, 0)$:} $H = \begin{pmatrix} 0 & -3 \\ -3 & 0 \end{pmatrix}$: eigenvalues $-3$ along $(1, 1)$ and $3$ along $(1, -1)$: a saddle. Indeed $f(t, t) = 2t^3 - 3t^2 \approx -3t^2$ and $f(t, -t) = 3t^2 = \frac{1}{2}\cdot 3 \cdot\norm{(t, -t)}^2$.
+    }{%
+        \centering\notesfig[1]{L3-critical-points}
+    }
+}
+
+\begin{frame}{Quadratic functions}
+    \begin{example}[][ex:quadratic-min]
+        \small $f(\bx) = \frac{1}{2}\bx^\top A\bx - \mathbf{b}^\top\bx$ with $A$ SPD: \ $\nabla f = A\bx - \mathbf{b}$, unique critical point $\bx^* = A^{-1}\mathbf{b}$. Using $\mathbf{b} = A\bx^*$:
+        \[f(\bx) - f(\bx^*) = \tfrac{1}{2}\bx^\top A\bx - \bx^{*\top}A\bx - \tfrac{1}{2}\bx^{*\top}A\bx^* + \bx^{*\top}A\bx^* = \tfrac{1}{2}(\bx - \bx^*)^\top A(\bx - \bx^*) > 0\]
+        for $\bx \neq \bx^*$: the unique global minimum. Level sets: ellipsoids along the eigenvectors of $A$. \ E.g.\ $A = \diag(1, 10)$, $\mathbf{b} = (1, 10)^\top$: $\bx^* = (1, 1)^\top$, $f - f^* = \frac{1}{2}\big((x_1 - 1)^2 + 10(x_2 - 1)^2\big)$.
+    \end{example}
+    \small
+    \begin{itemize}
+        \item Solving $A\bx = \mathbf{b}$ with SPD $A$ $=$ minimizing a quadratic: the start of iterative solvers (conjugate gradients).
+        \item Least squares $\norm{\by - \Phi\boldsymbol{\theta}}^2$ is of this form with $A = 2\Phi^\top\Phi$, $\mathbf{b} = 2\Phi^\top\by$.
+        \item Every smooth function looks like this near a strict local minimum, with $A = \nabla^2 f(\bx^*)$: what we learn about quadratics describes the end of every optimization.
+    \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------------ Gradient descent
+\topic{\secref{sec:gd}}{Gradient descent and Newton's method}
+
+\begin{frame}{Gradient descent, derived for the mean squared error}
+    \begin{definition}[Gradient descent][def:gd]
+        \small $\bx_{k+1} = \bx_k - \eta\,\nabla f(\bx_k)$, with step size (learning rate) $\eta > 0$.
+    \end{definition}
+    \begin{example}[Linear regression][ex:gd-mse]
+        \small $L(\bw) = \frac{1}{N}\norm{X\bw - \by}^2$, \ $\nabla L(\bw) = \frac{2}{N}X^\top(X\bw - \by)$:
+        \[\bw_{k+1} = \bw_k - \eta\,\frac{2}{N}\sum_{i=1}^N(\bw_k^\top\bx_i - y_i)\,\bx_i.\]
+        Each data point pulls $\bw$ along its input, in proportion to its residual. One step costs $O(Nd)$: no $d \times d$ system to solve.
+    \end{example}
+\end{frame}
+
+\board{Example: gradient descent by hand}{Model $y = wx$, data $(1, 2)$, $(2, 3)$, $(3, 5)$. Find $L'(w)$, the minimum $w^*$, three steps with $\eta = 0.1$ from $w_0 = 0$, and the step sizes for which GD converges.}
+
+\checkslide{gradient descent for $y = wx$}{
+    \small
+    $L(w) = \frac{1}{3}\sum_i(wx_i - y_i)^2$, \ $\sum_ix_i^2 = 1 + 4 + 9 = 14$, \ $\sum_ix_iy_i = 2 + 6 + 15 = 23$:
+    \[L'(w) = \tfrac{2}{3}\textstyle\sum_i(wx_i - y_i)x_i = \tfrac{2}{3}(14w - 23), \qquad L'' = \tfrac{28}{3}, \qquad w^* = \tfrac{23}{14} \approx 1.6429.\]
+    \textbf{Three steps}, $\eta = 0.1$, $w_0 = 0$:
+    \[\begin{aligned}
+        w_1 &= 0 - 0.1 \cdot \tfrac{2}{3}(0 - 23) = 1.5333, \\
+        w_2 &= 1.5333 - 0.1 \cdot \tfrac{2}{3}(21.4667 - 23) = 1.5333 + 0.1022 = 1.6356, \\
+        w_3 &= 1.6356 - 0.1 \cdot \tfrac{2}{3}(22.8978 - 23) = 1.6356 + 0.0068 = 1.6424.
+    \end{aligned}\]
+    \textbf{Errors} $w_k - w^*$: $-1.643,\ -0.110,\ -0.0073,\ -0.0005$: each is $\frac{1}{15}$ of the previous one, since
+    \[w_{k+1} - w^* = (1 - \eta L'')(w_k - w^*), \qquad 1 - 0.1 \cdot \tfrac{28}{3} = \tfrac{1}{15}.\]
+    Converges $\iff |1 - \eta L''| < 1 \iff 0 < \eta < \frac{2}{28/3} = \frac{3}{14} \approx 0.21$; fastest at $\eta = \frac{3}{28}$ (one step).
+}
+
+\begin{frame}{Smooth functions: gradient descent always makes progress}
+    \small
+    $f$ is \textbf{$L$-smooth} if $\norm{\nabla f(\bx) - \nabla f(\by)} \leq L\norm{\bx - \by}$ (for $C^2$: Hessian eigenvalues in $[-L, L]$).
+    \begin{lemma}[Descent lemma][lem:descent]
+        \small $f(\by) \leq f(\bx) + \nabla f(\bx)^\top(\by - \bx) + \frac{L}{2}\norm{\by - \bx}^2$.
+    \end{lemma}
+    \begin{theorem}[][thm:gd-smooth]
+        \small If $f$ is $L$-smooth, $f \geq f^*$, and $0 < \eta \leq \frac{1}{L}$, then
+        \[f(\bx_{k+1}) \leq f(\bx_k) - \frac{\eta}{2}\norm{\nabla f(\bx_k)}^2, \qquad \min_{k < K}\norm{\nabla f(\bx_k)}^2 \leq \frac{2(f(\bx_0) - f^*)}{\eta K}.\]
+    \end{theorem}
+    GD finds points with small gradient, but not necessarily a minimum (saddles, bad local minima). For neural networks, this is essentially the best general guarantee.
+\end{frame}
+
+\board[2]{Proof of the descent lemma and the theorem}{Descent lemma: $f(\by) - f(\bx) = \int_0^1\nabla f(\bx + t(\by - \bx))^\top(\by - \bx)\,dt$ and Cauchy--Schwarz. \quad Theorem: put $\by = \bx_k - \eta\nabla f(\bx_k)$; then sum over $k$ (telescoping).}
+
+\begin{frame}{Backtracking line search}
+    \small
+    $L$ is unknown in practice. \textbf{Backtracking:} start with $\eta = \bar\eta$ and halve it until the Armijo condition
+    \[f\big(\bx_k - \eta\nabla f(\bx_k)\big) \leq f(\bx_k) - \frac{\eta}{2}\norm{\nabla f(\bx_k)}^2\]
+    holds; then step.
+    \begin{proposition}[][prop:backtracking]
+        \small For $L$-smooth $f \geq f^*$, backtracking stops after finitely many halvings with $\eta_k \geq \eta_{\min} = \min(\bar\eta, \frac{1}{2L})$, and $\min_{k < K}\norm{\nabla f(\bx_k)}^2 \leq \frac{2(f(\bx_0) - f^*)}{\eta_{\min}K}$.
+    \end{proposition}
+    Why it stops: by the theorem, every $\eta \leq \frac{1}{L}$ satisfies the condition, and halving reaches $(\frac{1}{2L}, \frac{1}{L}]$.
+\end{frame}
+
+\begin{frame}{Gradient descent on quadratic functions}
+    \sidebyside{0.55}{%
+        \small
+        $f = \frac{1}{2}\bx^\top A\bx - \mathbf{b}^\top\bx$, $\mathbf{e}_k = \bx_k - \bx^*$: \ $\mathbf{e}_{k+1} = (I - \eta A)\mathbf{e}_k$.
+        \begin{theorem}[][thm:gd-quadratic]
+            \small With $\kappa = \lambda_{\max}/\lambda_{\min}$:
+            \begin{enumerate}
+                \item $\norm{\mathbf{e}_k} \leq \rho^k\norm{\mathbf{e}_0}$, $\rho = \max_i|1 - \eta\lambda_i|$;
+                \item convergence for all $\bx_0$ $\iff 0 < \eta < \frac{2}{\lambda_{\max}}$;
+                \item best $\eta = \frac{2}{\lambda_{\max} + \lambda_{\min}}$, \ $\rho = \frac{\kappa - 1}{\kappa + 1}$.
+            \end{enumerate}
+        \end{theorem}
+    }{%
+        \centering\notesfig[1]{L3-gd}
+    }
+    \begin{example}[][ex:gd-quadratic]
+        \small $\frac{1}{2}(x_1^2 + 10x_2^2)$: $\eta < 0.2$; best $\eta = \frac{2}{11}$, $\rho = \frac{9}{11}$; $69$ steps to gain a factor $10^{-6}$. For $A = I$: one step.
+    \end{example}
+\end{frame}
+
+\board{Proof for quadratic functions}{$\mathbf{e}_{k+1} = (I - \eta A)\mathbf{e}_k$; in the eigenbasis of $A$ each coordinate is multiplied by $1 - \eta\lambda_i$. Minimize $\max(|1 - \eta\lambda_{\max}|, |1 - \eta\lambda_{\min}|)$ over $\eta$.}
+
+\checkslide{gradient descent on $\frac{1}{2}(x_1^2 + 10x_2^2)$}{
+    \small
+    $A = \diag(1, 10)$, $\bx^* = \mathbf{0}$: \ $\bx_{k+1} = (I - \eta A)\bx_k$, i.e., $x_1 \mapsto (1 - \eta)x_1$, \ $x_2 \mapsto (1 - 10\eta)x_2$.
+    \begin{center}
+        \renewcommand{\arraystretch}{1.25}
+        \begin{tabular}{@{}lccl@{}}
+            \toprule
+            $\eta$ & factor on $x_1$ & factor on $x_2$ & \\
+            \midrule
+            $0.05$ & $0.95$ & $0.5$ & slow along the valley \\
+            $\frac{2}{11} \approx 0.18$ & $\frac{9}{11}$ & $-\frac{9}{11}$ & best: $\rho = \frac{\kappa - 1}{\kappa + 1} = \frac{9}{11}$ \\
+            $0.21$ & $0.79$ & $-1.1$ & diverges: $\eta > \frac{2}{\lambda_{\max}} = 0.2$ \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    \textbf{Best $\eta$:} $|1 - \eta\lambda_{\min}| = |1 - \eta\lambda_{\max}|$ $\Rightarrow$ $1 - \eta = 10\eta - 1$, $\eta = \frac{2}{11}$. Steps to gain $10^{-6}$: $k \geq \frac{\ln 10^6}{\ln(11/9)} \approx 68.8$, so $69$.
+    \\[0.4em]
+    \textbf{$\kappa = 25$} (the plot on the next slide): GD $\rho = \frac{24}{26} \approx 0.923$, about $173$ steps for $10^{-6}$; momentum $\rho \approx \frac{\sqrt{25} - 1}{\sqrt{25} + 1} = \frac{2}{3}$, about $35$ steps. \ For $\kappa = 10^4$: about $70\,000$ vs $700$.
+}
+
+\begin{frame}{Making gradient descent faster}
+    \small
+    \textbf{Feature scaling:} standardized columns of $\Phi$ often make $\kappa(\Phi^\top\Phi)$ much smaller. \\
+    \textbf{Momentum} (heavy ball): $\bx_{k+1} = \bx_k - \eta\nabla f(\bx_k) + \beta(\bx_k - \bx_{k-1})$: about $\sqrt{\kappa}$ instead of $\kappa$ steps. \\
+    \textbf{Preconditioning:} the gradient for $\ip{\bx}{\by}_P$ is $P^{-1}\nabla f$ (Lecture~7); Adam: adaptive diagonal $P$; Newton: $P = \nabla^2 f$.
+    \\[0.2em]
+    \centering\fig[0.74]{s08_momentum}
+\end{frame}
+
+\begin{frame}{Stochastic gradient descent}
+    \begin{remark}[][rem:sgd]
+        \small $L(\boldsymbol{\theta}) = \frac{1}{N}\sum_{i=1}^N\ell_i(\boldsymbol{\theta})$. Instead of the full gradient (a pass over all data), use a random mini-batch $B$:
+        \[\mathbf{g} = \frac{1}{|B|}\sum_{i \in B}\nabla\ell_i(\boldsymbol{\theta}), \qquad \E[\mathbf{g}] = \nabla L(\boldsymbol{\theta}).\]
+    \end{remark}
+    \small
+    \begin{itemize}
+        \item On average SGD moves in the right direction; the noise prevents it from settling at the minimum unless $\eta$ decreases.
+        \item Lecture~10 (self-study \S4.7.3): convergence for strongly convex $f$ with $\eta_k = \frac{1}{\mu(k + 1)}$ at the rate $\frac{1}{k}$; with constant $\eta$, a neighborhood of size $\propto \eta$.
+        \item SGD with momentum and preconditioning (Adam) trains almost all neural networks.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Newton's method}
+    \small
+    Minimize the quadratic model $m_k(\mathbf{h}) = f(\bx_k) + \nabla f(\bx_k)^\top\mathbf{h} + \frac{1}{2}\mathbf{h}^\top\nabla^2 f(\bx_k)\mathbf{h}$:
+    \[\bx_{k+1} = \bx_k - \nabla^2 f(\bx_k)^{-1}\nabla f(\bx_k) \qquad \text{(solve } H_k\mathbf{h} = -\nabla f(\bx_k)\text{, do not invert)}.\]
+    \begin{theorem}[Quadratic convergence][thm:newton]
+        \small If $\nabla^2 f(\bx^*) \succeq \mu I$, $\mu > 0$, the Hessian is $L$-Lipschitz near $\bx^*$, and $\bx_0$ is close enough:
+        \(\norm{\bx_{k+1} - \bx^*} \leq \frac{L}{\mu}\norm{\bx_k - \bx^*}^2.\)
+    \end{theorem}
+    \begin{example}[][ex:newton]
+        \small $f(x) = e^x - 2x$, $x^* = \log 2$, $x_{k+1} = x_k - 1 + 2e^{-x_k}$: errors $0.69,\ 0.31,\ 4.3 \cdot 10^{-2},\ 9.0 \cdot 10^{-4},\ 4.0 \cdot 10^{-7},\ 8.0 \cdot 10^{-14}$: the number of correct digits doubles.
+    \end{example}
+    Drawbacks: $n^2$ entries and $n^3$ work; far from a minimum it may go to a saddle or a maximum. Newton $=$ gradient descent for the inner product of the Hessian.
+\end{frame}
+
+\board{Derive the Newton step}{Minimize $m_k(\mathbf{h})$: set $\nabla m_k(\mathbf{h}) = \mathbf{0}$. Why does Newton solve a quadratic in one step, for every $\kappa$? \quad One variable: $x_{k+1} = x_k - f'(x_k)/f''(x_k)$.}
+
+\checkslide{Newton and Gauss--Newton with numbers}{
+    \small
+    \textbf{Derivation.} $\nabla m_k(\mathbf{h}) = \nabla f(\bx_k) + H_k\mathbf{h} = \mathbf{0}$ $\Rightarrow$ $\mathbf{h} = -H_k^{-1}\nabla f(\bx_k)$. For a quadratic, $m_0 = f$, so one step lands on $\bx^*$.
+    \\[0.3em]
+    \textbf{Newton for $f(x) = e^x - 2x$:} $f' = e^x - 2$, $f'' = e^x$, \ $x_{k+1} = x_k - \frac{e^{x_k} - 2}{e^{x_k}} = x_k - 1 + 2e^{-x_k}$:
+    \[x_1 = 0 - 1 + 2 = 1, \quad x_2 = 1 - 1 + 2e^{-1} \approx 0.735759, \quad x_3 \approx 0.735759 - 1 + 2 \cdot 0.479142 \approx 0.694042,\]
+    then $0.6931476$ and $0.693147180560$; errors $0.69, 0.31, 4.3 \cdot 10^{-2}, 9.0 \cdot 10^{-4}, 4.0 \cdot 10^{-7}, 8 \cdot 10^{-14}$: each about the square of the previous one (times a constant).
+    \\[0.4em]
+    \textbf{Gauss--Newton} for $y = e^{\theta x}$, data $(0, 1), (1, 2), (2, 4)$, $\theta_0 = 1$: residuals $r_i = e^{\theta x_i} - y_i$, $J_i = x_ie^{\theta x_i}$:
+    \[\mathbf{r} \approx (0, 0.718, 3.389), \quad J \approx (0, 2.718, 14.778), \quad h = -\frac{\sum_iJ_ir_i}{\sum_iJ_i^2} \approx -\frac{52.04}{225.78} \approx -0.2305,\]
+    so $\theta_1 \approx 0.7695$; then $0.69856$, $0.693175$, \ldots $\to \log 2$: quadratic, since the residuals vanish at $\theta^*$.
+}
+
+\begin{frame}{Newton-type methods in practice}
+    \small
+    \textbf{Nonlinear least squares} $f(\boldsymbol{\theta}) = \frac{1}{2}\norm{\mathbf{r}(\boldsymbol{\theta})}^2$, $J = D\mathbf{r}$:
+    \[\nabla f = J^\top\mathbf{r}, \qquad \nabla^2 f = J^\top J + \textstyle\sum_i r_i\nabla^2 r_i.\]
+    \begin{itemize}
+        \item \textbf{Gauss--Newton} drops the second term: solve $J^\top J\mathbf{h} = -J^\top\mathbf{r}$ (a least squares problem). Always a descent direction; for linear models, one step.
+        \item \textbf{Levenberg--Marquardt}: $(J^\top J + \lambda I)\mathbf{h} = -J^\top\mathbf{r}$, between Gauss--Newton and gradient descent.
+        \item Example: fit $y = e^{\theta x}$ to $(0, 1), (1, 2), (2, 4)$ from $\theta_0 = 1$: errors $0.31,\ 0.076,\ 5.4 \cdot 10^{-3},\ 2.8 \cdot 10^{-5},\ 7.8 \cdot 10^{-10}$.
+    \end{itemize}
+    \textbf{Hessian-vector products} $\nabla^2 f(\bx)\bv = \frac{d}{dt}\nabla f(\bx + t\bv)|_{t=0}$ cost a few gradients with AD (forward over reverse): conjugate gradients, the top eigenvalue of a network's Hessian by power iteration. Quasi-Newton (BFGS, L-BFGS) builds the Hessian from gradients.
+\end{frame}
+
+% ------------------------------------------------------------------ Convexity
+\topic{\secref{sec:convexity}}{Convexity}
+
+\begin{frame}{Convex sets and functions}
+    \begin{definition}[][def:convex]
+        \small $C$ is convex if it contains the segment between any two of its points. $f$ is convex if
+        \[f(\theta\bx + (1 - \theta)\by) \leq \theta f(\bx) + (1 - \theta)f(\by), \qquad \theta \in [0, 1].\]
+    \end{definition}
+    \sidebyside{0.45}{%
+        \small
+        Examples: affine functions; every norm; $x^2$, $|x|$, $e^x$, $-\log x$. Not convex: $x^3$.
+        \begin{theorem}[First order][thm:convex-first-order]
+            \small Differentiable $f$ is convex $\iff$
+            \(f(\by) \geq f(\bx) + \nabla f(\bx)^\top(\by - \bx).\)
+        \end{theorem}
+    }{%
+        \centering\notesfig[1]{L3-convex}
+    }
+    \small A convex function lies below its chords and above its tangent planes.
+\end{frame}
+
+\begin{frame}{Why convexity matters}
+    \begin{corollary}[][cor:convex-global]
+        \small For convex differentiable $f$: \ $\nabla f(\bx^*) = \mathbf{0}$ $\Rightarrow$ $\bx^*$ is a \emph{global} minimum.
+    \end{corollary}
+    \begin{proposition}[][prop:convex-minima]
+        \small Every local minimum of a convex function is global; the set of minima is convex; strictly convex $\Rightarrow$ at most one minimum.
+    \end{proposition}
+    \begin{theorem}[Second order][thm:convex-second-order]
+        \small $C^2$ function $f$ is convex $\iff$ $\nabla^2 f(\bx) \succeq 0$ for all $\bx$; \ $\nabla^2 f \succ 0$ everywhere $\Rightarrow$ strictly convex.
+    \end{theorem}
+    \begin{proposition}[][prop:convex-operations]
+        \small $\alpha f + \beta g$ ($\alpha, \beta \geq 0$), \ $f(A\bx + \mathbf{b})$, \ $\max(f, g)$ are convex if $f$, $g$ are.
+    \end{proposition}
+\end{frame}
+
+\board{Proofs: tangent plane $\Rightarrow$ global minimum; local $=$ global}{(1) Put $\nabla f(\bx^*) = \mathbf{0}$ into the first-order characterization. \quad (2) If $f(\by) < f(\bx^*)$, look at $f$ on the segment from $\bx^*$ to $\by$.}
+
+\begin{frame}{Convex losses, and non-convex networks}
+    \begin{example}[Convex losses][ex:convex-losses]
+        \small
+        \begin{itemize}
+            \item least squares: Hessian $2\Phi^\top\Phi \succeq 0$; with a ridge penalty $\lambda\norm{\boldsymbol{\theta}}^2$: $\succ 0$, a unique minimum;
+            \item logistic regression: $\frac{1}{N}\sum_ip_i(1 - p_i)\bx_i\bx_i^\top \succeq 0$;
+            \item log-sum-exp: $\bv^\top(\diag(\mathbf{p}) - \mathbf{p}\mathbf{p}^\top)\bv = \sum_ip_iv_i^2 - (\sum_ip_iv_i)^2 \geq 0$ (Cauchy--Schwarz).
+        \end{itemize}
+    \end{example}
+    \begin{remark}[Neural networks are not convex]
+        \small Swapping two hidden units gives the same function, hence the same loss. If the loss were convex, the midpoint of the two minima would be a minimum too, but there the two units are identical: effectively one unit less. Yet gradient methods work remarkably well in practice.
+    \end{remark}
+\end{frame}
+
+\begin{frame}{Strong convexity and convergence rates}
+    \begin{definition}[][def:strongly-convex]
+        \small $f$ is $\mu$-strongly convex if $f(\by) \geq f(\bx) + \nabla f(\bx)^\top(\by - \bx) + \frac{\mu}{2}\norm{\by - \bx}^2$ \ (for $C^2$: $\nabla^2 f \succeq \mu I$).
+    \end{definition}
+    \begin{lemma}[][lem:pl]
+        \small $\nabla f(\bx)^\top(\bx - \bx^*) \geq \mu\norm{\bx - \bx^*}^2$ \quad and \quad $f(\bx) - f^* \leq \frac{1}{2\mu}\norm{\nabla f(\bx)}^2$ \ (Polyak--{\L}ojasiewicz).
+    \end{lemma}
+    \begin{theorem}[Rates of gradient descent][thm:gd-rates]
+        \small $f$ convex and $L$-smooth, $\eta = \frac{1}{L}$:
+        \begin{enumerate}
+            \item $f(\bx_k) - f^* \leq \dfrac{L\norm{\bx_0 - \bx^*}^2}{2k}$;
+            \item if also $\mu$-strongly convex: $f(\bx_k) - f^* \leq \big(1 - \frac{\mu}{L}\big)^k(f(\bx_0) - f^*)$.
+        \end{enumerate}
+    \end{theorem}
+    \small $L/\mu$ plays the role of the condition number $\kappa$.
+\end{frame}
+
+\board[2]{Proof of the linear rate}{Descent lemma: $f(\bx_{k+1}) \leq f(\bx_k) - \frac{1}{2L}\norm{\nabla f(\bx_k)}^2$. \ PL: $\norm{\nabla f(\bx_k)}^2 \geq 2\mu(f(\bx_k) - f^*)$. Combine. \quad PL itself: minimize the right side of the strong convexity inequality over $\by$.}
+
+\checkslide{the linear rate}{
+    \small
+    \textbf{PL.} Minimize the right side of $f(\by) \geq f(\bx) + \nabla f(\bx)^\top(\by - \bx) + \frac{\mu}{2}\norm{\by - \bx}^2$ over $\by$: at $\by - \bx = -\frac{1}{\mu}\nabla f(\bx)$,
+    \[f^* \geq f(\bx) - \tfrac{1}{\mu}\norm{\nabla f}^2 + \tfrac{1}{2\mu}\norm{\nabla f}^2 = f(\bx) - \tfrac{1}{2\mu}\norm{\nabla f(\bx)}^2.\]
+    \textbf{Combine} (descent lemma with $\eta = \frac{1}{L}$, then PL):
+    \[f(\bx_{k+1}) - f^* \leq f(\bx_k) - f^* - \tfrac{1}{2L}\norm{\nabla f(\bx_k)}^2 \leq \big(1 - \tfrac{\mu}{L}\big)\big(f(\bx_k) - f^*\big).\]
+    \textbf{Example.} $f = \frac{1}{2}(x_1^2 + 10x_2^2)$: Hessian eigenvalues $1$ and $10$, so $\mu = 1$, $L = 10$, $\eta = 0.1$: the gap shrinks at least by $0.9$ per step; $10^{-6}$ after $\frac{\ln 10^6}{-\ln 0.9} \approx 131$ steps. (With the better step $\frac{2}{11}$ the error itself shrinks by $\frac{9}{11}$, the gap by $(\frac{9}{11})^2 \approx 0.67$.)
+    \\[0.3em]
+    \textbf{Without strong convexity}, e.g.\ $f(x) = x^4$: $f''(0) = 0$, and the gap only decays like $\frac{1}{k}$ (at least, by the $O(1/k)$ theorem).
+}
+
+% ------------------------------------------------------------------ Prox
+\topic{\secref{sec:prox}}{Nonsmooth convex functions and the lasso}
+
+\begin{frame}{Subgradients}
+    \begin{definition}[Subgradient][def:subgradient]
+        \small $\mathbf{g} \in \partial f(\bx)$ if $f(\by) \geq f(\bx) + \mathbf{g}^\top(\by - \bx)$ for all $\by$.
+    \end{definition}
+    \begin{proposition}[][prop:subgradients]
+        \small Differentiable: $\partial f(\bx) = \{\nabla f(\bx)\}$. \ $\partial|x| = \{\sign x\}$ for $x \neq 0$, $\partial|x|(0) = [-1, 1]$. \ For $\norm{\bx}_1$: $g_i = \sign(x_i)$ if $x_i \neq 0$, $g_i \in [-1, 1]$ if $x_i = 0$.
+    \end{proposition}
+    \begin{theorem}[Optimality][thm:composite-optimality]
+        \small $f$ convex differentiable, $h$ convex: \ $\bx^*$ minimizes $f + h$ $\iff$ $-\nabla f(\bx^*) \in \partial h(\bx^*)$.
+    \end{theorem}
+    \small
+    For $h = \lambda\norm{\cdot}_1$: $w_i^* = 0$ is optimal as long as $|\partial_i f(\bw^*)| \leq \lambda$. A whole interval of gradients is allowed at $0$, so many weights are exactly $0$.
+\end{frame}
+
+\begin{frame}{The proximal gradient method}
+    \small
+    \begin{definition}[Proximal operator][def:prox]
+        $\operatorname{prox}_{\eta h}(\bv) = \argmin_{\bu}\big(h(\bu) + \frac{1}{2\eta}\norm{\bu - \bv}^2\big)$.
+    \end{definition}
+    \begin{proposition}[Soft thresholding][prop:soft-threshold]
+        $\operatorname{prox}_{\eta\lambda\norm{\cdot}_1}(\bv)_i = S_{\eta\lambda}(v_i)$, \ $S_\tau(v) = \sign(v)\max(|v| - \tau, 0)$.
+    \end{proposition}
+    \begin{theorem}[Proximal gradient (ISTA)][thm:prox-gradient]
+        $\bx_{k+1} = \operatorname{prox}_{\eta h}(\bx_k - \eta\nabla f(\bx_k))$, $\eta \leq \frac{1}{L}$: \ $\bx^*$ is optimal iff it is a fixed point, and $F = f + h$ decreases: $F(\bx_{k+1}) \leq F(\bx_k) - \frac{1}{2\eta}\norm{\bx_{k+1} - \bx_k}^2$.
+    \end{theorem}
+    Gradient step on the smooth part, prox step on the nonsmooth part. With $h = 0$: gradient descent; with $h = $ indicator of a set: projected gradient descent.
+\end{frame}
+
+\board{Derive soft thresholding}{Minimize $\lambda|u| + \frac{1}{2}(u - v)^2$ over $u \in \R$: use the optimality condition $v - u \in \lambda\,\partial|u|$; three cases.}
+
+\checkslide{soft thresholding}{
+    \small
+    Optimality ($f = \frac{1}{2}(u - v)^2$, $h = \lambda|u|$): \ $-f'(u) = v - u \in \lambda\,\partial|u|$.
+    \begin{itemize}
+        \item $u > 0$: $\partial|u| = \{1\}$, so $u = v - \lambda$; consistent iff $v > \lambda$.
+        \item $u < 0$: $\partial|u| = \{-1\}$, so $u = v + \lambda$; consistent iff $v < -\lambda$.
+        \item $u = 0$: $\partial|0| = [-1, 1]$, so $v \in [-\lambda, \lambda]$.
+    \end{itemize}
+    Exactly one case applies for each $v$: \ $S_\lambda(v) = \sign(v)\max(|v| - \lambda, 0)$.
+    \\[0.4em]
+    \textbf{Numbers} ($\lambda = 1$, orthonormal features, least squares weights $(3, -0.5, 1.2, 0.1)$):
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{@{}lcccc@{}}
+            \toprule
+            least squares $v$ & $3$ & $-0.5$ & $1.2$ & $0.1$ \\
+            lasso $S_1(v)$ & $3 - 1 = 2$ & $0$ ($|v| \leq 1$) & $1.2 - 1 = 0.2$ & $0$ \\
+            ridge $\frac{v}{1 + 2\lambda} = \frac{v}{3}$ & $1$ & $-0.167$ & $0.4$ & $0.033$ \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    The lasso keeps $2$ of $4$ features; ridge keeps all, just smaller. ISTA step: $\bw \leftarrow S_{\eta\lambda}(\bw - \eta\nabla f(\bw))$.
+}
+
+\begin{frame}{Why the lasso gives sparse weights}
+    \centering\fig[0.64]{s08_lasso}
+    \\[0.1em]
+    \raggedright
+    \begin{example}[][ex:lasso]
+        \small If $X^\top X = I$: lasso weights $w_i^* = S_\lambda\big((X^\top\by)_i\big)$; $(3, -0.5, 1.2, 0.1)$ with $\lambda = 1$ becomes $(2, 0, 0.2, 0)$. Ridge: $\frac{1}{1 + 2\lambda}X^\top\by$, all shrunk, none $0$.
+    \end{example}
+    \small \textcolor{mlcolor}{Penalty $\lambda\norm{\bw}$ $\leftrightarrow$ constraint $\norm{\bw} \leq t$ (KKT, next part): the loss's level sets first touch the $\ell_1$ ball at a corner.}
+\end{frame}
+
+% ------------------------------------------------------------------ Constrained
+\topic{\secref{sec:constrained}}{Constrained optimization}
+
+\begin{frame}{Lagrange multipliers}
+    \sidebyside{0.56}{%
+        \begin{theorem}[Lagrange][thm:lagrange]
+            \small Let $\bx^*$ be a local minimum of $f$ on $\{g_1 = \cdots = g_m = 0\}$, with $\nabla g_1(\bx^*), \ldots, \nabla g_m(\bx^*)$ linearly independent. Then there are unique $\lambda_i$ with
+            \[\nabla f(\bx^*) + \sum_{i=1}^m\lambda_i\nabla g_i(\bx^*) = \mathbf{0}.\]
+        \end{theorem}
+        \small
+        $\nabla f$ is orthogonal to the constraint set: the level set of $f$ touches it.
+    }{%
+        \centering\notesfig[0.9]{L3-lagrange}
+    }
+    \begin{example}[][ex:lagrange-circle]
+        \small $\max x + y$ on $x^2 + y^2 = 1$: $(1, 1) + \lambda(2x, 2y) = \mathbf{0}$, so $x = y = \pm\frac{1}{\sqrt2}$; the maximum is $\sqrt{2}$ (as Cauchy--Schwarz predicts).
+    \end{example}
+\end{frame}
+
+\board[2]{Two Lagrange problems from linear algebra}{(1) Maximize $\bx^\top A\bx$ subject to $\bx^\top\bx = 1$ ($A$ symmetric): the candidates are eigenvectors, the multiplier is the eigenvalue (PCA). \\ (2) Minimize $\norm{\bx}^2$ subject to $A\bx = \mathbf{b}$ (independent rows): $\bx^* = A^\top(AA^\top)^{-1}\mathbf{b}$, in $\row(A)$.}
+
+\checkslide{Lagrange multipliers with numbers}{
+    \small
+    \textbf{(1) Eigenvalues.} $\nabla(\bx^\top A\bx) - \lambda\nabla(\bx^\top\bx) = 2A\bx - 2\lambda\bx = \mathbf{0}$: $A\bx = \lambda\bx$, and $f = \bx^\top A\bx = \lambda$ there. For $A = \begin{pmatrix} 2.5 & 1.5 \\ 1.5 & 2.5 \end{pmatrix}$: candidates $\pm\frac{1}{\sqrt2}(1, 1)^\top$ ($f = 4$, max) and $\pm\frac{1}{\sqrt2}(1, -1)^\top$ ($f = 1$, min).
+    \\[0.5em]
+    \textbf{(2) Minimum norm.} $2\bx + A^\top\boldsymbol{\lambda} = \mathbf{0}$, so $\bx = A^\top\boldsymbol{\nu}$; then $AA^\top\boldsymbol{\nu} = \mathbf{b}$. Example: $x_1 + x_2 = 1$, $x_2 + x_3 = 1$:
+    \[A = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 1 \end{pmatrix}, \quad AA^\top = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}, \quad \boldsymbol{\nu} = (AA^\top)^{-1}\begin{pmatrix} 1 \\ 1 \end{pmatrix} = \tfrac{1}{3}\begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}\begin{pmatrix} 1 \\ 1 \end{pmatrix} = \begin{pmatrix} 1/3 \\ 1/3 \end{pmatrix},\]
+    \[\bx^* = A^\top\boldsymbol{\nu} = \big(\tfrac{1}{3}, \tfrac{2}{3}, \tfrac{1}{3}\big)^\top: \quad \tfrac{1}{3} + \tfrac{2}{3} = 1 \ \checkmark, \quad \norm{\bx^*}^2 = \tfrac{6}{9} = \tfrac{2}{3}.\]
+    Every other solution is $\bx^* + t(1, -1, 1)^\top$ (the null space), with norm$^2$ $\frac{2}{3} + 3t^2$: larger.
+}
+
+\begin{frame}{Inequality constraints: the KKT conditions}
+    \begin{theorem}[Karush--Kuhn--Tucker][thm:kkt]
+        \small Let $\bx^*$ be a local minimum of $f$ subject to $g_i(\bx) \leq 0$, with independent gradients of the active constraints. Then there are $\mu_i$ with
+        \begin{enumerate}
+            \item stationarity: $\nabla f(\bx^*) + \sum_i\mu_i\nabla g_i(\bx^*) = \mathbf{0}$;
+            \item primal feasibility: $g_i(\bx^*) \leq 0$; \quad dual feasibility: $\mu_i \geq 0$;
+            \item complementary slackness: $\mu_ig_i(\bx^*) = 0$ (inactive constraints have $\mu_i = 0$).
+        \end{enumerate}
+        If $f$ and all $g_i$ are convex, every KKT point is a global minimum.
+    \end{theorem}
+    \small $\mu_i \geq 0$: the constraint pushes back, it cannot pull. $\mu_i$ is the price of the constraint: relaxing $g_i \leq 0$ to $g_i \leq \varepsilon$ lowers the minimum by about $\mu_i\varepsilon$.
+\end{frame}
+
+\board[2]{Examples of KKT}{(1) Minimize $(x - 2)^2$ subject to $x \leq 1$. What if the constraint is $x \leq 3$? \\ (2) Project $\mathbf{p}$ with $\norm{\mathbf{p}} > 1$ onto the unit ball: minimize $\norm{\bx - \mathbf{p}}^2$ subject to $\norm{\bx}^2 - 1 \leq 0$. Numbers: $\mathbf{p} = (3, 4)^\top$.}
+
+\checkslide{KKT examples}{
+    \small
+    (1) $2(x - 2) + \mu = 0$, $x \leq 1$, $\mu \geq 0$, $\mu(x - 1) = 0$. \ $\mu = 0$ gives $x = 2$, infeasible; so $x^* = 1$, $\mu = 2$. Relaxing to $x \leq 1 + \varepsilon$: minimum $1 - 2\varepsilon + \varepsilon^2$, rate $\mu = 2$. For $x \leq 3$: $x^* = 2$, inactive, $\mu = 0$.
+    \\[0.6em]
+    (2) $2(\bx - \mathbf{p}) + 2\mu\bx = \mathbf{0}$, so $\bx = \frac{\mathbf{p}}{1 + \mu}$; $\mu = 0$ is infeasible, so $\norm{\bx} = 1$, $\mu = \norm{\mathbf{p}} - 1$:
+    \[\bx^* = \frac{\mathbf{p}}{\norm{\mathbf{p}}}; \qquad \mathbf{p} = (3, 4)^\top: \ \norm{\mathbf{p}} = 5, \ \bx^* = (0.6, 0.8)^\top, \ \mu = 4.\]
+    Check stationarity: $2(\bx^* - \mathbf{p}) + 2\mu\bx^* = 2(-2.4, -3.2) + 8(0.6, 0.8) = (0, 0)$ \checkmark; $\mu = 4 \geq 0$, constraint active.
+    \textcolor{mlcolor}{Projected gradient descent alternates gradient steps with such projections (e.g., weight constraints, trust regions).}
+}
+
+\begin{frame}{Support vector machines}
+    \sidebyside{0.56}{%
+        \small
+        Separable data $(\bx_i, y_i)$, $y_i = \pm 1$. Margin of $\bw^\top\bx + b = 0$ is $\frac{1}{\norm{\bw}}$ (Lecture~6) if we normalize $\min_iy_i(\bw^\top\bx_i + b) = 1$:
+        \[\min\ \tfrac{1}{2}\norm{\bw}^2 \quad \text{s.t.} \quad 1 - y_i(\bw^\top\bx_i + b) \leq 0.\]
+        KKT: \ $\bw = \sum_i\mu_iy_i\bx_i$, and $\mu_i > 0$ only if $y_i(\bw^\top\bx_i + b) = 1$: the points on the margin, the \textbf{support vectors}. The classifier depends only on them.
+        \\[0.3em]
+        In the picture: $\bw = (1, 1)^\top$, $b = -2$. Support vectors $(1.5, 1.5)$: $1.5 + 1.5 - 2 = 1$; \ $(0.5, 0.5)$, $y = -1$: $-(0.5 + 0.5 - 2) = 1$. Margin $\frac{1}{\norm{\bw}} = \frac{1}{\sqrt2} \approx 0.71$.
+    }{%
+        \centering\fig[0.95]{s08_svm}
+    }
+\end{frame}
+
+\begin{frame}{Lagrangian duality}
+    \small
+    Lagrangian $\mathcal{L}(\bx, \boldsymbol{\mu}) = f(\bx) + \sum_i\mu_ig_i(\bx)$; \ dual function $d(\boldsymbol{\mu}) = \inf_{\bx}\mathcal{L}(\bx, \boldsymbol{\mu})$ for $\boldsymbol{\mu} \geq \mathbf{0}$: always concave.
+    \begin{theorem}[Weak and strong duality][thm:duality]
+        \begin{enumerate}
+            \item $d(\boldsymbol{\mu}) \leq f(\bx)$ for every feasible $\bx$ and $\boldsymbol{\mu} \geq \mathbf{0}$; hence $d^* \leq p^*$.
+            \item If $f$, $g_i$ are convex and $\bx^*$, $\boldsymbol{\mu}^*$ satisfy KKT, then they solve the primal and the dual problem, and $d^* = p^*$.
+        \end{enumerate}
+    \end{theorem}
+    \begin{example}[][ex:dual-1d]
+        $\min(x - 2)^2$ s.t. $x \leq 1$: $d(\mu) = \mu - \frac{\mu^2}{4}$, maximal at $\mu = 2$ with $d^* = 1 = p^*$.
+    \end{example}
+    Every dual feasible $\boldsymbol{\mu}$ is a \emph{certificate}: a lower bound on the optimal value.
+\end{frame}
+
+\board[2]{Weak duality, and the dual of the SVM}{(1) For feasible $\bx$ and $\boldsymbol{\mu} \geq \mathbf{0}$: $d(\boldsymbol{\mu}) \leq \mathcal{L}(\bx, \boldsymbol{\mu}) \leq f(\bx)$. \\ (2) SVM: minimize $\mathcal{L}(\bw, b, \boldsymbol{\mu})$ over $b$ (affine: $\sum_i\mu_iy_i = 0$) and over $\bw$ ($\bw = \sum_i\mu_iy_i\bx_i$), and substitute.}
+
+\checkslide{the dual function and the dual of the SVM}{
+    \small
+    \textbf{1D example.} $\mathcal{L}(x, \mu) = (x - 2)^2 + \mu(x - 1)$; $\partial_x\mathcal{L} = 2(x - 2) + \mu = 0$ at $x = 2 - \frac{\mu}{2}$:
+    \[d(\mu) = \tfrac{\mu^2}{4} + \mu\big(1 - \tfrac{\mu}{2}\big) = \mu - \tfrac{\mu^2}{4}, \qquad d'(\mu) = 1 - \tfrac{\mu}{2} = 0 \text{ at } \mu = 2, \qquad d(2) = 1 = (1 - 2)^2 = p^*.\]
+    E.g.\ $d(1) = 0.75 \leq 1$: every $\mu \geq 0$ gives a lower bound.
+    \\[0.3em]
+    \textbf{SVM.} $\mathcal{L} = \frac{1}{2}\norm{\bw}^2 - \bw^\top\sum_i\mu_iy_i\bx_i - b\sum_i\mu_iy_i + \sum_i\mu_i$: bounded in $b$ only if $\sum_i\mu_iy_i = 0$; minimal in $\bw$ at $\bw = \sum_i\mu_iy_i\bx_i$, where $\frac{1}{2}\norm{\bw}^2 - \bw^\top\bw = -\frac{1}{2}\norm{\bw}^2$:
+    \[\max_{\boldsymbol{\mu}}\ \sum_{i=1}^N\mu_i - \frac{1}{2}\sum_{i,j=1}^N\mu_i\mu_jy_iy_j\,\bx_i^\top\bx_j \qquad \text{s.t.} \quad \boldsymbol{\mu} \geq \mathbf{0}, \quad \sum_i\mu_iy_i = 0.\]
+    \begin{itemize}
+        \item One variable per data point instead of per feature.
+        \item The data appear only through the inner products $\bx_i^\top\bx_j$. Replacing them by a kernel $k(\bx_i, \bx_j)$ gives the kernel SVM: a linear classifier in a huge feature space, at the cost of an $N \times N$ Gram matrix.
+        \item $\bw = \sum_i\mu_iy_i\bx_i$: only the support vectors contribute.
+    \end{itemize}
+}
+
+\begin{frame}{Convex conjugates}
+    \begin{definition}[][def:conjugate]
+        \small $f^*(\by) = \sup_{\bx}\big(\by^\top\bx - f(\bx)\big)$: the largest gap between the line with slope $\by$ and $f$.
+    \end{definition}
+    \begin{proposition}[][prop:conjugate]
+        \small $f^*$ is convex; \ Fenchel--Young: $f(\bx) + f^*(\by) \geq \bx^\top\by$; \ for convex differentiable $f$: $f^*(\nabla f(\bx)) = \bx^\top\nabla f(\bx) - f(\bx)$ and $f^{**} = f$.
+    \end{proposition}
+    \begin{example}[][ex:conjugates]
+        \small
+        $\frac{1}{2}\bx^\top Q\bx \leftrightarrow \frac{1}{2}\by^\top Q^{-1}\by$ \ ($\frac{1}{2}\norm{\bx}^2$ is self-conjugate); \ $e^x \leftrightarrow y\log y - y$ ($y > 0$); \ $\norm{\bx}_1 \leftrightarrow 0$ on the $\ell_\infty$ unit ball, $\infty$ outside; \ log-sum-exp $\leftrightarrow \sum_ip_i\log p_i$, the negative entropy (Lecture~10).
+    \end{example}
+    \small Duals of linear and quadratic programs are again LPs and QPs; a dual feasible point certifies optimality.
+\end{frame}
+
+\begin{frame}{Worked examples: computing conjugates}
+    \small
+    $f^*(y) = \sup_x(yx - f(x))$: maximize $g(x) = yx - f(x)$; for convex differentiable $f$, $g'(x) = 0 \iff f'(x) = y$.
+    \\[0.4em]
+    \textbf{$f(x) = \frac{1}{2}x^2$:} $y - x = 0$ at $x = y$: \ $f^*(y) = y^2 - \frac{1}{2}y^2 = \frac{1}{2}y^2$. Self-conjugate. (For $\frac{1}{2}\bx^\top Q\bx$: $\bx = Q^{-1}\by$, $f^* = \frac{1}{2}\by^\top Q^{-1}\by$.)
+    \\[0.4em]
+    \textbf{$f(x) = e^x$:} $y - e^x = 0$ at $x = \log y$ (for $y > 0$): \ $f^*(y) = y\log y - y$. \ $y = 0$: $\sup(-e^x) = 0$. \ $y < 0$: $yx - e^x \to \infty$ as $x \to -\infty$, so $f^*(y) = \infty$.
+    \\[0.4em]
+    \textbf{$f(x) = |x|$:} $yx - |x| = x(y - \sign x)$. If $|y| \leq 1$, it is $\leq 0$, with $0$ at $x = 0$: $f^*(y) = 0$. If $|y| > 1$, take $x = t\sign y$: $t(|y| - 1) \to \infty$. So $f^*$ is $0$ on $[-1, 1]$ and $\infty$ outside: the $\ell_1$ norm's dual is the $\ell_\infty$ ball.
+    \\[0.4em]
+    \textbf{Fenchel--Young check} for $e^x$ at $x = 0$, $y = 1$: $f(0) + f^*(1) = 1 + (0 - 1) = 0 = xy$: equality, since $y = f'(0)$.
+    \\[0.4em]
+    \textbf{An LP certificate.} Minimize $-x_1 - x_2$ s.t.\ $0 \leq x_1, x_2 \leq 1$, $x_1 + x_2 \leq 1.5$. The point $(1, 0.5)$ gives $-1.5$; adding the constraint $x_1 + x_2 \leq 1.5$ with weight $1$ proves $-x_1 - x_2 \geq -1.5$ for every feasible $\bx$: optimal.
+\end{frame}
+
+% ------------------------------------------------------------------ Wrap-up
+\begin{frame}{Key takeaways}
+    \small
+    \begin{itemize}
+        \item Local min $\Rightarrow \nabla f = \mathbf{0}$; the Hessian's eigenvalues classify critical points.
+        \item GD with $\eta \leq \frac{1}{L}$ decreases $f$ and finds small gradients. On quadratics: stable iff $\eta < \frac{2}{\lambda_{\max}}$, rate $\frac{\kappa - 1}{\kappa + 1}$; momentum $\approx\frac{\sqrt\kappa - 1}{\sqrt\kappa + 1}$; Newton: quadratic convergence, expensive.
+        \item Convex: every local minimum is global; $\nabla^2 f \succeq 0$. Convex $L$-smooth: $O(1/k)$; $\mu$-strongly convex: $(1 - \mu/L)^k$.
+        \item Nonsmooth: $\mathbf{0} \in \partial F(\bx^*)$; proximal gradient; lasso $=$ soft thresholding $\Rightarrow$ sparse weights.
+        \item Lagrange: $\nabla f + \sum\lambda_i\nabla g_i = \mathbf{0}$; KKT adds $\mu_i \geq 0$ and $\mu_ig_i = 0$; sufficient for convex problems.
+        \item Duality: $d^* \leq p^*$, equality at KKT points of convex problems; the SVM dual needs only inner products (kernels).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Homework and next time}
+    \small
+    \begin{itemize}
+        \item \textbf{Homework:} Lecture 3, Exercises 15, 17, 20, 23, 25 and 27; Programming Exercises P7 and P15.
+        \item \textbf{Practice:} Practice 3, sections 9--12.
+    \end{itemize}
+    \vskip0.6em
+    \begin{block}{Next: Probability I--II}
+        Probability spaces and Bayes' theorem; random variables and their distributions; expectation, variance and inequalities; joint distributions, covariance, conditional expectation; random vectors and the multivariate Gaussian.
+    \end{block}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,211 @@
+% Shared style of the lecture slides (Slides/slidesNN.tex). Each deck starts with
+%     \documentclass[aspectratio=1610,11pt]{beamer}
+%     \input{slides_preamble}
+% aspectratio=1610 (16:10) matches the Samsung Galaxy Tab S9 FE+ (2560 x 1600) used for teaching.
+%
+% The decks have no overlays (\pause, \only): every slide is one PDF page, so what you write on a
+% page while sharing the tablet screen stays on that page. Board pages (\board) are white pages with
+% a small header, for calculations and proofs written live.
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usefonttheme[onlymath]{serif}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning,shapes.geometric,decorations.pathreplacing}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+
+% Numbers of the lecture notes. A deck says which notes it follows with \setnotes{2} and
+% loads their labels with \externaldocument[L2-]{../Lecture2/lecture2} (the .aux of the notes
+% must exist). Then \begin{theorem}[Spectral theorem][thm:spectral] prints "notes L2, 10.1" at
+% the right of the block title, and \secref{sec:spectral} prints "§2.10".
+\usepackage{xr-hyper}
+\makeatletter
+\newcommand{\setnotes}[1]{\def\slides@notes{#1}}
+\setnotes{2}
+\newcommand{\notesref}[1]{\ref*{L\slides@notes-#1}}
+\newcommand{\secref}[1]{\S\slides@notes.\ref*{L\slides@notes-#1}}
+\makeatother
+
+% Macros of the lecture notes.
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\newcommand{\py}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bv}{\mathbf{v}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\bq}{\mathbf{q}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\be}{\mathbf{e}}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Null}{null}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\row}{row}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Div}{div}
+\DeclareMathOperator{\curl}{curl}
+\DeclareMathOperator{\vol}{vol}
+\DeclareMathOperator{\area}{area}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\ReLU}{ReLU}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% Colors.
+\definecolor{accent}{RGB}{31,78,140}      % titles, theorems
+\definecolor{defcolor}{RGB}{24,110,92}    % definitions
+\definecolor{excolor}{RGB}{150,82,20}     % examples
+\definecolor{mlcolor}{RGB}{120,40,120}    % machine learning connections
+\definecolor{boardink}{RGB}{140,140,140}  % header of the board pages
+
+% Layout.
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=0.9em, text margin right=0.9em}
+\setbeamercolor{structure}{fg=accent}
+\setbeamercolor{normal text}{fg=black, bg=white}
+\setbeamercolor{frametitle}{fg=accent, bg=white}
+\setbeamerfont{frametitle}{series=\bfseries, size=\large}
+\setbeamertemplate{frametitle}{%
+    \vskip0.45em\insertframetitle\par\vskip-0.25em
+    {\color{accent!25}\rule{\linewidth}{0.5pt}}\vskip-0.2em}
+\setbeamertemplate{itemize item}{\color{accent}\raisebox{0.15ex}{\scriptsize$\blacktriangleright$}}
+\setbeamertemplate{itemize subitem}{\color{accent}\raisebox{0.2ex}{\tiny$\bullet$}}
+\setbeamertemplate{enumerate item}{\color{accent}\insertenumlabel.}
+\setbeamerfont{footline}{size=\tiny}
+\setbeamertemplate{footline}{%
+    \leavevmode\hbox to \paperwidth{\hskip0.9em{\color{gray}\insertshorttitle}\hfill
+    {\color{gray}\insertframenumber}\hskip0.9em}\vskip0.45em}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamercolor{block title}{fg=white, bg=accent}
+\setbeamercolor{block body}{fg=black, bg=accent!6}
+\setbeamerfont{block title}{size=\normalsize, series=\bfseries}
+\setlength{\abovedisplayskip}{4pt}
+\setlength{\belowdisplayskip}{4pt}
+
+% Blocks: \begin{theorem}[Spectral theorem][thm:spectral] ... \end{theorem}; both arguments are optional.
+\makeatletter
+\newcommand{\slides@block}[5]{% color, word, name, label in the notes, body tint
+    \setbeamercolor{block title}{fg=white, bg=#1}%
+    \setbeamercolor{block body}{fg=black, bg=#1!#5}%
+    \begin{block}{#2\if\relax\detokenize{#3}\relax\else\ {\normalfont(#3)}\fi
+        \if\relax\detokenize{#4}\relax\else\hfill{\normalfont\scriptsize notes~L\slides@notes, \notesref{#4}}\fi}}
+\DeclareDocumentEnvironment{theorem}{O{} O{}}{\slides@block{accent}{Theorem}{#1}{#2}{6}}{\end{block}}
+\DeclareDocumentEnvironment{proposition}{O{} O{}}{\slides@block{accent}{Proposition}{#1}{#2}{6}}{\end{block}}
+\DeclareDocumentEnvironment{lemma}{O{} O{}}{\slides@block{accent}{Lemma}{#1}{#2}{6}}{\end{block}}
+\DeclareDocumentEnvironment{corollary}{O{} O{}}{\slides@block{accent}{Corollary}{#1}{#2}{6}}{\end{block}}
+\DeclareDocumentEnvironment{definition}{O{} O{}}{\slides@block{defcolor}{Definition}{#1}{#2}{6}}{\end{block}}
+\DeclareDocumentEnvironment{example}{O{} O{}}{\slides@block{excolor}{Example}{#1}{#2}{6}}{\end{block}}
+\DeclareDocumentEnvironment{remark}{O{} O{}}{\slides@block{gray!70!black}{Remark}{#1}{#2}{5}}{\end{block}}
+\DeclareDocumentEnvironment{mlbox}{O{In machine learning}}{%
+    \setbeamercolor{block title}{fg=white, bg=mlcolor}%
+    \setbeamercolor{block body}{fg=black, bg=mlcolor!6}%
+    \begin{block}{#1}}{\end{block}}
+\makeatother
+
+% Board pages.
+%   \board{Title}{Task, shown in small print at the top}            one white page
+%   \board[3]{Title}{Task}                                          three pages (the last two blank)
+\newcounter{boardpage}
+\newcommand{\boardhead}[1]{%
+    \vskip0.3em
+    \noindent{\color{boardink}\scriptsize
+        \tikz[baseline=(b.base)]\node[draw=boardink, rounded corners=2pt, inner sep=1.5pt,
+            font=\tiny\bfseries\sffamily] (b) {BOARD};\ \ #1}\par\vskip0.3em}
+\newcommand{\board}[3][1]{%
+    \begin{frame}[t]
+        \boardhead{#2}
+        \if\relax\detokenize{#3}\relax\else
+            {\small #3\par}
+        \fi
+    \end{frame}%
+    \setcounter{boardpage}{1}%
+    \loop\ifnum\value{boardpage}<#1\relax
+        \stepcounter{boardpage}%
+        \begin{frame}[t]\boardhead{#2 (continued)}\end{frame}%
+    \repeat}
+
+% Practice pages: problems of the practice file, as white pages for solving them live.
+% A deck loads the practice file's labels with \externaldocument[P1-]{../Lecture1/practice1} and
+% \setpractice{1}. Then
+%   \practice{pr:eig2}{\mandatory}{Problem text}    one page, headed "PRACTICE  Problem 10.1 (mandatory)"
+%   \practice[2]{pr:eig-props}{}{Problem text}      two pages (the second blank)
+%   \practice{pr:eig-gre}{$\star$}{Problem text}    the marks of the practice file
+% The answers stay in LectureN/practiceN_answers.tex.
+\newcommand{\mandatory}{\textcolor{red!70!black}{\textbf{mandatory}}}
+\makeatletter
+\newcommand{\setpractice}[1]{\def\slides@practice{#1}}
+\newcommand{\practiceref}[1]{\ref*{P\slides@practice-#1}}
+\newcommand{\practicehead}[2]{% label in the practice file, text after the problem number
+    \vskip0.3em
+    \noindent{\color{boardink}\scriptsize
+        \tikz[baseline=(b.base)]\node[draw=defcolor, text=defcolor, rounded corners=2pt, inner sep=1.5pt,
+            font=\tiny\bfseries\sffamily] (b) {PRACTICE};\ \ Practice~\slides@practice, Problem~\practiceref{#1}#2}%
+    \par\vskip0.3em}
+\newcommand{\practice}[4][1]{%
+    \begin{frame}[t]
+        \practicehead{#2}{\if\relax\detokenize{#3}\relax\else\ (#3)\fi}
+        {\small #4\par}
+    \end{frame}%
+    \setcounter{boardpage}{1}%
+    \loop\ifnum\value{boardpage}<#1\relax
+        \stepcounter{boardpage}%
+        \begin{frame}[t]\practicehead{#2}{\ (continued)}\end{frame}%
+    \repeat}
+\makeatother
+
+% Divider page: \topic{\secref{sec:spectral}}{The spectral theorem} or \topic{\S2.1--2.2}{Norms}.
+\newcommand{\topic}[2]{%
+    \begin{frame}[c]
+        \centering
+        {\color{gray}\large #1}\par\vskip0.4em
+        {\color{accent}\LARGE\bfseries #2}\par
+    \end{frame}}
+
+% Title page.
+\setbeamercolor{title}{fg=accent}
+\setbeamerfont{title}{series=\bfseries, size=\Large}
+\setbeamercolor{subtitle}{fg=gray!60!black}
+\setbeamerfont{subtitle}{size=\normalsize}
+\setbeamertemplate{title page}{%
+    \vfill
+    {\usebeamercolor[fg]{title}\usebeamerfont{title}\inserttitle\par}
+    \vskip0.6em
+    {\usebeamercolor[fg]{subtitle}\usebeamerfont{subtitle}\insertsubtitle\par}
+    \vskip1.2em
+    {\small\color{gray}\insertauthor\par}
+    \vfill}
+\author{Mathematics for Machine Learning}
+\date{}
+
+% Two columns with a picture: \sidebyside{0.5}{left text}{right picture}.
+\newcommand{\sidebyside}[3]{%
+    \begin{columns}[T]
+        \begin{column}{#1\linewidth}#2\end{column}
+        \begin{column}{\dimexpr\linewidth-#1\linewidth-1em\relax}#3\end{column}
+    \end{columns}}
+
+% "Check" slide after a board computation.
+\newcommand{\checkslide}[2]{%
+    \begin{frame}{Check: #1}
+        #2
+    \end{frame}}
+
+% Pictures.
+\newcommand{\notesfig}[2][1]{\resizebox{#1\linewidth}{!}{\input{figures/notes/#2}}}
+\newcommand{\fig}[2][1]{\includegraphics[width=#1\linewidth]{figures/#2}}

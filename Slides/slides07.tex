@@ -1,0 +1,700 @@
+\documentclass[aspectratio=1610,11pt]{beamer}
+\input{slides_preamble}
+\externaldocument[L3-]{../Lecture3/lecture3}
+\setnotes{3}
+
+\title[Lecture 7 · Calculus I]{Lecture 7. Calculus I:\\ Derivatives, the Chain Rule and Backpropagation}
+\subtitle{Notes: Lecture 3, \S3.1--3.8 and \S3.15.2\\ Self-study: \S3.13--3.14, \S3.15.1, \S3.16}
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+\begin{frame}{Today}
+    \begin{columns}[T]
+        \begin{column}{0.52\linewidth}
+            \begin{enumerate}\small
+                \item Functions of several variables (review of one variable, Taylor)
+                \item Partial derivatives, gradients, differentiability
+                \item Jacobians and the chain rule
+                \item Gradients with respect to matrices
+                \item Automatic differentiation and backpropagation
+                \item Hessians and Taylor's theorem
+                \item Gradient flow; gradient descent $=$ Euler's method
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.44\linewidth}
+            \begin{mlbox}[Used in]
+                \small
+                \begin{itemize}
+                    \item the derivation of backpropagation (DL)
+                    \item autograd in PyTorch (DL)
+                    \item vanishing and exploding gradients (DL)
+                \end{itemize}
+            \end{mlbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Why derivatives?}
+    \small
+    A model has parameters $\boldsymbol{\theta}$ (millions of weights). A loss $L(\boldsymbol{\theta})$ measures how badly it fits the data. Training $=$ making $L$ small, step by step:
+    \[\boldsymbol{\theta}_{k+1} = \boldsymbol{\theta}_k - \eta\,\nabla L(\boldsymbol{\theta}_k).\]
+    We need:
+    \begin{itemize}
+        \item derivatives of functions $\R^n \to \R^m$: gradients and Jacobians;
+        \item the chain rule: a network is a composition of layers;
+        \item gradients with respect to weight \emph{matrices};
+        \item an algorithm that computes all of them at the cost of a few evaluations of $L$: \textbf{backpropagation};
+        \item second derivatives to understand the shape of $L$ near a point (and next time: optimization).
+    \end{itemize}
+    Linear algebra everywhere: derivatives are linear maps (matrices), steepest ascent is Cauchy--Schwarz, and the shape near a minimum is given by the eigenvalues of a symmetric matrix.
+\end{frame}
+
+% ------------------------------------------------------------------ Functions
+\topic{\S3.1--3.2}{Functions of several variables}
+
+\begin{frame}{Functions in machine learning}
+    \small
+    $f: \R^n \to \R^m$, \ $f(\bx) = (f_1(\bx), \ldots, f_m(\bx))^\top$.
+    \begin{example}[][ex:ml-functions]
+        \small
+        \begin{itemize}
+            \item linear model $f(\bx) = \bw^\top\bx + b$;
+            \item a layer $f(\bx) = \sigma(W\bx + \mathbf{b})$, $\sigma$ applied entrywise: sigmoid $\frac{1}{1 + e^{-t}}$, $\tanh$, $\ReLU(t) = \max(0, t)$;
+            \item softmax $\softmax(\mathbf{z})_i = \frac{e^{z_i}}{e^{z_1} + \cdots + e^{z_K}}$: scores $\to$ probabilities;
+            \item a loss $L(\boldsymbol{\theta}) = \frac{1}{N}\sum_i \ell(f_{\boldsymbol{\theta}}(\bx_i), y_i)$, a function of the parameters.
+        \end{itemize}
+    \end{example}
+    \centering\notesfig[0.64]{L3-level-sets}
+\end{frame}
+
+\begin{frame}{Limits and continuity}
+    \begin{definition}[][def:limit]
+        \small $\lim_{\bx \to \mathbf{a}} f(\bx) = \mathbf{L}$ if for every $\varepsilon > 0$ there is $\delta > 0$ with $\norm{f(\bx) - \mathbf{L}} < \varepsilon$ whenever $0 < \norm{\bx - \mathbf{a}} < \delta$. \ $f$ is continuous at $\mathbf{a}$ if $\lim_{\bx \to \mathbf{a}} f(\bx) = f(\mathbf{a})$.
+    \end{definition}
+    \begin{example}[][ex:xy]
+        \small $f(x, y) = \frac{xy}{x^2 + y^2}$, $f(0, 0) = 0$. On the axes $f = 0$; on the line $y = x$, $f = \frac{1}{2}$. So $f$ has no limit at $\mathbf{0}$, although $t \mapsto f(t, 0)$ and $t \mapsto f(0, t)$ are continuous.
+    \end{example}
+    \small
+    In several variables, $\bx$ can approach $\mathbf{a}$ from infinitely many directions; checking the coordinate axes is not enough. The same will happen with derivatives: partial derivatives alone do not make a function differentiable.
+\end{frame}
+
+\begin{frame}{One variable: review}
+    \small
+    \begin{proposition}[Linear approximation][prop:linear-approx-1d]
+        $f'(x) = c$ $\iff$ $f(x + h) = f(x) + ch + r(h)$ with $r(h)/h \to 0$.
+    \end{proposition}
+    Sum, product, quotient and chain rule: $(\varphi \circ g)'(x) = \varphi'(g(x))\,g'(x)$.
+    \begin{example}[Activation functions][ex:sigmoid]
+        \small $\sigma(x) = \frac{1}{1 + e^{-x}}$: \ $\sigma'(x) = \sigma(x)(1 - \sigma(x)) \in (0, \frac{1}{4}]$. \ $\tanh' = 1 - \tanh^2$. \ $\ReLU' = 0$ for $x < 0$ and $1$ for $x > 0$, not differentiable at $0$ (software uses $0$).
+    \end{example}
+    \sidebyside{0.52}{%
+        \begin{theorem}[Taylor][thm:taylor-1d]
+            \small For some $\xi$ between $x_0$ and $x$:
+            \[f(x) = \sum_{j=0}^k\frac{f^{(j)}(x_0)}{j!}(x - x_0)^j + \frac{f^{(k+1)}(\xi)}{(k+1)!}(x - x_0)^{k+1}.\]
+        \end{theorem}
+    }{%
+        \centering\notesfig[0.8]{L3-taylor-cos}
+    }
+\end{frame}
+
+\begin{frame}{Worked examples: derivatives and Taylor polynomials}
+    \small
+    \textbf{Sigmoid.} $\sigma(x) = (1 + e^{-x})^{-1}$; chain rule: $\sigma'(x) = -(1 + e^{-x})^{-2}\cdot(-e^{-x}) = \frac{e^{-x}}{(1 + e^{-x})^2}$. Since $1 - \sigma = \frac{e^{-x}}{1 + e^{-x}}$:
+    \[\sigma'(x) = \frac{1}{1 + e^{-x}}\cdot\frac{e^{-x}}{1 + e^{-x}} = \sigma(x)\big(1 - \sigma(x)\big), \qquad \sigma'(0) = \tfrac{1}{2}\cdot\tfrac{1}{2} = \tfrac{1}{4} = \max\sigma'.\]
+    \textbf{Taylor for $e^x$ at $0$.} All derivatives are $e^0 = 1$: \ $T_2(x) = 1 + x + \frac{x^2}{2}$, \ $e^{0.1} \approx 1 + 0.1 + 0.005 = 1.105$.
+    \\ Error bound: $\frac{e^\xi}{3!}(0.1)^3 \leq \frac{e^{0.1}}{6}\cdot 0.001 \approx 1.8 \cdot 10^{-4}$; \ true value $e^{0.1} = 1.10517\ldots$, error $1.7 \cdot 10^{-4}$ \checkmark.
+    \\[0.4em]
+    \textbf{Finite differences} for $f = e^x$ at $x = 1$, $h = 0.1$ ($f'(1) = e \approx 2.71828$):
+    \[\frac{e^{1.1} - e^{1}}{0.1} \approx \frac{3.00417 - 2.71828}{0.1} = 2.8588, \qquad \text{error } 0.1406 \leq \tfrac{M_2}{2}h = \tfrac{e^{1.1}}{2}\cdot 0.1 \approx 0.150;\]
+    \[\frac{e^{1.1} - e^{0.9}}{0.2} \approx \frac{3.00417 - 2.45960}{0.2} = 2.72281, \qquad \text{error } 0.0045 \leq \tfrac{M_3}{6}h^2 \approx \tfrac{3.004}{6}\cdot 0.01 \approx 0.0050.\]
+    Halving $h$ halves the first error and quarters the second.
+\end{frame}
+
+\begin{frame}{Finite differences}
+    \sidebyside{0.48}{%
+        \begin{proposition}[][prop:finite-differences]
+            \small With $|f''| \leq M_2$, $|f'''| \leq M_3$:
+            \[\Big|\tfrac{f(x + h) - f(x)}{h} - f'(x)\Big| \leq \tfrac{M_2}{2}h,\]
+            \[\Big|\tfrac{f(x + h) - f(x - h)}{2h} - f'(x)\Big| \leq \tfrac{M_3}{6}h^2.\]
+        \end{proposition}
+        \small
+        Proof: Taylor at $x$ with $k = 1$ and $k = 2$; in the central difference the $f''$ terms cancel. \\[0.3em]
+        Too small $h$: rounding errors $\approx \frac{10^{-16}}{h}$.
+    }{%
+        \centering\fig[1]{s07_finite_differences}
+    }
+    \begin{mlbox}
+        \small Finite differences need $n + 1$ evaluations for a gradient in $\R^n$: hopeless for $n = 10^6$, but perfect for \emph{checking} a hand-written gradient (gradient checking).
+    \end{mlbox}
+\end{frame}
+
+% ------------------------------------------------------------------ Gradients
+\topic{\secref{sec:gradients}}{Partial derivatives and gradients}
+
+\begin{frame}{Partial derivatives and the gradient}
+    \begin{definition}[][def:partial]
+        \small $\frac{\partial f}{\partial x_i}(\bx) = \lim_{h \to 0}\frac{f(\bx + h\be_i) - f(\bx)}{h}$, and the gradient is the column vector $\nabla f(\bx) = \big(\frac{\partial f}{\partial x_1}, \ldots, \frac{\partial f}{\partial x_n}\big)^\top$.
+    \end{definition}
+    \begin{example}[][ex:partials]
+        \small $f = x_1^2x_2 + x_1x_2^3$: \ $\frac{\partial f}{\partial x_1} = 2x_1x_2 + x_2^3$, $\frac{\partial f}{\partial x_2} = x_1^2 + 3x_1x_2^2$, \ $\nabla f(1, 2) = (12, 13)^\top$.
+    \end{example}
+    \begin{proposition}[][prop:basic-gradients]
+        \small
+        \[\nabla(\mathbf{a}^\top\bx) = \mathbf{a}, \qquad \nabla(\bx^\top A\bx) = (A + A^\top)\bx \ \ (= 2A\bx \text{ if } A = A^\top), \qquad \nabla\norm{\bx} = \frac{\bx}{\norm{\bx}}.\]
+    \end{proposition}
+    \small In ML software, the gradient with respect to a parameter has the shape of the parameter.
+\end{frame}
+
+\board{Compute the basic gradients}{$\frac{\partial}{\partial x_k}\sum_{i,j}A_{ij}x_ix_j = ?$ \quad Then $\nabla\norm{\bx}^2 = 2\bx$ and $\nabla\norm{\bx} = \nabla\sqrt{\norm{\bx}^2}$ by the one-variable chain rule.}
+
+\checkslide{the basic gradients}{
+    \small
+    \textbf{Quadratic form.} In $\sum_{i,j}A_{ij}x_ix_j$, the variable $x_k$ appears when $i = k$ or $j = k$ (product rule for $i = j = k$):
+    \[\frac{\partial}{\partial x_k}\sum_{i,j}A_{ij}x_ix_j = \sum_jA_{kj}x_j + \sum_iA_{ik}x_i = (A\bx)_k + (A^\top\bx)_k.\]
+    \textbf{Numbers.} $A = \begin{pmatrix} 1 & 2 \\ 0 & 3 \end{pmatrix}$: $f(\bx) = x_1^2 + 2x_1x_2 + 3x_2^2$. Directly: $\nabla f = (2x_1 + 2x_2,\ 2x_1 + 6x_2)^\top$; at $\bx = (1, 1)^\top$: $(4, 8)^\top$. \ Formula: $(A + A^\top)\bx = \begin{pmatrix} 2 & 2 \\ 2 & 6 \end{pmatrix}\begin{pmatrix} 1 \\ 1 \end{pmatrix} = \begin{pmatrix} 4 \\ 8 \end{pmatrix}$ \checkmark.
+    \\[0.4em]
+    \textbf{Norms.} $A = I$: $\nabla\norm{\bx}^2 = 2\bx$. \ $\norm{\bx} = g(\norm{\bx}^2)$ with $g(s) = \sqrt s$, $g'(s) = \frac{1}{2\sqrt s}$:
+    \[\nabla\norm{\bx} = \frac{1}{2\norm{\bx}}\cdot 2\bx = \frac{\bx}{\norm{\bx}} \quad (\bx \neq \mathbf{0}), \qquad \text{e.g. } \bx = (3, 4)^\top: \ \nabla\norm{\bx} = (0.6, 0.8)^\top,\]
+    a unit vector: the norm grows fastest straight away from the origin.
+    \\[0.3em]
+    \textbf{Linear.} $\mathbf{a}^\top\bx = \sum_ia_ix_i$: $\frac{\partial}{\partial x_k} = a_k$, so $\nabla(\mathbf{a}^\top\bx) = \mathbf{a}$.
+}
+
+\begin{frame}{Differentiability: the derivative is a linear map}
+    \begin{definition}[][def:differentiable]
+        \small $f: D \to \R$ is differentiable at $\bx$ if there is a row vector $\mathbf{c} \in \R^{1 \times n}$ with
+        \[f(\bx + \mathbf{h}) = f(\bx) + \mathbf{c}\mathbf{h} + o(\norm{\mathbf{h}}).\]
+        Then $Df(\bx) = \mathbf{c}$ is the derivative.
+    \end{definition}
+    \begin{proposition}[][prop:differentiable]
+        \small If $f$ is differentiable at $\bx$: every directional derivative exists and $D_{\bv}f(\bx) = \nabla f(\bx)^\top\bv$; $Df(\bx) = \nabla f(\bx)^\top$; $f$ is continuous at $\bx$.
+    \end{proposition}
+    \begin{theorem}[][thm:C1]
+        \small Partial derivatives that exist near $\bx$ and are continuous at $\bx$ $\Rightarrow$ $f$ is differentiable at $\bx$.
+    \end{theorem}
+    \small The function $\frac{xy}{x^2 + y^2}$ has both partial derivatives at $\mathbf{0}$ (they are $0$), but it is not even continuous there.
+\end{frame}
+
+\begin{frame}{Derivative vs gradient}
+    \begin{remark}[The gradient depends on the inner product][rem:riesz]
+        \small $Df(\bx)$ is a linear functional, an element of $(\R^n)^*$ (Lecture~1). The gradient is the vector that represents it with the inner product (Riesz, Lecture~6):
+        \[Df(\bx)\mathbf{h} = \ip{\nabla f(\bx)}{\mathbf{h}} \quad \text{for all } \mathbf{h}.\]
+        For $\ip{\bx}{\by}_A = \bx^\top A\by$ with SPD $A$: \ $Df(\bx)\mathbf{h} = \nabla f(\bx)^\top\mathbf{h} = (A^{-1}\nabla f(\bx))^\top A\,\mathbf{h}$, so the gradient becomes
+        \[\nabla_A f(\bx) = A^{-1}\nabla f(\bx).\]
+    \end{remark}
+    \small
+    \begin{itemize}
+        \item The derivative depends only on $f$; the gradient also on how we measure lengths.
+        \item Changing the inner product $=$ preconditioning. Newton's method ($A = $ Hessian, Lecture~8), the natural gradient ($A = $ Fisher information), Adam (diagonal $A$).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Steepest ascent}
+    \begin{theorem}[Steepest ascent][thm:steepest]
+        \small If $\nabla f(\bx) \neq \mathbf{0}$, then for every unit vector $\bv$:
+        \(-\norm{\nabla f(\bx)} \leq D_{\bv}f(\bx) \leq \norm{\nabla f(\bx)},\)
+        with the maximum only at $\bv = \nabla f/\norm{\nabla f}$ and the minimum only at $-\nabla f/\norm{\nabla f}$.
+    \end{theorem}
+    \centering\fig[0.66]{s07_landscape}
+    \\[0.1em]
+    \raggedright\small $\nabla f(1, 2) = (12, 13)^\top$: in the direction $\frac{1}{5}(3, 4)^\top$ the rate is $17.6$; the maximum is $\sqrt{313} \approx 17.69$.
+\end{frame}
+
+\board{Proof of steepest ascent}{$D_{\bv}f(\bx) = \nabla f(\bx)^\top\bv$ and Cauchy--Schwarz. When is there equality?}
+
+\checkslide{directional derivatives with numbers}{
+    \small
+    $f(x_1, x_2) = x_1^2x_2 + x_1x_2^3$: \ $\frac{\partial f}{\partial x_1} = 2x_1x_2 + x_2^3$, \ $\frac{\partial f}{\partial x_2} = x_1^2 + 3x_1x_2^2$; at $(1, 2)$:
+    \[\nabla f(1, 2) = (2 \cdot 1 \cdot 2 + 8,\ 1 + 3 \cdot 1 \cdot 4)^\top = (12, 13)^\top, \qquad \norm{\nabla f} = \sqrt{144 + 169} = \sqrt{313} \approx 17.69.\]
+    \begin{center}
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{@{}lll@{}}
+            \toprule
+            unit direction $\bv$ & $D_{\bv}f = \nabla f^\top\bv$ & \\
+            \midrule
+            $\be_1$ & $12$ & the partial derivative $\frac{\partial f}{\partial x_1}$ \\
+            $\frac{1}{5}(3, 4)^\top$ & $\frac{1}{5}(36 + 52) = 17.6$ & close to the maximum \\
+            $\frac{1}{\sqrt{313}}(12, 13)^\top$ & $\frac{144 + 169}{\sqrt{313}} = \sqrt{313} \approx 17.69$ & steepest ascent \\
+            $\frac{1}{\sqrt{313}}(13, -12)^\top$ & $\frac{156 - 156}{\sqrt{313}} = 0$ & along the level curve \\
+            $-\frac{1}{\sqrt{313}}(12, 13)^\top$ & $-17.69$ & steepest descent \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    Check against the definition with $t = 0.005$, $\bv = (0.6, 0.8)$: $\frac{f(1.003, 2.004) - f(1, 2)}{0.005} \approx \frac{10.0883 - 10}{0.005} \approx 17.66$; the gap to $17.6$ is the $O(t)$ error.
+}
+
+% ------------------------------------------------------------------ Jacobians
+\topic{\secref{sec:jacobians}}{Jacobians}
+
+\begin{frame}{The Jacobian matrix}
+    \begin{definition}[][def:jacobian]
+        \small $f: D \to \R^m$ is differentiable at $\bx$ if $f(\bx + \mathbf{h}) = f(\bx) + J\mathbf{h} + o(\norm{\mathbf{h}})$ for an $m \times n$ matrix $J = Df(\bx)$.
+    \end{definition}
+    \begin{proposition}[][prop:jacobian-entries]
+        \small $\big(Df(\bx)\big)_{ij} = \frac{\partial f_i}{\partial x_j}(\bx)$: \ row $i$ $=$ $\nabla f_i(\bx)^\top$ (outputs), column $j$ $=$ $\frac{\partial f}{\partial x_j}$ (inputs).
+    \end{proposition}
+    \small
+    \begin{example}[][ex:jacobian]
+        $f(x_1, x_2) = (x_1^2x_2, \, 3x_1 + x_2^2)^\top$: \ $Df(\bx) = \begin{pmatrix} \partial_1f_1 & \partial_2f_1 \\ \partial_1f_2 & \partial_2f_2 \end{pmatrix} = \begin{pmatrix} 2x_1x_2 & x_1^2 \\ 3 & 2x_2 \end{pmatrix}$. At $\mathbf{a} = (1, 2)^\top$: $f(\mathbf{a}) = (1 \cdot 2,\ 3 + 4)^\top = (2, 7)^\top$, $Df(\mathbf{a}) = \begin{pmatrix} 4 & 1 \\ 3 & 4 \end{pmatrix}$, and for $\mathbf{h} = (0.1, -0.1)^\top$:
+        \[f(1.1, 1.9) \approx \begin{pmatrix} 2 \\ 7 \end{pmatrix} + \begin{pmatrix} 0.4 - 0.1 \\ 0.3 - 0.4 \end{pmatrix} = \begin{pmatrix} 2.3 \\ 6.9 \end{pmatrix}; \quad \text{exact: } \begin{pmatrix} 1.21 \cdot 1.9 \\ 3.3 + 3.61 \end{pmatrix} = \begin{pmatrix} 2.299 \\ 6.91 \end{pmatrix}.\]
+    \end{example}
+    \begin{itemize}
+        \item affine $f(\bx) = A\bx + \mathbf{b}$: \ $Df = A$;
+        \item entrywise $\varphi$: \ $Df(\bx) = \diag(\varphi'(x_1), \ldots, \varphi'(x_n))$, \ $Df(\bx)\bv = \varphi'(\bx) \odot \bv$.
+    \end{itemize}
+\end{frame}
+
+\board{Example: the Jacobian of softmax}{$s_i = e^{z_i}/S$, $S = \sum_j e^{z_j}$. Show $\frac{\partial s_i}{\partial z_j} = s_i\delta_{ij} - s_is_j$, i.e., $D\softmax(\mathbf{z}) = \diag(\mathbf{s}) - \mathbf{s}\mathbf{s}^\top$. Why do the rows sum to $0$?}
+
+\checkslide{the softmax Jacobian}{
+    \small
+    \textbf{Derivation} (quotient rule, $\frac{\partial S}{\partial z_j} = e^{z_j}$): \ $\frac{\partial s_i}{\partial z_j} = \frac{\delta_{ij}e^{z_i}S - e^{z_i}e^{z_j}}{S^2} = s_i\delta_{ij} - s_is_j$.
+    \\[0.3em]
+    \textbf{Numbers.} $\mathbf{z} = (2, 1, 0)^\top$: $e^2 \approx 7.389$, $e^1 \approx 2.718$, $e^0 = 1$, $S \approx 11.107$, \ $\mathbf{s} \approx (0.665, 0.245, 0.090)^\top$. Entries: $s_1 - s_1^2 \approx 0.665 - 0.442 = 0.223$, \ $-s_1s_2 \approx -0.163$, \ $s_3 - s_3^2 \approx 0.090 - 0.008 = 0.082$, \ldots
+    \[D\softmax(\mathbf{z}) = \diag(\mathbf{s}) - \mathbf{s}\mathbf{s}^\top \approx \begin{pmatrix} 0.223 & -0.163 & -0.060 \\ -0.163 & 0.185 & -0.022 \\ -0.060 & -0.022 & 0.082 \end{pmatrix}, \ \ \text{row sum } 0.223 - 0.163 - 0.060 = 0 \,\checkmark.\]
+    \begin{itemize}
+        \item Symmetric, and $D\softmax(\mathbf{z})\mathbf{1} = \mathbf{s} - \mathbf{s}(\mathbf{s}^\top\mathbf{1}) = \mathbf{0}$.
+        \item Reason: $\softmax(\mathbf{z} + c\mathbf{1}) = \softmax(\mathbf{z})$; moving along $\mathbf{1}$ changes nothing. \\ (Lecture~1: softmax lives on the quotient space $\R^K/\Span\{\mathbf{1}\}$.)
+        \item In practice one computes $\softmax(\mathbf{z} - \max_i z_i)$ to avoid overflow.
+    \end{itemize}
+}
+
+\begin{frame}{The Jacobian determinant}
+    \sidebyside{0.5}{%
+        \begin{example}[Polar coordinates][ex:polar]
+            \small $f(r, \varphi) = (r\cos\varphi, r\sin\varphi)^\top$,
+            \[Df = \begin{pmatrix} \cos\varphi & -r\sin\varphi \\ \sin\varphi & r\cos\varphi \end{pmatrix}, \ \det Df = r.\]
+        \end{example}
+        \small $|\det Df(\bx)|$ is the local factor by which $f$ scales areas and volumes:
+        \[\textstyle\iint g\,dx\,dy = \int_0^{2\pi}\!\!\int_0^\infty g\,r\,dr\,d\varphi.\]
+    }{%
+        \centering\notesfig[1]{L3-polar}
+    }
+    \small
+    Gaussian integral: $\big(\int e^{-x^2}dx\big)^2 = \int_0^{2\pi}\!\int_0^\infty e^{-r^2}r\,dr\,d\varphi = \pi$, so $\int_{-\infty}^\infty e^{-x^2}dx = \sqrt{\pi}$.\\
+    \textcolor{mlcolor}{Normalizing flows transform densities with $|\det Df|$; they need cheap determinants.}
+\end{frame}
+
+% ------------------------------------------------------------------ Chain rule
+\topic{\secref{sec:chain-rule}}{The chain rule}
+
+\begin{frame}{The chain rule}
+    \begin{theorem}[Chain rule][thm:chain-rule]
+        \small If $g$ is differentiable at $\bx$ and $f$ at $g(\bx)$, then
+        \[D(f \circ g)(\bx) = \underbrace{Df(g(\bx))}_{k \times m}\,\underbrace{Dg(\bx)}_{m \times n}, \qquad \frac{\partial(f \circ g)_i}{\partial x_j} = \sum_{l=1}^m\frac{\partial f_i}{\partial y_l}\frac{\partial g_l}{\partial x_j}.\]
+    \end{theorem}
+    \begin{corollary}[][cor:chain-special]
+        \small
+        \begin{enumerate}
+            \item Along a curve: $\frac{d}{dt}f(\bx(t)) = \nabla f(\bx(t))^\top\bx'(t)$.
+            \item Scalar $f$: \ $\nabla(f \circ g)(\bx) = Dg(\bx)^\top\,\nabla f(g(\bx))$ \ (gradients are pulled back by the transposed Jacobian).
+        \end{enumerate}
+    \end{corollary}
+    \small Composition of linear approximations $=$ product of matrices. Write the sizes under the factors: it checks the order and the transposes.
+\end{frame}
+
+\begin{frame}{Worked examples: the chain rule two ways}
+    \small
+    \textbf{Along a curve.} $f(x_1, x_2) = x_1^2 + 2x_2$, \ $\bx(t) = (\sin t, \cos t)^\top$ (the unit circle):
+    \[\tfrac{d}{dt}f(\bx(t)) = \nabla f^\top\bx'(t) = \begin{pmatrix} 2\sin t \\ 2 \end{pmatrix}^\top\begin{pmatrix} \cos t \\ -\sin t \end{pmatrix} = 2\sin t\cos t - 2\sin t.\]
+    Directly: $f(\bx(t)) = \sin^2t + 2\cos t$, derivative $2\sin t\cos t - 2\sin t$ \checkmark. \ At $t = \frac{\pi}{2}$: $0 - 2 = -2$.
+    \\[0.5em]
+    \textbf{A composition.} $g(x, y) = (xy, \ x + y)^\top$, $f(u, v) = u^2 + v$; gradient of $f \circ g$ at $(1, 2)$:
+    \[g(1, 2) = (2, 3)^\top, \quad \nabla f(g) = (2u, 1)^\top = (4, 1)^\top, \quad Dg = \begin{pmatrix} y & x \\ 1 & 1 \end{pmatrix} = \begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix},\]
+    \[\nabla(f \circ g) = \underbrace{Dg^\top}_{2 \times 2}\underbrace{\nabla f(g)}_{2 \times 1} = \begin{pmatrix} 2 & 1 \\ 1 & 1 \end{pmatrix}\begin{pmatrix} 4 \\ 1 \end{pmatrix} = \begin{pmatrix} 9 \\ 5 \end{pmatrix}.\]
+    Directly: $(f \circ g)(x, y) = x^2y^2 + x + y$, \ $\partial_x = 2xy^2 + 1 = 9$, \ $\partial_y = 2x^2y + 1 = 5$ \checkmark.
+\end{frame}
+
+\begin{frame}{The gradient is orthogonal to level sets}
+    \sidebyside{0.5}{%
+        \begin{corollary}[][cor:level-sets]
+            \small If $f(\bx(t)) = c$ for all $t$, then $\nabla f(\bx(t))^\top\bx'(t) = 0$.
+        \end{corollary}
+        \small Differentiate $f(\bx(t)) = c$ with the chain rule. \\[0.4em]
+        Level curves of $f = x_1^2 + 4x_2^2$ and $\nabla f = (2x_1, 8x_2)^\top$ (scaled by $0.1$) on the level curve $c = 9$. \\[0.4em]
+        Gradient descent moves orthogonally to the level sets, not towards the minimum.
+    }{%
+        \centering\notesfig[1]{L3-gradient-field}
+    }
+\end{frame}
+
+\board{Example: the gradient of least squares}{$L(\boldsymbol{\theta}) = \norm{\by - \Phi\boldsymbol{\theta}}^2 = f(\mathbf{e}(\boldsymbol{\theta}))$ with $\mathbf{e} = \by - \Phi\boldsymbol{\theta}$, $f(\mathbf{e}) = \norm{\mathbf{e}}^2$. Chain rule with sizes; set $\nabla L = \mathbf{0}$.}
+
+\board{Example: logistic regression}{$\ell(\bw) = -y\log p - (1 - y)\log(1 - p)$, \ $p = \sigma(z)$, \ $z = \bw^\top\bx$. Show $\nabla\ell(\bw) = (p - y)\bx$. \\ Numbers: $\bx = (1, 2)^\top$, $y = 1$, $\bw = (0.5, -0.25)^\top$.}
+
+\checkslide{least squares and logistic regression}{
+    \small
+    Least squares: $DL(\boldsymbol{\theta}) = \underbrace{2(\by - \Phi\boldsymbol{\theta})^\top}_{1 \times N}\underbrace{(-\Phi)}_{N \times d}$, so
+    \[\nabla L(\boldsymbol{\theta}) = 2\Phi^\top(\Phi\boldsymbol{\theta} - \by) = \mathbf{0} \iff \Phi^\top\Phi\boldsymbol{\theta} = \Phi^\top\by \quad \text{(the normal equations of Lecture~6).}\]
+    Logistic regression, along $\bw \mapsto z \mapsto p \mapsto \ell$: \ $\frac{d\ell}{dp} = -\frac{y}{p} + \frac{1 - y}{1 - p}$, \ $\frac{dp}{dz} = p(1 - p)$, \ $Dz(\bw) = \bx^\top$:
+    \[\tfrac{d\ell}{dz} = -y(1 - p) + (1 - y)p = p - y, \qquad \nabla\ell(\bw) = \big(\sigma(\bw^\top\bx) - y\big)\,\bx \quad \text{(prediction error $\times$ input).}\]
+    \textbf{Numbers:} $z = 0.5 \cdot 1 - 0.25 \cdot 2 = 0$, $p = \sigma(0) = \frac{1}{2}$, $\ell = -\log\frac{1}{2} = \log 2 \approx 0.693$, $\nabla\ell = (\frac{1}{2} - 1)(1, 2)^\top = (-0.5, -1)^\top$.
+    \\ One gradient step with $\eta = 1$: $\bw = (1, 0.75)^\top$, $z = 2.5$, $p \approx 0.924$, $\ell \approx 0.079$: the loss dropped.
+    \begin{mlbox}
+        \small Softmax with cross-entropy: $\nabla_{\mathbf{z}}(-\log p_c) = \mathbf{p} - \be_c$. Same form: ``prediction minus target''.
+    \end{mlbox}
+}
+
+% ------------------------------------------------------------------ Matrix gradients
+\topic{\secref{sec:matrix-gradients}}{Gradients with respect to matrices}
+
+\begin{frame}{Gradients with respect to matrices}
+    \small
+    $f: \R^{m \times n} \to \R$: \ $\big(\nabla f(X)\big)_{ij} = \frac{\partial f}{\partial X_{ij}}$, a matrix of the same shape as $X$.
+    \\[0.3em]
+    With the Frobenius inner product $\ip{A}{B} = \tr(A^\top B)$:
+    \[f(X + H) = f(X) + \ip{\nabla f(X)}{H} + o(\norm{H}_F).\]
+    \begin{block}{The method}
+        Expand $f(X + H)$, keep the terms linear in $H$, and write them as $\tr(G^\top H)$. Then $\nabla f(X) = G$. \\
+        Tools: $\tr(A) = \tr(A^\top)$, \ $\tr(AB) = \tr(BA)$, \ hence $\tr(MH) = \ip{M^\top}{H}$.
+    \end{block}
+    \begin{proposition}[][prop:matrix-gradients]
+        \[\nabla_X\tr(AX) = A^\top, \qquad \nabla_X(\mathbf{a}^\top X\mathbf{b}) = \mathbf{a}\mathbf{b}^\top,\]
+        \[\nabla_X\norm{AX - B}_F^2 = 2A^\top(AX - B), \qquad \nabla_X\tr(X^\top AX) = (A + A^\top)X.\]
+    \end{proposition}
+\end{frame}
+
+\board[2]{Use the method}{(1) $\norm{A(X + H) - B}_F^2 = \norm{R + AH}_F^2$ with $R = AX - B$. \quad (2) $\tr((X + H)^\top A(X + H))$. \quad (3) $\mathbf{a}^\top X\mathbf{b} = \tr(\mathbf{b}\mathbf{a}^\top X)$.}
+
+\checkslide{gradients with respect to matrices}{
+    \small
+    \textbf{(1)} $\norm{R + AH}_F^2 = \norm{R}_F^2 + 2\ip{R}{AH} + \norm{AH}_F^2$; the last term is $O(\norm{H}^2)$, and
+    \[\ip{R}{AH} = \tr(R^\top AH) = \tr\big((A^\top R)^\top H\big) = \ip{A^\top R}{H} \ \Rightarrow \ \nabla_X\norm{AX - B}_F^2 = 2A^\top(AX - B).\]
+    \textbf{(2)} $\tr((X + H)^\top A(X + H)) = \tr(X^\top AX) + \tr(H^\top AX) + \tr(X^\top AH) + O(\norm{H}^2)$, with
+    \[\tr(H^\top AX) = \ip{AX}{H}, \qquad \tr(X^\top AH) = \ip{A^\top X}{H} \ \Rightarrow \ \nabla_X = (A + A^\top)X.\]
+    \textbf{(3)} $\mathbf{a}^\top X\mathbf{b} = \sum_{i,j}a_iX_{ij}b_j$, so $\frac{\partial}{\partial X_{ij}} = a_ib_j$: \ $\nabla_X = \mathbf{a}\mathbf{b}^\top$. Numbers: $\mathbf{a} = (1, 2)^\top$, $\mathbf{b} = (3, 1)^\top$:
+    \[\mathbf{a}^\top X\mathbf{b} = 3X_{11} + X_{12} + 6X_{21} + 2X_{22}, \qquad \nabla_X = \begin{pmatrix} 3 & 1 \\ 6 & 2 \end{pmatrix} = \begin{pmatrix} 1 \\ 2 \end{pmatrix}\begin{pmatrix} 3 & 1 \end{pmatrix} \ \checkmark.\]
+    \textbf{Jacobi, $2 \times 2$.} $X = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$, $\det X = ad - bc$: \ $\nabla\det = \begin{pmatrix} d & -c \\ -b & a \end{pmatrix}$, and $X^{-1} = \frac{1}{ad - bc}\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}$, so $\det(X)X^{-\top} = \begin{pmatrix} d & -c \\ -b & a \end{pmatrix}$ \checkmark.
+}
+
+\begin{frame}{Jacobi's formula}
+    \begin{lemma}[][lem:det-identity]
+        \small $\det(I + tE) = 1 + t\tr(E) + t^2q(t)$ for a polynomial $q$; so $\frac{d}{dt}\det(I + tE)\big|_{t=0} = \tr(E)$.
+    \end{lemma}
+    \begin{proposition}[Jacobi's formula][prop:det-gradient]
+        \small For invertible $X$: \quad $\nabla_X\det(X) = \det(X)\,X^{-\top}$, \qquad $\nabla_X\log|\det X| = X^{-\top}$.
+    \end{proposition}
+    \small
+    Proof: $\det(X + tH) = \det(X)\det(I + tX^{-1}H) = \det(X)\big(1 + t\tr(X^{-1}H) + O(t^2)\big)$, and $\det(X)\tr(X^{-1}H) = \ip{\det(X)X^{-\top}}{H}$.
+    \\[0.3em]
+    Check: $n = 1$ gives $\frac{d}{dx}\log|x| = \frac{1}{x}$. Also: $\frac{\partial\det X}{\partial X_{ij}}$ is the cofactor $C_{ij}$, and $\det(X)X^{-\top} = C$ (Lecture~1).
+    \begin{mlbox}
+        \small $\log|\det|$ appears in Gaussian log-likelihoods ($\log\det\Sigma$) and in normalizing flows.
+    \end{mlbox}
+\end{frame}
+
+\begin{frame}{A linear layer}
+    \begin{example}[][ex:linear-layer]
+        \small $\by = W\bx + \mathbf{b}$, a loss $L$ depending on $\by$, and $\boldsymbol{\delta} = \nabla_{\by}L$. Then
+        \[\nabla_W L = \boldsymbol{\delta}\,\bx^\top, \qquad \nabla_{\mathbf{b}}L = \boldsymbol{\delta}, \qquad \nabla_{\bx}L = W^\top\boldsymbol{\delta}.\]
+    \end{example}
+    \small
+    \begin{itemize}
+        \item $\frac{\partial L}{\partial W_{ij}} = \frac{\partial L}{\partial y_i}\frac{\partial y_i}{\partial W_{ij}} = \delta_ix_j$, an outer product; the sizes fit: $(m \times 1)(1 \times n)$.
+        \item A batch: inputs are the rows of $X$ ($N \times n$), $Y = XW^\top + \mathbf{1}\mathbf{b}^\top$; \ $\nabla_W L = \sum_k\boldsymbol{\delta}_k\bx_k^\top = \Delta^\top X$, \ $\nabla_{\mathbf{b}}L = \Delta^\top\mathbf{1}$.
+        \item Softmax $+$ cross-entropy on top: $\boldsymbol{\delta} = \mathbf{p} - \be_c$, so $\nabla_W\ell = (\mathbf{p} - \be_c)\bx^\top$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Worked example: a linear layer and softmax with numbers}
+    \small
+    \textbf{Linear layer} $\by = W\bx$ with $W = \begin{pmatrix} 1 & 2 \\ 0 & 1 \end{pmatrix}$, $\bx = (1, 1)^\top$, loss $L = \frac{1}{2}\norm{\by - \mathbf{t}}^2$, target $\mathbf{t} = (1, 1)^\top$:
+    \[\by = (3, 1)^\top, \qquad \boldsymbol{\delta} = \nabla_{\by}L = \by - \mathbf{t} = (2, 0)^\top,\]
+    \[\nabla_WL = \boldsymbol{\delta}\bx^\top = \begin{pmatrix} 2 \\ 0 \end{pmatrix}\begin{pmatrix} 1 & 1 \end{pmatrix} = \begin{pmatrix} 2 & 2 \\ 0 & 0 \end{pmatrix}, \qquad \nabla_{\bx}L = W^\top\boldsymbol{\delta} = \begin{pmatrix} 1 & 0 \\ 2 & 1 \end{pmatrix}\begin{pmatrix} 2 \\ 0 \end{pmatrix} = \begin{pmatrix} 2 \\ 4 \end{pmatrix}.\]
+    Check one entry: $L = \frac{1}{2}\big((W_{11}x_1 + W_{12}x_2 - 1)^2 + (W_{21}x_1 + W_{22}x_2 - 1)^2\big)$, so $\frac{\partial L}{\partial W_{11}} = (3 - 1) \cdot x_1 = 2$ \checkmark. The second row gets no gradient: $y_2$ is already correct.
+    \\[0.5em]
+    \textbf{Softmax with cross-entropy}, $\mathbf{z} = (2, 1, 0)^\top$, correct class $c = 1$:
+    \[\mathbf{p} \approx (0.665, 0.245, 0.090)^\top, \qquad \ell = -\log p_1 \approx 0.408, \qquad \nabla_{\mathbf{z}}\ell = \mathbf{p} - \be_1 \approx (-0.335, 0.245, 0.090)^\top.\]
+    A gradient step raises $z_1$ and lowers $z_2$, $z_3$; the gradient sums to $0$ (shifting all scores changes nothing). If $\mathbf{z} = W\bx + \mathbf{b}$: \ $\nabla_W\ell = (\mathbf{p} - \be_1)\bx^\top$.
+\end{frame}
+
+\begin{frame}{Gradients to remember}
+    \centering\small
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        function & gradient & assumptions \\
+        \midrule
+        $\mathbf{a}^\top\bx$ & $\mathbf{a}$ & \\
+        $\bx^\top A\bx$ & $(A + A^\top)\bx$ & $= 2A\bx$ if $A = A^\top$ \\
+        $\norm{\bx}^2$, \ $\norm{\bx}$ & $2\bx$, \ $\bx/\norm{\bx}$ & $\bx \neq \mathbf{0}$ \\
+        $\norm{A\bx - \mathbf{b}}^2$ & $2A^\top(A\bx - \mathbf{b})$ & \\
+        $f(g(\bx))$ & $Dg(\bx)^\top\nabla f(g(\bx))$ & $f$ scalar \\
+        $\log(e^{z_1} + \cdots + e^{z_K})$ & $\softmax(\mathbf{z})$ & \\
+        $-\log\softmax(\mathbf{z})_c$ & $\softmax(\mathbf{z}) - \be_c$ & \\
+        $\tr(AX)$, \ $\mathbf{a}^\top X\mathbf{b}$ & $A^\top$, \ $\mathbf{a}\mathbf{b}^\top$ & \\
+        $\norm{AX - B}_F^2$ & $2A^\top(AX - B)$ & \\
+        $\tr(X^\top AX)$ & $(A + A^\top)X$ & \\
+        $\det X$, \ $\log|\det X|$ & $\det(X)X^{-\top}$, \ $X^{-\top}$ & $X$ invertible \\
+        \bottomrule
+    \end{tabular}
+\end{frame}
+
+% ------------------------------------------------------------------ Autodiff
+\topic{\secref{sec:autodiff}}{Automatic differentiation and backpropagation}
+
+\begin{frame}{Three ways to compute derivatives}
+    \small
+    \textbf{Symbolic}: formulas explode, and programs with loops are not one formula. \textbf{Numerical}: $n + 1$ evaluations, approximate. \textbf{Automatic} (AD): apply the chain rule to the elementary operations of the program ($+$, $\times$, $\exp$, $\log$, \dots), with \emph{numbers}; exact up to rounding.
+    \\[0.4em]
+    For $f = f_L \circ \cdots \circ f_1$ with $\bx_l = f_l(\bx_{l-1})$:
+    \[Df(\bx) = J_LJ_{L-1}\cdots J_1, \qquad J_l = Df_l(\bx_{l-1}) \in \R^{n_l \times n_{l-1}}.\]
+    \begin{itemize}
+        \item \textbf{Forward mode}: $J_L(\cdots(J_2(J_1\bv)))$, a Jacobian-vector product; one column per pass.
+        \item \textbf{Reverse mode}: $((\bu^\top J_L)J_{L-1})\cdots J_1$, a vector-Jacobian product; one row per pass; stores the $\bx_l$ (memory).
+    \end{itemize}
+    For a loss ($m = 1$), one reverse pass gives the whole gradient, for $2$--$5$ evaluations of $f$, whatever $n$ is. Reverse mode applies the dual maps: $(S \circ T)^* = T^* \circ S^*$.
+\end{frame}
+
+\begin{frame}{Computation graphs}
+    \sidebyside{0.48}{%
+        \small
+        $f(x_1, x_2) = \log x_1 + x_1x_2 - \sin x_2$. \\[0.5em]
+        \textbf{Forward mode} (tangents), in the order of evaluation:
+        \[\dot v_j = \sum_{i:\, v_i \to v_j}\frac{\partial v_j}{\partial v_i}\,\dot v_i.\]
+        \textbf{Reverse mode} (adjoints $\bar v_i = \frac{\partial f}{\partial v_i}$), backwards from $\bar f = 1$:
+        \[\bar v_i = \sum_{j:\, v_i \to v_j}\bar v_j\,\frac{\partial v_j}{\partial v_i}.\]
+        A variable used several times collects several contributions: the sum in the chain rule.
+    }{%
+        \centering\notesfig[1]{L3-computation-graph}
+    }
+\end{frame}
+
+\board[2]{Example: both modes by hand}{$f(x_1, x_2) = \log x_1 + x_1x_2 - \sin x_2$ at $(x_1, x_2) = (2, 5)$. \ Evaluate $v_1, \ldots, v_5$; forward mode with $\dot\bx = \be_1$; reverse mode from $\bar v_5 = 1$. ($\sin 5 \approx -0.959$, $\cos 5 \approx 0.284$.)}
+
+\checkslide{automatic differentiation at $(2, 5)$}{
+    \small
+    \begin{columns}[T]
+        \begin{column}{0.56\linewidth}
+            \renewcommand{\arraystretch}{1.15}
+            \begin{tabular}{@{}lll@{}}
+                \toprule
+                evaluation & & forward, $\dot\bx = \be_1$ \\
+                \midrule
+                $v_1 = \log x_1$ & $0.693$ & $\dot v_1 = \dot x_1/x_1 = 0.5$ \\
+                $v_2 = x_1x_2$ & $10$ & $\dot v_2 = \dot x_1x_2 + x_1\dot x_2 = 5$ \\
+                $v_3 = \sin x_2$ & $-0.959$ & $\dot v_3 = \cos(x_2)\dot x_2 = 0$ \\
+                $v_4 = v_1 + v_2$ & $10.693$ & $\dot v_4 = 5.5$ \\
+                $v_5 = v_4 - v_3$ & $11.652$ & $\dot v_5 = 5.5$ \\
+                \bottomrule
+            \end{tabular}
+        \end{column}
+        \begin{column}{0.4\linewidth}
+            \renewcommand{\arraystretch}{1.15}
+            \begin{tabular}{@{}l@{}}
+                \toprule
+                reverse \\
+                \midrule
+                $\bar v_5 = 1$, \ $\bar v_4 = 1$, \ $\bar v_3 = -1$ \\
+                $\bar v_2 = 1$, \ $\bar v_1 = 1$ \\
+                $\bar x_2 = \bar v_2x_1 + \bar v_3\cos x_2 = 1.716$ \\
+                $\bar x_1 = \bar v_1/x_1 + \bar v_2x_2 = 5.5$ \\
+                \bottomrule
+            \end{tabular}
+        \end{column}
+    \end{columns}
+    \vskip0.8em
+    Forward mode gave one partial derivative ($\frac{\partial f}{\partial x_1} = 5.5$); reverse mode gave the whole gradient $(5.5, 1.716)^\top$ in one pass.
+}
+
+\begin{frame}{Backpropagation in a neural network}
+    \small
+    One hidden layer, squared loss:
+    \[\mathbf{z} = W_1\bx + \mathbf{b}_1, \quad \mathbf{a} = \sigma(\mathbf{z}), \quad \hat\by = W_2\mathbf{a} + \mathbf{b}_2, \quad L = \tfrac{1}{2}\norm{\hat\by - \by}^2.\]
+    Forward pass: compute and \emph{store} $\mathbf{z}, \mathbf{a}, \hat\by, L$. Backward pass:
+    \[\begin{aligned}
+        \boldsymbol{\delta}_2 &= \nabla_{\hat\by}L = \hat\by - \by, & \nabla_{W_2}L &= \boldsymbol{\delta}_2\mathbf{a}^\top, \quad \nabla_{\mathbf{b}_2}L = \boldsymbol{\delta}_2, \\
+        \boldsymbol{\delta}_1 &= \nabla_{\mathbf{z}}L = \sigma'(\mathbf{z}) \odot (W_2^\top\boldsymbol{\delta}_2), & \nabla_{W_1}L &= \boldsymbol{\delta}_1\bx^\top, \quad \nabla_{\mathbf{b}_1}L = \boldsymbol{\delta}_1.
+    \end{aligned}\]
+    Deep network $\mathbf{z}_l = W_l\mathbf{a}_{l-1} + \mathbf{b}_l$, $\mathbf{a}_l = \sigma(\mathbf{z}_l)$: the error signals go backwards,
+    \[\boldsymbol{\delta}_l = \sigma'(\mathbf{z}_l) \odot \big(W_{l+1}^\top\boldsymbol{\delta}_{l+1}\big), \qquad \nabla_{W_l}L = \boldsymbol{\delta}_l\mathbf{a}_{l-1}^\top, \qquad \nabla_{\mathbf{b}_l}L = \boldsymbol{\delta}_l.\]
+    The backward pass of a layer costs about twice its forward pass. PyTorch and JAX record the graph in the forward pass; each operation knows its vector-Jacobian product.
+\end{frame}
+
+\board[2]{Derive backpropagation for one hidden layer}{Use the linear layer ($\nabla_W L = \boldsymbol{\delta}\bx^\top$, $\nabla_{\bx}L = W^\top\boldsymbol{\delta}$) and the entrywise Jacobian $D\sigma(\mathbf{z}) = \diag(\sigma'(\mathbf{z}))$. Check all the sizes. \\ Numbers (one unit per layer): $x = 1$, $y = 1$, $w_1 = 0.5$, $b_1 = 0$, $w_2 = 2$, $b_2 = 0$, sigmoid.}
+
+\checkslide{backpropagation with numbers}{
+    \small
+    \textbf{Forward pass} (store everything):
+    \[z = w_1x + b_1 = 0.5, \quad a = \sigma(0.5) \approx 0.6225, \quad \hat y = w_2a + b_2 \approx 1.2449, \quad L = \tfrac{1}{2}(\hat y - y)^2 \approx 0.0300.\]
+    \textbf{Backward pass:}
+    \[\begin{aligned}
+        \delta_2 &= \hat y - y \approx 0.2449, \qquad \tfrac{\partial L}{\partial w_2} = \delta_2a \approx 0.1525, \qquad \tfrac{\partial L}{\partial b_2} = \delta_2 \approx 0.2449, \\
+        \tfrac{\partial L}{\partial a} &= w_2\delta_2 \approx 0.4898, \qquad \delta_1 = \sigma'(z)\,\tfrac{\partial L}{\partial a} = a(1 - a) \cdot 0.4898 \approx 0.2350 \cdot 0.4898 \approx 0.1151, \\
+        \tfrac{\partial L}{\partial w_1} &= \delta_1x \approx 0.1151, \qquad \tfrac{\partial L}{\partial b_1} = \delta_1 \approx 0.1151.
+    \end{aligned}\]
+    \textbf{Gradient check} with central differences, $h = 10^{-6}$: $\frac{L(w_1 + h) - L(w_1 - h)}{2h} \approx 0.11511$ and $\frac{L(w_2 + h) - L(w_2 - h)}{2h} \approx 0.15245$ \checkmark.
+    \\[0.3em]
+    Note the factor $\sigma'(z) \leq \frac{1}{4}$ in $\delta_1$: each sigmoid layer shrinks the signal (vanishing gradients).
+}
+
+\begin{frame}{Vanishing and exploding gradients}
+    \sidebyside{0.5}{%
+        \small
+        $\boldsymbol{\delta}_1$ is $\boldsymbol{\delta}_L$ multiplied by the matrices
+        \[\diag(\sigma'(\mathbf{z}_l))\,W_{l+1}^\top,\]
+        once per layer.
+        \begin{itemize}
+            \item Sigmoid: $\sigma' \leq \frac{1}{4}$, so gradients of the first layers \textbf{vanish}.
+            \item Large weights: gradients \textbf{explode}.
+        \end{itemize}
+        Remedies: ReLU ($\sigma' = 1$ on active units), careful initialization (Xavier/He, Lecture~9), residual connections $\mathbf{a}_l = \mathbf{a}_{l-1} + f_l(\mathbf{a}_{l-1})$ with Jacobian $I + Df_l$.
+    }{%
+        \centering\fig[1]{s07_vanishing}\\
+        {\scriptsize random networks, $30$ layers of width $200$}
+    }
+    \vskip0.3em
+    \small \textbf{Gradient checking:} compare with central differences; relative error $\frac{\norm{\mathbf{g} - \tilde{\mathbf{g}}}}{\norm{\mathbf{g}} + \norm{\tilde{\mathbf{g}}}} \approx 10^{-8}$ is fine, $\approx 1$ is a bug.
+\end{frame}
+
+% ------------------------------------------------------------------ Hessian
+\topic{\secref{sec:hessian}}{Hessians and Taylor's theorem}
+
+\begin{frame}{The Hessian matrix}
+    \begin{definition}[][def:hessian]
+        \small $\big(\nabla^2 f(\bx)\big)_{ij} = \frac{\partial^2 f}{\partial x_i\partial x_j}(\bx)$, the Jacobian of the gradient.
+    \end{definition}
+    \begin{theorem}[Schwarz][thm:schwarz]
+        \small If $f$ is twice continuously differentiable, the mixed partials agree: the Hessian is symmetric.
+    \end{theorem}
+    \small
+    \begin{example}[][ex:hessian]
+        $f = x_1^2x_2 + x_1x_2^3$: \ $\nabla^2 f(\bx) = \begin{pmatrix} 2x_2 & 2x_1 + 3x_2^2 \\ 2x_1 + 3x_2^2 & 6x_1x_2 \end{pmatrix}$, \ $\nabla^2 f(1, 2) = \begin{pmatrix} 4 & 14 \\ 14 & 12 \end{pmatrix}$.
+    \end{example}
+    \begin{example}[Hessians in machine learning][ex:ml-hessians]
+        $\frac{1}{2}\bx^\top A\bx - \mathbf{b}^\top\bx$: \ $\nabla^2 f = A$; \ least squares: $2\Phi^\top\Phi$; \ logistic regression: $\frac{1}{N}X^\top SX$ with $S = \diag(p_i(1 - p_i))$; \ log-sum-exp: $\diag(\mathbf{s}) - \mathbf{s}\mathbf{s}^\top$.
+    \end{example}
+\end{frame}
+
+\begin{frame}{Taylor's theorem in several variables}
+    \begin{theorem}[Second-order Taylor][thm:taylor2]
+        \small For some $\tau \in (0, 1)$:
+        \[f(\bx + \mathbf{h}) = f(\bx) + \nabla f(\bx)^\top\mathbf{h} + \tfrac{1}{2}\mathbf{h}^\top\nabla^2 f(\bx + \tau\mathbf{h})\,\mathbf{h},\]
+        and hence $f(\bx + \mathbf{h}) = f(\bx) + \nabla f(\bx)^\top\mathbf{h} + \frac{1}{2}\mathbf{h}^\top\nabla^2 f(\bx)\,\mathbf{h} + o(\norm{\mathbf{h}}^2)$.
+    \end{theorem}
+    \small
+    Proof idea: apply one-variable Taylor to $g(t) = f(\bx + t\mathbf{h})$; by the chain rule $g'(t) = \nabla f^\top\mathbf{h}$, $g''(t) = \mathbf{h}^\top\nabla^2 f\,\mathbf{h}$.
+    \\[0.5em]
+    \textbf{Preview of Lecture 8.} At a critical point ($\nabla f = \mathbf{0}$), $f(\bx + \mathbf{h}) \approx f(\bx) + \frac{1}{2}\mathbf{h}^\top\nabla^2 f(\bx)\mathbf{h}$, and the spectral theorem decides the shape: all eigenvalues $> 0$ a bowl, all $< 0$ a cap, mixed signs a saddle.
+\end{frame}
+
+\board{Example: a second-order approximation}{$f(x, y) = e^x\cos y$ at $(0, 0)$: gradient, Hessian, the quadratic approximation, and its value at $(0.1, 0.2)$ (exact: $1.0831\ldots$).}
+
+\checkslide{$e^x\cos y$ near the origin}{
+    \[\nabla f = \begin{pmatrix} e^x\cos y \\ -e^x\sin y \end{pmatrix}, \qquad \nabla^2 f = \begin{pmatrix} e^x\cos y & -e^x\sin y \\ -e^x\sin y & -e^x\cos y \end{pmatrix}\]
+    At the origin: $f = 1$, $\nabla f = (1, 0)^\top$, $\nabla^2 f = \diag(1, -1)$:
+    \[e^x\cos y \approx 1 + x + \tfrac{1}{2}(x^2 - y^2).\]
+    At $(0.1, 0.2)$: linear $1 + 0.1 = 1.1$; quadratic $1.1 + \frac{1}{2}(0.01 - 0.04) = 1.085$; exact $e^{0.1}\cos 0.2 \approx 1.10517 \cdot 0.98007 \approx 1.0831$. \ Errors $0.017$ and $0.0019$. \\[0.4em]
+    The Hessian $\diag(1, -1)$ has eigenvalues of both signs: the quadratic part is a saddle.
+    \\[0.4em]
+    \textbf{Another Hessian} (Example~\notesref{ex:hessian}): $f = x_1^2x_2 + x_1x_2^3$ at $(1, 2)$: $\partial_{11}f = 2x_2 = 4$, $\partial_{12}f = 2x_1 + 3x_2^2 = 14 = \partial_{21}f$, $\partial_{22}f = 6x_1x_2 = 12$: \ $\nabla^2 f(1, 2) = \begin{pmatrix} 4 & 14 \\ 14 & 12 \end{pmatrix}$, symmetric (Schwarz).
+}
+
+% ------------------------------------------------------------------ Gradient flow
+\topic{\secref{sec:euler}}{Gradient flow and Euler's method}
+
+\begin{frame}{Ordinary differential equations}
+    \begin{definition}[][def:ode]
+        \small A solution of $\bx' = F(\bx)$, $\bx(0) = \bx_0$, is a curve with $\bx'(t) = F(\bx(t))$ for all $t$.
+    \end{definition}
+    \begin{theorem}[Existence and uniqueness][thm:picard]
+        \small If $F$ is Lipschitz, $\norm{F(\bx) - F(\by)} \leq L\norm{\bx - \by}$, there is exactly one solution for each $\bx_0$, defined for all $t$.
+    \end{theorem}
+    \small
+    $x' = ax$: \ $x(t) = e^{at}x_0$. \ Linear systems $\bx' = A\bx$, $A = V\Lambda V^{-1}$: \ $\bx(t) = \sum_i c_ie^{\lambda_it}\bv_i$ (\S3.15.1).
+    \begin{definition}[Gradient flow][def:gradient-flow]
+        \small $\bx' = -\nabla f(\bx)$: always move in the direction of steepest descent.
+    \end{definition}
+    \begin{proposition}[][prop:gradient-flow]
+        \small Along every solution, $\frac{d}{dt}f(\bx(t)) = -\norm{\nabla f(\bx(t))}^2 \leq 0$.
+    \end{proposition}
+\end{frame}
+
+\board{Gradient flow of a quadratic}{Proof of the proposition (chain rule). \quad $f(\bx) = \frac{1}{2}\bx^\top A\bx - \mathbf{b}^\top\bx$, $A$ SPD, $\mathbf{e} = \bx - \bx^*$: show $\mathbf{e}' = -A\mathbf{e}$ and $\mathbf{e}(t) = \sum_i c_ie^{-\lambda_it}\bq_i$.}
+
+\checkslide{gradient flow and Euler's method}{
+    \small
+    \textbf{Proof.} $\frac{d}{dt}f(\bx(t)) = \nabla f(\bx)^\top\bx'(t) = \nabla f^\top(-\nabla f) = -\norm{\nabla f}^2$.
+    \\[0.3em]
+    \textbf{Quadratic.} $\nabla f = A\bx - \mathbf{b} = A(\bx - \bx^*)$ since $A\bx^* = \mathbf{b}$; so $\mathbf{e}' = \bx' = -A\mathbf{e}$. Write $\mathbf{e} = \sum_ic_i(t)\bq_i$: each coordinate solves $c_i' = -\lambda_ic_i$, so $c_i(t) = c_i(0)e^{-\lambda_it}$.
+    \\[0.2em]
+    Example $A = \diag(1, 10)$, $\mathbf{e}(0) = (-2, 1)^\top$: \ $\mathbf{e}(t) = (-2e^{-t},\ e^{-10t})^\top$: the steep direction is gone at $t \approx 0.5$, the flat one needs $t \approx 5$.
+    \\[0.4em]
+    \textbf{Euler for $x' = -x$, $x(0) = 1$:} $x_{k+1} = x_k - hx_k = (1 - h)x_k$, so $x_k = (1 - h)^k$. At $t = 1$:
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{@{}lccc@{}}
+            \toprule
+            & $h = 0.5$ & $h = 0.1$ & exact \\
+            \midrule
+            $x(1)$ & $0.5^2 = 0.25$ & $0.9^{10} \approx 0.349$ & $e^{-1} \approx 0.368$ \\
+            error & $0.118$ & $0.019$ & \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    Error $\propto h$. \ For $h > 2$: $|1 - h| > 1$, the iterates oscillate and blow up, although the true solution decays.
+}
+
+\begin{frame}{Gradient descent is Euler's method}
+    \small
+    Euler's method for $\bx' = F(\bx)$: follow the tangent for a time $h$, \ $\bx_{k+1} = \bx_k + hF(\bx_k)$. \\
+    For the gradient flow: $\bx_{k+1} = \bx_k - h\nabla f(\bx_k)$, \ \textbf{gradient descent with $\eta = h$}.
+    \\[0.3em]
+    \centering\fig[0.78]{s07_euler}
+    \\[0.1em]
+    \raggedright
+    Each step multiplies the error along $\bq_i$ by $1 - h\lambda_i$: stable iff $h < 2/\lambda_{\max}$; the slowest direction needs time $1/\lambda_{\min}$, so about $\kappa = \lambda_{\max}/\lambda_{\min}$ steps. The zig-zag is an instability of the discretization, not of the flow.
+\end{frame}
+
+\begin{frame}{ODEs in machine learning}
+    \begin{mlbox}
+        \small
+        \begin{itemize}
+            \item A residual network computes $\bx_{l+1} = \bx_l + f_l(\bx_l)$: Euler steps with $h = 1$. Neural ODEs replace the layers by an ODE solver, and get gradients from an adjoint ODE solved backwards in time (reverse mode in continuous time).
+            \item Momentum is a discretization of the heavy ball $\bx'' + \gamma\bx' + \nabla f(\bx) = \mathbf{0}$.
+            \item Adding noise gives stochastic differential equations: Langevin dynamics and diffusion models (Lecture~10, self-study \S4.15).
+        \end{itemize}
+    \end{mlbox}
+    \vskip0.4em
+    \textbf{Self-study} (\S3.13--3.14, \S3.15.1, \S3.16): vector fields, divergence and curl; multiple integrals, Fubini, change of variables, line integrals, the divergence theorem and integration by parts (score matching); linear ODE systems; how flows move probability densities (continuity equation, continuous normalizing flows).
+\end{frame}
+
+\begin{frame}{Self-study preview: vector fields and flows}
+    \centering\notesfig[0.95]{L3-vector-fields}
+    \\[0.3em]
+    \raggedright\small
+    The divergence $\Div F = \tr DF$ is the rate at which the flow of $F$ expands volumes. A density moved by the flow satisfies $\frac{\partial p_t}{\partial t} = -\Div(p_tF)$, and along a solution $\frac{d}{dt}\log p_t(\bx(t)) = -\Div F(\bx(t))$: continuous normalizing flows use this instead of a Jacobian determinant.
+\end{frame}
+
+% ------------------------------------------------------------------ Wrap-up
+\begin{frame}{Key takeaways}
+    \small
+    \begin{itemize}
+        \item Differentiable $=$ approximated by a linear map: $f(\bx + \mathbf{h}) = f(\bx) + Df(\bx)\mathbf{h} + o(\norm{\mathbf{h}})$. Rows of the Jacobian: outputs; columns: inputs.
+        \item $Df(\bx)$ is a row vector (functional); $\nabla f(\bx)$ represents it. Steepest ascent and $\perp$ level sets: Cauchy--Schwarz and the chain rule.
+        \item Chain rule: $D(f \circ g) = Df\,Dg$; \ $\nabla(f \circ g) = Dg^\top\nabla f$. Write the sizes.
+        \item Matrix gradients: expand $f(X + H)$, read off $\ip{G}{H}$. Linear layer: $\nabla_W L = \boldsymbol{\delta}\bx^\top$, $\nabla_{\bx}L = W^\top\boldsymbol{\delta}$.
+        \item Reverse mode (backprop) gives the whole gradient for a few evaluations of $f$; $\boldsymbol{\delta}_l = \sigma'(\mathbf{z}_l) \odot (W_{l+1}^\top\boldsymbol{\delta}_{l+1})$.
+        \item Hessian: symmetric; $f(\bx + \mathbf{h}) \approx f + \nabla f^\top\mathbf{h} + \frac{1}{2}\mathbf{h}^\top\nabla^2 f\,\mathbf{h}$.
+        \item Gradient descent is Euler's method for $\bx' = -\nabla f(\bx)$; stable only for $\eta < 2/\lambda_{\max}$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Homework and next time}
+    \small
+    \begin{itemize}
+        \item \textbf{Homework:} Lecture 3, Exercises 4, 8, 10, 11, 13 and 37; Programming Exercises P4 and P6.
+        \item \textbf{Practice:} Practice 3, sections 1--8, and the gradient flow problems of section 15.
+        \item \textbf{Self-study:} \S3.13--3.14 vector fields and multiple integrals; \S3.15.1 linear systems of ODEs; \S3.16 flows and densities.
+    \end{itemize}
+    \vskip0.6em
+    \begin{block}{Next: Calculus II and optimization}
+        Critical points and the second-order test; gradient descent and its convergence; momentum and Newton's method; convexity; the proximal gradient method and the lasso; Lagrange multipliers, KKT, duality.
+    \end{block}
+\end{frame}
+
+\end{document}

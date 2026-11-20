@@ -1,0 +1,545 @@
+\documentclass[aspectratio=1610,11pt]{beamer}
+\input{slides_preamble}
+\externaldocument[L4-]{../Lecture4/lecture4}
+\setnotes{4}
+
+\title[Lecture 9 · Probability I--II]{Lecture 9. Probability I--II:\\ Random Variables, Joint Distributions and Gaussians}
+\subtitle{Notes: Lecture 4, \S4.1--4.6}
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+\begin{frame}{Today}
+    \begin{columns}[T]
+        \begin{column}{0.52\linewidth}
+            \begin{enumerate}\small
+                \item Probability spaces, Bayes' theorem, independence
+                \item Random variables, distributions, sampling
+                \item Expectation, variance, inequalities
+                \item Joint distributions, covariance, initialization of networks
+                \item Conditional expectation, graphical models, MGFs
+                \item Random vectors and covariance matrices
+                \item The multivariate Gaussian
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.44\linewidth}
+            \begin{mlbox}[Used in]
+                \small
+                \begin{itemize}
+                    \item weight initialization and batch normalization (DL)
+                    \item naive Bayes, probabilistic classifiers (ML)
+                    \item variational autoencoders (DL)
+                    \item Gaussian processes (Lecture~11)
+                \end{itemize}
+            \end{mlbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Probability is linear algebra and calculus, with weights}
+    \small
+    \begin{itemize}
+        \item The expectation is a \textbf{linear functional}: $\E[aX + bY + c] = a\E[X] + b\E[Y] + c$.
+        \item The variance is a \textbf{quadratic form}: $\Var(\bu^\top\mathbf{X}) = \bu^\top\Sigma\bu$.
+        \item Covariance is an \textbf{inner product} on centered random variables; correlation is the cosine of an angle (Lecture~6).
+        \item A covariance matrix is a \textbf{Gram matrix}: symmetric PSD, so the spectral theorem applies; its top eigenvector is the first principal component.
+        \item Densities transform with \textbf{Jacobian determinants} (Lecture~7); Gaussian conditionals use the \textbf{Schur complement} (Lecture~1).
+        \item $\E[Y \mid X]$ is an \textbf{orthogonal projection}: the best predictor of $Y$ from $X$.
+    \end{itemize}
+    Today we build the probability side; next time we let $N \to \infty$.
+\end{frame}
+
+% ------------------------------------------------------------------ Probability spaces
+\topic{\secref{sec:probability}}{Probability spaces}
+
+\begin{frame}{Probability spaces}
+    \begin{definition}[Probability space][def:probability]
+        \small A sample space $\Omega$ and a probability $P$ on events $A \subseteq \Omega$: \ $P(A) \geq 0$, \ $P(\Omega) = 1$, \ $P(A_1 \cup A_2 \cup \cdots) = \sum_iP(A_i)$ for disjoint $A_i$.
+    \end{definition}
+    \begin{proposition}[][prop:probability-rules]
+        \small $P(A^c) = 1 - P(A)$; \ $A \subseteq B \Rightarrow P(A) \leq P(B)$; \ $P(A \cup B) = P(A) + P(B) - P(A \cap B)$; \ union bound $P(\bigcup_iA_i) \leq \sum_iP(A_i)$.
+    \end{proposition}
+    \begin{example}[][ex:dice]
+        \small Two fair dice: $P(\text{sum} = 7) = \frac{6}{36}$; \ $P(\text{at least one six}) = 1 - \frac{25}{36} = \frac{11}{36}$.
+    \end{example}
+    \small For uncountable $\Omega$ not every subset can be an event: $\sigma$-algebras and measure theory, in Appendix~B. We ignore this: intervals, balls and their unions are always events.
+\end{frame}
+
+\begin{frame}{Conditional probability and Bayes' theorem}
+    \sidebyside{0.56}{%
+        \small
+        $P(A \mid B) = \frac{P(A \cap B)}{P(B)}$ \ for $P(B) > 0$.
+        \begin{theorem}[Total probability, Bayes][thm:bayes]
+            \small For a partition $B_1, \ldots, B_n$:
+            \[P(A) = \sum_iP(A \mid B_i)P(B_i),\]
+            \[P(B_j \mid A) = \frac{P(A \mid B_j)P(B_j)}{\sum_iP(A \mid B_i)P(B_i)}.\]
+        \end{theorem}
+        Independence: $P(A \cap B) = P(A)P(B)$; for several events, for every sub-collection.
+    }{%
+        \centering\fig[1]{s09_bayes}
+    }
+\end{frame}
+
+\board{Example: a medical test}{A disease affects $1\%$ of the population. The test is positive for $99\%$ of the sick, and for $5\%$ of the healthy. What is $P(\text{sick} \mid \text{positive})$? Count among $10\,000$ people.}
+
+\checkslide{the base rate fallacy}{
+    \small
+    \textbf{Bayes:} $P(D) = 0.01$, $P(+ \mid D) = 0.99$, $P(+ \mid D^c) = 0.05$. Total probability:
+    \[P(+) = 0.99 \cdot 0.01 + 0.05 \cdot 0.99 = 0.0099 + 0.0495 = 0.0594, \qquad P(D \mid +) = \frac{0.0099}{0.0594} = \frac{1}{6} \approx 0.167.\]
+    \textbf{Counting} $10\,000$ people:
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{@{}lccc@{}}
+            \toprule
+            & positive & negative & total \\
+            \midrule
+            sick & $0.99 \cdot 100 = 99$ & $1$ & $100$ \\
+            healthy & $0.05 \cdot 9900 = 495$ & $9405$ & $9900$ \\
+            \midrule
+            total & $594$ & $9406$ & $10\,000$ \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    Among the $594$ positives, $99$ are sick: $\frac{99}{594} = \frac{1}{6}$. A second independent positive test: prior odds $\frac{1}{5}$, times the likelihood ratio $\frac{0.99}{0.05} = 19.8$, gives odds $3.96$, i.e., $P(D) \approx 0.80$.
+    \\[0.3em]
+    The test is accurate, but the disease is rare: ignoring the prior $P(D)$ is the \textbf{base rate fallacy}.
+    \begin{mlbox}
+        \small Classifiers for rare classes (fraud, rare diseases) produce many false alarms even with a small false positive rate: look at precision, not only accuracy (self-study \S4.11).
+    \end{mlbox}
+}
+
+% ------------------------------------------------------------------ Random variables
+\topic{\secref{sec:random-variables}}{Random variables and their distributions}
+
+\begin{frame}{Random variables}
+    \small
+    A random variable is a function $X: \Omega \to \R$; its CDF is $F(x) = P(X \leq x)$.
+    \begin{definition}[][def:pmf-pdf]
+        \small \textbf{Discrete}: pmf $p(x) = P(X = x)$, $\sum_ip(x_i) = 1$. \ \textbf{Continuous}: density $p \geq 0$ with $P(a \leq X \leq b) = \int_a^bp(x)\,dx$.
+    \end{definition}
+    \sidebyside{0.48}{%
+        \small
+        \begin{itemize}
+            \item Bernoulli$(p)$, Binomial$(n, p)$: $\binom{n}{k}p^k(1 - p)^{n-k}$
+            \item Geometric$(p)$: $(1 - p)^{k-1}p$
+            \item Poisson$(\lambda)$: $e^{-\lambda}\frac{\lambda^k}{k!}$
+            \item Categorical$(\mathbf{p})$: softmax outputs
+            \item Uniform$(a, b)$; Exponential$(\lambda)$: $\lambda e^{-\lambda x}$, memoryless
+            \item $\mathcal{N}(\mu, \sigma^2)$: $\frac{1}{\sqrt{2\pi\sigma^2}}e^{-(x - \mu)^2/2\sigma^2}$
+        \end{itemize}
+    }{%
+        \centering\notesfig[1]{L4-distributions}
+    }
+\end{frame}
+
+\begin{frame}{Transformations and sampling}
+    \begin{proposition}[Change of variables][prop:change-of-variables-1d]
+        \small $g$ differentiable, strictly monotone: \ $Y = g(X)$ has the density $p_Y(y) = p_X(x)/|g'(x)|$, $x = g^{-1}(y)$.
+    \end{proposition}
+    \small $Z = \frac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1)$; \ $P(|X - \mu| \leq k\sigma) = 0.683, 0.954, 0.997$ ($k = 1, 2, 3$).
+    \begin{theorem}[Inverse transform sampling][thm:inverse-transform]
+        \small With $F^{-1}(u) = \min\{x : F(x) \geq u\}$ and $U \sim$ Uniform$(0, 1)$, $X = F^{-1}(U)$ has the CDF $F$.
+    \end{theorem}
+    \centering\fig[0.56]{s09_inverse_transform}
+\end{frame}
+
+\board{Proof of inverse transform sampling}{Show $F^{-1}(u) \leq x \iff u \leq F(x)$; then $P(F^{-1}(U) \leq x) = P(U \leq F(x)) = F(x)$. Example: sample Exponential$(\lambda)$, and a discrete distribution with values $1, 2, 3$ and probabilities $0.2, 0.5, 0.3$.}
+
+\checkslide{distributions and sampling with numbers}{
+    \small
+    \textbf{Binomial$(10, 0.3)$:} $P(X = 3) = \binom{10}{3}0.3^3\,0.7^7 = 120 \cdot 0.027 \cdot 0.0824 \approx 0.267$; \ $\E X = 3$, $\Var X = 2.1$.
+    \\[0.2em]
+    \textbf{Exponential, memoryless:} $P(X > s + t \mid X > s) = \frac{e^{-\lambda(s + t)}}{e^{-\lambda s}} = e^{-\lambda t} = P(X > t)$.
+    \\[0.2em]
+    \textbf{Standardization:} $X \sim \mathcal{N}(100, 15^2)$: $P(X > 130) = P(Z > \frac{130 - 100}{15}) = P(Z > 2) \approx 0.023$.
+    \\[0.4em]
+    \textbf{Inverse transform, exponential:} $F(x) = 1 - e^{-\lambda x}$; solve $u = 1 - e^{-\lambda x}$: \ $F^{-1}(u) = -\frac{\log(1 - u)}{\lambda}$. \ $u = 0.5$ gives the median $\frac{\log 2}{\lambda} \approx \frac{0.693}{\lambda}$; \ $u = 0.9$ gives $\frac{2.303}{\lambda}$.
+    \\[0.4em]
+    \textbf{Inverse transform, discrete:} values $1, 2, 3$ with probabilities $0.2, 0.5, 0.3$; the CDF jumps to $0.2, 0.7, 1$:
+    \[F^{-1}(u) = \min\{x : F(x) \geq u\} = \begin{cases} 1, & 0 < u \leq 0.2, \\ 2, & 0.2 < u \leq 0.7, \\ 3, & 0.7 < u < 1. \end{cases} \qquad u = 0.65 \mapsto 2, \quad u = 0.93 \mapsto 3.\]
+    The intervals have lengths $0.2, 0.5, 0.3$: exactly the probabilities. (This is \py{np.searchsorted(cdf, u)}.)
+}
+
+% ------------------------------------------------------------------ Expectation
+\topic{\secref{sec:expectation}}{Expectation and variance}
+
+\begin{frame}{Expectation and variance}
+    \small
+    \begin{definition}[][def:expectation]
+        \small $\E[X] = \sum_ix_ip(x_i)$ or $\int xp(x)\,dx$ (if absolutely convergent); \ $\E[g(X)] = \int g(x)p(x)\,dx$.
+    \end{definition}
+    Linear: $\E[aX + bY + c] = a\E[X] + b\E[Y] + c$. \ $\Var(X) = \E[(X - \mu)^2] = \E[X^2] - \E[X]^2$, \ $\Var(aX + b) = a^2\Var(X)$.
+    \begin{columns}[T]
+        \begin{column}{0.5\linewidth}
+            \centering\small
+            \renewcommand{\arraystretch}{1.15}
+            \begin{tabular}{@{}lll@{}}
+                \toprule
+                & $\E[X]$ & $\Var(X)$ \\
+                \midrule
+                Bernoulli$(p)$ & $p$ & $p(1 - p)$ \\
+                Binomial$(n, p)$ & $np$ & $np(1 - p)$ \\
+                Geometric$(p)$ & $\frac{1}{p}$ & $\frac{1 - p}{p^2}$ \\
+                Poisson$(\lambda)$ & $\lambda$ & $\lambda$ \\
+                Uniform$(a, b)$ & $\frac{a + b}{2}$ & $\frac{(b - a)^2}{12}$ \\
+                Exponential$(\lambda)$ & $\frac{1}{\lambda}$ & $\frac{1}{\lambda^2}$ \\
+                $\mathcal{N}(\mu, \sigma^2)$ & $\mu$ & $\sigma^2$ \\
+                \bottomrule
+            \end{tabular}
+        \end{column}
+        \begin{column}{0.46\linewidth}
+            \begin{example}[Tail sums][ex:tail-sum]
+                \small For $X \in \{0, 1, 2, \ldots\}$: \ $\E[X] = \sum_{k \geq 0}P(X > k)$, since $X = \sum_{k \geq 0}\mathbf{1}_{\{X > k\}}$. \\
+                Geometric: $\sum_k(1 - p)^k = \frac{1}{p}$. \\
+                For $X \geq 0$ with a density: $\E[X] = \int_0^\infty P(X > t)\,dt$.
+            \end{example}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\board{Compute means and variances}{Fair die: $\E[X]$, $\E[X^2]$, $\Var(X)$. \quad Exponential$(\lambda)$: $\E[X]$ with the tail integral. \quad Binomial$(n, p)$: as a sum of $n$ Bernoulli variables.}
+
+\checkslide{means and variances}{
+    \small
+    \textbf{Fair die:} $\E X = \frac{1 + 2 + \cdots + 6}{6} = \frac{21}{6} = 3.5$, \ $\E X^2 = \frac{1 + 4 + 9 + 16 + 25 + 36}{6} = \frac{91}{6}$,
+    \[\Var X = \tfrac{91}{6} - 3.5^2 = \tfrac{91}{6} - \tfrac{49}{4} = \tfrac{182 - 147}{12} = \tfrac{35}{12} \approx 2.92, \qquad \sigma \approx 1.71.\]
+    \textbf{Exponential$(\lambda)$:} $P(X > t) = e^{-\lambda t}$, so $\E X = \int_0^\infty e^{-\lambda t}\,dt = \frac{1}{\lambda}$ (no integration by parts).
+    \\[0.3em]
+    \textbf{Geometric$(p)$:} $P(X > k) = (1 - p)^k$ (the first $k$ trials fail), so $\E X = \sum_{k \geq 0}(1 - p)^k = \frac{1}{1 - (1 - p)} = \frac{1}{p}$. A fair die needs $6$ throws on average for a six.
+    \\[0.3em]
+    \textbf{Binomial$(n, p)$} $= X_1 + \cdots + X_n$ with independent Bernoulli$(p)$: $\E X_i = p$, $\E X_i^2 = p$, $\Var X_i = p - p^2$. Linearity, and variances of independent variables add:
+    \[\E X = np, \qquad \Var X = np(1 - p). \qquad n = 100, p = \tfrac{1}{2}: \ \E X = 50, \ \sigma = 5.\]
+}
+
+\begin{frame}{Inequalities}
+    \begin{proposition}[Markov and Chebyshev][prop:markov]
+        \small $X \geq 0$: \ $P(X \geq a) \leq \frac{\E[X]}{a}$. \qquad Mean $\mu$, variance $\sigma^2$: \ $P(|X - \mu| \geq k) \leq \frac{\sigma^2}{k^2}$.
+    \end{proposition}
+    \begin{theorem}[Jensen][thm:jensen]
+        \small $f$ convex: $f(\E[X]) \leq \E[f(X)]$; \ $f$ concave: $\geq$. \quad E.g.\ $\E[X]^2 \leq \E[X^2]$, \ $\E[\log X] \leq \log\E[X]$.
+    \end{theorem}
+    \begin{example}[The Chernoff bound][ex:chernoff]
+        \small $P(X \geq a) = P(e^{tX} \geq e^{ta}) \leq e^{-ta}\E[e^{tX}]$, then choose the best $t > 0$. \\
+        $S \sim$ Binomial$(100, \frac{1}{2})$: \ Chernoff $P(S \geq 60) \leq 0.134$, \ Chebyshev $\leq 0.25$, \ exact $0.028$. Chernoff bounds decay exponentially in $n$, Chebyshev's like $\frac{1}{n}$.
+    \end{example}
+\end{frame}
+
+\board{Proofs: Markov, Chebyshev, Jensen}{Markov: $a\mathbf{1}_{\{X \geq a\}} \leq X$. \quad Chebyshev: Markov for $(X - \mu)^2$. \quad Jensen: a convex $f$ lies above its tangent line at $\E[X]$ (Lecture~8).}
+
+\checkslide{three bounds for $P(S \geq 60)$, $S \sim$ Binomial$(100, \frac{1}{2})$}{
+    \small
+    $\E S = 50$, $\Var S = 25$.
+    \\[0.3em]
+    \textbf{Markov} ($S \geq 0$): $P(S \geq 60) \leq \frac{50}{60} \approx 0.83$. \hfill (uses only the mean)
+    \\[0.2em]
+    \textbf{Chebyshev:} $P(S \geq 60) \leq P(|S - 50| \geq 10) \leq \frac{25}{10^2} = 0.25$. \hfill (uses the variance)
+    \\[0.2em]
+    \textbf{Chernoff:} $\E[e^{tS}] = \prod_i\E[e^{tX_i}] = \big(\frac{1 + e^t}{2}\big)^{100}$, so
+    \[P(S \geq 60) \leq \min_{t > 0}e^{-60t}\Big(\frac{1 + e^t}{2}\Big)^{100}.\]
+    Minimize the log: $-60 + 100\frac{e^t}{1 + e^t} = 0 \iff e^t = \frac{60}{40} = 1.5$. Then
+    \[P(S \geq 60) \leq \Big(\frac{2}{3}\Big)^{60}\Big(\frac{2.5}{2}\Big)^{100} = \exp\big(60\log\tfrac{2}{3} + 100\log 1.25\big) = e^{-24.33 + 22.31} \approx e^{-2.01} \approx 0.134.\]
+    \textbf{Exact:} $\sum_{k \geq 60}\binom{100}{k}2^{-100} \approx 0.028$. \ With $n = 1000$ and $S \geq 600$, Chebyshev gives $0.025$ but Chernoff gives $\approx 2 \cdot 10^{-9}$.
+}
+
+% ------------------------------------------------------------------ Joint
+\topic{\secref{sec:joint}}{Joint distributions and independence}
+
+\begin{frame}{Joint, marginal and conditional distributions}
+    \small
+    \begin{definition}[][def:joint]
+        \small Joint pmf $p(x, y)$ or density; \ marginal $p_X(x) = \sum_yp(x, y)$ (sum rule); \ conditional $p(y \mid x) = \frac{p(x, y)}{p_X(x)}$, i.e., $p(x, y) = p(y \mid x)p_X(x)$ (product rule).
+    \end{definition}
+    Independent: $p(x, y) = p_X(x)p_Y(y)$; then $\E[g(X)h(Y)] = \E[g(X)]\E[h(Y)]$.
+    \begin{columns}[T]
+        \begin{column}{0.42\linewidth}
+            \centering
+            \renewcommand{\arraystretch}{1.15}
+            \begin{tabular}{c|cc|c}
+                & $Y = 0$ & $Y = 1$ & $p_X$ \\
+                \hline
+                $X = 0$ & $0.3$ & $0.2$ & $0.5$ \\
+                $X = 1$ & $0.1$ & $0.4$ & $0.5$ \\
+                \hline
+                $p_Y$ & $0.4$ & $0.6$ &
+            \end{tabular}
+        \end{column}
+        \begin{column}{0.54\linewidth}
+            \small
+            $P(Y = 1 \mid X = 1) = 0.8$, \ $P(Y = 1 \mid X = 0) = 0.4$. \\
+            $p(1, 1) = 0.4 \neq 0.5 \cdot 0.6$: not independent. \\
+            $\Cov(X, Y) = 0.4 - 0.3 = 0.1$, \ $\Corr \approx 0.41$.
+        \end{column}
+    \end{columns}
+    \vskip0.5em
+    \textbf{Sums of independent variables} have the convolution density $p_{X+Y}(z) = \int p_X(x)p_Y(z - x)\,dx$: two Uniform$(0, 1)$ give a triangle; Poisson$(\lambda)$ $+$ Poisson$(\mu)$ $=$ Poisson$(\lambda + \mu)$.
+\end{frame}
+
+\begin{frame}{Covariance and correlation}
+    \small
+    \begin{definition}[][def:covariance]
+        \small $\Cov(X, Y) = \E[(X - \mu_X)(Y - \mu_Y)] = \E[XY] - \E[X]\E[Y]$, \ $\Corr(X, Y) = \frac{\Cov(X, Y)}{\sigma_X\sigma_Y}$.
+    \end{definition}
+    \begin{proposition}[][prop:variance-sum]
+        \small $\Var(X + Y) = \Var X + \Var Y + 2\Cov(X, Y)$; for pairwise uncorrelated variables the variances add.
+    \end{proposition}
+    \begin{theorem}[][thm:correlation]
+        \small $|\Corr(X, Y)| \leq 1$, with equality iff $Y = aX + b$ ($a \neq 0$) with probability $1$.
+    \end{theorem}
+    \centering\fig[0.74]{s09_correlation}
+    \\[0.1em]
+    \raggedright Uncorrelated $\not\Rightarrow$ independent: correlation only sees \emph{linear} dependence.
+\end{frame}
+
+\board{Proof: $|\Corr(X, Y)| \leq 1$}{$\ip{X}{Y} = \E[XY]$ is an inner product on centered random variables (up to $X = 0$ with probability $1$). Apply Cauchy--Schwarz (Lecture~6). Equality case?}
+
+\begin{frame}{Worked examples: joint distributions and sums}
+    \small
+    \textbf{The $2 \times 2$ table} ($p(0, 0) = 0.3$, $p(0, 1) = 0.2$, $p(1, 0) = 0.1$, $p(1, 1) = 0.4$):
+    \begin{itemize}
+        \item marginals: $P(X = 1) = 0.1 + 0.4 = 0.5$, \ $P(Y = 1) = 0.2 + 0.4 = 0.6$;
+        \item $\E[XY] = 1 \cdot 1 \cdot 0.4 = 0.4$, \ $\Cov = 0.4 - 0.5 \cdot 0.6 = 0.1$;
+        \item $\Var X = 0.5 \cdot 0.5 = 0.25$, $\Var Y = 0.6 \cdot 0.4 = 0.24$, \ $\Corr = \frac{0.1}{\sqrt{0.25 \cdot 0.24}} = \frac{0.1}{0.245} \approx 0.41$.
+    \end{itemize}
+    \textbf{Two uniforms.} $X, Y \sim$ Uniform$(0, 1)$ independent; the convolution is $p_{X+Y}(z) = \int_0^1\mathbf{1}_{\{0 \leq z - x \leq 1\}}\,dx$, the length of $[\max(0, z - 1), \min(1, z)]$:
+    \[p_{X+Y}(z) = z \ \ (0 \leq z \leq 1), \qquad 2 - z \ \ (1 \leq z \leq 2), \qquad P(X + Y \leq \tfrac{1}{2}) = \int_0^{1/2}z\,dz = \tfrac{1}{8}.\]
+    \textbf{Two Poissons.} Clicks from search $\sim$ Poisson$(3)$, from ads $\sim$ Poisson$(2)$, independent:
+    \[P(X + Y = n) = \sum_{k=0}^ne^{-3}\tfrac{3^k}{k!}e^{-2}\tfrac{2^{n-k}}{(n - k)!} = \tfrac{e^{-5}}{n!}\sum_k\tbinom{n}{k}3^k2^{n-k} = e^{-5}\tfrac{5^n}{n!}:\]
+    Poisson$(5)$ (binomial theorem). E.g.\ $P(\text{no clicks in a minute}) = e^{-5} \approx 0.0067$.
+\end{frame}
+
+\begin{frame}{The variance of a layer, and initialization}
+    \begin{proposition}[Variance of a layer][prop:layer-variance]
+        \small $z = W_1x_1 + \cdots + W_nx_n$, weights independent of the $x_j$, mean $0$, variance $v$, $\E[x_j^2] = q$: \ $\E[z] = 0$, \ $\Var(z) = nvq$. If the $W_j$ are symmetric, $\E[\ReLU(z)^2] = \frac{1}{2}\Var(z)$.
+    \end{proposition}
+    \sidebyside{0.5}{%
+        \small
+        Deep ReLU network: $q_L = q_0\prod_l\frac{n_{l-1}v_l}{2}$.
+        \begin{itemize}
+            \item $v = \frac{2}{n_{\text{in}}}$ (\textbf{He}): signals keep their size;
+            \item $v = \frac{1}{n}$: halved per layer, $2^{-50} \approx 10^{-15}$;
+            \item $v = 1$, $n = 512$: $\times 256$ per layer.
+        \end{itemize}
+        $\tanh$: forward $nv = 1$, backward $n_{\text{out}}v = 1$: \textbf{Xavier} $v = \frac{2}{n_{\text{in}} + n_{\text{out}}}$.
+    }{%
+        \centering\fig[1]{s09_initialization}
+    }
+\end{frame}
+
+\board{Proof of $\Var(z) = nvq$}{$\E[W_jx_j] = \E[W_j]\E[x_j] = 0$; \ $\E[W_jx_jW_kx_k] = \E[W_jW_k]\E[x_jx_k]$, which is $0$ for $j \neq k$ and $vq$ for $j = k$. \quad ReLU: $z$ and $-z$ have the same distribution, and $\ReLU(z)^2 + \ReLU(-z)^2 = z^2$.}
+
+\checkslide{signal sizes through a ReLU network}{
+    \small
+    \textbf{One layer.} $\Var(z) = \E[z^2] = \sum_{j,k}\E[W_jW_k]\E[x_jx_k] = \sum_j v\,q = nvq$; \ then $\E[\ReLU(z)^2] = \frac{1}{2}\E[z^2]$, since $\E[\ReLU(z)^2] = \E[\ReLU(-z)^2]$ and they add up to $\E[z^2]$.
+    \\[0.4em]
+    \textbf{Per layer} the second moment is multiplied by $\frac{1}{2}nv$. With $n = 512$ units per layer:
+    \begin{center}
+        \renewcommand{\arraystretch}{1.25}
+        \begin{tabular}{@{}lccl@{}}
+            \toprule
+            weight variance $v$ & factor $\frac{1}{2}nv$ & after $50$ layers & \\
+            \midrule
+            $1$ (standard normal) & $256$ & $256^{50} \approx 10^{120}$ & explodes \\
+            $\frac{1}{512}$ & $\frac{1}{2}$ & $2^{-50} \approx 9 \cdot 10^{-16}$ & vanishes \\
+            $\frac{2}{512}$ (He) & $1$ & $1$ & stable \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    \textbf{Uniform weights} on $[-b, b]$ have variance $\frac{b^2}{3}$; He: $\frac{b^2}{3} = \frac{2}{n}$, $b = \sqrt{6/n} \approx 0.108$ for $n = 512$.
+    \\[0.3em]
+    \textbf{Xavier} for $\tanh$, $n_{\text{in}} = 512$, $n_{\text{out}} = 256$: $v = \frac{2}{768} \approx 0.0026$, a compromise between $\frac{1}{512}$ and $\frac{1}{256}$.
+}
+
+\begin{frame}{Conditional expectation}
+    \begin{definition}[][def:conditional-expectation]
+        \small $m(x) = \E[Y \mid X = x] = \sum_yy\,p(y \mid x)$; \ the random variable $\E[Y \mid X] = m(X)$.
+    \end{definition}
+    \begin{theorem}[][thm:conditional-expectation]
+        \small
+        \begin{enumerate}
+            \item Tower property: $\E\big[\E[Y \mid X]\big] = \E[Y]$.
+            \item Best prediction: $\E[(Y - g(X))^2] = \E[(Y - m(X))^2] + \E[(m(X) - g(X))^2]$.
+        \end{enumerate}
+    \end{theorem}
+    \small
+    $m(X)$ is the orthogonal projection of $Y$ onto the functions of $X$ (Pythagoras!). The regression function that every regression model tries to learn is $\E[Y \mid X = x]$.
+    \\[0.3em]
+    \textbf{Law of total variance:} \ $\Var(Y) = \E[\Var(Y \mid X)] + \Var(\E[Y \mid X])$: within-group variance plus variance of the group means.
+\end{frame}
+
+\board[2]{Examples of conditional expectation}{(1) $X_1, \ldots, X_n$ i.i.d., $S = \sum_iX_i$: show $\E[X_1 \mid S] = S/n$. \\ (2) Customers $N \sim$ Poisson$(\lambda)$, each spends $Y_i$ (i.i.d., mean $\mu$, variance $\sigma^2$, independent of $N$). Find the mean and variance of the revenue $T = Y_1 + \cdots + Y_N$.}
+
+\checkslide{conditional expectations}{
+    \small
+    \textbf{(1) Symmetry.} The pairs $(X_i, S)$ all have the same distribution, so $\E[X_i \mid S] = g(S)$ for the same $g$; summing, $n\,g(S) = \E[S \mid S] = S$. \ Two dice with sum $8$: the outcomes $(2, 6), (3, 5), (4, 4), (5, 3), (6, 2)$ are equally likely, and the first die has mean $\frac{2 + 3 + 4 + 5 + 6}{5} = 4 = \frac{8}{2}$ \checkmark.
+    \\[0.4em]
+    \textbf{(2) A random sum.} Given $N = n$: $T$ is a sum of $n$ independent terms, so $\E[T \mid N] = N\mu$, $\Var(T \mid N) = N\sigma^2$. Tower property and total variance ($\E N = \Var N = \lambda$):
+    \[\E[T] = \E[N\mu] = \lambda\mu, \qquad \Var(T) = \E[N\sigma^2] + \Var(N\mu) = \lambda\sigma^2 + \mu^2\lambda.\]
+    \textbf{Numbers:} $\lambda = 20$ customers per day, each spends $\mu = 30$ with $\sigma = 10$:
+    \[\E T = 600, \qquad \Var T = 20 \cdot 100 + 900 \cdot 20 = 20\,000, \qquad \mathrm{sd}(T) \approx 141.\]
+    With a fixed $N = 20$, the sd would be $\sqrt{20} \cdot 10 \approx 45$: most of the uncertainty comes from the number of customers.
+}
+
+\begin{frame}{Conditional independence and graphical models}
+    \small
+    $X \indep Y \mid Z$ if $p(x, y \mid z) = p(x \mid z)p(y \mid z)$.
+    \begin{proposition}[][prop:three-graphs]
+        \small \textbf{Chain} $X \to Z \to Y$ and \textbf{fork} $X \leftarrow Z \to Y$: $X \indep Y \mid Z$. \ \textbf{Collider} $X \to Z \leftarrow Y$: $X \indep Y$, but in general not given $Z$ (explaining away).
+    \end{proposition}
+    \begin{example}[Naive Bayes][ex:naive-bayes]
+        \small $p(\bx, y) = p(y)\prod_jp(x_j \mid y)$, so $p(y \mid \bx) \propto p(y)\prod_jp(x_j \mid y)$. Spam: $P(\text{spam}) = 0.4$; ``free'' in $30\%$ of spam, $2\%$ of other; ``meeting'' in $1\%$ and $10\%$. ``free'' without ``meeting'':
+        \[\frac{P(\text{spam} \mid \bx)}{P(\text{other} \mid \bx)} = \frac{0.4}{0.6}\cdot\frac{0.3}{0.02}\cdot\frac{0.99}{0.9} = 11, \qquad P(\text{spam} \mid \bx) = \tfrac{11}{12}.\]
+    \end{example}
+    The log-odds of naive Bayes are affine in $\bx$, as in logistic regression: a generative and a discriminative model of the same form.
+\end{frame}
+
+\begin{frame}{Moment generating functions}
+    \begin{definition}[][def:mgf]
+        \small $M_X(t) = \E[e^{tX}]$; \ $K_X(t) = \log M_X(t)$ (cumulant generating function).
+    \end{definition}
+    \begin{proposition}[][prop:mgf]
+        \small $M_{aX + b}(t) = e^{bt}M_X(at)$; \ independent $X$, $Y$: $M_{X+Y} = M_XM_Y$, $K_{X+Y} = K_X + K_Y$; \ $\E[X^k] = M_X^{(k)}(0)$, $K_X'(0) = \E[X]$, $K_X''(0) = \Var(X)$.
+    \end{proposition}
+    \small
+    \textbf{Poisson$(\lambda)$:} $M(t) = \sum_ke^{tk}e^{-\lambda}\frac{\lambda^k}{k!} = e^{-\lambda}\sum_k\frac{(\lambda e^t)^k}{k!} = e^{\lambda(e^t - 1)}$, \ $K(t) = \lambda(e^t - 1)$: \ $K'(0) = \lambda = \E X$, $K''(0) = \lambda = \Var X$. \ Sums: $K_{X+Y} = (\lambda + \mu)(e^t - 1)$, so Poisson $+$ Poisson $=$ Poisson.
+    \\[0.3em]
+    \textbf{Bernoulli$(p)$:} $M(t) = 1 - p + pe^t$; \ Binomial$(n, p)$: $(1 - p + pe^t)^n$.
+    \\[0.3em]
+    \textbf{$\mathcal{N}(\mu, \sigma^2)$:} $M(t) = e^{\mu t + \sigma^2t^2/2}$, $K(t) = \mu t + \frac{\sigma^2t^2}{2}$: all cumulants beyond the second vanish.
+    \\[0.3em]
+    Products of MGFs make sums of independent variables easy: the Chernoff bound $P(S \geq a) \leq \min_te^{-ta}\prod_iM_{X_i}(t)$, and the central limit theorem (next lecture).
+\end{frame}
+
+% ------------------------------------------------------------------ Random vectors
+\topic{\secref{sec:random-vectors}}{Random vectors and covariance matrices}
+
+\begin{frame}{Covariance matrices}
+    \begin{definition}[][def:covariance-matrix]
+        \small $\boldsymbol{\mu} = \E[\mathbf{X}]$, \ $\Sigma = \E[(\mathbf{X} - \boldsymbol{\mu})(\mathbf{X} - \boldsymbol{\mu})^\top]$, \ $\Sigma_{ij} = \Cov(X_i, X_j)$.
+    \end{definition}
+    \begin{proposition}[][prop:covariance-matrix]
+        \small $\Sigma = \E[\mathbf{X}\mathbf{X}^\top] - \boldsymbol{\mu}\boldsymbol{\mu}^\top$; \ $\Cov(A\mathbf{X} + \mathbf{b}) = A\Sigma A^\top$; \ $\Var(\bu^\top\mathbf{X}) = \bu^\top\Sigma\bu$, so $\Sigma$ is symmetric PSD.
+    \end{proposition}
+    \begin{example}[][ex:covariance-matrix]
+        \small $\Sigma = \begin{pmatrix} 4 & 2 \\ 2 & 3 \end{pmatrix}$: $\Var(X_1 + X_2) = 11$, $\Var(X_1 - X_2) = 3$, $\Corr \approx 0.58$; eigenvalues $\frac{7 \pm \sqrt{17}}{2} \approx 5.56, 1.44$: the first principal component carries $5.56$ of the total variance $\tr\Sigma = 7$.
+    \end{example}
+    \begin{definition}[Whitening, Mahalanobis][def:whitening]
+        \small $\mathbf{Z} = \Sigma^{-1/2}(\mathbf{X} - \boldsymbol{\mu})$ has $\Cov(\mathbf{Z}) = I$; \ $d_\Sigma(\bx, \boldsymbol{\mu}) = \norm{\Sigma^{-1/2}(\bx - \boldsymbol{\mu})}$.
+    \end{definition}
+\end{frame}
+
+\board{Prove $\Cov(A\mathbf{X} + \mathbf{b}) = A\Sigma A^\top$}{Then: $\Var(\bu^\top\mathbf{X}) = \bu^\top\Sigma\bu \geq 0$; the direction of largest variance is the top eigenvector (Rayleigh, Lecture~6); whitening gives $\Sigma^{-1/2}\Sigma\Sigma^{-1/2} = I$. In tensor language: $\Sigma = \E[(\mathbf{X} - \boldsymbol{\mu}) \otimes (\mathbf{X} - \boldsymbol{\mu})]$, $\Cov(A\mathbf{X})_{ab} = A_{ai}A_{bj}\Sigma_{ij}$.}
+
+\checkslide{covariance matrices with numbers}{
+    \small
+    \textbf{Proof.} $A\mathbf{X} + \mathbf{b} - (A\boldsymbol{\mu} + \mathbf{b}) = A(\mathbf{X} - \boldsymbol{\mu})$, so $\Cov = \E[A(\mathbf{X} - \boldsymbol{\mu})(\mathbf{X} - \boldsymbol{\mu})^\top A^\top] = A\Sigma A^\top$ (linearity).
+    \\[0.4em]
+    \textbf{Example} $\Sigma = \begin{pmatrix} 4 & 2 \\ 2 & 3 \end{pmatrix}$:
+    \[\Var(X_1 + X_2) = \begin{pmatrix} 1 & 1 \end{pmatrix}\Sigma\begin{pmatrix} 1 \\ 1 \end{pmatrix} = 4 + 2 + 2 + 3 = 11, \qquad \Var(X_1 - X_2) = 4 - 2 - 2 + 3 = 3,\]
+    \[\Corr(X_1, X_2) = \frac{2}{\sqrt{4 \cdot 3}} \approx 0.58; \qquad \tr\Sigma = 7, \ \det\Sigma = 8: \ \lambda = \frac{7 \pm \sqrt{49 - 32}}{2} \approx 5.56, \ 1.44.\]
+    The first principal direction carries $\frac{5.56}{7} \approx 79\%$ of the total variance.
+    \\[0.4em]
+    \textbf{Joint covariance} of $(X_1 + X_2, X_1 - X_2)$: $A = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$, $A\Sigma A^\top = \begin{pmatrix} 11 & 1 \\ 1 & 3 \end{pmatrix}$ (off-diagonal $4 - 3 = 1$).
+    \\[0.4em]
+    \textbf{Mahalanobis distance} for $\Sigma = \diag(4, 1)$, $\boldsymbol{\mu} = \mathbf{0}$: the point $(2, 1)$ has $d_\Sigma = \sqrt{\frac{4}{4} + \frac{1}{1}} = \sqrt2$, the point $(0, 2)$ has $d_\Sigma = 2$: farther, although closer in Euclidean distance.
+}
+
+% ------------------------------------------------------------------ Gaussian
+\topic{\secref{sec:gaussian}}{The Gaussian distribution}
+
+\begin{frame}{The multivariate Gaussian}
+    \begin{definition}[][def:gaussian]
+        \small \(p(\bx) = \dfrac{1}{(2\pi)^{d/2}\det(\Sigma)^{1/2}}\exp\Big(-\frac{1}{2}(\bx - \boldsymbol{\mu})^\top\Sigma^{-1}(\bx - \boldsymbol{\mu})\Big)\), \ $\Sigma$ SPD.
+    \end{definition}
+    \sidebyside{0.5}{%
+        \begin{theorem}[][thm:gaussian-affine]
+            \small $\mathbf{Z} \sim \mathcal{N}(\mathbf{0}, I)$, $A$ invertible: \ $A\mathbf{Z} + \boldsymbol{\mu} \sim \mathcal{N}(\boldsymbol{\mu}, AA^\top)$.
+        \end{theorem}
+        \small
+        Sampling: $\boldsymbol{\mu} + L\mathbf{Z}$ with Cholesky $\Sigma = LL^\top$ (Lecture~6). \\[0.3em]
+        Level sets: ellipsoids along the eigenvectors of $\Sigma$, semi-axes $\propto\sqrt{\lambda_i}$.
+    }{%
+        \centering\notesfig[0.72]{L4-gaussian}
+    }
+    \begin{remark}[The reparameterization trick]
+        \small $\boldsymbol{\mu} + \boldsymbol{\sigma} \odot \mathbf{Z}$ is differentiable in $\boldsymbol{\mu}$, $\boldsymbol{\sigma}$: VAEs backpropagate through sampling.
+    \end{remark}
+\end{frame}
+
+\board{Proof: $A\mathbf{Z} + \boldsymbol{\mu} \sim \mathcal{N}(\boldsymbol{\mu}, AA^\top)$}{Change of variables in $\R^d$: $p_{\mathbf{X}}(\bx) = p_{\mathbf{Z}}(A^{-1}(\bx - \boldsymbol{\mu}))\,|\det A|^{-1}$ (Lecture~7). Then $\norm{A^{-1}(\bx - \boldsymbol{\mu})}^2 = (\bx - \boldsymbol{\mu})^\top\Sigma^{-1}(\bx - \boldsymbol{\mu})$ and $|\det A| = \det(\Sigma)^{1/2}$.}
+
+\begin{frame}{Marginals and conditionals}
+    \begin{theorem}[][thm:gaussian-conditional]
+        \small $\mathbf{X} = (\mathbf{X}_a, \mathbf{X}_b) \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$: \ marginals $\mathbf{X}_a \sim \mathcal{N}(\boldsymbol{\mu}_a, \Sigma_{aa})$, and
+        \[\mathbf{X}_a \mid \mathbf{X}_b = \bx_b \ \sim\ \mathcal{N}\big(\boldsymbol{\mu}_a + \Sigma_{ab}\Sigma_{bb}^{-1}(\bx_b - \boldsymbol{\mu}_b),\ \Sigma_{aa} - \Sigma_{ab}\Sigma_{bb}^{-1}\Sigma_{ba}\big).\]
+    \end{theorem}
+    \centering\fig[0.66]{s09_gaussian_conditional}
+    \\[0.1em]
+    \raggedright\small
+    Mean affine in $\bx_b$; covariance $=$ Schur complement (Lecture~1), $\preceq \Sigma_{aa}$: observing $\mathbf{X}_b$ reduces uncertainty. Galton (1886), \textbf{regression to the mean}: $Y \mid X = x \sim \mathcal{N}(\rho x, 1 - \rho^2)$.
+\end{frame}
+
+\board[2]{Proof of the conditional distribution}{Let $K = \Sigma_{ab}\Sigma_{bb}^{-1}$ and $\mathbf{W} = \mathbf{X}_a - K\mathbf{X}_b$. Show $\Cov(\mathbf{W}, \mathbf{X}_b) = 0$, so $\mathbf{W}$ and $\mathbf{X}_b$ are independent (block-diagonal Gaussian), and $\Cov(\mathbf{W}) = \Sigma_{aa} - \Sigma_{ab}\Sigma_{bb}^{-1}\Sigma_{ba}$. Given $\mathbf{X}_b = \bx_b$: $\mathbf{X}_a = \mathbf{W} + K\bx_b$. \\ Example: $\rho = 0.5$, $x = 2$.}
+
+\checkslide{Gaussian conditioning with numbers}{
+    \small
+    \textbf{Proof steps.} $\Cov(\mathbf{W}, \mathbf{X}_b) = \Sigma_{ab} - K\Sigma_{bb} = \Sigma_{ab} - \Sigma_{ab} = 0$; \ $\Cov(\mathbf{W}) = \Sigma_{aa} - K\Sigma_{ba} - \Sigma_{ab}K^\top + K\Sigma_{bb}K^\top = \Sigma_{aa} - \Sigma_{ab}\Sigma_{bb}^{-1}\Sigma_{ba}$.
+    \\[0.4em]
+    \textbf{Example 1} (Galton). $(Y, X)$ standard Gaussians with correlation $\rho = 0.5$: \ $\Sigma_{aa} = \Sigma_{bb} = 1$, $\Sigma_{ab} = 0.5$, \ $K = 0.5$.
+    \[Y \mid X = 2 \ \sim\ \mathcal{N}(0 + 0.5 \cdot 2,\ 1 - 0.5 \cdot 1 \cdot 0.5) = \mathcal{N}(1, 0.75).\]
+    Parents $2$ sd above average: children on average $1$ sd above, with sd $\sqrt{0.75} \approx 0.87$.
+    \\[0.4em]
+    \textbf{Example 2.} $\boldsymbol{\mu} = (1, 2)^\top$, $\Sigma = \begin{pmatrix} 4 & 2 \\ 2 & 3 \end{pmatrix}$; observe $X_2 = 5$:
+    \[X_1 \mid X_2 = 5 \ \sim\ \mathcal{N}\big(1 + \tfrac{2}{3}(5 - 2),\ 4 - \tfrac{2 \cdot 2}{3}\big) = \mathcal{N}\big(3,\ \tfrac{8}{3}\big).\]
+    The variance drops from $4$ to $2.67$ whatever value we observe.
+    \\[0.4em]
+    \textbf{Sums.} $X \sim \mathcal{N}(1, 4)$, $Y \sim \mathcal{N}(2, 9)$ independent: $X + Y \sim \mathcal{N}(3, 13)$, \ $2X - Y \sim \mathcal{N}(0, 4 \cdot 4 + 9) = \mathcal{N}(0, 25)$.
+}
+
+\begin{frame}{Gaussians stay Gaussian}
+    \begin{corollary}[][cor:gaussian-linear]
+        \small $\mathbf{X} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$, $A$ of full row rank: \ $A\mathbf{X} + \mathbf{b} \sim \mathcal{N}(A\boldsymbol{\mu} + \mathbf{b}, A\Sigma A^\top)$. Independent $\mathcal{N}(\mu_1, \sigma_1^2)$ and $\mathcal{N}(\mu_2, \sigma_2^2)$ add to $\mathcal{N}(\mu_1 + \mu_2, \sigma_1^2 + \sigma_2^2)$.
+    \end{corollary}
+    \begin{theorem}[Independence of blocks][thm:gaussian-blocks]
+        \small For Gaussian vectors, uncorrelated blocks ($\Sigma_{ab} = 0$) are independent.
+    \end{theorem}
+    \small
+    \begin{mlbox}
+        \small
+        \begin{itemize}
+            \item Affine maps, marginals, conditionals of Gaussians are Gaussian: everything is linear algebra on $(\boldsymbol{\mu}, \Sigma)$.
+            \item Gaussian processes (Lecture~11): Gaussian regression $=$ conditioning a big Gaussian vector on the observed values.
+            \item Kalman filters, linear-Gaussian state space models, probabilistic PCA, and the latent space of VAEs.
+        \end{itemize}
+    \end{mlbox}
+\end{frame}
+
+% ------------------------------------------------------------------ Wrap-up
+\begin{frame}{Key takeaways}
+    \small
+    \begin{itemize}
+        \item Bayes: $P(B \mid A) = \frac{P(A \mid B)P(B)}{P(A)}$; don't ignore the prior. Sum rule and product rule.
+        \item Densities transform with $\frac{1}{|g'|}$; $F^{-1}(U)$ samples from $F$.
+        \item $\E$ is linear, $\Var X = \E[X^2] - \E[X]^2$; Markov, Chebyshev, Chernoff, Jensen.
+        \item Covariance $=$ inner product, $|\Corr| \leq 1$; uncorrelated $\not\Rightarrow$ independent. $\E[Y \mid X]$ is the best predictor; law of total variance.
+        \item $\Var(z) = nv\E[x^2]$: He $v = \frac{2}{n_{\text{in}}}$, Xavier $\frac{2}{n_{\text{in}} + n_{\text{out}}}$.
+        \item $\Cov(A\mathbf{X} + \mathbf{b}) = A\Sigma A^\top$; $\Sigma$ is symmetric PSD; top eigenvector $=$ direction of largest variance.
+        \item $\mathcal{N}(\boldsymbol{\mu}, \Sigma) = \boldsymbol{\mu} + A\mathbf{Z}$, $AA^\top = \Sigma$; conditionals: mean $\boldsymbol{\mu}_a + \Sigma_{ab}\Sigma_{bb}^{-1}(\bx_b - \boldsymbol{\mu}_b)$, covariance the Schur complement.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Homework and next time}
+    \small
+    \begin{itemize}
+        \item \textbf{Homework:} Lecture 4, Exercises 3, 5, 8, 10, 14 and 16; Programming Exercise P2.
+        \item \textbf{Practice:} Practice 4, sections 1--6.
+    \end{itemize}
+    \vskip0.6em
+    \begin{block}{Next: Probability III}
+        The law of large numbers, the central limit theorem, Hoeffding's inequality and the delta method; Monte Carlo, importance sampling and the score-function estimator; Markov chains, MCMC and the Bellman equations; entropy, cross-entropy and the KL divergence.
+    \end{block}
+\end{frame}
+
+\end{document}

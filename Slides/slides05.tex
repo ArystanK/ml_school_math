@@ -1,0 +1,1034 @@
+\documentclass[aspectratio=1610,11pt]{beamer}
+\input{slides_preamble}
+\externaldocument[L1-]{../Lecture1/lecture1}
+\setnotes{1}
+\externaldocument[P1-]{../Lecture1/practice1}
+\setpractice{1}
+
+\title[Lecture 5 · Eigenvalues and Tensors]{Lecture 5. Linear Algebra I:\\ Eigenvalues, Diagonalization and Tensors}
+\subtitle{Notes: Lecture 1, \S1.10--1.11}
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+\begin{frame}{Today}
+    \begin{columns}[T]
+        \begin{column}{0.52\linewidth}
+            \begin{enumerate}\small
+                \item Eigenvalues, eigenvectors, the characteristic polynomial
+                \item Diagonalization and multiplicities
+                \item Cayley--Hamilton, the minimal polynomial
+                \item Powers of matrices: Fibonacci, Markov chains, power iteration
+                \item Circulant matrices: the DFT diagonalizes convolutions
+                \item Tensors: the tensor product and its universal property
+                \item Multilinear forms and linear maps as tensors, contractions, \py{einsum}
+                \item Attention in transformers: scores as a bilinear form and a contraction
+                \item Tensor rank, change of basis
+            \end{enumerate}
+        \end{column}
+        \begin{column}{0.44\linewidth}
+            \begin{mlbox}[Used in]
+                \small
+                \begin{itemize}
+                    \item convolutional networks (DL)
+                    \item attention in transformers: what token $i$ reads from token $j$, computed as an \py{einsum} (DL)
+                    \item exploding and vanishing gradients in RNNs, Markov chains, ARIMA: all powers of a matrix (DL, RL, ML)
+                \end{itemize}
+            \end{mlbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{The idea of today}
+    \small
+    A matrix looks complicated in the standard basis. In a good basis it can be very simple:
+    \[A = PDP^{-1}, \qquad D = \diag(\lambda_1, \ldots, \lambda_n): \qquad A^k = PD^kP^{-1}.\]
+    \begin{itemize}
+        \item The columns of $P$ are the special directions that $A$ only stretches: the \textbf{eigenvectors}.
+        \item In this basis, $A$ acts coordinate by coordinate: repeated application, dynamics, long-run behavior become one-dimensional problems.
+        \item Convolutions are diagonal in the Fourier basis: this is why CNNs and the FFT work.
+    \end{itemize}
+    The second half asks what a \emph{tensor} is. In PyTorch it is an array; mathematically it is an element of a tensor product $V \otimes W$, and its array of coordinates changes with the basis. Diagonalization is the first example: $A' = P^{-1}AP$.
+\end{frame}
+
+% ------------------------------------------------------------------ Eigenvalues
+\topic{\secref{sec:eigen}}{Eigenvalues and eigenvectors}
+
+\begin{frame}{Eigenvalues and eigenvectors}
+    \sidebyside{0.55}{%
+        \begin{definition}[Eigenvalue, eigenvector]
+            \small $\lambda \in \R$ is an eigenvalue of $A$ if $A\bv = \lambda\bv$ for some $\bv \neq \mathbf{0}$, an eigenvector for $\lambda$. The same for $T: V \to V$: $T(v) = \lambda v$, $v \neq 0$.
+        \end{definition}
+        \small
+        Eigenspace $E_\lambda = \{\bv : A\bv = \lambda\bv\} = \Null(A - \lambda I_n)$, a subspace.
+        \begin{proposition}[][prop:eigen-det]
+            \small $\lambda$ is an eigenvalue $\iff A - \lambda I_n$ is not invertible $\iff \det(A - \lambda I_n) = 0$. \ $0$ is an eigenvalue $\iff A$ is not invertible.
+        \end{proposition}
+    }{%
+        \centering\notesfig[0.95]{L1-eigen}
+        \\[0.2em]{\scriptsize $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$: $(1, 1)^\top \mapsto 3(1, 1)^\top$, $(1, -1)^\top$ fixed}
+    }
+\end{frame}
+
+\begin{frame}{The characteristic polynomial}
+    \small
+    $p_A(\lambda) = \det(A - \lambda I_n)$, a polynomial of degree $n$: the eigenvalues are its real roots.
+    \begin{proposition}[][prop:char-poly-2x2]
+        \small For $2 \times 2$ matrices: $p_A(\lambda) = \lambda^2 - \tr(A)\,\lambda + \det(A)$.
+    \end{proposition}
+    \begin{proposition}[][prop:eigen-triangular]
+        \small The eigenvalues of a triangular matrix are its diagonal entries.
+    \end{proposition}
+    \begin{example}[Eigenvectors from geometry][ex:eigen-geometric]
+        \small
+        \begin{itemize}
+            \item projection onto the $x$-axis: $\lambda = 1$ ($x$-axis), $\lambda = 0$ ($y$-axis);
+            \item reflection in $y = x$: $\lambda = 1$ on $y = x$, $\lambda = -1$ on $y = -x$;
+            \item shear $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$: only $\lambda = 1$, $E_1 = \Span\{\be_1\}$;
+            \item rotation $R_\theta$, $\theta \notin \pi\mathbb{Z}$: $p(\lambda) = \lambda^2 - 2\cos\theta\,\lambda + 1$ has no real roots: no direction is preserved.
+        \end{itemize}
+    \end{example}
+\end{frame}
+
+\board[2]{Examples: eigenvalues and eigenspaces}{(1) $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$. \quad (2) $J = \begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix}$: expand $\det(J - \lambda I_3)$ along the first row, then row reduce $J - \lambda I_3$.}
+
+\checkslide{the $2 \times 2$ example}{
+    \small
+    \textbf{Characteristic polynomial.}
+    \[p_A(\lambda) = \det\begin{pmatrix} 2 - \lambda & 1 \\ 1 & 2 - \lambda \end{pmatrix} = (2 - \lambda)^2 - 1 = \lambda^2 - 4\lambda + 3 = (\lambda - 1)(\lambda - 3).\]
+    Or with the $2 \times 2$ formula: $\tr A = 4$, $\det A = 4 - 1 = 3$, so $p_A(\lambda) = \lambda^2 - 4\lambda + 3$.
+    \\[0.4em]
+    \textbf{Eigenspaces} by row reduction of $A - \lambda I$:
+    \[\lambda = 3: \ \begin{pmatrix} -1 & 1 \\ 1 & -1 \end{pmatrix} \to \begin{pmatrix} 1 & -1 \\ 0 & 0 \end{pmatrix}: \ x = y, \quad E_3 = \Span\{(1, 1)^\top\};\]
+    \[\lambda = 1: \ \begin{pmatrix} 1 & 1 \\ 1 & 1 \end{pmatrix} \to \begin{pmatrix} 1 & 1 \\ 0 & 0 \end{pmatrix}: \ x = -y, \quad E_1 = \Span\{(1, -1)^\top\}.\]
+    \textbf{Check:} $A(1, 1)^\top = (3, 3)^\top$, \ $A(1, -1)^\top = (1, -1)^\top$; \ $1 + 3 = 4 = \tr A$, \ $1 \cdot 3 = 3 = \det A$.
+}
+
+\checkslide{the $3 \times 3$ example}{
+    \small
+    \textbf{Characteristic polynomial}, expanding along the first row:
+    \[\begin{aligned}
+        p_J(\lambda) &= \det\begin{pmatrix} -\lambda & 1 & 1 \\ 1 & -\lambda & 1 \\ 1 & 1 & -\lambda \end{pmatrix}
+        = -\lambda\det\begin{pmatrix} -\lambda & 1 \\ 1 & -\lambda \end{pmatrix} - 1 \cdot \det\begin{pmatrix} 1 & 1 \\ 1 & -\lambda \end{pmatrix} + 1 \cdot \det\begin{pmatrix} 1 & -\lambda \\ 1 & 1 \end{pmatrix} \\
+        &= -\lambda(\lambda^2 - 1) - (-\lambda - 1) + (1 + \lambda) = -\lambda^3 + 3\lambda + 2.
+    \end{aligned}\]
+    $\lambda = 2$ is a root ($-8 + 6 + 2 = 0$); dividing by $\lambda - 2$: \ $p_J(\lambda) = -(\lambda - 2)(\lambda + 1)^2$.
+    \\[0.3em]
+    \textbf{Eigenspaces:}
+    \[J - 2I = \begin{pmatrix} -2 & 1 & 1 \\ 1 & -2 & 1 \\ 1 & 1 & -2 \end{pmatrix} \to \begin{pmatrix} 1 & 0 & -1 \\ 0 & 1 & -1 \\ 0 & 0 & 0 \end{pmatrix}: \ x = z,\ y = z, \quad E_2 = \Span\{(1, 1, 1)^\top\};\]
+    \[J + I = \begin{pmatrix} 1 & 1 & 1 \\ 1 & 1 & 1 \\ 1 & 1 & 1 \end{pmatrix} \to \begin{pmatrix} 1 & 1 & 1 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{pmatrix}: \ E_{-1} = \{x + y + z = 0\} = \Span\{(1, -1, 0)^\top, (1, 0, -1)^\top\}.\]
+    \textbf{Check:} $2 - 1 - 1 = 0 = \tr J$, \ $2 \cdot (-1)^2 = 2 = \det J$.
+}
+
+\begin{frame}{Trace, determinant, and related matrices}
+    \small
+    Over $\mathbb{C}$ (fundamental theorem of algebra): $p_A(\lambda) = (\lambda_1 - \lambda)\cdots(\lambda_n - \lambda)$, the complex eigenvalues with multiplicity. $R_\theta$: $\cos\theta \pm i\sin\theta$.
+    \begin{theorem}[][thm:trace-det-eigen]
+        \small $\det(A) = \lambda_1\lambda_2\cdots\lambda_n$ \quad and \quad $\tr(A) = \lambda_1 + \lambda_2 + \cdots + \lambda_n$.
+    \end{theorem}
+    \begin{proposition}[][prop:eigen-related]
+        \small If $A\bv = \lambda\bv$, $\bv \neq \mathbf{0}$: \ $A^k\bv = \lambda^k\bv$; \ $A^{-1}\bv = \frac{1}{\lambda}\bv$ (if $A$ is invertible); \ $(A + cI)\bv = (\lambda + c)\bv$. \ $A$ and $A^\top$ have the same characteristic polynomial.
+    \end{proposition}
+    \textcolor{mlcolor}{Adding $cI$ shifts all eigenvalues: ridge regression $X^\top X + \lambda I$ makes every eigenvalue $\geq \lambda > 0$.}
+\end{frame}
+
+\board{Proof: trace and determinant from the eigenvalues}{Compare $\det(A - \lambda I_n)$ with $(\lambda_1 - \lambda)\cdots(\lambda_n - \lambda)$: at $\lambda = 0$; and the coefficient of $\lambda^{n-1}$ (only the product of the diagonal entries contributes).}
+
+\practice{pr:eig-triangular}{}{Find the eigenvalues and eigenspaces of $L = \begin{pmatrix} 2 & 0 & 0 \\ 1 & 3 & 0 \\ 4 & -1 & 1 \end{pmatrix}$. Is $L$ diagonalizable?}
+
+\practice[2]{pr:eig-geometric}{}{Without computing any characteristic polynomial, use geometric intuition to find the eigenvalues and eigenspaces of the following linear transformations of the plane. Then check your answers with a computation.
+\begin{enumerate}[(a)]
+    \item the reflection in the $x$-axis;
+    \item the orthogonal projection onto the line $y = x$, with matrix $\frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & 1 \end{pmatrix}$;
+    \item the shear $T(x, y) = (x + 2y, y)$;
+    \item the rotation by $90^\circ$;
+    \item $T(x, y) = (2x, 3y)$;
+    \item $T(x, y) = (-x, -y)$.
+\end{enumerate}
+Which of these transformations are diagonalizable?}
+
+\practice{pr:eig-gre}{$\star$}{A real $3 \times 3$ matrix $A$ has the eigenvalues $-1$, $2$ and $4$.
+\begin{enumerate}[(a)]
+    \item Is $A$ diagonalizable? Is $A$ invertible?
+    \item Compute $\tr(A)$, $\det(A)$, $\tr(A^2)$ and $\det(A^3)$.
+    \item Find the eigenvalues of $A^{-1}$, $A^2$ and $A + 2I_3$.
+\end{enumerate}}
+
+\practice[2]{pr:eig-props}{}{Let $A$ and $B$ be $n \times n$ matrices.
+\begin{enumerate}[(a)]
+    \item Show that $A$ and $A^\top$ have the same eigenvalues, and give an example where they have different eigenvectors.
+    \item Show that if $A$ is invertible, then $AB$ and $BA$ are similar, and hence have the same eigenvalues. (Hint: $BA = A^{-1}(AB)A$.)
+    \item Show that every real eigenvalue of an orthogonal matrix $Q$ is $1$ or $-1$. Hint: if $Q\bv = \lambda\bv$, compute $(Q\bv)^\top(Q\bv)$ in two ways.
+    \item Show that if $A^k = 0$ for some $k \geq 1$, then $0$ is the only eigenvalue of $A$.
+    \item Show that $\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$ and $I_2$ have the same characteristic polynomial, but are not similar.
+\end{enumerate}}
+
+\practice{pr:eig-complex}{$\star$}{\begin{enumerate}[(a)]
+    \item Show that the matrix $M(a + bi) = \begin{pmatrix} a & -b \\ b & a \end{pmatrix}$ of Problem~\practiceref{pr:complex-matrix} has the complex eigenvalues $a \pm bi$.
+    \item Find the complex eigenvalues of $\begin{pmatrix} 3 & -4 \\ 4 & 3 \end{pmatrix}$, and write this matrix as $rR_\theta$ with $r > 0$ and a rotation $R_\theta$. How are $r$ and $\theta$ related to the eigenvalues?
+\end{enumerate}}
+
+% ------------------------------------------------------------------ Diagonalization
+\topic{\S1.10.3}{Diagonalization}
+
+\begin{frame}{Diagonalization}
+    \begin{theorem}[][thm:eigen-independent]
+        \small Eigenvectors for distinct eigenvalues $\lambda_1, \ldots, \lambda_k$ are linearly independent.
+    \end{theorem}
+    \small $A$ is \textbf{diagonalizable} if $A = PDP^{-1}$ with $P$ invertible and $D$ diagonal; $A$ and $B = P^{-1}AP$ are \textbf{similar}.
+    \begin{theorem}[Diagonalization][thm:diagonalization]
+        \small $A$ ($n \times n$) is diagonalizable $\iff$ it has $n$ linearly independent eigenvectors $\mathbf{p}_1, \ldots, \mathbf{p}_n$. Then $P = (\mathbf{p}_1 \cdots \mathbf{p}_n)$ and $D = \diag(\lambda_1, \ldots, \lambda_n)$, in the same order.
+    \end{theorem}
+    \begin{corollary}[][cor:distinct-eigenvalues]
+        \small $n$ distinct real eigenvalues $\Rightarrow$ diagonalizable.
+    \end{corollary}
+    \small
+    $P^{-1}\bv = [\bv]_{\mathcal{B}}$: coordinates in the eigenbasis. \ $D = P^{-1}AP$ is the matrix of $T_A$ in the eigenbasis. \\
+    $\begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix} = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}\begin{pmatrix} 3 & 0 \\ 0 & 1 \end{pmatrix}\frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$.
+\end{frame}
+
+\board[2]{Proofs: independence of eigenvectors, and the diagonalization theorem}{(1) Induction on $k$: if $\sum_ic_i\bv_i = \mathbf{0}$, apply $A - \lambda_kI$. \quad (2) $AP = PD$ column by column: $A\mathbf{p}_j = \lambda_j\mathbf{p}_j$; $P$ is invertible iff its columns are independent.}
+
+\begin{frame}{Worked example: diagonalizing $A$ and computing $A^k$}
+    \small
+    Eigenvectors $\mathbf{p}_1 = (1, 1)^\top$ ($\lambda_1 = 3$), $\mathbf{p}_2 = (1, -1)^\top$ ($\lambda_2 = 1$):
+    \[P = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}, \quad \det P = -2, \quad P^{-1} = \frac{1}{-2}\begin{pmatrix} -1 & -1 \\ -1 & 1 \end{pmatrix} = \frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}, \quad D = \begin{pmatrix} 3 & 0 \\ 0 & 1 \end{pmatrix}.\]
+    \textbf{Check} $AP = PD$ column by column, and the product:
+    \[AP = \begin{pmatrix} 3 & 1 \\ 3 & -1 \end{pmatrix} = PD, \qquad PDP^{-1} = \begin{pmatrix} 3 & 1 \\ 3 & -1 \end{pmatrix}\frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix} = \frac{1}{2}\begin{pmatrix} 4 & 2 \\ 2 & 4 \end{pmatrix} = A.\]
+    \textbf{Powers:} $D^k = \diag(3^k, 1)$, so
+    \[A^k = PD^kP^{-1} = \begin{pmatrix} 3^k & 1 \\ 3^k & -1 \end{pmatrix}\frac{1}{2}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix} = \frac{1}{2}\begin{pmatrix} 3^k + 1 & 3^k - 1 \\ 3^k - 1 & 3^k + 1 \end{pmatrix}.\]
+    $k = 2$: $\frac{1}{2}\begin{pmatrix} 10 & 8 \\ 8 & 10 \end{pmatrix} = \begin{pmatrix} 5 & 4 \\ 4 & 5 \end{pmatrix} = A^2$ \checkmark. \quad $k = 10$: $A^{10} = \begin{pmatrix} 29525 & 29524 \\ 29524 & 29525 \end{pmatrix}$, without $9$ multiplications.
+\end{frame}
+
+\practice[2]{pr:eig2}{\mandatory}{Let $A = \begin{pmatrix} 1 & 2 \\ 3 & 2 \end{pmatrix}$.
+\begin{enumerate}[(a)]
+    \item Compute the characteristic polynomial of $A$, its eigenvalues, and its eigenspaces.
+    \item Check that the eigenvalues add up to $\tr(A)$ and multiply to $\det(A)$.
+    \item Diagonalize $A$, i.e., find $P$ and $D$ with $A = PDP^{-1}$.
+    \item Find a formula for $A^k$, and check it for $k = 1$.
+\end{enumerate}}
+
+\begin{frame}{Algebraic and geometric multiplicity}
+    \small
+    \textbf{Algebraic} multiplicity of $\lambda$: its multiplicity as a root of $p_A$. \ \textbf{Geometric}: $\dim E_\lambda = n - \rank(A - \lambda I_n)$.
+    \begin{theorem}[][thm:multiplicities]
+        \small $1 \leq$ geometric $\leq$ algebraic. \ $A$ is diagonalizable $\iff p_A$ has $n$ real roots (with multiplicity) and geometric $=$ algebraic for every eigenvalue.
+    \end{theorem}
+    \begin{itemize}
+        \item $J$: $p_J = -(\lambda - 2)(\lambda + 1)^2$, so $\lambda = -1$ has algebraic multiplicity $2$. $J + I$ has three equal rows, $\rank(J + I) = 1$, so the geometric multiplicity is $3 - 1 = 2$: diagonalizable, with the eigenvectors as columns:
+        \[J = PDP^{-1}, \quad P = \begin{pmatrix} 1 & 1 & 1 \\ 1 & -1 & 0 \\ 1 & 0 & -1 \end{pmatrix}, \quad D = \diag(2, -1, -1).\]
+        \item Shear $N = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$: $p_N = (1 - \lambda)^2$, algebraic multiplicity $2$; \ $N - I = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix}$ has rank $1$, geometric multiplicity $2 - 1 = 1$: \textbf{not} diagonalizable.
+        \item Rotation $R_\theta$: $p = \lambda^2 - 2\cos\theta\,\lambda + 1$, discriminant $4\cos^2\theta - 4 < 0$: no real eigenvalues; diagonalizable only over $\mathbb{C}$.
+    \end{itemize}
+    Symmetric matrices are always diagonalizable, even with orthonormal eigenvectors: the spectral theorem (Lecture~6).
+\end{frame}
+
+\practice{pr:eig-defective}{\mandatory}{Let $N = \begin{pmatrix} 2 & 1 & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 3 \end{pmatrix}$. Find the algebraic and geometric multiplicity of each eigenvalue of $N$, and decide whether $N$ is diagonalizable.}
+
+\practice{pr:eig-idempotent}{$\star$}{Let $P$ be an $n \times n$ matrix with $P^2 = P$ (compare Problem~\practiceref{pr:idempotent}).
+\begin{enumerate}[(a)]
+    \item Show that every eigenvalue of $P$ is $0$ or $1$.
+    \item Show that every nonzero vector of $\im(T_P)$ is an eigenvector for the eigenvalue $1$, and that every nonzero vector of $\ker(T_P)$ is an eigenvector for the eigenvalue $0$. Use Problem~\practiceref{pr:idempotent}(d) to conclude that $P$ is diagonalizable.
+    \item Which of the following statements must be true: $P$ is invertible; $P$ is the identity or the zero matrix; $P$ is diagonalizable?
+\end{enumerate}}
+
+\practice{pr:exp-eigen}{$\star$}{Let $D: C^\infty(\R) \to C^\infty(\R)$, $Df = f'$. As for matrices, we call $f \neq 0$ an eigenvector of $D$ with the eigenvalue $\lambda$ if $Df = \lambda f$.
+\begin{enumerate}[(a)]
+    \item Show that every real number $\lambda$ is an eigenvalue of $D$, with the eigenvector $e^{\lambda x}$, and that every eigenvector for $\lambda$ is a multiple of $e^{\lambda x}$. (Hint: differentiate $f(x)e^{-\lambda x}$.)
+    \item Show that $e^x$, $e^{2x}$ and $e^{3x}$ are linearly independent, without any computation. (Hint: the theorem that eigenvectors for different eigenvalues are linearly independent holds for every linear transformation $V \to V$, with the same proof.)
+    \item Conclude in a second way that $C^\infty(\R)$ is infinite-dimensional.
+\end{enumerate}}
+
+\begin{frame}{The Cayley--Hamilton theorem}
+    \begin{theorem}[Cayley--Hamilton][thm:cayley-hamilton]
+        \small Every square matrix satisfies $p_A(A) = 0$.
+    \end{theorem}
+    \small
+    ``Substitute $A$ for $\lambda$ in $\det(A - \lambda I)$'' is \emph{not} a proof: it gives the number $0$, not the zero matrix.
+    \begin{example}[][ex:cayley-hamilton]
+        \small $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$, $p_A(t) = t^2 - 4t + 3$, so $A^2 = 4A - 3I$. Check: $A^2 = \begin{pmatrix} 5 & 4 \\ 4 & 5 \end{pmatrix} = \begin{pmatrix} 8 - 3 & 4 \\ 4 & 8 - 3 \end{pmatrix}$ \checkmark.
+        \[A^3 = A \cdot A^2 = 4A^2 - 3A = 4(4A - 3I) - 3A = 13A - 12I = \begin{pmatrix} 14 & 13 \\ 13 & 14 \end{pmatrix};\]
+        \[A(4I - A) = 4A - A^2 = 3I \ \Rightarrow \ A^{-1} = \tfrac{1}{3}(4I - A) = \tfrac{1}{3}\begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}.\]
+    \end{example}
+    Every power $A^k$, and $A^{-1}$ if it exists, is a polynomial in $A$ of degree $< n$. \textcolor{mlcolor}{Krylov methods (conjugate gradients) approximate $A^{-1}\mathbf{b}$ in $\Span\{\mathbf{b}, A\mathbf{b}, \ldots, A^{k-1}\mathbf{b}\}$.}
+\end{frame}
+
+\board[2]{Proof of Cayley--Hamilton}{Adjugate: $(A - tI)B(t) = p_A(t)\,I$ with $B(t) = B_0 + B_1t + \cdots + B_{n-1}t^{n-1}$. Compare the coefficients of $t^j$, multiply the $j$-th equation by $A^j$ from the left, and add: the sum telescopes.}
+
+\practice[2]{pr:cayley-hamilton}{\mandatory}{Let $B = \begin{pmatrix} 1 & 1 \\ -2 & 4 \end{pmatrix}$.
+\begin{enumerate}[(a)]
+    \item Compute $p_B$, and verify the Cayley--Hamilton theorem by computing $p_B(B)$.
+    \item Write $B^{-1}$ and $B^3$ in the form $aB + bI_2$.
+    \item Show that $B^k = a_kB + b_kI_2$ for every $k \geq 1$, with $a_{k+1} = 5a_k + b_k$ and $b_{k+1} = -6a_k$.
+\end{enumerate}}
+
+\begin{frame}{The minimal polynomial}
+    \small
+    $m_A$: the monic polynomial of smallest degree with $m_A(A) = 0$.
+    \begin{proposition}[][prop:minimal-polynomial]
+        \small If $q(A) = 0$, then $m_A \mid q$; in particular $m_A \mid p_A$, and $m_A$ is unique. The real roots of $m_A$ are exactly the eigenvalues.
+    \end{proposition}
+    \begin{theorem}[][thm:minimal-diagonalizable]
+        \small $A$ is diagonalizable $\iff m_A(t) = (t - \mu_1)\cdots(t - \mu_k)$ with distinct real $\mu_i$.
+    \end{theorem}
+    \begin{example}[][ex:minimal-polynomial]
+        \small
+        \begin{itemize}
+            \item Shear $N$: the only eigenvalue is $1$, so $m_N \in \{t - 1, (t - 1)^2\}$. $N - I = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix} \neq 0$, but $(N - I)^2 = \begin{pmatrix} 0 & 0 \\ 0 & 0 \end{pmatrix}$: $m_N = (t - 1)^2$, not diagonalizable.
+            \item $J = E - I$ with $E$ the all-ones matrix, $E^2 = 3E$: $(J - 2I)(J + I) = (E - 3I)E = 3E - 3E = 0$. Both $2$ and $-1$ are eigenvalues, so $m_J = (t - 2)(t + 1)$: diagonalizable, without any eigenvectors.
+            \item $P^2 = P$: $m_P \mid t(t - 1)$; \ $A^2 = I$: $m_A \mid (t - 1)(t + 1)$: distinct roots, so diagonalizable.
+        \end{itemize}
+    \end{example}
+\end{frame}
+
+\practice{pr:minimal-poly}{}{Find the minimal polynomials of the following matrices, and decide which of them are diagonalizable:
+\[N = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}, \qquad D = \begin{pmatrix} 2 & 0 & 0 \\ 0 & 3 & 0 \\ 0 & 0 & 2 \end{pmatrix}, \qquad R = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}.\]
+Without computing any eigenvectors, show that a matrix $A$ with $A^2 = 3A - 2I_n$ is diagonalizable, and find its possible eigenvalues.}
+
+% ------------------------------------------------------------------ Powers
+\topic{\S1.10.5}{Powers of matrices}
+
+\begin{frame}{Powers of matrices}
+    \begin{proposition}[][prop:powers]
+        \small $A = PDP^{-1}$ $\Rightarrow$ $A^k = PD^kP^{-1}$, \ $D^k = \diag(\lambda_1^k, \ldots, \lambda_n^k)$.
+    \end{proposition}
+    \small
+    $\begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}^k = \frac{1}{2}\begin{pmatrix} 3^k + 1 & 3^k - 1 \\ 3^k - 1 & 3^k + 1 \end{pmatrix}$. \quad In the eigenbasis: $\bx = \sum_ic_i\bv_i \Rightarrow A^k\bx = \sum_ic_i\lambda_i^k\bv_i$.
+    \\[0.3em]
+    \centering\fig[0.68]{s05_powers}
+    \\[0.1em]
+    \raggedright The largest $|\lambda_i|$ wins: \textbf{power iteration} (PageRank); speed $|\lambda_2/\lambda_1|$.
+\end{frame}
+
+\begin{frame}{Worked example: the weather Markov chain}
+    \begin{example}[Markov chains][ex:markov]
+        \small Sunny is followed by sunny with probability $0.9$, rainy by sunny with probability $0.5$. With $\bx_k = (s_k, r_k)^\top$: \ $\bx_{k+1} = A\bx_k$, \ $A = \begin{pmatrix} 0.9 & 0.5 \\ 0.1 & 0.5 \end{pmatrix}$ (columns sum to $1$).
+    \end{example}
+    \small
+    \textbf{Eigenvalues:} $\tr A = 1.4$, $\det A = 0.45 - 0.05 = 0.4$: \ $p_A(\lambda) = \lambda^2 - 1.4\lambda + 0.4 = (\lambda - 1)(\lambda - 0.4)$.
+    \\[0.2em]
+    \textbf{Eigenvectors:} $A - I = \begin{pmatrix} -0.1 & 0.5 \\ 0.1 & -0.5 \end{pmatrix}$: $x = 5y$, $\bv_1 = (5, 1)^\top$; \ $A - 0.4I = \begin{pmatrix} 0.5 & 0.5 \\ 0.1 & 0.1 \end{pmatrix}$: $\bv_2 = (1, -1)^\top$.
+    \\[0.2em]
+    \textbf{Start rainy:} $\bx_0 = (0, 1)^\top = \tfrac{1}{6}\bv_1 - \tfrac{5}{6}\bv_2$ \ (check: $\frac{5}{6} - \frac{5}{6} = 0$, $\frac{1}{6} + \frac{5}{6} = 1$). Hence
+    \[\bx_k = A^k\bx_0 = \tfrac{1}{6}\cdot 1^k\,\bv_1 - \tfrac{5}{6}(0.4)^k\,\bv_2 = \begin{pmatrix} 5/6 \\ 1/6 \end{pmatrix} - \tfrac{5}{6}(0.4)^k\begin{pmatrix} 1 \\ -1 \end{pmatrix}.\]
+    \renewcommand{\arraystretch}{1.1}
+    \centering
+    \begin{tabular}{@{}lcccccc@{}}
+        \toprule
+        day $k$ & $0$ & $1$ & $2$ & $3$ & $\cdots$ & $\infty$ \\
+        \midrule
+        $P(\text{sunny})$ & $0$ & $0.5$ & $0.7$ & $0.78$ & & $\frac{5}{6} \approx 0.833$ \\
+        \bottomrule
+    \end{tabular}
+    \\[0.2em]
+    \raggedright The limit is the eigenvector for $\lambda = 1$, scaled to a probability vector: the stationary distribution.
+\end{frame}
+
+\practice[2]{pr:eig-markov}{\mandatory}{Every day, a visitor of a website either only browses or makes a purchase. A browsing visitor browses again the next day with probability $0.7$, and a buying visitor buys again with probability $0.6$. With $x_k = (b_k, p_k)^\top$ the probabilities of browsing and buying on day $k$, we have $x_{k+1} = Ax_k$ with
+\[A = \begin{pmatrix} 0.7 & 0.4 \\ 0.3 & 0.6 \end{pmatrix}.\]
+\begin{enumerate}[(a)]
+    \item Find the eigenvalues and eigenvectors of $A$, and the stationary distribution.
+    \item For $x_0 = (1, 0)^\top$, find a formula for $x_k$, and check it for $k = 2$. What happens as $k \to \infty$?
+\end{enumerate}}
+
+\practice{pr:eig-power}{}{Let $A = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}$ and $x_0 = (1, 0)^\top$.
+\begin{enumerate}[(a)]
+    \item Compute $Ax_0$, $A^2x_0$, $A^3x_0$ and $A^4x_0$. What happens to the ratio of the two entries?
+    \item Explain your observation by writing $x_0$ as a linear combination of eigenvectors of $A$, and find a formula for $A^kx_0$.
+\end{enumerate}}
+
+\board{Example: Fibonacci numbers}{$F_0 = 0$, $F_1 = 1$, $F_{n+1} = F_n + F_{n-1}$: \ $\begin{pmatrix} F_{n+1} \\ F_n \end{pmatrix} = M^n\begin{pmatrix} 1 \\ 0 \end{pmatrix}$ with $M = \begin{pmatrix} 1 & 1 \\ 1 & 0 \end{pmatrix}$. Find the eigenvalues and eigenvectors of $M$ and a formula for $F_n$.}
+
+\checkslide{Binet's formula}{
+    \small
+    $\tr M = 1$, $\det M = -1$: \ $p_M(\lambda) = \lambda^2 - \lambda - 1$, roots $\varphi = \frac{1 + \sqrt5}{2} \approx 1.618$ (golden ratio), $\psi = \frac{1 - \sqrt5}{2} \approx -0.618$.
+    \\[0.2em]
+    Eigenvector for $\varphi$: $M\begin{pmatrix} \varphi \\ 1 \end{pmatrix} = \begin{pmatrix} \varphi + 1 \\ \varphi \end{pmatrix} = \begin{pmatrix} \varphi^2 \\ \varphi \end{pmatrix} = \varphi\begin{pmatrix} \varphi \\ 1 \end{pmatrix}$, using $\varphi^2 = \varphi + 1$; the same for $\psi$.
+    \\[0.2em]
+    Since $\varphi - \psi = \sqrt5$: \ $\begin{pmatrix} 1 \\ 0 \end{pmatrix} = \frac{1}{\sqrt5}\left(\begin{pmatrix} \varphi \\ 1 \end{pmatrix} - \begin{pmatrix} \psi \\ 1 \end{pmatrix}\right)$, so
+    \[\begin{pmatrix} F_{n+1} \\ F_n \end{pmatrix} = M^n\begin{pmatrix} 1 \\ 0 \end{pmatrix} = \frac{1}{\sqrt5}\left(\varphi^n\begin{pmatrix} \varphi \\ 1 \end{pmatrix} - \psi^n\begin{pmatrix} \psi \\ 1 \end{pmatrix}\right) \quad \Rightarrow \quad F_n = \frac{\varphi^n - \psi^n}{\sqrt5}.\]
+    Check $n = 10$: $\varphi^{10} \approx 122.99$, $\varphi^{10}/\sqrt5 \approx 55.004$, and $F_{10} = 55$. Since $|\psi| < 1$, $F_n$ is the integer closest to $\varphi^n/\sqrt5$, and $F_{n+1}/F_n \to \varphi$.
+    \begin{mlbox}
+        \small
+        \begin{itemize}
+            \item Markov chains: $\bx_{k+1} = A\bx_k$; the eigenvector for $\lambda = 1$ is the stationary distribution (Lecture~10).
+            \item RNNs: gradients through $k$ steps are multiplied by $W^\top$ (times derivatives) $k$ times: eigenvalues $|\lambda| < 1$ make them vanish, $|\lambda| > 1$ explode.
+            \item AR models $X_t = \phi_1X_{t-1} + \cdots$: stable iff the companion matrix has $|\lambda| < 1$.
+        \end{itemize}
+    \end{mlbox}
+}
+
+\practice{pr:eig-recurrence}{$\star$}{The sequence $a_0 = 0$, $a_1 = 1$, $a_{n+1} = a_n + 2a_{n-1}$ starts with $0, 1, 1, 3, 5, 11, \ldots$.
+\begin{enumerate}[(a)]
+    \item Find a $2 \times 2$ matrix $M$ with $(a_{n+1}, a_n)^\top = M(a_n, a_{n-1})^\top$.
+    \item Find the eigenvalues and eigenvectors of $M$, and derive a formula for $a_n$, as for Binet's formula in the lecture.
+    \item Compute $a_{10}$ with your formula.
+\end{enumerate}}
+
+% ------------------------------------------------------------------ Circulant
+\topic{\secref{subsec:circulant}}{Convolutions and circulant matrices}
+
+\begin{frame}{Cyclic convolutions are circulant matrices}
+    \small
+    Indices $0, \ldots, n - 1$, taken modulo $n$.
+    \begin{definition}[][def:circulant]
+        \small $(\mathbf{c} \ast \bx)_j = \sum_kc_kx_{j-k}$, linear in $\bx$ with the matrix $\mathrm{circ}(\mathbf{c})_{jk} = c_{j-k}$: first column $\mathbf{c}$, each next column shifted down cyclically.
+    \end{definition}
+    \[\mathbf{c} = (2, 1, 0, 1)^\top: \quad \mathrm{circ}(\mathbf{c}) = \begin{pmatrix} 2 & 1 & 0 & 1 \\ 1 & 2 & 1 & 0 \\ 0 & 1 & 2 & 1 \\ 1 & 0 & 1 & 2 \end{pmatrix}, \qquad \mathbf{c} \ast \begin{pmatrix} 1 \\ 2 \\ 3 \\ 4 \end{pmatrix} = \begin{pmatrix} 8 \\ 8 \\ 12 \\ 12 \end{pmatrix}.\]
+    \begin{proposition}[][prop:circulant-shift]
+        \small With the cyclic shift $S$, $(S\bx)_j = x_{j-1}$: \ $\mathrm{circ}(\mathbf{c}) = c_0I + c_1S + \cdots + c_{n-1}S^{n-1}$, and $AS = SA \iff A$ is circulant.
+    \end{proposition}
+    \textcolor{mlcolor}{Linear maps that treat every position the same way (shift in, shift out) are exactly convolutions: this is why CNNs use them (translation equivariance).}
+\end{frame}
+
+\begin{frame}{The discrete Fourier transform diagonalizes convolutions}
+    \small
+    $\omega = e^{2\pi i/n}$, \ Fourier vectors $\mathbf{f}_m = (1, \omega^m, \omega^{2m}, \ldots, \omega^{(n-1)m})^\top$, \ $F_{jm} = \omega^{jm}$, \ DFT $\hat{\bx} = \overline{F}\bx$, $\hat x_m = \sum_jx_j\omega^{-jm}$.
+    \begin{theorem}[][thm:circulant-dft]
+        \small (1) $\overline{F}F = nI$. \ (2) $\mathrm{circ}(\mathbf{c})\mathbf{f}_m = \hat c_m\mathbf{f}_m$: $\mathrm{circ}(\mathbf{c}) = F\diag(\hat c_0, \ldots, \hat c_{n-1})F^{-1}$. \ (3) $\widehat{\mathbf{c} \ast \bx}_m = \hat c_m\hat x_m$ (convolution theorem).
+    \end{theorem}
+    \centering\fig[0.74]{s05_convolution}
+    \\[0.1em]
+    \raggedright Shared eigenvectors $\mathbf{f}_m$; smoothing damps high frequencies; FFT: $O(n\log n)$, not $O(n^2)$.
+\end{frame}
+
+\board{The Fourier vectors are eigenvectors}{Show $(\mathrm{circ}(\mathbf{c})\mathbf{f}_m)_j = \sum_kc_k\omega^{(j-k)m} = \hat c_m\omega^{jm}$. \quad For $\mathbf{c} = (2, 1, 0, 1)^\top$ ($n = 4$, $\omega = i$): compute $\hat{\mathbf{c}}$. Which signal is killed? Can smoothing be undone?}
+
+\checkslide{a convolution with $n = 4$}{
+    \small
+    $\mathbf{c} = (2, 1, 0, 1)^\top$, $\bx = (1, 2, 3, 4)^\top$, row by row of $\mathrm{circ}(\mathbf{c})$:
+    \[\mathbf{c} \ast \bx = \begin{pmatrix} 2 \cdot 1 + 1 \cdot 2 + 0 \cdot 3 + 1 \cdot 4 \\ 1 \cdot 1 + 2 \cdot 2 + 1 \cdot 3 + 0 \cdot 4 \\ 0 \cdot 1 + 1 \cdot 2 + 2 \cdot 3 + 1 \cdot 4 \\ 1 \cdot 1 + 0 \cdot 2 + 1 \cdot 3 + 2 \cdot 4 \end{pmatrix} = \begin{pmatrix} 8 \\ 8 \\ 12 \\ 12 \end{pmatrix}.\]
+    \textbf{DFT} with $\omega = i$, $\hat c_m = \sum_kc_ki^{-km}$, \ $i^{-1} = -i$, $i^{-2} = -1$, $i^{-3} = i$:
+    \[\hat c_0 = 2 + 1 + 0 + 1 = 4, \quad \hat c_1 = 2 + (-i) + 0 + i = 2, \quad \hat c_2 = 2 - 1 + 0 - 1 = 0, \quad \hat c_3 = 2 + i + 0 - i = 2.\]
+    $\mathbf{f}_2 = (1, -1, 1, -1)^\top$: $\mathrm{circ}(\mathbf{c})\mathbf{f}_2 = (2 - 1 + 0 - 1, \ldots) = \mathbf{0}$: the fastest oscillation is killed, so smoothing cannot be undone ($0$ is an eigenvalue).
+    \\[0.3em]
+    \textbf{Convolution theorem:} $\hat{\bx} = (10,\ -2 + 2i,\ -2,\ -2 - 2i)$, so $\hat c_m\hat x_m = (40,\ -4 + 4i,\ 0,\ -4 - 4i)$; and directly, the DFT of $(8, 8, 12, 12)$: $8 + 8 + 12 + 12 = 40$, \ $8 - 8i - 12 + 12i = -4 + 4i$, \ $8 - 8 + 12 - 12 = 0$, \ $-4 - 4i$ \checkmark.
+}
+
+\practice[2]{pr:circulant}{\mandatory}{Let $n = 4$, $\mathbf{c} = (1, 1, 0, 0)^\top$ and $\bx = (1, 0, 2, 0)^\top$, with entries numbered from $0$, so that $(\mathbf{c} \ast \bx)_j = x_j + x_{j-1}$.
+\begin{enumerate}[(a)]
+    \item Write down $\mathrm{circ}(\mathbf{c})$, and compute $\mathbf{c} \ast \bx$.
+    \item Compute the DFTs $\hat{\mathbf{c}}$, $\hat{\bx}$ and $\widehat{\mathbf{c} \ast \bx}$ (here $\omega = i$), and check the convolution theorem.
+    \item Which eigenvalue of $\mathrm{circ}(\mathbf{c})$ is $0$, and for which eigenvector? Explain the answer without computation.
+\end{enumerate}}
+
+\practice{pr:shift-commute}{$\star$}{Let $S$ be the $3 \times 3$ cyclic shift, $S(x_0, x_1, x_2)^\top = (x_2, x_0, x_1)^\top$. Find all $3 \times 3$ matrices $A$ with $AS = SA$ by solving the linear equations for the entries of $A$, and check that they are exactly the circulant matrices.}
+
+% ------------------------------------------------------------------ Tensors
+\topic{\secref{sec:tensors}}{Tensors}
+
+\begin{frame}{Multilinear maps}
+    \begin{definition}[][def:multilinear]
+        \small $\tau: V_1 \times \cdots \times V_k \to W$ is multilinear if it is linear in each argument when the others are fixed. $W = \R$: a multilinear form; $k = 2$: bilinear.
+    \end{definition}
+    \begin{example}[][ex:multilinear]
+        \small
+        \begin{itemize}
+            \item the dot product $\bx^\top\by$; \ $\beta_A(\bx, \by) = \bx^\top A\by = \sum_{i,j}A_{ij}x_iy_j$;
+            \item matrix multiplication $(A, B) \mapsto AB$;
+            \item the determinant, as a function of the $n$ columns (but not linear in the matrix!).
+        \end{itemize}
+    \end{example}
+    \begin{mlbox}
+        \small The attention score of a transformer is a learned bilinear form $\beta(\bx_i, \bx_j) = \bx_i^\top W_QW_K^\top\bx_j$ between two tokens: how much token $i$ should read from token $j$. We compute it at the end of the tensor part.
+    \end{mlbox}
+    \small
+    Goal: a vector space $V \otimes W$ such that \emph{bilinear} maps on $V \times W$ become \emph{linear} maps on $V \otimes W$. Then everything we know about linear maps applies.
+\end{frame}
+
+\begin{frame}{The free vector space $\mathcal{F}_0(S)$}
+    \begin{definition}[Free vector space][def:free]
+        \small $S$ is any set, with no operations. $\mathcal{F}_0(S)$ is the set of functions $f: S \to \R$ with $f(s) \neq 0$ for only finitely many $s$, with the pointwise operations. For $s \in S$: \ $\delta_s(s) = 1$ and $\delta_s(t) = 0$ for $t \neq s$.
+    \end{definition}
+    \small
+    \begin{itemize}
+        \item \textbf{A subspace of $\mathcal{F}(S)$} (notes~L1, \notesref{prop:function-space}). The support $\{s : f(s) \neq 0\}$ is finite, and
+        \[\operatorname{supp}(f + g) \subseteq \operatorname{supp} f \cup \operatorname{supp} g, \qquad \operatorname{supp}(af) \subseteq \operatorname{supp} f.\]
+        \item \textbf{The basis $\{\delta_s : s \in S\}$.} Every $f$ is the \emph{finite} sum $f = \sum_{s \in \operatorname{supp} f} f(s)\,\delta_s$. This is the only way to write it: evaluating $\sum_s a_s\delta_s$ at $t$ gives $a_t$. So $\dim\mathcal{F}_0(S) = |S|$, with one basis vector for each element of $S$.
+        \item \textbf{Formal linear combinations.} Writing $s$ for $\delta_s$, the elements are $a_1s_1 + \cdots + a_rs_r$. We compute as with polynomials in the ``variables'' $s$: collect equal labels, and nothing else.
+        \item \textbf{Finite $S$.} $S = \{1, \ldots, n\}$ gives $\R^n$, with $\delta_i = \be_i$; \ $S = \{\text{cat}, \text{dog}, \text{fish}\}$ gives a copy of $\R^3$.
+        \item \textbf{Infinite $S$.} Then $\mathcal{F}_0(S) \subsetneq \mathcal{F}(S)$. For $S = \mathbb{N}$, $\mathcal{F}_0(\mathbb{N})$ consists of the sequences with finitely many nonzero terms. The sequence $(1, 1, 1, \ldots)$ is in $\mathcal{F}(\mathbb{N})$, but it is not a finite combination of the $\delta_n$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Equality in $\mathcal{F}_0(S)$: compare the values at every point}
+    \small
+    The elements of $\mathcal{F}_0(S)$ are functions on $S$, so $f = g$ means $f(p) = g(p)$ for \emph{every} $p \in S$. For $S = \R \times \R$, we compute both sides at every point:
+    \begin{center}
+        \begin{tabular}{l|cc}
+            point $p$ & $\delta_{(2, 4)}(p)$ & $2\,\delta_{(1, 2)}(p)$ \\ \hline
+            $(1, 2)$ & $0$ & $\mathbf{2}$ \\
+            $(2, 4)$ & $\mathbf{1}$ & $0$ \\
+            all other $p$ & $0$ & $0$
+        \end{tabular}
+        \qquad
+        \begin{tabular}{l|cc}
+            point $p$ & $\delta_{(1, 0)}(p) + \delta_{(0, 1)}(p)$ & $\delta_{(1, 1)}(p)$ \\ \hline
+            $(1, 0)$ & $1 + 0 = \mathbf{1}$ & $0$ \\
+            $(0, 1)$ & $0 + 1 = \mathbf{1}$ & $0$ \\
+            $(1, 1)$ & $0 + 0 = 0$ & $\mathbf{1}$ \\
+            all other $p$ & $0$ & $0$
+        \end{tabular}
+    \end{center}
+    The functions differ at the points in bold, so $\delta_{(2, 4)} \neq 2\,\delta_{(1, 2)}$ and $\delta_{(1, 0)} + \delta_{(0, 1)} \neq \delta_{(1, 1)}$.
+    \begin{proposition}[For all labels, not only for these]
+        \small Let $s, t, u \in S$ and $c \in \R$. \ (i) If $s \neq t$, then $\delta_s \neq c\,\delta_t$. \ (ii) $\delta_s + \delta_t \neq \delta_u$.
+        \\
+        \emph{Proof.} (i) At the point $s$, $\delta_s(s) = 1$ but $c\,\delta_t(s) = 0$. \ (ii) If $s \neq t$, the left side is nonzero at the two points $s$ and $t$, and the right side only at $u$. If $s = t$, the left side $2\delta_s$ takes the value $2$, which $\delta_u$ never takes.
+    \end{proposition}
+    So in $\mathcal{F}_0(V \times W)$, \ $\delta_{c(v, w)} = c\,\delta_{(v, w)}$ holds only for $c = 1$, and $\delta_{(v, w) + (v', w')} = \delta_{(v, w)} + \delta_{(v', w')}$ never holds. Which such relations the quotient by $R$ makes true is computed after the universal property.
+\end{frame}
+
+\begin{frame}{$\mathcal{F}_0(S)$ forgets all structure of $S$}
+    \sidebyside{0.6}{%
+        \small
+        For $S = V \times W$, the pairs are only \emph{labels}: $\mathcal{F}_0$ does not know that pairs can be added or scaled. In $\mathcal{F}_0(\R \times \R)$:
+        \begin{itemize}
+            \item $\delta_{(0, 0)} \neq 0$: its value at $(0, 0)$ is $1$, and the value of the zero function is $0$. The pair $(0, 0)$ is a label like any other.
+            \item $\delta_{(1, 2)}, \delta_{(2, 4)}, \delta_{(3, 6)}$ are linearly independent, although the pairs are proportional. If $a\,\delta_{(1, 2)} + b\,\delta_{(2, 4)} + c\,\delta_{(3, 6)} = 0$, the values at $(1, 2)$, $(2, 4)$ and $(3, 6)$ give $a = 0$, $b = 0$ and $c = 0$.
+        \end{itemize}
+        There is one basis vector for each point of the plane, so $\dim = \infty$ (uncountable). An element is a finite set of points with weights (right), and a sum adds the weights point by point.
+        \\[0.4em]
+        ``Free'' means that there are no relations between the basis vectors. We impose the relations we want (bilinearity) afterwards, by the quotient by $R$.
+    }{%
+        \centering
+        \begin{tikzpicture}[scale=0.62, every node/.style={font=\scriptsize}]
+            \draw[->, gray] (-1.3, 0) -- (3.4, 0) node[right] {$v$};
+            \draw[->, gray] (0, -0.8) -- (0, 5.3) node[above] {$w$};
+            \draw[dashed, gray!70] (-0.4, -0.8) -- (2.6, 5.2);
+            \fill[accent] (1, 2) circle (0.26);
+            \node[right=3pt] at (1, 2) {$3$ at $(1, 2)$};
+            \fill[red!75!black] (2, 4) circle (0.15);
+            \node[right=3pt] at (2, 4) {$-1$ at $(2, 4)$};
+            \fill[accent] (0, 0) circle (0.15);
+            \node[below right=1pt] at (0, 0) {$1$ at $(0, 0)$};
+            \draw[gray] (2.5, 5) circle (0.12);
+            \node[gray, right=3pt] at (2.5, 5) {$0$ at $(2.5, 5)$};
+        \end{tikzpicture}
+        \\[0.2em]
+        $f = 3\delta_{(1, 2)} - \delta_{(2, 4)} + \delta_{(0, 0)}$: three independent directions. All other points of the plane have the weight $0$.
+    }
+\end{frame}
+
+\begin{frame}{Linear maps out of $\mathcal{F}_0(S)$}
+    \begin{proposition}[Universal property of $\mathcal{F}_0(S)$]
+        \small Every function $\varphi: S \to U$ into a vector space $U$ extends to exactly one linear map $L: \mathcal{F}_0(S) \to U$ with $L(\delta_s) = \varphi(s)$, namely
+        \[L(f) = \sum_{s \in \operatorname{supp} f} f(s)\,\varphi(s).\]
+        No condition on $\varphi$ is needed, since $S$ has no operations to preserve.
+    \end{proposition}
+    \small
+    \begin{itemize}
+        \item The sum is finite, so $L$ is defined, and $L$ is linear since $(f + g)(s) = f(s) + g(s)$. It is unique because the $\delta_s$ span.
+        \item This needs the \emph{finite} support: on $\mathcal{F}(S)$, the sum $\sum_s f(s)\varphi(s)$ would be infinite.
+        \item The proof of the universal property of $V \otimes W$ uses exactly this, with $S = V \times W$ and $\varphi = \beta$. It then checks that $L$ vanishes on $R$.
+    \end{itemize}
+    \begin{mlbox}[One-hot vectors and embeddings]
+        \small For a vocabulary $S$, the word $s$ is the one-hot vector $\delta_s$, and a text is its bag of words $\sum_s (\text{count of } s)\,\delta_s$. An embedding table $\varphi: S \to \R^d$ extends to $L$: a bag of words is embedded as the sum of its word embeddings (\py{nn.EmbeddingBag}). A transformer starts with $\bx_i = L(\delta_{s_i})$ for token $i$.
+    \end{mlbox}
+\end{frame}
+
+\begin{frame}{Worked examples: computing in $\mathcal{F}_0(S)$}
+    \small
+    \textbf{1. Three labels.} $S = \{\text{cat}, \text{dog}, \text{fish}\}$, \ $f = 2\,\text{cat} - \text{dog}$, \ $g = \text{dog} + 3\,\text{fish}$:
+    \[f + g = 2\,\text{cat} + 3\,\text{fish}, \qquad (f + g)(\text{dog}) = -1 + 1 = 0; \qquad \text{coordinates } (2, -1, 0) + (0, 1, 3) = (2, 0, 3).\]
+    \textbf{2. A bag of words.} ``the cat saw the dog'' $= 2\,\text{the} + \text{cat} + \text{saw} + \text{dog}$. With the embeddings $\varphi(\text{the}) = (0, 1)$, $\varphi(\text{cat}) = (1, 1)$, $\varphi(\text{saw}) = (2, 0)$, $\varphi(\text{dog}) = (1, -1)$:
+    \[L(\text{text}) = 2(0, 1) + (1, 1) + (2, 0) + (1, -1) = (4, 2).\]
+    \textbf{3. In $\mathcal{F}_0(\R \times \R)$.} $f = 3\delta_{(1, 2)} - \delta_{(2, 4)} + \delta_{(0, 0)}$, \ $g = \delta_{(2, 4)} + 2\delta_{(1, 1)}$:
+    \[f + g = 3\delta_{(1, 2)} + 2\delta_{(1, 1)} + \delta_{(0, 0)}.\]
+    Nothing simplifies further, because no rule relates $\delta_{(1, 2)}$, $\delta_{(1, 1)}$ and $\delta_{(0, 0)}$.
+    \\[0.4em]
+    \textbf{4. Every $\varphi$ gives a linear $L$, but only bilinear ones survive the quotient.} For the same $f$:
+    \[\varphi(a, b) = ab: \ \ L(f) = 3 \cdot 2 - 8 + 0 = -2; \qquad \varphi(a, b) = a + b: \ \ L(f) = 3 \cdot 3 - 6 + 0 = 3.\]
+    On the generator $\delta_{(2, 1)} - 2\,\delta_{(1, 1)}$ of $R$, the first gives $2 - 2 = 0$ and the second $3 - 4 = -1 \neq 0$. So only $ab$, which is bilinear, defines a map on $\R \otimes \R$.
+\end{frame}
+
+\begin{frame}{The tensor product}
+    \small
+    \begin{definition}[Tensor product][def:tensor-product]
+        \small $R \subseteq \mathcal{F}_0(V \times W)$ is spanned by
+        \[\delta_{(v + v', w)} - \delta_{(v, w)} - \delta_{(v', w)}, \quad \delta_{(v, w + w')} - \delta_{(v, w)} - \delta_{(v, w')}, \quad \delta_{(av, w)} - a\delta_{(v, w)}, \quad \delta_{(v, aw)} - a\delta_{(v, w)}.\]
+        $V \otimes W = \mathcal{F}_0(V \times W)/R$ (a quotient space, Lecture~4), \ $v \otimes w = \delta_{(v, w)} + R$.
+        \\[0.2em]
+        The elements of $V \otimes W$ are called \textbf{tensors} (of order $2$). The tensors of the form $v \otimes w$, for some $v \in V$ and $w \in W$, are called \textbf{pure tensors}.
+    \end{definition}
+    \begin{proposition}[][prop:tensor-basic]
+        \small (1) $(v, w) \mapsto v \otimes w$ is bilinear: $(v + v') \otimes w = v \otimes w + v' \otimes w$, $(av) \otimes w = a(v \otimes w) = v \otimes (aw)$, \dots \ (2) Every tensor is a finite sum of pure tensors.
+    \end{proposition}
+    Why (2): every $f \in \mathcal{F}_0(V \times W)$ is a finite combination $f = \sum_l a_l\,\delta_{(v_l, w_l)}$, so $f + R = \sum_l a_l\,(v_l \otimes w_l) = \sum_l (a_lv_l) \otimes w_l$. So the pure tensors span $V \otimes W$. Not every tensor is pure: $\be_1 \otimes \be_1 + \be_2 \otimes \be_2$ is not (worked examples, below).
+    \\[0.3em]
+    We force exactly the bilinearity rules, and nothing else.
+\end{frame}
+
+\begin{frame}{The universal property}
+    \sidebyside{0.56}{%
+        \begin{theorem}[Universal property][thm:universal]
+            \small For every bilinear $\beta: V \times W \to U$ there is exactly one linear $\tilde\beta: V \otimes W \to U$ with $\tilde\beta(v \otimes w) = \beta(v, w)$.
+        \end{theorem}
+        \small
+        Bilinear maps $V \times W \to U$ $=$ linear maps $V \otimes W \to U$. \\[0.4em]
+        \textcolor{mlcolor}{A bilinear model $\bx^\top A\by$ of two inputs is a linear model in the features $\bx \otimes \by$ (bilinear pooling).}
+    }{%
+        \centering
+        \begin{tikzpicture}[>=Stealth, every node/.style={font=\small}]
+            \node (VW) at (0, 2) {$V \times W$};
+            \node (T) at (3.2, 2) {$V \otimes W$};
+            \node (U) at (3.2, 0) {$U$};
+            \draw[->] (VW) -- node[above, font=\scriptsize] {$(v, w) \mapsto v \otimes w$} (T);
+            \draw[->] (VW) -- node[below left, font=\scriptsize] {$\beta$ bilinear} (U);
+            \draw[->, dashed, accent, thick] (T) -- node[right, font=\scriptsize, align=left] {$\exists!\ \tilde\beta$\\ linear} (U);
+        \end{tikzpicture}
+    }
+\end{frame}
+
+\board[2]{Proof of the universal property}{Define $L(f) = \sum_{(v, w)}f(v, w)\,\beta(v, w)$ on $\mathcal{F}_0(V \times W)$. Show: $L$ is linear and vanishes on the generators of $R$, hence on $R$; so $\tilde\beta(f + R) = L(f)$ is well defined. Uniqueness: if two linear maps agree on all pure tensors $v \otimes w$, they agree on all finite sums of pure tensors, and these are all tensors (Proposition~\notesref{prop:tensor-basic}\,(2)).}
+
+\board[2]{Example: the quotient collapses $\mathcal{F}_0(\R \times \R)$}{(a) Is $\delta_{(2, 3)} - \delta_{(1, 6)}$ zero in $\mathcal{F}_0(\R \times \R)$? Write it as a combination of generators of $R$. What does this say about $2 \otimes 3$ and $1 \otimes 6$? \ (b) Show that $\delta_{(a, b)} - ab\,\delta_{(1, 1)} \in R$. Conclude that $\dim(\R \otimes \R) = 1$, and find the class of $f = 3\delta_{(1, 2)} - \delta_{(2, 4)} + \delta_{(0, 0)}$. \ (c) In $\R^2 \otimes \R^2$, simplify $(\be_1 + \be_2) \otimes \be_1 - \be_1 \otimes \be_1$.}
+
+\checkslide{the quotient collapses $\mathcal{F}_0(\R \times \R)$}{
+    \small
+    \textbf{(a)} In $\mathcal{F}_0$, $\delta_{(2, 3)} - \delta_{(1, 6)} \neq 0$: its value at $(2, 3)$ is $1$. But it lies in $R$:
+    \[\delta_{(2, 3)} - \delta_{(1, 6)} = {\underbrace{\big[\delta_{(2 \cdot 1, 3)} - 2\delta_{(1, 3)}\big]}_{\text{scalar, slot 1}}} + 2{\underbrace{\big[\delta_{(1, 3 \cdot 1)} - 3\delta_{(1, 1)}\big]}_{\text{scalar, slot 2}}} - {\underbrace{\big[\delta_{(1, 6 \cdot 1)} - 6\delta_{(1, 1)}\big]}_{\text{scalar, slot 2}}}.\]
+    The terms $\pm 2\delta_{(1, 3)}$ and $\pm 6\delta_{(1, 1)}$ cancel. So $2 \otimes 3 = 1 \otimes 6$: different pairs, the same tensor.
+    \\[0.4em]
+    \textbf{(b)} In the same way, $\delta_{(a, b)} - ab\,\delta_{(1, 1)} = \big[\delta_{(a \cdot 1, b)} - a\delta_{(1, b)}\big] + a\big[\delta_{(1, b \cdot 1)} - b\delta_{(1, 1)}\big] \in R$, so $a \otimes b = ab\,(1 \otimes 1)$ and
+    \[f + R = \textstyle\sum f(a, b)\,ab\,(1 \otimes 1): \qquad 3\delta_{(1, 2)} - \delta_{(2, 4)} + \delta_{(0, 0)} \ \mapsto\ (3 \cdot 2 - 8 + 0)(1 \otimes 1) = -2\,(1 \otimes 1).\]
+    So $\R \otimes \R = \Span\{1 \otimes 1\}$. Also $1 \otimes 1 \neq 0$, since $\tilde\beta(1 \otimes 1) = 1$ for $\beta(a, b) = ab$. Hence $\dim = 1 = 1 \cdot 1$, and $a \otimes b \mapsto ab$ is an isomorphism $\R \otimes \R \cong \R$. Some nonzero vectors of $\mathcal{F}_0$ become $0$, such as $\delta_{(0, 0)}$ and $\delta_{(2, 4)} - 4\delta_{(1, 2)}$ (next slide).
+    \\[0.4em]
+    \textbf{(c)} $\delta_{(\be_1 + \be_2, \be_1)} - \delta_{(\be_1, \be_1)} - \delta_{(\be_2, \be_1)}$ is a generator (additivity in slot 1), so the result is $\be_2 \otimes \be_1$. Check with the outer product (below): $\begin{pmatrix} 1 & 0 \\ 1 & 0 \end{pmatrix} - \begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix} = \begin{pmatrix} 0 & 0 \\ 1 & 0 \end{pmatrix} = \be_2\be_1^\top$.
+    \\[0.4em]
+    $\mathcal{F}_0(V \times W)$ has infinite dimension, but $R$ is so large that the quotient has dimension $mn$.
+}
+
+\begin{frame}{What becomes equal in $\R \otimes \R$, and what does not}
+    \small
+    In $\mathcal{F}_0(\R \times \R)$, none of the relations below hold (the proposition on equality in $\mathcal{F}_0$). In $\R \otimes \R$, the map $a \otimes b \mapsto ab$ is an isomorphism (the check above), so two tensors are equal if and only if their images are equal:
+    \begin{center}
+        \renewcommand{\arraystretch}{1.15}
+        \begin{tabular}{l|c|c|l}
+            relation & in $\mathcal{F}_0(\R \times \R)$ & in $\R \otimes \R$ & images under $a \otimes b \mapsto ab$ \\ \hline
+            $\delta_{(2, 4)} = 2\,\delta_{(1, 2)}$ & false & false & $2 \cdot 4 = 8$ \ vs \ $2 \cdot (1 \cdot 2) = 4$ \\
+            $\delta_{(2, 4)} = 4\,\delta_{(1, 2)}$ & false & \textbf{true} & $8$ \ vs \ $4 \cdot (1 \cdot 2) = 8$ \\
+            $\delta_{(1, 0)} + \delta_{(0, 1)} = \delta_{(1, 1)}$ & false & false & $0 + 0 = 0$ \ vs \ $1$ \\
+            $\delta_{(1, 1)} + \delta_{(1, 2)} = \delta_{(1, 3)}$ & false & \textbf{true} & $1 + 2 = 3$ \ vs \ $3$ \\
+            $\delta_{(0, 0)} = 0$ & false & \textbf{true} & $0$ \ vs \ $0$
+        \end{tabular}
+    \end{center}
+    \textbf{The true ones, with generators of $R$.} \ $\delta_{(1, 3)} - \delta_{(1, 1)} - \delta_{(1, 2)}$ is a generator (additivity in slot 2), \ $\delta_{(0, 0)} = \delta_{(0 \cdot 1, 0)} - 0 \cdot \delta_{(1, 0)}$, and
+    \[\delta_{(2, 4)} - 4\,\delta_{(1, 2)} = \big[\delta_{(2 \cdot 1, 4)} - 2\,\delta_{(1, 4)}\big] + 2\big[\delta_{(1, 2 \cdot 2)} - 2\,\delta_{(1, 2)}\big].\]
+    The false ones cannot be repaired: equal tensors would have equal images, but $8 \neq 4$ and $0 \neq 1$.
+\end{frame}
+
+\begin{frame}{The pattern: linear in each slot, not in the pair}
+    \small
+    $R$ imposes linearity in each slot \emph{separately}, with the other slot fixed. An operation on the pair $(v, w) \in V \times W$ acts on both slots at once.
+    \\[0.5em]
+    \textbf{Scaling the pair by $c$} scales each slot by $c$, so it scales the tensor by $c^2$:
+    \[(cv) \otimes (cw) = c\,\big(v \otimes (cw)\big) = c^2\,(v \otimes w); \qquad 2 \otimes 4 = (2 \cdot 1) \otimes (2 \cdot 2) = 2 \cdot 2\,(1 \otimes 2) = 4\,(1 \otimes 2).\]
+    So $\delta_{(2, 4)} = \delta_{2 \cdot (1, 2)}$ becomes $4\,(1 \otimes 2)$, and not $2\,(1 \otimes 2)$.
+    \\[0.5em]
+    \textbf{Adding pairs} adds in both slots, and that produces cross terms:
+    \[(v + v') \otimes (w + w') = v \otimes w + {\underbrace{v \otimes w' + v' \otimes w}_{\text{cross terms}}} + v' \otimes w'.\]
+    For $(1, 0) + (0, 1) = (1, 1)$, that is $v = 1$, $w = 0$, $v' = 0$, $w' = 1$:
+    \[1 \otimes 1 = (1 + 0) \otimes (0 + 1) = {\underbrace{1 \otimes 0}_{0}} + {\underbrace{1 \otimes 1}_{\text{cross}}} + {\underbrace{0 \otimes 0}_{\text{cross} = 0}} + {\underbrace{0 \otimes 1}_{0}},\]
+    while $1 \otimes 0 + 0 \otimes 1 = 0$ misses the cross term $1 \otimes 1$.
+\end{frame}
+
+\begin{frame}{Linearity in the pair: true only in special cases}
+    \small
+    Modulo $R$, the two ``linearity in the pair'' relations fail by exactly the following:
+    \[\delta_{(v, w) + (v', w')} - \delta_{(v, w)} - \delta_{(v', w')} \ \mapsto\ \underbrace{v \otimes w' + v' \otimes w}_{\text{cross terms}}, \qquad \delta_{c(v, w)} - c\,\delta_{(v, w)} \ \mapsto\ (c^2 - c)\,(v \otimes w).\]
+    So in $V \otimes W$ these relations hold \emph{exactly} when the right sides are $0$. In $\mathcal{F}_0(V \times W)$, they never hold.
+    \begin{center}
+        \renewcommand{\arraystretch}{1.15}
+        \begin{tabular}{l|l|l|l}
+            pairs & relation in $\R \otimes \R$ & defect $\mapsto$ image under $a \otimes b \mapsto ab$ & holds? \\ \hline
+            $(1, 0) + (0, 1) = (1, 1)$ & $1 \otimes 0 + 0 \otimes 1 \overset{?}{=} 1 \otimes 1$ & $1 \otimes 1 + 0 \otimes 0 \mapsto 1 + 0 = 1$ & no \\
+            $(1, 1) + (1, -1) = (2, 0)$ & $1 \otimes 1 + 1 \otimes (-1) \overset{?}{=} 2 \otimes 0$ & $1 \otimes (-1) + 1 \otimes 1 \mapsto -1 + 1 = 0$ & \textbf{yes} \\
+            $2 \cdot (1, 2) = (2, 4)$ & $2\,(1 \otimes 2) \overset{?}{=} 2 \otimes 4$ & $(2^2 - 2)(1 \otimes 2) \mapsto 2 \cdot 2 = 4$ & no \\
+            $0 \cdot (1, 2) = (0, 0)$ & $0 \overset{?}{=} 0 \otimes 0$ & $(0^2 - 0)(1 \otimes 2) = 0$ & \textbf{yes}
+        \end{tabular}
+    \end{center}
+    In $\R \otimes \R$: scaling the pair holds only for $c \in \{0, 1\}$ or $vw = 0$, and adding pairs only if $vw' + v'w = 0$.
+    \\[0.4em]
+    The relation $1 \otimes 1 + 1 \otimes 2 = 1 \otimes 3$ from the previous table is \emph{not} an addition of pairs, since $(1, 1) + (1, 2) = (2, 3)$. It adds in slot 2 with slot 1 fixed, so it is a generator of $R$ and always holds.
+    \\[0.4em]
+    The map $(v, w) \mapsto v \otimes w$ is bilinear, but it is not linear on $V \times W$.
+\end{frame}
+
+\begin{frame}{A basis of $V \otimes W$; arrays}
+    \begin{theorem}[][thm:tensor-basis]
+        \small If $b_1, \ldots, b_m$ and $c_1, \ldots, c_n$ are bases of $V$ and $W$, the $mn$ tensors $b_i \otimes c_j$ form a basis of $V \otimes W$: $\dim(V \otimes W) = \dim V \cdot \dim W$, and every tensor is $t = \sum_{i,j}T_{ij}\,b_i \otimes c_j$ in exactly one way. For $v = \sum_ix_ib_i$, $w = \sum_jy_jc_j$: \ $v \otimes w$ has $T_{ij} = x_iy_j$.
+    \end{theorem}
+    \begin{corollary}[][cor:tensor-matrices]
+        \small $\R^m \otimes \R^n \cong \R^{m \times n}$, \ $\bu \otimes \bv \mapsto \bu\bv^\top$ (the outer product).
+    \end{corollary}
+    \small
+    Order $k$: $V_1 \otimes \cdots \otimes V_k$, coordinates $T_{i_1\ldots i_k}$: an array with $k$ indices, the ``tensor'' of PyTorch. \\
+    Note: $\dim(V \otimes W) = mn$, but $\dim(V \times W) = m + n$: most tensors are not pure (rank, below).
+\end{frame}
+
+\board{Proof of the basis theorem}{Spanning: expand $v \otimes w$ by bilinearity. Independence: the dual bases $b^k$, $c^l$ give bilinear maps $(v, w) \mapsto b^k(v)c^l(w)$, hence functionals $\lambda_{kl}$ on $V \otimes W$ with $\lambda_{kl}(b_i \otimes c_j) = \delta_{ki}\delta_{lj}$.}
+
+\begin{frame}{Worked examples: computing with pure tensors}
+    \small
+    \textbf{1. Coordinates of a pure tensor.} $\bu = (1, 2)^\top \in \R^2$, $\bv = (3, 4, 5)^\top \in \R^3$. By bilinearity,
+    \[\bu \otimes \bv = (\be_1 + 2\be_2) \otimes (3\be_1 + 4\be_2 + 5\be_3) = \sum_{i,j}u_iv_j\,\be_i \otimes \be_j, \qquad (T_{ij}) = \bu\bv^\top = \begin{pmatrix} 3 & 4 & 5 \\ 6 & 8 & 10 \end{pmatrix}.\]
+    Flattened row by row: $(3, 4, 5, 6, 8, 10) = $ \py{np.kron(u, v)}.
+    \\[0.5em]
+    \textbf{2. Expanding a product.} In $\R^2 \otimes \R^2$:
+    \[(\be_1 + \be_2) \otimes (\be_1 - \be_2) = \be_1 \otimes \be_1 - \be_1 \otimes \be_2 + \be_2 \otimes \be_1 - \be_2 \otimes \be_2 \ \leftrightarrow\ \begin{pmatrix} 1 & -1 \\ 1 & -1 \end{pmatrix} = \begin{pmatrix} 1 \\ 1 \end{pmatrix}\begin{pmatrix} 1 & -1 \end{pmatrix}.\]
+    \textbf{3. A tensor that is not pure.} $t = \be_1 \otimes \be_1 + \be_2 \otimes \be_2 \leftrightarrow I_2$. If $t = \bu \otimes \bv$, then $I_2 = \bu\bv^\top$ would have rank $1$; but $\rank I_2 = 2$. So $t$ is a sum of two pure tensors, and not fewer.
+    \\[0.5em]
+    \textbf{4. Scalars move freely}, but only one copy: $(2\bu) \otimes (3\bv) = 6(\bu \otimes \bv)$, \ and $\bu \otimes \mathbf{0} = 0$.
+\end{frame}
+
+\practice[2]{pr:tensor-rules}{\mandatory}{\begin{enumerate}[(a)]
+    \item Use the bilinearity of $(v, w) \mapsto v \otimes w$ to show that $(2v) \otimes w = v \otimes (2w)$ and $v \otimes w + v \otimes (-w) = 0$ in $V \otimes W$.
+    \item Expand $(\be_1 + 2\be_2) \otimes (3\be_1 - \be_2) \in \R^2 \otimes \R^2$ in the basis $\be_i \otimes \be_j$, and write it as a $2 \times 2$ matrix.
+    \item Which of the tensors $\be_1 \otimes \be_1 + \be_1 \otimes \be_2 + \be_2 \otimes \be_1 + \be_2 \otimes \be_2$ and $\be_1 \otimes \be_2 - \be_2 \otimes \be_1$ in $\R^2 \otimes \R^2$ are pure tensors?
+    \item What is the dimension of $\R^2 \otimes \R^3 \otimes \R^4$, and of $(\R^2 \otimes \R^3)^*$?
+\end{enumerate}}
+
+\begin{frame}{Reshaping, multilinear forms, linear maps}
+    \begin{example}[Reshaping][ex:reshape]
+        \small $\R^{n_1} \otimes \cdots \otimes \R^{n_k} \cong \R^{n_1\cdots n_k}$ (last index fastest): \py{reshape}; $\bu \otimes \bv \mapsto$ \py{np.kron(u, v)}; unfolding an $n_1 \times n_2 \times n_3$ tensor to $n_1 \times (n_2n_3)$. Free: no computation.
+    \end{example}
+    \begin{theorem}[][thm:multilinear-tensor]
+        \small $V_1^* \otimes \cdots \otimes V_k^* \cong (V_1 \otimes \cdots \otimes V_k)^*$: multilinear forms are tensors in $V_1^* \otimes \cdots \otimes V_k^*$. On $\R^{n_j}$: $\tau(\bx^{(1)}, \ldots, \bx^{(k)}) = \sum T_{i_1\ldots i_k}x^{(1)}_{i_1}\cdots x^{(k)}_{i_k}$, $T_{i_1\ldots i_k} = \tau(\be_{i_1}, \ldots, \be_{i_k})$.
+    \end{theorem}
+    \begin{proposition}[][prop:linear-maps-tensors]
+        \small $\Psi: W \otimes V^* \to \mathrm{Hom}(V, W)$, $\Psi(w \otimes \varphi)(v) = \varphi(v)\,w$, is an isomorphism; the matrix $A$ of $T$ is the coordinate array of $\Psi^{-1}(T) = \sum_{i,j}A_{ij}\,c_i \otimes b^j$.
+    \end{proposition}
+    \small A matrix can be a linear map ($W \otimes V^*$), a bilinear form ($V^* \otimes W^*$), or an element of $V \otimes W$: the same array, three different tensors.
+\end{frame}
+
+\practice{pr:tensor-shapes}{\mandatory}{\begin{enumerate}[(a)]
+    \item A video has $30$ color frames per second, each of $64 \times 64$ pixels with $3$ color channels. What are the order and the shape of the array that stores a $10$-second video? Write the space of all such arrays as a tensor product $\R^{n_1} \otimes \cdots \otimes \R^{n_k}$, and find its dimension.
+    \item A tensor $T \in \R^{2 \times 3 \times 4}$ is flattened row by row (with the last index changing fastest) into a vector $\bv \in \R^{24}$ with the entries $v_1, \ldots, v_{24}$. Which entry of $\bv$ is $T_{213}$? Which entry of $T$ is $v_{17}$?
+\end{enumerate}}
+
+\practice{pr:bilinear-practice}{\mandatory}{Which of the following maps $\R^2 \times \R^2 \to \R$ are bilinear? For the bilinear ones, find the matrix $A$ with $\beta(\bx, \by) = \bx^\top A\by$.
+\begin{enumerate}[(a)]
+    \item $\beta(\bx, \by) = 2x_1y_1 - x_1y_2 - x_2y_1 + 4x_2y_2$;
+    \item $\beta(\bx, \by) = x_1y_1 + 1$;
+    \item $\beta(\bx, \by) = (x_1 - x_2)(y_1 + 2y_2)$;
+    \item $\beta(\bx, \by) = x_1^2y_2$.
+\end{enumerate}
+Which of the bilinear ones satisfy $\beta(\bx, \by) = \beta(\by, \bx)$ for all $\bx$ and $\by$?}
+
+\begin{frame}{Contractions and the trace}
+    \begin{definition}[Contraction][def:contraction]
+        \small $C: V \otimes V^* \to \R$, \ $C(v \otimes \varphi) = \varphi(v)$ (exists by the universal property).
+    \end{definition}
+    \begin{proposition}[][prop:trace-contraction]
+        \small If $T: V \to V$ has the matrix $A$ in some basis, then $\tr(A) = C(\Psi^{-1}(T))$. So the trace of $T$ does not depend on the basis.
+    \end{proposition}
+    \small
+    $C\big(\sum_{i,j}A_{ij}\,b_i \otimes b^j\big) = \sum_{i,j}A_{ij}\,b^j(b_i) = \sum_{i,j}A_{ij}\delta_{ji} = \sum_iA_{ii}$.
+    \begin{example}[A $2 \times 2$ matrix as a tensor]
+        \small $A = \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix} \leftrightarrow t = 1\,\be_1 \otimes \be^1 + 2\,\be_1 \otimes \be^2 + 3\,\be_2 \otimes \be^1 + 4\,\be_2 \otimes \be^2 \in \R^2 \otimes (\R^2)^*$.
+        \\[0.2em]
+        As a map: $\Psi(\be_1 \otimes \be^2)(\bv) = \be^2(\bv)\,\be_1 = v_2\be_1$, so $\Psi(t)(\bv) = (v_1 + 2v_2)\be_1 + (3v_1 + 4v_2)\be_2 = A\bv$ \checkmark.
+        \\[0.2em]
+        Contraction: only the pairs $\be_i \otimes \be^i$ survive: $C(t) = 1 \cdot \be^1(\be_1) + 4 \cdot \be^2(\be_2) = 1 + 4 = 5 = \tr A$.
+    \end{example}
+    Contraction pairs an index of $V$ with an index of $V^*$. Matrix products $A_{ij}B_{jk}$, $\bx^\top\by = x_iy_i$ and $\tr A = A_{ii}$ are contractions.
+\end{frame}
+
+\practice{pr:linear-map-tensor}{}{Let $T: \R^2 \to \R^2$, $T(x, y) = (x + 2y, 3y)$.
+\begin{enumerate}[(a)]
+    \item Write the tensor in $\R^2 \otimes (\R^2)^*$ that corresponds to $T$ in the basis $\be_i \otimes e^j$, and as a sum of two pure tensors.
+    \item Compute its contraction, and compare it with the trace of the matrix of $T$.
+    \item Compute the matrix of $T$ in the basis $b_1 = (1, 1)$, $b_2 = (1, -1)$, and check that it has the same trace.
+\end{enumerate}}
+
+\begin{frame}{Einstein notation and \texttt{np.einsum}}
+    \small
+    Every index that appears twice is summed; the others are free and index the result.
+    \\[0.3em]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        operation & Einstein & NumPy \\
+        \midrule
+        $AB$ & $A_{ij}B_{jk}$ & \py{np.einsum("ij,jk->ik", A, B)} \\
+        $\tr(A)$ & $A_{ii}$ & \py{np.einsum("ii->", A)} \\
+        $\bx^\top\by$ & $x_iy_i$ & \py{np.einsum("i,i->", x, y)} \\
+        $\bx \otimes \by$ & $x_iy_j$ & \py{np.einsum("i,j->ij", x, y)} \\
+        $A^\top$ & $A_{ji}$ & \py{np.einsum("ij->ji", A)} \\
+        $\bx^\top A\by$ & $x_iA_{ij}y_j$ & \py{np.einsum("i,ij,j->", x, A, y)} \\
+        batch $A_bB_b$ & $A_{bij}B_{bjk}$ & \py{np.einsum("bij,bjk->bik", A, B)} \\
+        \bottomrule
+    \end{tabular}
+    \\[0.6em]
+    \raggedright
+    The most used contraction in deep learning today computes the attention scores of transformers (below).
+\end{frame}
+
+\board{Write in Einstein notation and as \texttt{einsum}}{(1) $\tr(AB)$ \quad (2) $\norm{A}_F^2$ \quad (3) $A\bx$ for a batch of vectors $\bx_b$ \quad (4) the map $X \mapsto AXB^\top$ \quad (5) a bilinear layer $y_k = \sum_{i,j}W_{kij}x_iz_j$.}
+
+\checkslide{Einstein notation}{
+    \small
+    \renewcommand{\arraystretch}{1.25}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        & Einstein & NumPy \\
+        \midrule
+        $\tr(AB)$ & $A_{ij}B_{ji}$ & \py{np.einsum("ij,ji->", A, B)} \\
+        $\norm{A}_F^2$ & $A_{ij}A_{ij}$ & \py{np.einsum("ij,ij->", A, A)} \\
+        $A\bx_b$ for all $b$ & $A_{ij}x_{bj}$ & \py{np.einsum("ij,bj->bi", A, X)} \\
+        $AXB^\top$ & $A_{ij}X_{jl}B_{kl}$ & \py{np.einsum("ij,jl,kl->ik", A, X, B)} \\
+        $y_k = W_{kij}x_iz_j$ & $W_{kij}x_iz_j$ & \py{np.einsum("kij,i,j->k", W, x, z)} \\
+        \bottomrule
+    \end{tabular}
+    \begin{remark}[The Kronecker product][rem:kronecker]
+        \small Flattening $X$ row by row, $X \mapsto AXB^\top$ is multiplication by the Kronecker product $A \otimes B$ (\py{np.kron}), the reshaped order-$4$ tensor $A_{ij}B_{kl}$.
+    \end{remark}
+}
+
+\practice[2]{pr:einsum-practice}{\mandatory}{For each of the following expressions, give the Einstein notation and the corresponding call of the NumPy function \texttt{np.einsum}, and state the shape of the result.
+\begin{enumerate}[(a)]
+    \item $A^\top\bx$ for $A \in \R^{m \times n}$ and $\bx \in \R^m$;
+    \item the sum of all entries of the entrywise product $A \odot B$, where $(A \odot B)_{ij} = A_{ij}B_{ij}$;
+    \item the diagonal of $AB$ for $n \times n$ matrices $A$ and $B$, without computing all of $AB$; how many multiplications does it need?
+    \item the outputs $XW^\top$ of a linear layer, for a batch $X$ of shape $N \times d$ and a weight matrix $W \in \R^{m \times d}$.
+\end{enumerate}}
+
+% ------------------------------------------------------------------ Attention
+\topic{\secref{sec:tensors}, Example~\notesref{ex:attention}}{Attention in transformers}
+
+\begin{frame}{Where attention scores appear: one transformer layer}
+    \sidebyside{0.6}{%
+        \small
+        A transformer is a stack of layers. In each layer, the $L$ tokens exchange information only in the \textbf{attention} part; an MLP then acts on each token separately. One attention head:
+        \begin{enumerate}
+            \item \textbf{Embed.} Token $i$ becomes $\bx_i = L(\delta_{s_i}) \in \R^{d_{\mathrm{m}}}$ (plus its position): row $i$ of $X \in \R^{L \times d_{\mathrm{m}}}$.
+            \item \textbf{Three learned linear maps}: $Q = XW_Q$, $K = XW_K$ ($L \times d$) and the value matrix $V = XW_V$ (not a vector space here). Row $i$ gives the \emph{query} $\bq_i$, the \emph{key} $\mathbf{k}_i$ and the \emph{value} $\bv_i$ of token $i$.
+            \item \textbf{Scores}: $S_{ij} = \frac{1}{\sqrt d}\,\bq_i \cdot \mathbf{k}_j$, i.e., $S = \frac{1}{\sqrt d}QK^\top$, an $L \times L$ matrix.
+            \item \textbf{Weights}: $A = \softmax(S)$, row by row: $A_{ij} \geq 0$ and $\sum_j A_{ij} = 1$.
+            \item \textbf{Output}: $\mathbf{o}_i = \sum_j A_{ij}\bv_j$, i.e., $O = AV$. Token $i$ receives a weighted average of the values of all tokens.
+        \end{enumerate}
+    }{%
+        \centering
+        \begin{tikzpicture}[>=Stealth, font=\scriptsize, scale=0.95,
+                box/.style={draw=accent, rounded corners=2pt, fill=accent!6, inner sep=3pt, align=center}]
+            \node[box] (X) at (0, 0) {$X$\\ $L \times d_{\mathrm{m}}$};
+            \node[box] (Q) at (-1.75, -1.5) {$Q = XW_Q$\\ $L \times d$};
+            \node[box] (K) at (0, -1.5) {$K = XW_K$\\ $L \times d$};
+            \node[box] (V) at (1.75, -1.5) {$V = XW_V$\\ $L \times d_v$};
+            \node[box, draw=mlcolor, fill=mlcolor!10] (S) at (-0.9, -3.05) {$S = \frac{1}{\sqrt d}QK^\top$\\ $L \times L$ scores};
+            \node[box] (A) at (-0.9, -4.55) {$A = \softmax(S)$\\ row by row};
+            \node[box] (O) at (0.8, -6.05) {$O = AV$\\ $L \times d_v$};
+            \draw[->] (X) -- (Q);
+            \draw[->] (X) -- (K);
+            \draw[->] (X) -- (V);
+            \draw[->] (Q) -- (S);
+            \draw[->] (K) -- (S);
+            \draw[->] (S) -- (A);
+            \draw[->] (A) -- (O);
+            \draw[->] (V) -- (O);
+        \end{tikzpicture}
+    }
+\end{frame}
+
+\begin{frame}{What an attention score means}
+    \small
+    \begin{itemize}
+        \item \textbf{Query, key, value.} $\bq_i$ is what token $i$ is looking for, $\mathbf{k}_j$ is what token $j$ offers, and $\bv_j$ is what token $j$ passes on. $S_{ij}$ is large when $\bq_i$ and $\mathbf{k}_j$ point in similar directions. Then $A_{ij}$ is large, and token $i$ reads much of $\bv_j$.
+        \item \textbf{A learned bilinear form between tokens.} Since $\bq_i = W_Q^\top\bx_i$ and $\mathbf{k}_j = W_K^\top\bx_j$,
+        \[S_{ij} = \tfrac{1}{\sqrt d}\,(W_Q^\top\bx_i)^\top(W_K^\top\bx_j) = \bx_i^\top M\bx_j, \qquad M = \tfrac{1}{\sqrt d}\,W_QW_K^\top \in \R^{d_{\mathrm{m}} \times d_{\mathrm{m}}}.\]
+        $M$ is used as a bilinear form, a tensor in $(\R^{d_{\mathrm{m}}})^* \otimes (\R^{d_{\mathrm{m}}})^*$, while $W_V$ is used as a linear map: the same kind of array, different tensors. Since $M$ is a product through $\R^d$, it has rank $\leq d$; in the original transformer, $d = 64$ and $d_{\mathrm{m}} = 512$. So $M$ is a cheap low-rank form (tensor rank: next).
+        \item \textbf{Not symmetric.} In general $M \neq M^\top$, so $S_{ij} \neq S_{ji}$. A verb may attend strongly to its subject while the subject attends weakly to the verb.
+        \item \textbf{Only differences within a row matter.} $\softmax(\mathbf{z} + c\mathbf{1}) = \softmax(\mathbf{z})$: the softmax lives on $\R^L/\Span\{\mathbf{1}\}$ (Lecture~4). A score is meaningful only in comparison with the other scores of the same query.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Scaling, masks, heads, and the cost}
+    \small
+    \begin{itemize}
+        \item \textbf{Why $\frac{1}{\sqrt d}$.} If the entries of $\bq$ and $\mathbf{k}$ are independent with mean $0$ and variance $1$, then $\bq \cdot \mathbf{k} = \sum_{c=1}^d q_ck_c$ has variance $d$ (Lecture~9). For $d = 64$, raw scores of size $\pm 8$ give factors $e^8 \approx 3000$: the softmax is almost one-hot and its gradients vanish (Lecture~7). After the division, the variance is $1$.
+        \item \textbf{Causal mask.} A model that generates text (GPT) must not let token $i$ see later tokens. It sets $S_{ij} = -\infty$ for $j > i$, so that $A_{ij} = 0$: $A$ is lower triangular.
+        \item \textbf{Heads.} Each of $h$ heads has its own $W_Q$, $W_K$ and $W_V$, i.e., its own bilinear form. For example, one head may link verbs to their subjects, and another may look at the previous token.
+    \end{itemize}
+    \begin{example}[Attention scores as a contraction][ex:attention]
+        \small For a batch of $N$ sentences and $h$ heads, $Q$ and $K$ have the shape $N \times h \times L \times d$, and
+        \[S_{bhij} = Q_{bhic}K_{bhjc}: \qquad \text{\py{np.einsum("bhic,bhjc->bhij", Q, K)}}.\]
+        The repeated index $c$ is contracted; $b, h, i, j$ are free. There is one multiplication for each $(b, h, i, j, c)$, so $NhL^2d$ in all. With one head, as in the notes: \py{"bic,bjc->bij"} and $NL^2d$.
+    \end{example}
+    The cost grows like $L^2$: twice the context, four times the work. So long contexts are expensive.
+\end{frame}
+
+\board{Example: one attention head with numbers}{The sentence ``the cat sat'' ($L = 3$, $d = 2$). The rows of $Q$, $K$ and $V$ belong to the tokens the, cat, sat; in the keys, coordinate $1$ means ``I am a noun'' and coordinate $2$ ``I am a verb''.
+\[Q = \begin{pmatrix} 1 & 0 \\ 0 & 1 \\ 2 & 0 \end{pmatrix}, \qquad K = \begin{pmatrix} 0 & 0 \\ 2 & 0 \\ 0 & 2 \end{pmatrix}, \qquad V = \begin{pmatrix} 0 & 0 \\ 1 & 0 \\ 0 & 1 \end{pmatrix}.\]
+(a) Compute $S = \frac{1}{\sqrt 2}QK^\top$ entry by entry. Is $S$ symmetric? \ (b) Compute $A = \softmax(S)$ row by row. \ (c) Compute $O = AV$. What does the output vector of ``sat'' contain? \ (d) Redo (b) and (c) with a causal mask.}
+
+\checkslide{one attention head}{
+    \small
+    \textbf{(a) Scores.} $(QK^\top)_{ij} = \bq_i \cdot \mathbf{k}_j$; for example, the row of ``sat'' is $(2, 0) \cdot (0, 0) = 0$, $(2, 0) \cdot (2, 0) = 4$, $(2, 0) \cdot (0, 2) = 0$:
+    \[QK^\top = \begin{pmatrix} 0 & 2 & 0 \\ 0 & 0 & 2 \\ 0 & 4 & 0 \end{pmatrix}, \qquad S = \tfrac{1}{\sqrt 2}\,QK^\top \approx \begin{pmatrix} 0 & 1.41 & 0 \\ 0 & 0 & 1.41 \\ 0 & 2.83 & 0 \end{pmatrix}.\]
+    Not symmetric: $S_{\text{sat},\text{cat}} = 2.83$ but $S_{\text{cat},\text{sat}} = 1.41$. \ Cost: $L^2d = 9 \cdot 2 = 18$ multiplications.
+    \\[0.3em]
+    \textbf{(b) Weights.} Row ``the'': $e^0 = 1$, $e^{1.41} \approx 4.11$, $e^0 = 1$, sum $6.11$. Row ``sat'': $e^{2.83} \approx 16.92$, sum $18.92$.
+    \[A \approx \begin{pmatrix} 0.164 & 0.673 & 0.164 \\ 0.164 & 0.164 & 0.673 \\ 0.053 & 0.894 & 0.053 \end{pmatrix} \qquad (\text{each row sums to } 1).\]
+    \textbf{(c) Outputs.} $\mathbf{o}_{\text{sat}} = 0.053\,(0, 0) + 0.894\,(1, 0) + 0.053\,(0, 1) = (0.894, 0.053)$. The vector of ``sat'' now mostly carries the value of its subject ``cat''. Similarly, $\mathbf{o}_{\text{the}} = (0.673, 0.164)$ and $\mathbf{o}_{\text{cat}} = (0.164, 0.673)$.
+    \\[0.3em]
+    \textbf{(d) Causal mask.} ``the'' sees only itself: weights $(1, 0, 0)$, output $(0, 0)$. ``cat'' sees the scores $0, 0$: weights $(0.5, 0.5, 0)$, output $(0.5, 0)$. ``sat'' is the last token and is unchanged. The article can no longer look ahead to its noun.
+}
+
+% ------------------------------------------------------------------ Rank
+\begin{frame}{Tensor rank}
+    \begin{definition}[Tensor rank][def:tensor-rank]
+        \small The smallest $r$ such that $t$ is a sum of $r$ pure tensors.
+    \end{definition}
+    \begin{proposition}[][prop:matrix-tensor-rank]
+        \small In $\R^m \otimes \R^n = \R^{m \times n}$, the tensor rank is the usual rank: $\rank A = r$ iff $A$ is a sum of $r$ (not fewer) outer products $\bu\bv^\top$.
+    \end{proposition}
+    \centering
+    \begin{tikzpicture}[x=0.42cm, y=0.42cm, font=\small]
+        \draw[fill=accent!12] (0, 0) rectangle (2.4, 2.4);
+        \draw[fill=accent!25] (0, 2.4) -- (0.9, 3.3) -- (3.3, 3.3) -- (2.4, 2.4) -- cycle;
+        \draw[fill=accent!35] (2.4, 0) -- (3.3, 0.9) -- (3.3, 3.3) -- (2.4, 2.4) -- cycle;
+        \node at (1.2, 1.2) {$T$};
+        \node at (4.3, 1.5) {$=$};
+        \foreach \s/\l in {5.3/1, 10.2/2, 16.6/r} {
+            \draw[fill=excolor!30] (\s, 0) rectangle (\s + 0.45, 2.4);
+            \draw[fill=defcolor!30] (\s + 0.7, 2.65) rectangle (\s + 3.1, 3.1);
+            \draw[fill=mlcolor!25] (\s + 0.05, 2.65) -- (\s + 0.45, 2.65) -- (\s + 1.15, 3.35) -- (\s + 0.75, 3.35) -- cycle;
+            \node[font=\scriptsize, excolor] at (\s + 1.0, 0.35) {$\bu_{\l}$};
+            \node[font=\scriptsize, defcolor] at (\s + 1.9, 3.55) {$\bv_{\l}$};
+            \node[font=\scriptsize, mlcolor] at (\s + 1.35, 2.15) {$\mathbf{w}_{\l}$};
+        }
+        \node at (9.3, 1.5) {$+$};
+        \node at (14.7, 1.5) {$+ \ \cdots \ +$};
+    \end{tikzpicture}
+    \\[0.3em]
+    \raggedright\small
+    For order $\geq 3$: computing the rank is NP-hard, and it can depend on the field (real rank $3$, complex rank $2$). \textcolor{mlcolor}{CP decompositions compress weight tensors, find structure in users $\times$ products $\times$ time data, and fit mixture models.}
+\end{frame}
+
+\board{Example: a tensor of rank $2$}{$t = \be_1 \otimes \be_1 \otimes \be_1 + \be_2 \otimes \be_2 \otimes \be_2 \in \R^2 \otimes \R^2 \otimes \R^2$. Show that $t$ is not pure: for $\bu \otimes \bv \otimes \mathbf{w}$, the slices $(T_{ij1})$ and $(T_{ij2})$ are multiples of the same matrix $\bu\bv^\top$.}
+
+\checkslide{a tensor of rank $2$}{
+    \small
+    \textbf{Coordinates of $t$:} $T_{111} = T_{222} = 1$, all other six $T_{ijk} = 0$. Slices by the last index:
+    \[(T_{ij1})_{i,j} = \begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix}, \qquad (T_{ij2})_{i,j} = \begin{pmatrix} 0 & 0 \\ 0 & 1 \end{pmatrix}.\]
+    \textbf{Slices of a pure tensor} $\bu \otimes \bv \otimes \mathbf{w}$: coordinates $u_iv_jw_k$, so
+    \[(u_iv_jw_1)_{i,j} = w_1\,\bu\bv^\top, \qquad (u_iv_jw_2)_{i,j} = w_2\,\bu\bv^\top:\]
+    both slices are multiples of one rank-one matrix (or zero).
+    \\[0.4em]
+    Our slices are not multiples of each other, so $t$ is not pure: $\rank t \geq 2$. It is a sum of $2$ pure tensors by definition: $\rank t = 2$.
+    \\[0.4em]
+    Compare with matrices: $\be_1 \otimes \be_1 + \be_2 \otimes \be_2 = I_2$ also has rank $2$. For order $3$, a $2 \times 2 \times 2$ tensor can have rank $3$, larger than every side length.
+}
+
+\practice[2]{pr:outer-practice}{\mandatory}{Let $\bu = (1, -1)^\top$, $\bv = (2, 0, 1)^\top$ and $\bw = (1, 3)^\top$.
+\begin{enumerate}[(a)]
+    \item Write the pure tensor $\bu \otimes \bv \in \R^2 \otimes \R^3$ as a matrix, and find its rank.
+    \item Compute the coordinates of $T = \bu \otimes \bv \otimes \bw \in \R^2 \otimes \R^3 \otimes \R^2$, and write down its two slices $(T_{ij1})_{i,j}$ and $(T_{ij2})_{i,j}$.
+    \item Is the matrix $\begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}$ an outer product $\mathbf{a} \otimes \mathbf{b}$? Write it as a sum of as few outer products as possible.
+\end{enumerate}}
+
+\practice{pr:unfolding-rank}{$\star$}{\begin{enumerate}[(a)]
+    \item Let $T \in \R^{n_1 \times n_2 \times n_3}$ be a sum of $r$ rank-one tensors. Show that its unfolding, the $n_1 \times (n_2n_3)$ matrix whose $i$-th row lists the entries $T_{ijk}$, has rank at most $r$.
+    \item Use (a) to show again that the tensor $\be_1 \otimes \be_1 \otimes \be_1 + \be_2 \otimes \be_2 \otimes \be_2$ of the lecture has rank $2$.
+    \item Show that the tensor $T \in \R^{2 \times 2 \times 2}$ with $T_{ijk} = 1$ for all $i, j, k$ has rank one.
+\end{enumerate}}
+
+% ------------------------------------------------------------------ Change of basis
+\topic{\secref{subsec:tensor-basis-change}}{Change of basis}
+
+\begin{frame}{How coordinates change}
+    \small
+    New basis $b_j' = \sum_iP_{ij}b_i$ ($P$ invertible). Then the dual bases satisfy $b^i = \sum_lP_{il}\,b'^l$, and:
+    \\[0.3em]
+    \centering
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        tensor & space & new coordinates \\
+        \midrule
+        vector & $V$ & $\bx' = P^{-1}\bx$ \\
+        linear map $V \to V$ & $V \otimes V^*$ & $A' = P^{-1}AP$ \\
+        bilinear form & $V^* \otimes V^*$ & $A' = P^\top AP$ \\
+        element of $V \otimes V$ & $V \otimes V$ & $A' = P^{-1}A(P^{-1})^\top$ \\
+        \bottomrule
+    \end{tabular}
+    \\[0.4em]
+    \raggedright
+    \textbf{Rule:} every index of a factor $V$ transforms with $P^{-1}$, every index of a factor $V^*$ with $P$.
+    \begin{itemize}
+        \item $I_n$ as the identity map stays $P^{-1}IP = I$; as the dot product it becomes $P^\top P$ (unless $P$ is orthogonal).
+        \item The trace is basis-independent for linear maps, not for bilinear forms.
+        \item Diagonalization is the change of basis $A' = P^{-1}AP = D$ to an eigenbasis.
+    \end{itemize}
+\end{frame}
+
+\board[2]{Derive the transformation rules}{Substitute $b_i = \sum_k(P^{-1})_{ki}b_k'$ and $b^j = \sum_lP_{jl}b'^l$ into $t = \sum_{i,j}A_{ij}\,b_i \otimes b^j$ (a linear map) and into $t = \sum_{i,j}A_{ij}\,b^i \otimes b^j$ (a bilinear form). Check the dual-basis formula by evaluating both sides at $b_j'$.}
+
+\begin{frame}{Worked example: one change of basis, four tensors}
+    \small
+    New basis of $\R^2$: $\bb_1' = \be_1$, $\bb_2' = \be_1 + \be_2$, \ so $P = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix}$, \ $P^{-1} = \begin{pmatrix} 1 & -1 \\ 0 & 1 \end{pmatrix}$.
+    \\[0.3em]
+    \textbf{Vector} $\bx = (3, 2)^\top$: \ $\bx' = P^{-1}\bx = (3 - 2, 2)^\top = (1, 2)^\top$. \ Check: $1\,\bb_1' + 2\,\bb_2' = (1, 0) + (2, 2) = (3, 2)$ \checkmark.
+    \\[0.3em]
+    \textbf{Linear map} $A = \diag(1, 2)$:
+    \[A' = P^{-1}AP = \begin{pmatrix} 1 & -1 \\ 0 & 1 \end{pmatrix}\begin{pmatrix} 1 & 0 \\ 0 & 2 \end{pmatrix}\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix} = \begin{pmatrix} 1 & -2 \\ 0 & 2 \end{pmatrix}\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix} = \begin{pmatrix} 1 & -1 \\ 0 & 2 \end{pmatrix}.\]
+    Check: $A\bx = (3, 4)^\top$ has new coordinates $P^{-1}(3, 4)^\top = (-1, 4)^\top$, and $A'\bx' = (1 - 2, 4)^\top = (-1, 4)^\top$ \checkmark. \ Trace $3$ in both bases.
+    \\[0.3em]
+    \textbf{Bilinear form} $\bx^\top\by$ (matrix $I_2$): \ $A' = P^\top I P = \begin{pmatrix} 1 & 0 \\ 1 & 1 \end{pmatrix}\begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix} = \begin{pmatrix} 1 & 1 \\ 1 & 2 \end{pmatrix}$, \ the Gram matrix $(\bb_i'^\top\bb_j')$; trace $3 \neq 2$.
+    \\[0.3em]
+    \textbf{Identity map} $I_2$: \ $P^{-1}IP = I_2$ in every basis. Same array $I_2$, different tensors, different rules.
+\end{frame}
+
+\practice{pr:change-of-basis-practice}{}{Let $A = \begin{pmatrix} 1 & 2 \\ 2 & 1 \end{pmatrix}$, and let $P = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$, whose columns form a basis of $\R^2$.
+\begin{enumerate}[(a)]
+    \item Compute the matrix $P^{-1}AP$ of the linear transformation $\bx \mapsto A\bx$ in this basis.
+    \item Compute the matrix $P^\top AP$ of the bilinear form $(\bx, \by) \mapsto \bx^\top A\by$ in this basis.
+    \item Compare the traces and the determinants of $A$, $P^{-1}AP$ and $P^\top AP$. Which of them depend on whether $A$ describes a linear transformation or a bilinear form?
+\end{enumerate}}
+
+\begin{frame}{Tensors in mathematics, physics and machine learning}
+    \small
+    A tensor of \textbf{type $(p, q)$} on $V$ is an element of $V^{\otimes p} \otimes (V^*)^{\otimes q}$: vectors $(1, 0)$, functionals $(0, 1)$, linear maps $(1, 1)$, bilinear forms $(0, 2)$. Physics: arrays that transform by the rule above.
+    \begin{mlbox}
+        \small
+        \begin{itemize}
+            \item In ML, ``tensor'' means the array in the standard basis, which is never changed; the meaning of the indices (batch, channel, height, width) is tracked separately.
+            \item The distinction still matters: the derivative of a loss is a \emph{functional} (Lecture~7), so under a linear reparameterization it transforms with $P$, not like the parameters. Gradient descent is not invariant under changes of coordinates; preconditioning and natural gradients fix this.
+            \item Covariance matrices are tensors in $V \otimes V$: $\Cov(A\mathbf{X}) = A\Sigma A^\top$ (Lecture~9); Hessians are bilinear forms: $P^\top HP$.
+        \end{itemize}
+    \end{mlbox}
+\end{frame}
+
+% ------------------------------------------------------------------ Wrap-up
+\begin{frame}{Key takeaways}
+    \small
+    \begin{itemize}
+        \item Eigenvalues are the roots of $\det(A - \lambda I)$, eigenspaces $\Null(A - \lambda I)$; they sum to $\tr A$ and multiply to $\det A$.
+        \item $A = PDP^{-1}$ iff there are $n$ independent eigenvectors; then $A^k = PD^kP^{-1}$: Fibonacci, Markov chains, power iteration, exploding and vanishing gradients.
+        \item Cayley--Hamilton $p_A(A) = 0$; diagonalizable iff $m_A$ has distinct real roots.
+        \item Convolutions $=$ circulant matrices $=$ matrices commuting with shifts; the DFT diagonalizes them, eigenvalues $\hat c_m$.
+        \item $V \otimes W = \mathcal{F}_0(V \times W)/R$: bilinear maps on $V \times W$ $=$ linear maps on $V \otimes W$; basis $b_i \otimes c_j$; $\R^m \otimes \R^n = \R^{m \times n}$.
+        \item Multilinear forms $\in V_1^* \otimes \cdots$, linear maps $\in W \otimes V^*$, trace $=$ contraction; Einstein notation $=$ \py{einsum}.
+        \item Attention: $S = \frac{1}{\sqrt d}QK^\top$ is a learned low-rank bilinear form between tokens, computed as a contraction. Softmax rows give weights, and $O = AV$ averages the values.
+        \item Rank $=$ fewest pure tensors. Change of basis: $V$-indices with $P^{-1}$, $V^*$-indices with $P$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Homework and next time}
+    \small
+    \begin{itemize}
+        \item \textbf{Homework:} Lecture 1, Exercises 19, 24, 25, 41, 42 and 44; Programming Exercise P15.
+        \item \textbf{Practice:} Practice 1, sections 10--11. All of these problems are on the PRACTICE pages of these slides, next to their topics; the answers are in the answer key.
+    \end{itemize}
+    \vskip0.6em
+    \begin{block}{Next: Linear Algebra II}
+        Norms and inner products; SPD matrices and Cholesky; orthonormal bases, Gram--Schmidt and QR; projections and least squares; the spectral theorem; the SVD, low-rank approximation, the condition number; PCA. Then the midterm exam.
+    \end{block}
+\end{frame}
+
+\end{document}
